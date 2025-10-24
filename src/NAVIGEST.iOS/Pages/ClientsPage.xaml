@@ -35,45 +35,90 @@
                 
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:Cliente">
-                    <SwipeView>
+                    <SwipeView x:Name="ClientSwipeView">
                         <!-- Swipe Actions (deslizar para esquerda) -->
                         <SwipeView.RightItems>
                             <SwipeItems Mode="Reveal">
                                 <!-- Botão Pastas (azul) -->
-                                <SwipeItem BackgroundColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"
-                                          Invoked="OnPastasClientInvoked"
-                                          CommandParameter="{Binding .}">
-                                    <SwipeItem.IconImageSource>
-                                        <FontImageSource FontFamily="FA7Solid"
-                                                       Glyph="&#xF07C;"
-                                                       Size="24"
-                                                       Color="White"/>
-                                    </SwipeItem.IconImageSource>
-                                </SwipeItem>
+                                <SwipeItemView>
+                                    <Grid BackgroundColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}" 
+                                          WidthRequest="80"
+                                          Padding="10">
+                                        <Border WidthRequest="50"
+                                                HeightRequest="50"
+                                                BackgroundColor="White"
+                                                StrokeThickness="0"
+                                                HorizontalOptions="Center"
+                                                VerticalOptions="Center">
+                                            <Border.StrokeShape>
+                                                <RoundRectangle CornerRadius="25"/>
+                                            </Border.StrokeShape>
+                                            <Label FontFamily="FA7Solid"
+                                                   Text="&#xF07C;"
+                                                   FontSize="24"
+                                                   TextColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"
+                                                   HorizontalOptions="Center"
+                                                   VerticalOptions="Center"/>
+                                        </Border>
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnPastasClientTapped"/>
+                                        </Grid.GestureRecognizers>
+                                    </Grid>
+                                </SwipeItemView>
                                 
                                 <!-- Botão Editar (laranja) -->
-                                <SwipeItem BackgroundColor="#FF9500"
-                                          Invoked="OnEditClientInvoked"
-                                          CommandParameter="{Binding .}">
-                                    <SwipeItem.IconImageSource>
-                                        <FontImageSource FontFamily="FA7Solid"
-                                                       Glyph="&#xF044;"
-                                                       Size="24"
-                                                       Color="White"/>
-                                    </SwipeItem.IconImageSource>
-                                </SwipeItem>
+                                <SwipeItemView>
+                                    <Grid BackgroundColor="#FF9500" 
+                                          WidthRequest="80"
+                                          Padding="10">
+                                        <Border WidthRequest="50"
+                                                HeightRequest="50"
+                                                BackgroundColor="White"
+                                                StrokeThickness="0"
+                                                HorizontalOptions="Center"
+                                                VerticalOptions="Center">
+                                            <Border.StrokeShape>
+                                                <RoundRectangle CornerRadius="25"/>
+                                            </Border.StrokeShape>
+                                            <Label FontFamily="FA7Solid"
+                                                   Text="&#xF044;"
+                                                   FontSize="24"
+                                                   TextColor="#FF9500"
+                                                   HorizontalOptions="Center"
+                                                   VerticalOptions="Center"/>
+                                        </Border>
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnEditClientTapped"/>
+                                        </Grid.GestureRecognizers>
+                                    </Grid>
+                                </SwipeItemView>
                                 
                                 <!-- Botão Eliminar (vermelho) -->
-                                <SwipeItem BackgroundColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}"
-                                          Invoked="OnDeleteClientInvoked"
-                                          CommandParameter="{Binding .}">
-                                    <SwipeItem.IconImageSource>
-                                        <FontImageSource FontFamily="FA7Solid"
-                                                       Glyph="&#xF1F8;"
-                                                       Size="24"
-                                                       Color="White"/>
-                                    </SwipeItem.IconImageSource>
-                                </SwipeItem>
+                                <SwipeItemView>
+                                    <Grid BackgroundColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}" 
+                                          WidthRequest="80"
+                                          Padding="10">
+                                        <Border WidthRequest="50"
+                                                HeightRequest="50"
+                                                BackgroundColor="White"
+                                                StrokeThickness="0"
+                                                HorizontalOptions="Center"
+                                                VerticalOptions="Center">
+                                            <Border.StrokeShape>
+                                                <RoundRectangle CornerRadius="25"/>
+                                            </Border.StrokeShape>
+                                            <Label FontFamily="FA7Solid"
+                                                   Text="&#xF1F8;"
+                                                   FontSize="24"
+                                                   TextColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}"
+                                                   HorizontalOptions="Center"
+                                                   VerticalOptions="Center"/>
+                                        </Border>
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnDeleteClientTapped"/>
+                                        </Grid.GestureRecognizers>
+                                    </Grid>
+                                </SwipeItemView>
                             </SwipeItems>
                         </SwipeView.RightItems>
 

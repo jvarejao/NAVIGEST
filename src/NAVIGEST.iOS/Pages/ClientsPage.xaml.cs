@@ -149,34 +149,20 @@ namespace NAVIGEST.iOS.Pages
         }
 
         // Swipe Action: Pastas do Cliente (abrir via Qfile)
-        private async void OnPastasClientInvoked(object sender, EventArgs e)
+        private async void OnPastasClientTapped(object sender, EventArgs e)
         {
             try
             {
-                Cliente? cliente = null;
-                
-                // Tentar obter do evento
-                var invokedArgs = e as dynamic;
-                try
-                {
-                    cliente = invokedArgs?.Parameter as Cliente;
-                }
-                catch { }
-                
-                // Fallback: BindingContext do SwipeItem
-                if (cliente == null && sender is SwipeItem swipeItem)
-                {
-                    cliente = swipeItem.BindingContext as Cliente;
-                }
-                
-                if (cliente == null)
+                if (sender is not Grid grid || grid.BindingContext is not Cliente cliente)
                 {
                     await DisplayAlert("Erro", "Não foi possível identificar o cliente.", "OK");
                     return;
                 }
-                
-                System.Diagnostics.Debug.WriteLine($"Cliente: {cliente.CLINOME}, Código: {cliente.CLICODIGO}");
-                    
+
+                // Fechar o swipe
+                var swipeView = FindParentSwipeView(grid);
+                swipeView?.Close();
+
                 if (string.IsNullOrWhiteSpace(cliente.CLICODIGO))
                 {
                     await DisplayAlert("Aviso", "Cliente sem código definido.", "OK");
@@ -191,7 +177,6 @@ namespace NAVIGEST.iOS.Pages
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Erro ao abrir Qfile: {ex.Message}");
                     await DisplayAlert("Qfile", 
                         $"A abrir pasta do cliente {cliente.CLINOME}...\n\nCaminho: CLIENTES/{cliente.CLICODIGO}", 
                         "OK");
@@ -199,40 +184,23 @@ namespace NAVIGEST.iOS.Pages
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Exceção: {ex}");
                 await DisplayAlert("Erro", $"Erro: {ex.Message}", "OK");
                 GlobalErro.TratarErro(ex, mostrarAlerta: false);
             }
         }
 
         // Swipe Action: Editar
-        private void OnEditClientInvoked(object sender, EventArgs e)
+        private void OnEditClientTapped(object sender, EventArgs e)
         {
             try
             {
-                Cliente? cliente = null;
-                
-                // Tentar obter do evento
-                var invokedArgs = e as dynamic;
-                try
-                {
-                    cliente = invokedArgs?.Parameter as Cliente;
-                }
-                catch { }
-                
-                // Fallback: BindingContext do SwipeItem
-                if (cliente == null && sender is SwipeItem swipeItem)
-                {
-                    cliente = swipeItem.BindingContext as Cliente;
-                }
-                
-                if (cliente == null)
-                {
+                if (sender is not Grid grid || grid.BindingContext is not Cliente cliente)
                     return;
-                }
-                
-                System.Diagnostics.Debug.WriteLine($"Editar cliente: {cliente.CLINOME}");
-                    
+
+                // Fechar o swipe
+                var swipeView = FindParentSwipeView(grid);
+                swipeView?.Close();
+
                 if (BindingContext is ClientsPageModel vm)
                 {
                     if (vm.SelectCommand?.CanExecute(cliente) == true)
@@ -244,40 +212,25 @@ namespace NAVIGEST.iOS.Pages
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Exceção: {ex}");
                 GlobalErro.TratarErro(ex, mostrarAlerta: true);
             }
         }
 
         // Swipe Action: Eliminar
-        private async void OnDeleteClientInvoked(object sender, EventArgs e)
+        private async void OnDeleteClientTapped(object sender, EventArgs e)
         {
             try
             {
-                Cliente? cliente = null;
-                
-                // Tentar obter do evento
-                var invokedArgs = e as dynamic;
-                try
-                {
-                    cliente = invokedArgs?.Parameter as Cliente;
-                }
-                catch { }
-                
-                // Fallback: BindingContext do SwipeItem
-                if (cliente == null && sender is SwipeItem swipeItem)
-                {
-                    cliente = swipeItem.BindingContext as Cliente;
-                }
-                
-                if (cliente == null)
+                if (sender is not Grid grid || grid.BindingContext is not Cliente cliente)
                 {
                     await DisplayAlert("Erro", "Não foi possível identificar o cliente.", "OK");
                     return;
                 }
-                
-                System.Diagnostics.Debug.WriteLine($"Eliminar cliente: {cliente.CLINOME}");
-                    
+
+                // Fechar o swipe
+                var swipeView = FindParentSwipeView(grid);
+                swipeView?.Close();
+
                 var confirm = await DisplayAlert(
                     "Eliminar Cliente",
                     $"Tem a certeza que deseja eliminar '{cliente.CLINOME}'?",
@@ -296,9 +249,21 @@ namespace NAVIGEST.iOS.Pages
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Exceção: {ex}");
                 GlobalErro.TratarErro(ex, mostrarAlerta: true);
             }
+        }
+
+        // Helper: Encontrar o SwipeView pai
+        private SwipeView? FindParentSwipeView(Element element)
+        {
+            var parent = element.Parent;
+            while (parent != null)
+            {
+                if (parent is SwipeView swipeView)
+                    return swipeView;
+                parent = parent.Parent;
+            }
+            return null;
         }
 
         // Floating Action Button: Adicionar novo cliente
