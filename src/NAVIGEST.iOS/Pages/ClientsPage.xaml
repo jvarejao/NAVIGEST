@@ -173,8 +173,10 @@
                 StrokeThickness="0"
                 Margin="0,0,16,16"
                 HorizontalOptions="End"
-                VerticalOptions="End"
-                Shadow="{StaticResource AppleShadow}">
+                VerticalOptions="End">
+            <Border.Shadow>
+                <Shadow Brush="Black" Opacity="0.3" Radius="8" Offset="0,4"/>
+            </Border.Shadow>
             <Border.StrokeShape>
                 <RoundRectangle CornerRadius="28"/>
             </Border.StrokeShape>
