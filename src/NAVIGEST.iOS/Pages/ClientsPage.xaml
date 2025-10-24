@@ -41,7 +41,8 @@
                             <SwipeItems Mode="Reveal">
                                 <!-- Botão Pastas (azul) -->
                                 <SwipeItem BackgroundColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"
-                                          Invoked="OnPastasClientInvoked">
+                                          Invoked="OnPastasClientInvoked"
+                                          CommandParameter="{Binding .}">
                                     <SwipeItem.IconImageSource>
                                         <FontImageSource FontFamily="FA7Solid"
                                                        Glyph="&#xF07C;"
@@ -52,7 +53,8 @@
                                 
                                 <!-- Botão Editar (laranja) -->
                                 <SwipeItem BackgroundColor="#FF9500"
-                                          Invoked="OnEditClientInvoked">
+                                          Invoked="OnEditClientInvoked"
+                                          CommandParameter="{Binding .}">
                                     <SwipeItem.IconImageSource>
                                         <FontImageSource FontFamily="FA7Solid"
                                                        Glyph="&#xF044;"
@@ -63,7 +65,8 @@
                                 
                                 <!-- Botão Eliminar (vermelho) -->
                                 <SwipeItem BackgroundColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}"
-                                          Invoked="OnDeleteClientInvoked">
+                                          Invoked="OnDeleteClientInvoked"
+                                          CommandParameter="{Binding .}">
                                     <SwipeItem.IconImageSource>
                                         <FontImageSource FontFamily="FA7Solid"
                                                        Glyph="&#xF1F8;"

@@ -153,41 +153,53 @@ namespace NAVIGEST.iOS.Pages
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"OnPastasClientInvoked - sender type: {sender?.GetType().Name}");
+                Cliente? cliente = null;
                 
-                if (sender is SwipeItem swipeItem && swipeItem.BindingContext is Cliente cliente)
+                // Tentar obter do evento
+                var invokedArgs = e as dynamic;
+                try
                 {
-                    System.Diagnostics.Debug.WriteLine($"Cliente encontrado: {cliente.CLINOME}");
-                    
-                    if (string.IsNullOrWhiteSpace(cliente.CLICODIGO))
-                    {
-                        await DisplayAlert("Aviso", "Cliente sem código definido.", "OK");
-                        return;
-                    }
-
-                    var folderPath = $"qfile://open?path=/mnt/remote/CLIENTES/{cliente.CLICODIGO}";
-                    
-                    try
-                    {
-                        await Launcher.OpenAsync(new Uri(folderPath));
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"Erro ao abrir Qfile: {ex.Message}");
-                        await DisplayAlert("Qfile", 
-                            $"A abrir pasta do cliente {cliente.CLINOME}...\n\nCaminho: CLIENTES/{cliente.CLICODIGO}", 
-                            "OK");
-                    }
+                    cliente = invokedArgs?.Parameter as Cliente;
                 }
-                else
+                catch { }
+                
+                // Fallback: BindingContext do SwipeItem
+                if (cliente == null && sender is SwipeItem swipeItem)
                 {
-                    System.Diagnostics.Debug.WriteLine($"BindingContext: {(sender as SwipeItem)?.BindingContext?.GetType().Name ?? "null"}");
+                    cliente = swipeItem.BindingContext as Cliente;
+                }
+                
+                if (cliente == null)
+                {
                     await DisplayAlert("Erro", "Não foi possível identificar o cliente.", "OK");
+                    return;
+                }
+                
+                System.Diagnostics.Debug.WriteLine($"Cliente: {cliente.CLINOME}, Código: {cliente.CLICODIGO}");
+                    
+                if (string.IsNullOrWhiteSpace(cliente.CLICODIGO))
+                {
+                    await DisplayAlert("Aviso", "Cliente sem código definido.", "OK");
+                    return;
+                }
+
+                var folderPath = $"qfile://open?path=/mnt/remote/CLIENTES/{cliente.CLICODIGO}";
+                
+                try
+                {
+                    await Launcher.OpenAsync(new Uri(folderPath));
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Erro ao abrir Qfile: {ex.Message}");
+                    await DisplayAlert("Qfile", 
+                        $"A abrir pasta do cliente {cliente.CLINOME}...\n\nCaminho: CLIENTES/{cliente.CLICODIGO}", 
+                        "OK");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Exceção em OnPastasClientInvoked: {ex}");
+                System.Diagnostics.Debug.WriteLine($"Exceção: {ex}");
                 await DisplayAlert("Erro", $"Erro: {ex.Message}", "OK");
                 GlobalErro.TratarErro(ex, mostrarAlerta: false);
             }
@@ -198,29 +210,41 @@ namespace NAVIGEST.iOS.Pages
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"OnEditClientInvoked - sender type: {sender?.GetType().Name}");
+                Cliente? cliente = null;
                 
-                if (sender is SwipeItem swipeItem && swipeItem.BindingContext is Cliente cliente)
+                // Tentar obter do evento
+                var invokedArgs = e as dynamic;
+                try
                 {
-                    System.Diagnostics.Debug.WriteLine($"Cliente encontrado: {cliente.CLINOME}");
+                    cliente = invokedArgs?.Parameter as Cliente;
+                }
+                catch { }
+                
+                // Fallback: BindingContext do SwipeItem
+                if (cliente == null && sender is SwipeItem swipeItem)
+                {
+                    cliente = swipeItem.BindingContext as Cliente;
+                }
+                
+                if (cliente == null)
+                {
+                    return;
+                }
+                
+                System.Diagnostics.Debug.WriteLine($"Editar cliente: {cliente.CLINOME}");
                     
-                    if (BindingContext is ClientsPageModel vm)
-                    {
-                        if (vm.SelectCommand?.CanExecute(cliente) == true)
-                        {
-                            vm.SelectCommand.Execute(cliente);
-                        }
-                    }
-                    ShowFormView(isNew: false);
-                }
-                else
+                if (BindingContext is ClientsPageModel vm)
                 {
-                    System.Diagnostics.Debug.WriteLine($"BindingContext: {(sender as SwipeItem)?.BindingContext?.GetType().Name ?? "null"}");
+                    if (vm.SelectCommand?.CanExecute(cliente) == true)
+                    {
+                        vm.SelectCommand.Execute(cliente);
+                    }
                 }
+                ShowFormView(isNew: false);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Exceção em OnEditClientInvoked: {ex}");
+                System.Diagnostics.Debug.WriteLine($"Exceção: {ex}");
                 GlobalErro.TratarErro(ex, mostrarAlerta: true);
             }
         }
@@ -230,37 +254,49 @@ namespace NAVIGEST.iOS.Pages
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"OnDeleteClientInvoked - sender type: {sender?.GetType().Name}");
+                Cliente? cliente = null;
                 
-                if (sender is SwipeItem swipeItem && swipeItem.BindingContext is Cliente cliente)
+                // Tentar obter do evento
+                var invokedArgs = e as dynamic;
+                try
                 {
-                    System.Diagnostics.Debug.WriteLine($"Cliente encontrado: {cliente.CLINOME}");
-                    
-                    var confirm = await DisplayAlert(
-                        "Eliminar Cliente",
-                        $"Tem a certeza que deseja eliminar '{cliente.CLINOME}'?",
-                        "Eliminar",
-                        "Cancelar"
-                    );
-
-                    if (confirm && BindingContext is ClientsPageModel vm)
-                    {
-                        if (vm.DeleteCommand?.CanExecute(cliente) == true)
-                        {
-                            vm.DeleteCommand.Execute(cliente);
-                            await GlobalToast.ShowAsync("Cliente eliminado com sucesso.", ToastTipo.Sucesso, 2000);
-                        }
-                    }
+                    cliente = invokedArgs?.Parameter as Cliente;
                 }
-                else
+                catch { }
+                
+                // Fallback: BindingContext do SwipeItem
+                if (cliente == null && sender is SwipeItem swipeItem)
                 {
-                    System.Diagnostics.Debug.WriteLine($"BindingContext: {(sender as SwipeItem)?.BindingContext?.GetType().Name ?? "null"}");
+                    cliente = swipeItem.BindingContext as Cliente;
+                }
+                
+                if (cliente == null)
+                {
                     await DisplayAlert("Erro", "Não foi possível identificar o cliente.", "OK");
+                    return;
+                }
+                
+                System.Diagnostics.Debug.WriteLine($"Eliminar cliente: {cliente.CLINOME}");
+                    
+                var confirm = await DisplayAlert(
+                    "Eliminar Cliente",
+                    $"Tem a certeza que deseja eliminar '{cliente.CLINOME}'?",
+                    "Eliminar",
+                    "Cancelar"
+                );
+
+                if (confirm && BindingContext is ClientsPageModel vm)
+                {
+                    if (vm.DeleteCommand?.CanExecute(cliente) == true)
+                    {
+                        vm.DeleteCommand.Execute(cliente);
+                        await GlobalToast.ShowAsync("Cliente eliminado com sucesso.", ToastTipo.Sucesso, 2000);
+                    }
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Exceção em OnDeleteClientInvoked: {ex}");
+                System.Diagnostics.Debug.WriteLine($"Exceção: {ex}");
                 GlobalErro.TratarErro(ex, mostrarAlerta: true);
             }
         }
