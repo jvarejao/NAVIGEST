@@ -20,7 +20,9 @@
                            TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
                            BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
                            Text="{Binding Filter}"
-                           SearchButtonPressed="OnSearchBarSearchButtonPressed"/>
+                           SearchButtonPressed="OnSearchBarSearchButtonPressed"
+                           TextChanged="OnSearchBarTextChanged"
+                           CancelButtonColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"/>
             </Grid>
 
             <!-- CollectionView com swipe -->
@@ -29,6 +31,10 @@
                             ItemsSource="{Binding Filtered}"
                             SelectionMode="None"
                             BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}">
+                
+                <CollectionView.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnCollectionViewTapped"/>
+                </CollectionView.GestureRecognizers>
                 
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:Cliente">

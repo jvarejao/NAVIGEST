@@ -22,8 +22,40 @@ namespace NAVIGEST.iOS.Pages
         {
             BindingContext = vm;
             InitializeComponent();
+            
+            // Configurar toolbar do teclado no iOS
+            #if IOS
+            ConfigureKeyboardToolbar();
+            #endif
+            
             Dispatcher.Dispatch(async () => await EnsureLoadedAsync());
         }
+
+        #if IOS
+        private void ConfigureKeyboardToolbar()
+        {
+            // Adicionar botão "Concluído" na toolbar do teclado
+            var toolbar = new StackLayout
+            {
+                Orientation = StackOrientation.Horizontal,
+                HorizontalOptions = LayoutOptions.End,
+                Padding = new Thickness(0, 5, 10, 5),
+                BackgroundColor = Color.FromArgb("#F7F7F7")
+            };
+
+            var doneButton = new Button
+            {
+                Text = "Concluído",
+                FontSize = 16,
+                TextColor = Color.FromArgb("#007AFF"),
+                BackgroundColor = Colors.Transparent,
+                Padding = new Thickness(10, 5)
+            };
+
+            doneButton.Clicked += (s, e) => SearchBar.Unfocus();
+            toolbar.Children.Add(doneButton);
+        }
+        #endif
 
         protected override async void OnAppearing()
         {
@@ -101,6 +133,19 @@ namespace NAVIGEST.iOS.Pages
             {
                 searchBar.Unfocus();
             }
+        }
+
+        // SearchBar: permitir scroll da lista enquanto pesquisa
+        private void OnSearchBarTextChanged(object sender, TextChangedEventArgs e)
+        {
+            // Não fazer nada especial aqui, apenas permitir o binding funcionar
+            // O filtro é feito automaticamente pelo binding {Binding Filter}
+        }
+
+        // CollectionView: fechar teclado quando toca na lista
+        private void OnCollectionViewTapped(object sender, EventArgs e)
+        {
+            SearchBar.Unfocus();
         }
 
         // Swipe Action: Pastas do Cliente (abrir via Qfile)
