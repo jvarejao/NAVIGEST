@@ -176,14 +176,19 @@ public partial class DbConfigPage : ContentPage
 
         _settingsService.Save(_settings);
 
+        ResultContainer.IsVisible = true;
+        LblResultado.Text = "A testar ligação...";
+        
         bool ok = await DatabaseService.TestConnectionAsync();
         if (ok)
         {
+            LblResultado.Text = "✓ Ligação estabelecida com sucesso!";
             await AppShell.DisplayToastAsync("Ligação estabelecida com sucesso!");
             await Shell.Current.GoToAsync("//WelcomePage");
         }
         else
         {
+            LblResultado.Text = "✗ Não foi possível ligar à BD.";
             await AppShell.DisplayToastAsync("Ainda não foi possível ligar à BD.");
         }
     }
@@ -285,6 +290,7 @@ public partial class DbConfigPage : ContentPage
     private async void BtnTestarDb_Clicked(object sender, EventArgs e)
     {
         BtnTestarDb.IsEnabled = false;
+        ResultContainer.IsVisible = true;
         LblResultado.Text = "A testar ligação (multi-endpoints)...";
         try
         {

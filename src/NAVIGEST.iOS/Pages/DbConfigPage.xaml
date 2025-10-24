@@ -207,11 +207,12 @@
                 </VerticalStackLayout>
 
                 <!-- Result Message -->
-                <Border StrokeShape="RoundRectangle 10"
+                <Border x:Name="ResultContainer"
+                        StrokeShape="RoundRectangle 10"
                         BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
                         Stroke="Transparent"
                         Padding="16"
-                        IsVisible="{Binding Source={x:Reference LblResultado}, Path=Text, Converter={StaticResource StringToBoolConverter}}">
+                        IsVisible="False">
                     <Label x:Name="LblResultado"
                            Text=""
                            FontSize="14"
