@@ -151,6 +151,7 @@ namespace NAVIGEST.iOS.Pages
         // Swipe Action: Pastas do Cliente (abrir via Qfile)
         private async void OnPastasClientTapped(object sender, EventArgs e)
         {
+            await DisplayAlert("DEBUG", $"PASTAS CLICADO! Sender: {sender?.GetType().Name}", "OK");
             try
             {
                 System.Diagnostics.Debug.WriteLine($"[PASTAS] Sender type: {sender?.GetType().Name}");
@@ -269,6 +270,7 @@ namespace NAVIGEST.iOS.Pages
         // Swipe Action: Eliminar
         private async void OnDeleteClientTapped(object sender, EventArgs e)
         {
+            await DisplayAlert("DEBUG", $"ELIMINAR CLICADO! Sender: {sender?.GetType().Name}", "OK");
             try
             {
                 System.Diagnostics.Debug.WriteLine($"[ELIMINAR] Sender type: {sender?.GetType().Name}");
