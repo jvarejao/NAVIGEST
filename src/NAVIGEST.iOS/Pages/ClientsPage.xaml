@@ -8,26 +8,28 @@
              BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}"
              Title="Clientes">
 
-    <Grid RowDefinitions="Auto,*">
-        
-        <!-- Header com SearchBar -->
-        <Grid Padding="16,16,16,12" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}">
-            <SearchBar x:Name="SearchBar"
-                       Placeholder="Pesquisar clientes..."
-                       PlaceholderColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
-                       TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
-                       BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
-                       Text="{Binding Filter}"/>
-        </Grid>
-
-        <!-- CollectionView com swipe -->
-        <CollectionView Grid.Row="1"
-                        x:Name="ClientsCollectionView"
-                        ItemsSource="{Binding Filtered}"
-                        SelectionMode="Single"
-                        SelectionChanged="OnClientSelectionChanged"
-                        BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}">
+    <Grid>
+        <!-- VIEW 1: Lista de Clientes -->
+        <Grid x:Name="ListViewContainer" RowDefinitions="Auto,*" IsVisible="True">
             
+            <!-- Header com SearchBar -->
+            <Grid Padding="16,16,16,12" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}">
+                <SearchBar x:Name="SearchBar"
+                           Placeholder="Pesquisar clientes..."
+                           PlaceholderColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
+                           TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
+                           BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
+                           Text="{Binding Filter}"/>
+            </Grid>
+
+            <!-- CollectionView com swipe -->
+            <CollectionView Grid.Row="1"
+                            x:Name="ClientsCollectionView"
+                            ItemsSource="{Binding Filtered}"
+                            SelectionMode="Single"
+                            SelectionChanged="OnClientSelectionChanged"
+                            BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}">
+                
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:Cliente">
                     <SwipeView>
@@ -216,7 +218,7 @@
             </Border.GestureRecognizers>
         </Border>
 
-        <!-- Busy Indicator -->
+        <!-- Busy Indicator (lista) -->
         <Grid Grid.RowSpan="2"
               IsVisible="{Binding IsBusy}" 
               BackgroundColor="#66000000">
@@ -226,5 +228,198 @@
                              HeightRequest="40"/>
         </Grid>
     </Grid>
-</ContentPage>
 
+    <!-- VIEW 2: Formulário de Edição/Criação -->
+    <Grid x:Name="FormViewContainer" IsVisible="False" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}">
+        <ScrollView>
+            <VerticalStackLayout Spacing="20" Padding="16">
+                
+                <!-- Header -->
+                <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,8,0,0">
+                    <Button Grid.Column="0" 
+                            Text="Cancelar"
+                            Style="{StaticResource AppleTextButton}"
+                            Clicked="OnCancelEditTapped"/>
+                    <Label Grid.Column="1"
+                           x:Name="FormTitle"
+                           Text="Novo Cliente"
+                           FontSize="17"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"
+                           TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+                </Grid>
+
+                <!-- Formulário iOS Style -->
+                <Border StrokeShape="RoundRectangle 10"
+                        BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
+                        Stroke="Transparent"
+                        Padding="0">
+                    <VerticalStackLayout Spacing="0">
+                        
+                        <!-- Código (readonly) -->
+                        <Grid Padding="16,12" ColumnDefinitions="100,*">
+                            <Label Text="Código"
+                                   TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
+                                   VerticalOptions="Center"/>
+                            <Entry Grid.Column="1"
+                                   x:Name="CodigoEntry"
+                                   Text="{Binding Editing.CLICODIGO}"
+                                   IsReadOnly="True"
+                                   BackgroundColor="Transparent"
+                                   TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
+                                   HorizontalTextAlignment="End"/>
+                        </Grid>
+                        <BoxView HeightRequest="0.5" 
+                                 Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}"
+                                 Margin="16,0,0,0"/>
+                        
+                        <!-- Nome -->
+                        <Grid Padding="16,12" ColumnDefinitions="100,*">
+                            <Label Text="Nome"
+                                   TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
+                                   VerticalOptions="Center"/>
+                            <Entry Grid.Column="1"
+                                   x:Name="NomeEntry"
+                                   Text="{Binding Editing.CLINOME}"
+                                   BackgroundColor="Transparent"
+                                   HorizontalTextAlignment="End"
+                                   Placeholder="Nome completo"/>
+                        </Grid>
+                        <BoxView HeightRequest="0.5" 
+                                 Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}"
+                                 Margin="16,0,0,0"/>
+                        
+                        <!-- Telefone -->
+                        <Grid Padding="16,12" ColumnDefinitions="100,*">
+                            <Label Text="Telefone"
+                                   TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
+                                   VerticalOptions="Center"/>
+                            <Entry Grid.Column="1"
+                                   x:Name="TelefoneEntry"
+                                   Text="{Binding Editing.TELEFONE}"
+                                   Keyboard="Telephone"
+                                   BackgroundColor="Transparent"
+                                   HorizontalTextAlignment="End"
+                                   Placeholder="916 000 000"/>
+                        </Grid>
+                        <BoxView HeightRequest="0.5" 
+                                 Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}"
+                                 Margin="16,0,0,0"/>
+                        
+                        <!-- Email -->
+                        <Grid Padding="16,12" ColumnDefinitions="100,*">
+                            <Label Text="Email"
+                                   TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
+                                   VerticalOptions="Center"/>
+                            <Entry Grid.Column="1"
+                                   x:Name="EmailEntry"
+                                   Text="{Binding Editing.EMAIL}"
+                                   Keyboard="Email"
+                                   BackgroundColor="Transparent"
+                                   HorizontalTextAlignment="End"
+                                   Placeholder="email@exemplo.com"/>
+                        </Grid>
+                        <BoxView HeightRequest="0.5" 
+                                 Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}"
+                                 Margin="16,0,0,0"/>
+                        
+                        <!-- Vendedor -->
+                        <Grid Padding="16,12" ColumnDefinitions="100,*">
+                            <Label Text="Vendedor"
+                                   TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
+                                   VerticalOptions="Center"/>
+                            <Entry Grid.Column="1"
+                                   x:Name="VendedorEntry"
+                                   Text="{Binding Editing.VENDEDOR}"
+                                   BackgroundColor="Transparent"
+                                   HorizontalTextAlignment="End"
+                                   Placeholder="Nome vendedor"/>
+                        </Grid>
+                        <BoxView HeightRequest="0.5" 
+                                 Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}"
+                                 Margin="16,0,0,0"/>
+                        
+                        <!-- Valor Crédito -->
+                        <Grid Padding="16,12" ColumnDefinitions="100,*">
+                            <Label Text="Valor Crédito"
+                                   TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
+                                   VerticalOptions="Center"/>
+                            <Entry Grid.Column="1"
+                                   x:Name="ValorCreditoEntry"
+                                   Text="{Binding Editing.VALORCREDITO}"
+                                   Keyboard="Numeric"
+                                   BackgroundColor="Transparent"
+                                   HorizontalTextAlignment="End"
+                                   Placeholder="0,00"/>
+                        </Grid>
+                        
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Switches -->
+                <Border StrokeShape="RoundRectangle 10"
+                        BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
+                        Stroke="Transparent"
+                        Padding="0">
+                    <VerticalStackLayout Spacing="0">
+                        
+                        <Grid Padding="16,12" ColumnDefinitions="*,Auto">
+                            <Label Text="Cliente Externo"
+                                   TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
+                                   VerticalOptions="Center"/>
+                            <Switch Grid.Column="1"
+                                    x:Name="ExternoSwitch"
+                                    IsToggled="{Binding Editing.EXTERNO}"/>
+                        </Grid>
+                        <BoxView HeightRequest="0.5" 
+                                 Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}"
+                                 Margin="16,0,0,0"/>
+                        
+                        <Grid Padding="16,12" ColumnDefinitions="*,Auto">
+                            <Label Text="Anulado"
+                                   TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
+                                   VerticalOptions="Center"/>
+                            <Switch Grid.Column="1"
+                                    x:Name="AnuladoSwitch"
+                                    IsToggled="{Binding Editing.ANULADO}"/>
+                        </Grid>
+                        
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Botões de Ação -->
+                <VerticalStackLayout Spacing="12">
+                    <Button x:Name="SaveButton"
+                            Text="Guardar"
+                            Style="{StaticResource AppleFilledButton}"
+                            Clicked="OnSaveClientTapped">
+                        <Button.ImageSource>
+                            <FontImageSource Glyph="&#xF0C7;" 
+                                           FontFamily="FA7Solid" 
+                                           Size="16"
+                                           Color="White"/>
+                        </Button.ImageSource>
+                    </Button>
+                    
+                    <Button x:Name="DeleteFormButton"
+                            Text="Eliminar Cliente"
+                            Style="{StaticResource AppleTintedButton}"
+                            TextColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}"
+                            IsVisible="False"
+                            Clicked="OnDeleteFromFormTapped">
+                        <Button.ImageSource>
+                            <FontImageSource Glyph="&#xF1F8;" 
+                                           FontFamily="FA7Solid" 
+                                           Size="16"
+                                           Color="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}"/>
+                        </Button.ImageSource>
+                    </Button>
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+
+    </Grid>
+</ContentPage>
