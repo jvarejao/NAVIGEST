@@ -142,8 +142,8 @@ namespace NAVIGEST.iOS.Pages
             // O filtro é feito automaticamente pelo binding {Binding Filter}
         }
 
-        // CollectionView: fechar teclado quando toca na lista
-        private void OnCollectionViewTapped(object sender, EventArgs e)
+        // CollectionView: fechar teclado ao fazer scroll
+        private void OnCollectionViewScrolled(object sender, ItemsViewScrolledEventArgs e)
         {
             SearchBar.Unfocus();
         }
@@ -153,8 +153,12 @@ namespace NAVIGEST.iOS.Pages
         {
             try
             {
+                System.Diagnostics.Debug.WriteLine($"OnPastasClientInvoked - sender type: {sender?.GetType().Name}");
+                
                 if (sender is SwipeItem swipeItem && swipeItem.BindingContext is Cliente cliente)
                 {
+                    System.Diagnostics.Debug.WriteLine($"Cliente encontrado: {cliente.CLINOME}");
+                    
                     if (string.IsNullOrWhiteSpace(cliente.CLICODIGO))
                     {
                         await DisplayAlert("Aviso", "Cliente sem código definido.", "OK");
@@ -167,17 +171,24 @@ namespace NAVIGEST.iOS.Pages
                     {
                         await Launcher.OpenAsync(new Uri(folderPath));
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        System.Diagnostics.Debug.WriteLine($"Erro ao abrir Qfile: {ex.Message}");
                         await DisplayAlert("Qfile", 
                             $"A abrir pasta do cliente {cliente.CLINOME}...\n\nCaminho: CLIENTES/{cliente.CLICODIGO}", 
                             "OK");
                     }
                 }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"BindingContext: {(sender as SwipeItem)?.BindingContext?.GetType().Name ?? "null"}");
+                    await DisplayAlert("Erro", "Não foi possível identificar o cliente.", "OK");
+                }
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Erro", $"Não foi possível abrir a pasta: {ex.Message}", "OK");
+                System.Diagnostics.Debug.WriteLine($"Exceção em OnPastasClientInvoked: {ex}");
+                await DisplayAlert("Erro", $"Erro: {ex.Message}", "OK");
                 GlobalErro.TratarErro(ex, mostrarAlerta: false);
             }
         }
@@ -187,8 +198,12 @@ namespace NAVIGEST.iOS.Pages
         {
             try
             {
+                System.Diagnostics.Debug.WriteLine($"OnEditClientInvoked - sender type: {sender?.GetType().Name}");
+                
                 if (sender is SwipeItem swipeItem && swipeItem.BindingContext is Cliente cliente)
                 {
+                    System.Diagnostics.Debug.WriteLine($"Cliente encontrado: {cliente.CLINOME}");
+                    
                     if (BindingContext is ClientsPageModel vm)
                     {
                         if (vm.SelectCommand?.CanExecute(cliente) == true)
@@ -198,9 +213,14 @@ namespace NAVIGEST.iOS.Pages
                     }
                     ShowFormView(isNew: false);
                 }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"BindingContext: {(sender as SwipeItem)?.BindingContext?.GetType().Name ?? "null"}");
+                }
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"Exceção em OnEditClientInvoked: {ex}");
                 GlobalErro.TratarErro(ex, mostrarAlerta: true);
             }
         }
@@ -210,8 +230,12 @@ namespace NAVIGEST.iOS.Pages
         {
             try
             {
+                System.Diagnostics.Debug.WriteLine($"OnDeleteClientInvoked - sender type: {sender?.GetType().Name}");
+                
                 if (sender is SwipeItem swipeItem && swipeItem.BindingContext is Cliente cliente)
                 {
+                    System.Diagnostics.Debug.WriteLine($"Cliente encontrado: {cliente.CLINOME}");
+                    
                     var confirm = await DisplayAlert(
                         "Eliminar Cliente",
                         $"Tem a certeza que deseja eliminar '{cliente.CLINOME}'?",
@@ -228,9 +252,15 @@ namespace NAVIGEST.iOS.Pages
                         }
                     }
                 }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"BindingContext: {(sender as SwipeItem)?.BindingContext?.GetType().Name ?? "null"}");
+                    await DisplayAlert("Erro", "Não foi possível identificar o cliente.", "OK");
+                }
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"Exceção em OnDeleteClientInvoked: {ex}");
                 GlobalErro.TratarErro(ex, mostrarAlerta: true);
             }
         }

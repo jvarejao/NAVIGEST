@@ -30,11 +30,8 @@
                             x:Name="ClientsCollectionView"
                             ItemsSource="{Binding Filtered}"
                             SelectionMode="None"
-                            BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}">
-                
-                <CollectionView.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="OnCollectionViewTapped"/>
-                </CollectionView.GestureRecognizers>
+                            BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}"
+                            Scrolled="OnCollectionViewScrolled">
                 
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:Cliente">
@@ -43,22 +40,37 @@
                         <SwipeView.RightItems>
                             <SwipeItems Mode="Reveal">
                                 <!-- Botão Pastas (azul) -->
-                                <SwipeItem Text="Pastas"
-                                          BackgroundColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"
-                                          IconImageSource="folder.png"
-                                          Invoked="OnPastasClientInvoked"/>
+                                <SwipeItem BackgroundColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"
+                                          Invoked="OnPastasClientInvoked">
+                                    <SwipeItem.IconImageSource>
+                                        <FontImageSource FontFamily="FA7Solid"
+                                                       Glyph="&#xF07C;"
+                                                       Size="24"
+                                                       Color="White"/>
+                                    </SwipeItem.IconImageSource>
+                                </SwipeItem>
                                 
                                 <!-- Botão Editar (laranja) -->
-                                <SwipeItem Text="Editar"
-                                          BackgroundColor="#FF9500"
-                                          IconImageSource="edit.png"
-                                          Invoked="OnEditClientInvoked"/>
+                                <SwipeItem BackgroundColor="#FF9500"
+                                          Invoked="OnEditClientInvoked">
+                                    <SwipeItem.IconImageSource>
+                                        <FontImageSource FontFamily="FA7Solid"
+                                                       Glyph="&#xF044;"
+                                                       Size="24"
+                                                       Color="White"/>
+                                    </SwipeItem.IconImageSource>
+                                </SwipeItem>
                                 
                                 <!-- Botão Eliminar (vermelho) -->
-                                <SwipeItem Text="Eliminar"
-                                          BackgroundColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}"
-                                          IconImageSource="delete.png"
-                                          Invoked="OnDeleteClientInvoked"/>
+                                <SwipeItem BackgroundColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}"
+                                          Invoked="OnDeleteClientInvoked">
+                                    <SwipeItem.IconImageSource>
+                                        <FontImageSource FontFamily="FA7Solid"
+                                                       Glyph="&#xF1F8;"
+                                                       Size="24"
+                                                       Color="White"/>
+                                    </SwipeItem.IconImageSource>
+                                </SwipeItem>
                             </SwipeItems>
                         </SwipeView.RightItems>
 
@@ -311,7 +323,7 @@
                                    VerticalOptions="Center"/>
                             <Switch Grid.Column="1"
                                     x:Name="ExternoSwitch"
-                                    IsToggled="{Binding Editing.EXTERNO}"/>
+                                    IsToggled="{Binding Editing.EXTERNO, Mode=TwoWay}"/>
                         </Grid>
                         <BoxView HeightRequest="0.5" 
                                  Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}"
@@ -323,7 +335,7 @@
                                    VerticalOptions="Center"/>
                             <Switch Grid.Column="1"
                                     x:Name="AnuladoSwitch"
-                                    IsToggled="{Binding Editing.ANULADO}"/>
+                                    IsToggled="{Binding Editing.ANULADO, Mode=TwoWay}"/>
                         </Grid>
                         
                     </VerticalStackLayout>
