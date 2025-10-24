@@ -153,15 +153,39 @@ namespace NAVIGEST.iOS.Pages
         {
             try
             {
-                if (sender is not Grid grid || grid.BindingContext is not Cliente cliente)
+                System.Diagnostics.Debug.WriteLine($"[PASTAS] Sender type: {sender?.GetType().Name}");
+                
+                // O sender pode ser Label, BoxView, etc. Subir até encontrar o Grid com BindingContext
+                Cliente? cliente = null;
+                if (sender is Element element)
                 {
+                    var parent = element.Parent;
+                    while (parent != null && cliente == null)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[PASTAS] Checking parent: {parent.GetType().Name}");
+                        if (parent.BindingContext is Cliente c)
+                        {
+                            cliente = c;
+                            System.Diagnostics.Debug.WriteLine($"[PASTAS] Found cliente: {c.CLINOME}");
+                            break;
+                        }
+                        parent = parent.Parent;
+                    }
+                }
+                
+                if (cliente == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("[PASTAS] Cliente not found!");
                     await DisplayAlert("Erro", "Não foi possível identificar o cliente.", "OK");
                     return;
                 }
 
                 // Fechar o swipe
-                var swipeView = FindParentSwipeView(grid);
-                swipeView?.Close();
+                if (sender is Element el)
+                {
+                    var swipeView = FindParentSwipeView(el);
+                    swipeView?.Close();
+                }
 
                 if (string.IsNullOrWhiteSpace(cliente.CLICODIGO))
                 {
@@ -175,7 +199,7 @@ namespace NAVIGEST.iOS.Pages
                 {
                     await Launcher.OpenAsync(new Uri(folderPath));
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     await DisplayAlert("Qfile", 
                         $"A abrir pasta do cliente {cliente.CLINOME}...\n\nCaminho: CLIENTES/{cliente.CLICODIGO}", 
@@ -194,12 +218,38 @@ namespace NAVIGEST.iOS.Pages
         {
             try
             {
-                if (sender is not Grid grid || grid.BindingContext is not Cliente cliente)
+                System.Diagnostics.Debug.WriteLine($"[EDITAR] Sender type: {sender?.GetType().Name}");
+                
+                // O sender pode ser Label, BoxView, etc. Subir até encontrar o Grid com BindingContext
+                Cliente? cliente = null;
+                if (sender is Element element)
+                {
+                    var parent = element.Parent;
+                    while (parent != null && cliente == null)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[EDITAR] Checking parent: {parent.GetType().Name}");
+                        if (parent.BindingContext is Cliente c)
+                        {
+                            cliente = c;
+                            System.Diagnostics.Debug.WriteLine($"[EDITAR] Found cliente: {c.CLINOME}");
+                            break;
+                        }
+                        parent = parent.Parent;
+                    }
+                }
+                
+                if (cliente == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("[EDITAR] Cliente not found!");
                     return;
+                }
 
                 // Fechar o swipe
-                var swipeView = FindParentSwipeView(grid);
-                swipeView?.Close();
+                if (sender is Element el)
+                {
+                    var swipeView = FindParentSwipeView(el);
+                    swipeView?.Close();
+                }
 
                 if (BindingContext is ClientsPageModel vm)
                 {
@@ -221,15 +271,39 @@ namespace NAVIGEST.iOS.Pages
         {
             try
             {
-                if (sender is not Grid grid || grid.BindingContext is not Cliente cliente)
+                System.Diagnostics.Debug.WriteLine($"[ELIMINAR] Sender type: {sender?.GetType().Name}");
+                
+                // O sender pode ser Label, BoxView, etc. Subir até encontrar o Grid com BindingContext
+                Cliente? cliente = null;
+                if (sender is Element element)
                 {
+                    var parent = element.Parent;
+                    while (parent != null && cliente == null)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[ELIMINAR] Checking parent: {parent.GetType().Name}");
+                        if (parent.BindingContext is Cliente c)
+                        {
+                            cliente = c;
+                            System.Diagnostics.Debug.WriteLine($"[ELIMINAR] Found cliente: {c.CLINOME}");
+                            break;
+                        }
+                        parent = parent.Parent;
+                    }
+                }
+                
+                if (cliente == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("[ELIMINAR] Cliente not found!");
                     await DisplayAlert("Erro", "Não foi possível identificar o cliente.", "OK");
                     return;
                 }
 
                 // Fechar o swipe
-                var swipeView = FindParentSwipeView(grid);
-                swipeView?.Close();
+                if (sender is Element el)
+                {
+                    var swipeView = FindParentSwipeView(el);
+                    swipeView?.Close();
+                }
 
                 var confirm = await DisplayAlert(
                     "Eliminar Cliente",

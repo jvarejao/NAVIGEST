@@ -43,7 +43,8 @@
                                 <SwipeItemView>
                                     <Grid BackgroundColor="Transparent" 
                                           WidthRequest="80"
-                                          Padding="15,12">
+                                          Padding="15,12"
+                                          BindingContext="{Binding .}">
                                         <Grid WidthRequest="56"
                                               HeightRequest="56"
                                               HorizontalOptions="Center"
@@ -69,7 +70,8 @@
                                 <SwipeItemView>
                                     <Grid BackgroundColor="Transparent" 
                                           WidthRequest="80"
-                                          Padding="15,12">
+                                          Padding="15,12"
+                                          BindingContext="{Binding .}">
                                         <Grid WidthRequest="56"
                                               HeightRequest="56"
                                               HorizontalOptions="Center"
@@ -95,7 +97,8 @@
                                 <SwipeItemView>
                                     <Grid BackgroundColor="Transparent" 
                                           WidthRequest="80"
-                                          Padding="15,12">
+                                          Padding="15,12"
+                                          BindingContext="{Binding .}">
                                         <Grid WidthRequest="56"
                                               HeightRequest="56"
                                               HorizontalOptions="Center"
