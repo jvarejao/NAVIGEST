@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="AppLoginMaui.Pages.SplashIntroPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    BackgroundColor="Black"
+    Shell.NavBarIsVisible="False">
+
+    <!-- Preenche o ecrã; o HTML dentro centra o GIF com object-fit: contain -->
+    <Grid BackgroundColor="Black">
+        <!-- Fallback rápido: mostrar primeiro frame do GIF como imagem nativa (aparece mais depressa no iOS) -->
+        <Image x:Name="FallbackImage"
+               Source="startup.gif"
+               Aspect="AspectFit"
+               HorizontalOptions="Fill"
+               VerticalOptions="Fill"
+               IsVisible="False" />
+
+        <WebView x:Name="GifView"
+                 BackgroundColor="Black"
+                 HorizontalOptions="Fill"
+                 VerticalOptions="Fill"
+                 Opacity="0" />
+    </Grid>
+</ContentPage>

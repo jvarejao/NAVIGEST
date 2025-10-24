@@ -1,0 +1,227 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary
+    
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!-- Fallbacks para inputs (evitam StaticResource not found) -->
+    <Color x:Key="EntryBackgroundColor">#FFFFFF</Color>
+    <Color x:Key="EntryTextColor">#111827</Color>
+    <!-- quase preto -->
+    <Color x:Key="EntryPlaceholderColor">#6B7280</Color>
+    <!-- cinza 500 -->
+    <Color x:Key="EntryBorderColor">#D1D5DB</Color>
+    <!-- cinza 300 -->
+    <Color x:Key="EntryBorderColorFocused">#2563EB</Color>
+    <!-- azul 600 -->
+    <Color x:Key="EntryBorderColorError">#DC2626</Color>
+    <!-- vermelho 600 -->
+
+    <!-- ========================= -->
+    <!--      TOKENS DE DESIGN     -->
+    <!-- ========================= -->
+    <x:String x:Key="Font.Regular">Inter</x:String>
+    <x:String x:Key="Font.SemiBold">InterSemiBold</x:String>
+
+    <Color x:Key="Color.Bg">#F5F6F8</Color>
+    <Color x:Key="Color.Surface">#FFFFFF</Color>
+    <Color x:Key="Color.Text">#111827</Color>
+    <Color x:Key="Color.Muted">#6B7280</Color>
+
+    <Color x:Key="Color.Primary">#2563EB</Color>
+    <Color x:Key="Color.Success">#16A34A</Color>
+    <Color x:Key="Color.Warning">#D97706</Color>
+    <Color x:Key="Color.Danger">#DC2626</Color>
+    <Color x:Key="Color.Neutral">#374151</Color>
+
+    <Color x:Key="Field.Bg">#F9FAFB</Color>
+    <Color x:Key="Field.Placeholder">#6B7280</Color>
+    <Color x:Key="Field.Border">#D1D5DB</Color>
+
+    <Thickness x:Key="Pad.Input">12,10</Thickness>
+    <x:Double x:Key="Radius.M">10</x:Double>
+    <x:Double x:Key="Radius.L">12</x:Double>
+    <x:Double x:Key="Btn.Height">40</x:Double>
+    <x:Double x:Key="Input.Height">44</x:Double>
+
+    <!-- ========================= -->
+    <!--   ESTILOS: CAMPOS TEXTO   -->
+    <!-- ========================= -->
+
+    <!-- Entry (implícito para TODA a app) -->
+    <Style TargetType="Entry">
+        <Setter Property="FontFamily" Value="{StaticResource Font.Regular}" />
+        <Setter Property="FontSize"   Value="14" />
+        <Setter Property="TextColor"  Value="{StaticResource Color.Text}" />
+        <Setter Property="PlaceholderColor" Value="{StaticResource Field.Placeholder}" />
+        <Setter Property="BackgroundColor"  Value="{StaticResource Field.Bg}" />
+        <Setter Property="HeightRequest"    Value="{StaticResource Input.Height}" />
+        <Setter Property="Margin"           Value="0,6" />
+    </Style>
+
+    <!-- Editor -->
+    <Style TargetType="Editor">
+        <Setter Property="FontFamily" Value="{StaticResource Font.Regular}" />
+        <Setter Property="FontSize"   Value="14" />
+        <Setter Property="TextColor"  Value="{StaticResource Color.Text}" />
+        <Setter Property="PlaceholderColor" Value="{StaticResource Field.Placeholder}" />
+        <Setter Property="BackgroundColor"  Value="{StaticResource Field.Bg}" />
+        <Setter Property="Margin" Value="0,6" />
+    </Style>
+
+    <!-- Picker -->
+    <Style TargetType="Picker">
+        <Setter Property="FontFamily" Value="{StaticResource Font.Regular}" />
+        <Setter Property="FontSize"   Value="14" />
+        <Setter Property="TextColor"  Value="{StaticResource Color.Text}" />
+        <Setter Property="BackgroundColor" Value="{StaticResource Field.Bg}" />
+        <Setter Property="HeightRequest" Value="{StaticResource Input.Height}" />
+        <Setter Property="Margin" Value="0,6" />
+    </Style>
+
+    <!-- DatePicker -->
+    <Style TargetType="DatePicker">
+        <Setter Property="FontFamily" Value="{StaticResource Font.Regular}" />
+        <Setter Property="FontSize"   Value="14" />
+        <Setter Property="TextColor"  Value="{StaticResource Color.Text}" />
+        <Setter Property="BackgroundColor" Value="{StaticResource Field.Bg}" />
+        <Setter Property="HeightRequest" Value="{StaticResource Input.Height}" />
+        <Setter Property="Margin" Value="0,6" />
+    </Style>
+
+    <!-- TimePicker -->
+    <Style TargetType="TimePicker">
+        <Setter Property="FontFamily" Value="{StaticResource Font.Regular}" />
+        <Setter Property="FontSize"   Value="14" />
+        <Setter Property="TextColor"  Value="{StaticResource Color.Text}" />
+        <Setter Property="BackgroundColor" Value="{StaticResource Field.Bg}" />
+        <Setter Property="HeightRequest" Value="{StaticResource Input.Height}" />
+        <Setter Property="Margin" Value="0,6" />
+    </Style>
+
+    <!-- Bordas para campos de texto -->
+    <Style x:Key="FieldBorder" TargetType="Border">
+        <Setter Property="Stroke" Value="{StaticResource EntryBorderColor}" />
+        <Setter Property="StrokeThickness" Value="1.5" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 10" />
+        <Setter Property="Background" Value="{StaticResource EntryBackgroundColor}" />
+        <Setter Property="Padding" Value="{StaticResource Pad.Input}" />
+        <Setter Property="Margin" Value="0,6" />
+    </Style>
+
+    <!-- ========================= -->
+    <!--      ESTILOS: BOTÕES      -->
+    <!-- ========================= -->
+
+    <!-- Variantes por classe (usar StyleClass no botão) -->
+    <Style TargetType="Button" Class="Salvar">
+        <Setter Property="BackgroundColor" Value="{StaticResource Color.Success}" />
+        <Setter Property="ImageSource">
+            <Setter.Value>
+                <FontImageSource Glyph="&#xF0C7;" FontFamily="FA7Solid" Color="White" Size="18"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="Button" Class="Editar">
+        <Setter Property="BackgroundColor" Value="#0EA5E9" />
+        <Setter Property="ImageSource">
+            <Setter.Value>
+                <FontImageSource Glyph="&#xF044;" FontFamily="FA7Solid" Color="White" Size="18"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="Button" Class="Atualizar">
+        <Setter Property="BackgroundColor" Value="#9333EA" />
+        <Setter Property="ImageSource">
+            <Setter.Value>
+                <FontImageSource Glyph="&#xF021;" FontFamily="FA7Solid" Color="White" Size="18"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="Button" Class="Eliminar">
+        <Setter Property="BackgroundColor" Value="{StaticResource Color.Danger}" />
+        <Setter Property="ImageSource">
+            <Setter.Value>
+                <FontImageSource Glyph="&#xF2ED;" FontFamily="FA7Solid" Color="White" Size="18"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="Button" Class="Cancelar">
+        <Setter Property="BackgroundColor" Value="{StaticResource Color.Neutral}" />
+        <Setter Property="ImageSource">
+            <Setter.Value>
+                <FontImageSource Glyph="&#xF00D;" FontFamily="FA7Solid" Color="White" Size="18"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="Button" Class="Novo">
+        <Setter Property="BackgroundColor" Value="{StaticResource Color.Primary}" />
+        <Setter Property="ImageSource">
+            <Setter.Value>
+                <FontImageSource Glyph="&#xF067;" FontFamily="FA7Solid" Color="White" Size="18"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Outlined -->
+    <Style TargetType="Button" Class="Outlined">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="{StaticResource Color.Primary}" />
+        <Setter Property="BorderWidth" Value="1" />
+        <Setter Property="BorderColor" Value="{StaticResource Color.Primary}" />
+        <Setter Property="Shadow">
+            <Setter.Value>
+                <Shadow Brush="Transparent"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Estilos residuais / placeholders -->
+    <Style x:Key="EntryPadrao" TargetType="Entry" />
+    <Style x:Key="EntryErro" TargetType="Entry" BasedOn="{StaticResource EntryPadrao}"/>
+    <Style x:Key="EntryFoco" TargetType="Entry" BasedOn="{StaticResource EntryPadrao}"/>
+
+    <Style x:Key="LabelErro" TargetType="Label">
+        <Setter Property="TextColor" Value="{DynamicResource EntryErrorBorderColor}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Margin" Value="4,0,0,8" />
+        <Setter Property="FontAttributes" Value="Bold" />
+    </Style>
+
+    <Color x:Key="EntryErrorBorderColor">#FF6F00</Color>
+    <Color x:Key="EntryFocusBorderColor">#39FF14</Color>
+
+    <!-- ========================= -->
+    <!--   ESTILOS: BOTOES REDONDOS -->
+    <!-- ========================= -->
+
+    <Style x:Key="SidebarRoundButton" TargetType="Button">
+        <Setter Property="HeightRequest" Value="44"/>
+        <Setter Property="WidthRequest" Value="44"/>
+        <Setter Property="CornerRadius" Value="22"/>
+        <Setter Property="BackgroundColor" Value="{DynamicResource Color.Surface}"/>
+        <Setter Property="BorderColor" Value="{DynamicResource Color.Primary}"/>
+        <Setter Property="BorderWidth" Value="1"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Shadow">
+            <Setter.Value>
+                <Shadow Brush="#20000000" Offset="0,2" Radius="4" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Card Border para RegisterPage e ClientsPage -->
+    <Style x:Key="CardBorder" TargetType="Border">
+        <Setter Property="Stroke" Value="{StaticResource EntryBorderColor}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+        <Setter Property="Background" Value="{StaticResource Color.Surface}" />
+        <Setter Property="Padding" Value="16" />
+        <Setter Property="Margin" Value="0,8" />
+    </Style>
+</ResourceDictionary>

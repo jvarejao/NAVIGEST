@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="NAVIGEST.iOS.Pages.DbConfigPage"
+             Title="Configuração da Ligação"
+             Shell.FlyoutBehavior="Disabled"
+             Shell.NavBarIsVisible="False">
+
+    <Grid Padding="24">
+        <ScrollView>
+            <Grid HorizontalOptions="Center" VerticalOptions="Center">
+                <Grid.MaximumWidthRequest>
+                    <OnIdiom x:TypeArguments="x:Double" Phone="460" Tablet="560" Desktop="520"/>
+                </Grid.MaximumWidthRequest>
+
+                <!-- Cartão sem sombra -->
+                <Border x:Name="Card" Padding="20" StrokeThickness="0" BackgroundColor="Transparent">
+                    <VerticalStackLayout Spacing="14">
+
+                        <!-- Cabeçalho simples -->
+                        <HorizontalStackLayout Spacing="8" HorizontalOptions="Center">
+                            <Label Text="&#xF233;" FontFamily="FA7Solid" FontSize="28"
+                     TextColor="{StaticResource Color.Primary}" />
+                            <Label Text="Configuração da Base de Dados"
+                     FontSize="20" FontAttributes="Bold" />
+                        </HorizontalStackLayout>
+
+                        <!-- Servidor -->
+                        <VerticalStackLayout>
+                            <Label Text="Servidor" FontAttributes="Bold"/>
+                            <Border x:Name="ServerBorder" Style="{StaticResource FieldBorder}">
+                                <Entry x:Name="ServerEntry"
+                       Placeholder="ex.: 100.81.152.95"
+                       Text="{Binding Server}"
+                       Completed="OnEntryCompleted"
+                       Focused="OnEntryFocused"
+                       Unfocused="OnEntryUnfocused"
+                       TextChanged="OnEntryTextChanged" />
+                            </Border>
+                            <Label x:Name="ServerError" Text="Servidor obrigatório." TextColor="#FFA500" IsVisible="False" FontSize="12"/>
+                        </VerticalStackLayout>
+
+                        <!-- Porta -->
+                        <VerticalStackLayout>
+                            <Label Text="Porta" FontAttributes="Bold"/>
+                            <Border x:Name="PortBorder" Style="{StaticResource FieldBorder}">
+                                <Entry x:Name="PortEntry"
+                       Placeholder="3307"
+                       Keyboard="Numeric"
+                       Text="{Binding Port}"
+                       Completed="OnEntryCompleted"
+                       Focused="OnEntryFocused"
+                       Unfocused="OnEntryUnfocused"
+                       TextChanged="OnEntryTextChanged" />
+                            </Border>
+                            <Label x:Name="PortError" Text="Porta inválida (1–65535)." TextColor="#FFA500" IsVisible="False" FontSize="12"/>
+                        </VerticalStackLayout>
+
+                        <!-- Base de Dados -->
+                        <VerticalStackLayout>
+                            <Label Text="Base de Dados" FontAttributes="Bold"/>
+                            <Border x:Name="DbBorder" Style="{StaticResource FieldBorder}">
+                                <Entry x:Name="DbEntry"
+                       Placeholder="YAHPUBLICIDADE2025"
+                       Text="{Binding Database}"
+                       Completed="OnEntryCompleted"
+                       Focused="OnEntryFocused"
+                       Unfocused="OnEntryUnfocused"
+                       TextChanged="OnEntryTextChanged" />
+                            </Border>
+                            <Label x:Name="DbError" Text="Nome da base de dados obrigatório." TextColor="#FFA500" IsVisible="False" FontSize="12"/>
+                        </VerticalStackLayout>
+
+                        <!-- Utilizador -->
+                        <VerticalStackLayout>
+                            <Label Text="Utilizador" FontAttributes="Bold"/>
+                            <Border x:Name="UserBorder" Style="{StaticResource FieldBorder}">
+                                <Entry x:Name="UserEntry"
+                       Placeholder="YAH"
+                       Text="{Binding UserId}"
+                       Completed="OnEntryCompleted"
+                       Focused="OnEntryFocused"
+                       Unfocused="OnEntryUnfocused"
+                       TextChanged="OnEntryTextChanged" />
+                            </Border>
+                            <Label x:Name="UserError" Text="Utilizador obrigatório." TextColor="#FFA500" IsVisible="False" FontSize="12"/>
+                        </VerticalStackLayout>
+
+                        <!-- Password -->
+                        <VerticalStackLayout>
+                            <Label Text="Password" FontAttributes="Bold"/>
+                            <Border x:Name="PasswordBorder" Style="{StaticResource FieldBorder}">
+                                <Entry x:Name="PasswordEntry"
+                       Placeholder="Password"
+                       IsPassword="True"
+                       Text="{Binding Password}"
+                       Completed="OnEntryCompleted"
+                       Focused="OnEntryFocused"
+                       Unfocused="OnEntryUnfocused"
+                       TextChanged="OnEntryTextChanged" />
+                            </Border>
+                            <Label x:Name="PasswordError" Text="Password obrigatória." TextColor="#FFA500" IsVisible="False" FontSize="12"/>
+                        </VerticalStackLayout>
+
+                        <!-- Email (opcional) -->
+                        <VerticalStackLayout>
+                            <Label Text="Email de contacto (opcional)" FontAttributes="Bold"/>
+                            <Border x:Name="EmailBorder" Style="{StaticResource FieldBorder}">
+                                <Entry x:Name="EmailEntry"
+                       Placeholder="ex.: admin@yah.pt"
+                       Completed="OnEntryCompleted"
+                       Focused="OnEntryFocused"
+                       Unfocused="OnEntryUnfocused"
+                       TextChanged="OnEntryTextChanged" />
+                            </Border>
+                            <Label x:Name="EmailErrorLabel" Text="Formato de email inválido." TextColor="#FF3B30" IsVisible="False" FontSize="12"/>
+                        </VerticalStackLayout>
+
+                        <!-- Botão principal -->
+                        <Button x:Name="SaveTestButton"
+                    Style="{StaticResource AppleFilledButton}"
+                    Clicked="OnSaveAndTestClicked"
+                    Text=" Guardar e Testar" />
+
+                        <VerticalStackLayout Padding="24" Spacing="18">                        
+                            <Button x:Name="BtnTestarDb"
+             Style="{StaticResource AppleTintedButton}"
+             Text="Testar ligação à Base de Dados"
+             Clicked="BtnTestarDb_Clicked"
+             SemanticProperties.Description="Executa teste de ligação ao MariaDB" />
+                            <Label x:Name="LblResultado"
+            Text=""
+            FontSize="13"
+            TextColor="Gray" />
+                        </VerticalStackLayout>
+
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+        </ScrollView>
+    </Grid>
+</ContentPage>

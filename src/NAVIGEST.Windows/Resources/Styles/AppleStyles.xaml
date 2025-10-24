@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                    xmlns:behaviors="clr-namespace:NAVIGEST.macOS.Behaviors">
+
+    <!-- ============================================================
+         iOS/Apple Human Interface Guidelines Color Palette
+         Cores inspiradas no design system da Apple
+         ============================================================ -->
+    
+    <!-- LIGHT THEME - iOS System Colors -->
+    <Color x:Key="iOSBlue">#007AFF</Color>           <!-- Primary Action -->
+    <Color x:Key="iOSBlueLight">#007AFF</Color>      <!-- Primary Action Light -->
+    <Color x:Key="iOSPurple">#5856D6</Color>         <!-- Secondary -->
+    <Color x:Key="iOSGreen">#34C759</Color>          <!-- Success -->
+    <Color x:Key="iOSOrange">#FF9500</Color>         <!-- Warning -->
+    <Color x:Key="iOSRed">#FF3B30</Color>            <!-- Error/Destructive -->
+    <Color x:Key="iOSTeal">#5AC8FA</Color>           <!-- Info -->
+    <Color x:Key="iOSIndigo">#5856D6</Color>         <!-- Accent -->
+    
+    <!-- Light Theme Backgrounds -->
+    <Color x:Key="BackgroundLight">#F2F2F7</Color>   <!-- System Background -->
+    <Color x:Key="SurfaceLight">#FFFFFF</Color>      <!-- Elevated Surface -->
+    <Color x:Key="CardLight">#FFFFFF</Color>         <!-- Card Background -->
+    
+    <!-- Light Theme Text -->
+    <Color x:Key="TextPrimaryLight">#000000</Color>
+    <Color x:Key="TextSecondaryLight">#8E8E93</Color>
+    <Color x:Key="TextTertiaryLight">#C7C7CC</Color>
+    
+    <!-- Light Theme UI Elements -->
+    <Color x:Key="BorderLight">#C6C6C8</Color>       <!-- Separator -->
+    <Color x:Key="OverlayLight">#1A000000</Color>    <!-- 10% black -->
+    
+    <!-- DARK THEME - iOS System Colors Dark -->
+    <Color x:Key="iOSBlueDark">#0A84FF</Color>
+    <Color x:Key="iOSPurpleDark">#5E5CE6</Color>
+    <Color x:Key="iOSGreenDark">#32D74B</Color>
+    <Color x:Key="iOSOrangeDark">#FF9F0A</Color>
+    <Color x:Key="iOSRedDark">#FF453A</Color>
+    <Color x:Key="iOSTealDark">#64D2FF</Color>
+    <Color x:Key="iOSIndigoDark">#5E5CE6</Color>
+    
+    <!-- Dark Theme Backgrounds -->
+    <Color x:Key="BackgroundDark">#000000</Color>    <!-- System Background Dark -->
+    <Color x:Key="SurfaceDark">#1C1C1E</Color>       <!-- Elevated Surface Dark -->
+    <Color x:Key="CardDark">#2C2C2E</Color>          <!-- Card Background Dark -->
+    
+    <!-- Dark Theme Text -->
+    <Color x:Key="TextPrimaryDark">#FFFFFF</Color>
+    <Color x:Key="TextSecondaryDark">#8E8E93</Color>
+    <Color x:Key="TextTertiaryDark">#48484A</Color>
+    
+    <!-- Dark Theme UI Elements -->
+    <Color x:Key="BorderDark">#38383A</Color>
+    <Color x:Key="OverlayDark">#33FFFFFF</Color>     <!-- 20% white -->
+
+    <!-- ============================================================
+         ENTRY STYLE - iOS TextField Style
+         Inputs com aparência nativa iOS com animação e validação
+         Integra: EntryValidationBehavior para underline colorido
+         ============================================================ -->
+    <Style x:Key="AppleEntry" TargetType="Entry">
+        <Setter Property="BackgroundColor" 
+                Value="{AppThemeBinding Light={StaticResource SurfaceLight}, Dark={StaticResource SurfaceDark}}" />
+        <Setter Property="TextColor" 
+                Value="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+        <Setter Property="PlaceholderColor" 
+                Value="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" />
+        <Setter Property="FontSize" Value="17" />
+        <Setter Property="FontFamily" Value="OpenSansRegular" />
+        <Setter Property="HeightRequest" Value="44" />
+        <Setter Property="Margin" Value="0,8" />
+        
+        <!-- Animação sutil iOS-style + fade-in suave -->
+        <Setter Property="VisualStateManager.VisualStateGroups">
+            <VisualStateGroupList>
+                <VisualStateGroup x:Name="CommonStates">
+                    <VisualState x:Name="Normal">
+                        <VisualState.Setters>
+                            <Setter Property="BackgroundColor" 
+                                    Value="{AppThemeBinding Light={StaticResource SurfaceLight}, Dark={StaticResource SurfaceDark}}" />
+                            <Setter Property="Opacity" Value="1.0" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="Focused">
+                        <VisualState.Setters>
+                            <Setter Property="BackgroundColor" 
+                                    Value="{AppThemeBinding Light=#F5F5F5, Dark=#2C2C2E}" />
+                            <Setter Property="Opacity" Value="1.0" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="Disabled">
+                        <VisualState.Setters>
+                            <Setter Property="Opacity" Value="0.4" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateGroupList>
+        </Setter>
+    </Style>
+
+    <!-- ============================================================
+         BUTTON STYLES - iOS Button Variants
+         ============================================================ -->
+    
+    <!-- Filled Button - Primary Action (iOS Blue) -->
+        <!-- ============================================================
+         PRIMARY BUTTON - iOS Filled Button Style
+         Botão com cor de destaque e micro-animações suaves
+         Integra: ButtonMicroAnimationsBehavior (fade-in + scale press)
+         ============================================================ -->
+    <Style x:Key="AppleFilledButton" TargetType="Button">
+        <Setter Property="BackgroundColor" 
+                Value="{AppThemeBinding Light={StaticResource iOSBlueLight}, Dark={StaticResource iOSBlueDark}}" />
+        <Setter Property="TextColor" Value="White" />
+        <Setter Property="FontSize" Value="17" />
+        <Setter Property="FontFamily" Value="OpenSansSemiBold" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="HeightRequest" Value="50" />
+        <Setter Property="Margin" Value="0,12" />
+        <Setter Property="Padding" Value="16,0" />
+        <Setter Property="Shadow">
+            <Shadow Brush="Black" Offset="0,2" Radius="4" Opacity="0.1" />
+        </Setter>
+        
+        <!-- Animações iOS-style + micro-interações -->
+        <Setter Property="VisualStateManager.VisualStateGroups">
+            <VisualStateGroupList>
+                <VisualStateGroup x:Name="CommonStates">
+                    <VisualState x:Name="Normal">
+                        <VisualState.Setters>
+                            <Setter Property="Opacity" Value="1.0" />
+                            <Setter Property="Scale" Value="1.0" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="Pressed">
+                        <VisualState.Setters>
+                            <Setter Property="Opacity" Value="0.6" />
+                            <Setter Property="Scale" Value="0.98" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="PointerOver">
+                        <VisualState.Setters>
+                            <Setter Property="Opacity" Value="0.8" />
+                            <Setter Property="Scale" Value="1.02" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="Disabled">
+                        <VisualState.Setters>
+                            <Setter Property="Opacity" Value="0.4" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateGroupList>
+        </Setter>
+    </Style>
+    
+    <!-- Tinted Button - Secondary Action (iOS Purple) -->
+    <Style x:Key="AppleTintedButton" TargetType="Button">
+        <Setter Property="BackgroundColor" 
+                Value="{AppThemeBinding Light=#E5E5EA, Dark=#38383A}" />
+        <Setter Property="TextColor" 
+                Value="{AppThemeBinding Light={StaticResource iOSPurple}, Dark={StaticResource iOSPurpleDark}}" />
+        <Setter Property="FontSize" Value="17" />
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="16,12" />
+        <Setter Property="Margin" Value="0,8" />
+        <Setter Property="HeightRequest" Value="50" />
+        
+        <Setter Property="VisualStateManager.VisualStateGroups">
+            <VisualStateGroupList>
+                <VisualStateGroup x:Name="CommonStates">
+                    <VisualState x:Name="Normal">
+                        <VisualState.Setters>
+                            <Setter Property="Opacity" Value="1.0" />
+                            <Setter Property="Scale" Value="1.0" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="Pressed">
+                        <VisualState.Setters>
+                            <Setter Property="Opacity" Value="0.6" />
+                            <Setter Property="Scale" Value="0.98" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateGroupList>
+        </Setter>
+    </Style>
+    
+    <!-- Borderless Button - Tertiary Action -->
+    <Style x:Key="AppleTextButton" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" 
+                Value="{AppThemeBinding Light={StaticResource iOSBlue}, Dark={StaticResource iOSBlueDark}}" />
+        <Setter Property="FontSize" Value="17" />
+        <Setter Property="FontFamily" Value="OpenSansRegular" />
+        <Setter Property="Padding" Value="8" />
+        <Setter Property="Margin" Value="0,8" />
+        
+        <Setter Property="VisualStateManager.VisualStateGroups">
+            <VisualStateGroupList>
+                <VisualStateGroup x:Name="CommonStates">
+                    <VisualState x:Name="Normal">
+                        <VisualState.Setters>
+                            <Setter Property="Opacity" Value="1.0" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="Pressed">
+                        <VisualState.Setters>
+                            <Setter Property="Opacity" Value="0.3" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateGroupList>
+        </Setter>
+    </Style>
+    
+    <!-- Destructive Button - iOS Red -->
+    <Style x:Key="AppleDestructiveButton" TargetType="Button">
+        <Setter Property="BackgroundColor" 
+                Value="{AppThemeBinding Light={StaticResource iOSRed}, Dark={StaticResource iOSRedDark}}" />
+        <Setter Property="TextColor" Value="White" />
+        <Setter Property="FontSize" Value="17" />
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="16,12" />
+        <Setter Property="Margin" Value="0,8" />
+        <Setter Property="HeightRequest" Value="50" />
+        
+        <Setter Property="VisualStateManager.VisualStateGroups">
+            <VisualStateGroupList>
+                <VisualStateGroup x:Name="CommonStates">
+                    <VisualState x:Name="Pressed">
+                        <VisualState.Setters>
+                            <Setter Property="Opacity" Value="0.6" />
+                            <Setter Property="Scale" Value="0.98" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateGroupList>
+        </Setter>
+    </Style>
+
+    <!-- ============================================================
+         PICKER STYLE - iOS Picker Style
+         ============================================================ -->
+    <Style x:Key="ApplePicker" TargetType="Picker">
+        <Setter Property="BackgroundColor" 
+                Value="{AppThemeBinding Light={StaticResource SurfaceLight}, Dark={StaticResource SurfaceDark}}" />
+        <Setter Property="TextColor" 
+                Value="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+        <Setter Property="TitleColor" 
+                Value="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" />
+        <Setter Property="FontSize" Value="17" />
+        <Setter Property="FontFamily" Value="OpenSansRegular" />
+        <Setter Property="HeightRequest" Value="44" />
+        <Setter Property="Margin" Value="0,8" />
+    </Style>
+
+    <!-- ============================================================
+         BORDER/CARD STYLE - iOS Card Style
+         ============================================================ -->
+    <Style x:Key="AppleCard" TargetType="Border">
+        <Setter Property="BackgroundColor" 
+                Value="{AppThemeBinding Light={StaticResource CardLight}, Dark={StaticResource CardDark}}" />
+        <Setter Property="Stroke" 
+                Value="{AppThemeBinding Light={StaticResource BorderLight}, Dark={StaticResource BorderDark}}" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+        <Setter Property="Padding" Value="16" />
+        <Setter Property="Shadow">
+            <Shadow Brush="Black" Offset="0,2" Radius="8" Opacity="0.1" />
+        </Setter>
+    </Style>
+
+    <!-- ============================================================
+         LABEL STYLES - iOS Typography
+         ============================================================ -->
+    <Style x:Key="AppleLargeTitle" TargetType="Label">
+        <Setter Property="FontSize" Value="34" />
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="TextColor" 
+                Value="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+    </Style>
+    
+    <Style x:Key="AppleTitle1" TargetType="Label">
+        <Setter Property="FontSize" Value="28" />
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        <Setter Property="TextColor" 
+                Value="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+    </Style>
+    
+    <Style x:Key="AppleTitle2" TargetType="Label">
+        <Setter Property="FontSize" Value="22" />
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        <Setter Property="TextColor" 
+                Value="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+    </Style>
+    
+    <Style x:Key="AppleTitle3" TargetType="Label">
+        <Setter Property="FontSize" Value="20" />
+        <Setter Property="FontFamily" Value="OpenSansRegular" />
+        <Setter Property="TextColor" 
+                Value="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+    </Style>
+    
+    <Style x:Key="AppleHeadline" TargetType="Label">
+        <Setter Property="FontSize" Value="17" />
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="TextColor" 
+                Value="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+    </Style>
+    
+    <Style x:Key="AppleBody" TargetType="Label">
+        <Setter Property="FontSize" Value="17" />
+        <Setter Property="FontFamily" Value="OpenSansRegular" />
+        <Setter Property="TextColor" 
+                Value="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+    </Style>
+    
+    <Style x:Key="AppleCallout" TargetType="Label">
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontFamily" Value="OpenSansRegular" />
+        <Setter Property="TextColor" 
+                Value="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+    </Style>
+    
+    <Style x:Key="AppleSubheadline" TargetType="Label">
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="FontFamily" Value="OpenSansRegular" />
+        <Setter Property="TextColor" 
+                Value="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" />
+    </Style>
+    
+    <Style x:Key="AppleFootnote" TargetType="Label">
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontFamily" Value="OpenSansRegular" />
+        <Setter Property="TextColor" 
+                Value="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" />
+    </Style>
+    
+    <Style x:Key="AppleCaption1" TargetType="Label">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontFamily" Value="OpenSansRegular" />
+        <Setter Property="TextColor" 
+                Value="{AppThemeBinding Light={StaticResource TextTertiaryLight}, Dark={StaticResource TextTertiaryDark}}" />
+    </Style>
+    
+    <Style x:Key="AppleCaption2" TargetType="Label">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontFamily" Value="OpenSansRegular" />
+        <Setter Property="TextColor" 
+                Value="{AppThemeBinding Light={StaticResource TextTertiaryLight}, Dark={StaticResource TextTertiaryDark}}" />
+    </Style>
+
+</ResourceDictionary>

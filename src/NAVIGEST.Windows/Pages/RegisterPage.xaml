@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:conv="clr-namespace:NAVIGEST.macOS.Converters"
+             xmlns:beh="clr-namespace:NAVIGEST.macOS.Behaviors"
+             x:Class="NAVIGEST.macOS.Pages.RegisterPage"
+             BackgroundColor="{DynamicResource PageBackgroundColor}"
+             Title="Utilizadores"
+             SizeChanged="OnPageSizeChanged">
+
+    <ContentPage.Resources>
+        <conv:BytesToImageSourceConverter x:Key="BytesToImage"/>
+    </ContentPage.Resources>
+
+    <Grid BackgroundColor="{DynamicResource PageBackgroundColor}">
+        <ScrollView x:Name="MainScrollView">
+            <HorizontalStackLayout HorizontalOptions="Center" VerticalOptions="Fill">
+                <VerticalStackLayout Spacing="18" Padding="24,24,24,60" HorizontalOptions="Fill"
+                                     MaximumWidthRequest="1920">
+
+                    <!-- Header com botões -->
+                    <Grid ColumnDefinitions="*,Auto,Auto" RowDefinitions="Auto" ColumnSpacing="10">
+                        <Label Text="Utilizadores"
+                               FontSize="28"
+                               FontAttributes="Bold"
+                               TextColor="{DynamicResource BodyTextColor}"
+                               VerticalOptions="Center"/>
+
+                        <Button Grid.Column="1"
+                                x:Name="BtnAtualizar"
+                                Clicked="OnAtualizarListaClicked"
+                                Text="Atualizar"
+                                Style="{StaticResource AppleFilledButton}"/>
+
+                        <Button Grid.Column="2"
+                                x:Name="BtnNovo"
+                                Clicked="OnNovoClicked"
+                                Text="Novo"
+                                Margin="8,0,0,0"
+                                Style="{StaticResource AppleTintedButton}"/>
+                    </Grid>
+
+                    <!-- Lista de utilizadores -->
+                    <Border StrokeShape="RoundRectangle 18" 
+                            StrokeThickness="1" 
+                            Stroke="{DynamicResource DividerColor}" 
+                            Background="{DynamicResource CardBackgroundColor}" 
+                            Padding="20">
+                                    <Grid RowDefinitions="Auto,Auto" RowSpacing="0">
+                                        <Grid BackgroundColor="{DynamicResource ListHeaderBackgroundColor}"
+                                              ColumnDefinitions="60,*,*,*,*"
+                                              Padding="8" ColumnSpacing="12">
+                                            <Label Text="Foto"    FontFamily="InterSemiBold" FontSize="14" TextColor="{DynamicResource ListHeaderTextColor}"/>
+                                            <Label Grid.Column="1" Text="Username" FontFamily="InterSemiBold" FontSize="14" TextColor="{DynamicResource ListHeaderTextColor}"/>
+                                            <Label Grid.Column="2" Text="Nome"     FontFamily="InterSemiBold" FontSize="14" TextColor="{DynamicResource ListHeaderTextColor}"/>
+                                            <Label Grid.Column="3" Text="Email"    FontFamily="InterSemiBold" FontSize="14" TextColor="{DynamicResource ListHeaderTextColor}"/>
+                                            <Label Grid.Column="4" Text="Tipo"     FontFamily="InterSemiBold" FontSize="14" TextColor="{DynamicResource ListHeaderTextColor}"/>
+                                        </Grid>
+
+                                        <CollectionView x:Name="UsersView"
+                                                        Grid.Row="1"
+                                                        SelectionMode="Single"
+                                                        SelectionChanged="OnUserSelected">
+                                            <CollectionView.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid ColumnDefinitions="60,*,*,*,*" Padding="8" ColumnSpacing="12">
+                                                        <Image WidthRequest="40" HeightRequest="40"
+                                                               Aspect="AspectFill"
+                                                               Source="{Binding ProfilePicture, Converter={StaticResource BytesToImage}}">
+                                                            <Image.Clip>
+                                                                <EllipseGeometry Center="20,20" RadiusX="20" RadiusY="20"/>
+                                                            </Image.Clip>
+                                                        </Image>
+                                                        <Label Grid.Column="1" Text="{Binding Username}" FontFamily="Inter" FontSize="12" TextColor="{DynamicResource ListRowTextColor}"/>
+                                                        <Label Grid.Column="2" Text="{Binding Name}"     FontFamily="Inter" FontSize="12" TextColor="{DynamicResource ListRowTextColor}"/>
+                                                        <Label Grid.Column="3" Text="{Binding Email}"    FontFamily="Inter" FontSize="12" TextColor="{DynamicResource ListRowTextColor}"/>
+                                                        <Label Grid.Column="4" Text="{Binding TipoUtilizador}" FontFamily="Inter" FontSize="12" TextColor="{DynamicResource ListRowTextColor}"/>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </CollectionView.ItemTemplate>
+                                        </CollectionView>
+                                    </Grid>
+                                </Border>
+
+                                <Label Text="Detalhe / Edição" FontFamily="InterSemiBold" FontSize="18" TextColor="{DynamicResource BodyTextColor}" />
+
+                                <Border StrokeShape="RoundRectangle 18"
+                                        Stroke="{DynamicResource DividerColor}"
+                                        Background="{DynamicResource CardBackgroundColor}"
+                                        Padding="24">
+                                    <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto" ColumnSpacing="24">
+
+                                        <!-- Avatar Column -->
+                                        <VerticalStackLayout Grid.Column="0" Spacing="12" VerticalOptions="Start">
+                                            <Grid x:Name="AvatarContainer"
+                                                  WidthRequest="120" HeightRequest="120"
+                                                  SizeChanged="OnAvatarContainerSizeChanged"
+                                                  HorizontalOptions="Center"
+                                                  VerticalOptions="Center">
+                                                <Label x:Name="UserIcon"
+                                                       FontFamily="FA7Solid"
+                                                       Text="&#xF007;"
+                                                       FontSize="80"
+                                                       TextColor="#6B7280"
+                                                       HorizontalOptions="Center"
+                                                       VerticalOptions="Center"
+                                                       IsVisible="True"/>
+                                                <Image x:Name="UserImage" IsVisible="False" Aspect="AspectFill"/>
+                                            </Grid>
+
+                                            <Button Clicked="OnEscolherImagemClicked"
+                                                    Style="{StaticResource AppleTintedButton}"
+                                                    Text="Escolher Imagem"
+                                                    HorizontalOptions="Center"/>
+                                        </VerticalStackLayout>
+
+                                        <!-- Form Fields Column -->
+                                        <VerticalStackLayout Grid.Column="1" Spacing="12" HorizontalOptions="Fill">
+                                            <Entry x:Name="entryUsername" Style="{StaticResource AppleEntry}" Placeholder="Nome de utilizador"/>
+                                            <Label x:Name="lblUsernameError" Text="" IsVisible="False" Style="{StaticResource LabelErro}" />
+                                            
+                                            <Entry x:Name="entryPassword" Style="{StaticResource AppleEntry}" Placeholder="Palavra-passe" IsPassword="True"/>
+                                            <Label x:Name="lblPasswordError" Text="" IsVisible="False" Style="{StaticResource LabelErro}" />
+                                            
+                                            <Entry x:Name="entryName" Style="{StaticResource AppleEntry}" Placeholder="Nome completo"/>
+                                            <Label x:Name="lblNameError" Text="" IsVisible="False" Style="{StaticResource LabelErro}" />
+                                            
+                                            <Entry x:Name="entryContact" Style="{StaticResource AppleEntry}" Placeholder="Contacto" Keyboard="Telephone"/>
+                                            <Label x:Name="lblContactError" Text="" IsVisible="False" Style="{StaticResource LabelErro}" />
+                                            
+                                            <Entry x:Name="entryEmail" Style="{StaticResource AppleEntry}" Placeholder="Email" Keyboard="Email"/>
+                                            <Label x:Name="lblEmailError" Text="" IsVisible="False" Style="{StaticResource LabelErro}" />
+                                            
+                                            <Entry x:Name="entryCategoria1" Style="{StaticResource AppleEntry}" Placeholder="Categoria 1"/>
+                                            <Label x:Name="lblCategoria1Error" Text="" IsVisible="False" Style="{StaticResource LabelErro}" />
+                                            
+                                            <Entry x:Name="entryCategoria2" Style="{StaticResource AppleEntry}" Placeholder="Categoria 2"/>
+                                            <Label x:Name="lblCategoria2Error" Text="" IsVisible="False" Style="{StaticResource LabelErro}" />
+                                            
+                                            <Entry x:Name="entryTipo" Style="{StaticResource AppleEntry}" Placeholder="Tipo de utilizador"/>
+                                            <Label x:Name="lblTipoError" Text="" IsVisible="False" Style="{StaticResource LabelErro}" />
+                                        </VerticalStackLayout>
+
+                                        <!-- Action Buttons Column -->
+                                        <VerticalStackLayout Grid.Column="2" Spacing="12" VerticalOptions="Start" MinimumWidthRequest="140">
+                                            <Button Clicked="OnGuardarClicked" 
+                                                    Style="{StaticResource AppleFilledButton}"
+                                                    Text="Guardar"
+                                                    HorizontalOptions="Fill"/>
+
+                                            <Button Clicked="OnAtualizarClicked" 
+                                                    Style="{StaticResource AppleTintedButton}"
+                                                    Text="Atualizar"
+                                                    HorizontalOptions="Fill"/>
+
+                                            <Button Clicked="OnEliminarClicked" 
+                                                    Style="{StaticResource AppleTintedButton}"
+                                                    Text="Eliminar"
+                                                    HorizontalOptions="Fill"/>
+
+                                            <Button Clicked="OnNovoClicked" 
+                                                    Style="{StaticResource AppleTextButton}"
+                                                    Text="Limpar"
+                                                    HorizontalOptions="Fill"/>
+                                        </VerticalStackLayout>
+                                    </Grid>
+                                </Border>
+
+                                <Label x:Name="labelResultado"
+                                       IsVisible="False"
+                                       TextColor="{DynamicResource EntryBorderColorError}"
+                                       FontFamily="Inter"
+                                       FontSize="14"
+                                       HorizontalOptions="Center" />
+                            </VerticalStackLayout>
+                        </HorizontalStackLayout>
+                    </ScrollView>
+                </Grid>
+            </ContentPage>
+
+

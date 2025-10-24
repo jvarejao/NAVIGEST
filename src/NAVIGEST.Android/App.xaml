@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application x:Class="NAVIGEST.Android.App"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+
+            <!-- Dicionários estáveis (não mudam com o tema) -->
+            <ResourceDictionary.MergedDictionaries>
+                <!-- Botões -->
+                <ResourceDictionary Source="Resources/Styles/Buttons.xaml" />
+
+                <!-- Design tokens (tipos, espaçamentos, etc.) -->
+                <ResourceDictionary Source="Resources/Styles/DesignSystem.xaml" />
+
+                <!-- Inputs centralizados com DynamicResource para cores -->
+                <ResourceDictionary Source="Resources/Styles/Inputs.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- NOTA: Colors_Light / Colors_Dark são injetados em runtime pelo App.xaml.cs -->
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

@@ -1,0 +1,534 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:conv="clr-namespace:NAVIGEST.Android.Converters"
+             xmlns:beh="clr-namespace:NAVIGEST.Android.Behaviors"
+             x:Class="NAVIGEST.Android.Pages.RegisterPage"
+             BackgroundColor="{DynamicResource PageBackgroundColor}"
+             Title="Utilizadores"
+             SizeChanged="OnPageSizeChanged">
+
+    <ContentPage.Resources>
+        <conv:BytesToImageSourceConverter x:Key="BytesToImage"/>
+
+        <Style TargetType="Button" x:Key="BtnBase">
+            <Setter Property="FontFamily" Value="InterSemiBold"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="HeightRequest" Value="44"/>
+            <Setter Property="TextColor" Value="White"/>
+            <Setter Property="ContentLayout" Value="Left,8"/>
+            <Setter Property="VisualStateManager.VisualStateGroups">
+                <VisualStateGroupList>
+                    <VisualStateGroup x:Name="CommonStates">
+                        <VisualState x:Name="Normal"/>
+                        <VisualState x:Name="PointerOver">
+                            <VisualState.Setters>
+                                <Setter Property="Scale" Value="1.02"/>
+                                <Setter Property="Opacity" Value="0.98"/>
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="Pressed">
+                            <VisualState.Setters>
+                                <Setter Property="Scale" Value="0.98"/>
+                                <Setter Property="Opacity" Value="0.92"/>
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="Disabled">
+                            <VisualState.Setters>
+                                <Setter Property="Opacity" Value="0.55"/>
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateGroupList>
+            </Setter>
+        </Style>
+
+        <Style TargetType="Button" x:Key="BtnAccent"  BasedOn="{StaticResource BtnBase}">
+            <Setter Property="BackgroundColor" Value="#2563EB"/>
+        </Style>
+        <Style TargetType="Button" x:Key="BtnSuccess" BasedOn="{StaticResource BtnBase}">
+            <Setter Property="BackgroundColor" Value="#10B981"/>
+        </Style>
+        <Style TargetType="Button" x:Key="BtnWarn"    BasedOn="{StaticResource BtnBase}">
+            <Setter Property="BackgroundColor" Value="#F59E0B"/>
+        </Style>
+        <Style TargetType="Button" x:Key="BtnDanger"  BasedOn="{StaticResource BtnBase}">
+            <Setter Property="BackgroundColor" Value="#EF4444"/>
+        </Style>
+
+        <Style x:Key="EntryPadrao" TargetType="Entry">
+            <Setter Property="BackgroundColor" Value="{DynamicResource EntryBackgroundColor}" />
+            <Setter Property="TextColor" Value="{DynamicResource EntryTextColor}" />
+            <Setter Property="HeightRequest" Value="44" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="Margin" Value="0,4,0,0" />
+        </Style>
+
+        <Style x:Key="FormEntry" TargetType="Entry" BasedOn="{StaticResource EntryPadrao}" />
+
+        <Style x:Key="EntryErro" TargetType="Entry" BasedOn="{StaticResource EntryPadrao}"/>
+        <Style x:Key="EntryFoco" TargetType="Entry" BasedOn="{StaticResource EntryPadrao}"/>
+    </ContentPage.Resources>
+
+    <Grid BackgroundColor="{DynamicResource PageBackgroundColor}">
+        <ScrollView>
+            <Grid x:Name="PageContainer"
+                  Padding="16"
+                  HorizontalOptions="Center"
+                  VerticalOptions="Start"
+                  MaximumWidthRequest="720">
+
+                <Border Style="{StaticResource CardBorder}">
+                    <OnIdiom x:TypeArguments="Layout">
+                        <!-- Desktop -->
+                        <OnIdiom.Desktop>
+                            <VerticalStackLayout x:Name="RootStackDesktop" Spacing="16">
+                                <Grid ColumnDefinitions="*,Auto,Auto" RowDefinitions="Auto" ColumnSpacing="10">
+                                    <Label Text="Lista de Utilizadores"
+                                           FontFamily="InterSemiBold"
+                                           FontSize="18"
+                                           FontAttributes="Bold"
+                                           TextColor="{DynamicResource BodyTextColor}"
+                                           VerticalOptions="Center"/>
+
+                                    <Button Grid.Column="1"
+                                            x:Name="BtnAtualizar"
+                                            Clicked="OnAtualizarListaClicked"
+                                            SemanticProperties.Hint="Atualizar lista"
+                                            Padding="10,8"
+                                            HorizontalOptions="End"
+                                            Style="{StaticResource BtnAccent}">
+                                        <Button.ImageSource>
+                                            <FontImageSource Glyph="&#xF021;" FontFamily="FA7Solid" Color="White" Size="18"/>
+                                        </Button.ImageSource>
+                                        <Button.Text>
+                                            <OnIdiom x:TypeArguments="x:String" Phone="" Desktop="Atualizar" />
+                                        </Button.Text>
+                                        <Button.Behaviors>
+                                        </Button.Behaviors>
+                                    </Button>
+
+                                    <Button Grid.Column="2"
+                                            x:Name="BtnNovo"
+                                            Clicked="OnNovoClicked"
+                                            SemanticProperties.Hint="Novo utilizador"
+                                            Padding="10,8"
+                                            Margin="8,0,0,0"
+                                            HorizontalOptions="End"
+                                            Style="{StaticResource BtnBase}"
+                                            BackgroundColor="#6B7280">
+                                        <Button.ImageSource>
+                                            <FontImageSource Glyph="&#xF067;" FontFamily="FA7Solid" Color="White" Size="18"/>
+                                        </Button.ImageSource>
+                                        <Button.Text>
+                                            <OnIdiom x:TypeArguments="x:String" Phone="" Desktop="Novo" />
+                                        </Button.Text>
+                                        <Button.Behaviors>
+                                        </Button.Behaviors>
+                                    </Button>
+                                </Grid>
+
+                                <Border Style="{StaticResource CardBorder}">
+                                    <Grid RowDefinitions="Auto,Auto" RowSpacing="0">
+                                        <Grid BackgroundColor="{DynamicResource ListHeaderBackgroundColor}"
+                                              ColumnDefinitions="60,*,*,*,*"
+                                              Padding="8" ColumnSpacing="12">
+                                            <Label Text="Foto"    FontFamily="InterSemiBold" FontSize="14" TextColor="{DynamicResource ListHeaderTextColor}"/>
+                                            <Label Grid.Column="1" Text="Username" FontFamily="InterSemiBold" FontSize="14" TextColor="{DynamicResource ListHeaderTextColor}"/>
+                                            <Label Grid.Column="2" Text="Nome"     FontFamily="InterSemiBold" FontSize="14" TextColor="{DynamicResource ListHeaderTextColor}"/>
+                                            <Label Grid.Column="3" Text="Email"    FontFamily="InterSemiBold" FontSize="14" TextColor="{DynamicResource ListHeaderTextColor}"/>
+                                            <Label Grid.Column="4" Text="Tipo"     FontFamily="InterSemiBold" FontSize="14" TextColor="{DynamicResource ListHeaderTextColor}"/>
+                                        </Grid>
+
+                                        <CollectionView x:Name="UsersView"
+                                                        Grid.Row="1"
+                                                        SelectionMode="Single"
+                                                        SelectionChanged="OnUserSelected">
+                                            <CollectionView.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid ColumnDefinitions="60,*,*,*,*" Padding="8" ColumnSpacing="12">
+                                                        <Image WidthRequest="40" HeightRequest="40"
+                                                               Aspect="AspectFill"
+                                                               Source="{Binding ProfilePicture, Converter={StaticResource BytesToImage}}">
+                                                            <Image.Clip>
+                                                                <EllipseGeometry Center="20,20" RadiusX="20" RadiusY="20"/>
+                                                            </Image.Clip>
+                                                        </Image>
+                                                        <Label Grid.Column="1" Text="{Binding Username}" FontFamily="Inter" FontSize="12" TextColor="{DynamicResource ListRowTextColor}"/>
+                                                        <Label Grid.Column="2" Text="{Binding Name}"     FontFamily="Inter" FontSize="12" TextColor="{DynamicResource ListRowTextColor}"/>
+                                                        <Label Grid.Column="3" Text="{Binding Email}"    FontFamily="Inter" FontSize="12" TextColor="{DynamicResource ListRowTextColor}"/>
+                                                        <Label Grid.Column="4" Text="{Binding TipoUtilizador}" FontFamily="Inter" FontSize="12" TextColor="{DynamicResource ListRowTextColor}"/>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </CollectionView.ItemTemplate>
+                                        </CollectionView>
+                                    </Grid>
+                                </Border>
+
+                                <Label Text="Detalhe / Edição" FontFamily="InterSemiBold" FontSize="18" TextColor="{DynamicResource BodyTextColor}" />
+
+                                <Grid x:Name="DetailsGrid"
+                                      ColumnDefinitions="100,*,Auto"
+                                      RowDefinitions="Auto"
+                                      ColumnSpacing="18"
+                                      RowSpacing="18">
+
+                                    <Grid x:Name="FieldsGrid" Grid.Column="1" ColumnDefinitions="*,*">
+                                        <VerticalStackLayout x:Name="FieldsCol1" Spacing="10" Margin="5,0,0,0" WidthRequest="420">
+                                            <Entry x:Name="entryUsername" Style="{StaticResource FormEntry}" Placeholder="Nome de utilizador"/>
+                                            <Label x:Name="lblUsernameError"
+                                                   Text=""
+                                                   IsVisible="False"
+                                                   Style="{StaticResource LabelErro}" />
+                                            <Entry x:Name="entryPassword" Style="{StaticResource FormEntry}" Placeholder="Palavra-passe" IsPassword="True"/>
+                                            <Label x:Name="lblPasswordError"
+                                                   Text=""
+                                                   IsVisible="False"
+                                                   Style="{StaticResource LabelErro}" />
+                                            <Entry x:Name="entryName"     Style="{StaticResource FormEntry}" Placeholder="Nome completo"/>
+                                            <Label x:Name="lblNameError"
+                                                   Text=""
+                                                   IsVisible="False"
+                                                   Style="{StaticResource LabelErro}" />
+                                            <Entry x:Name="entryContact"  Style="{StaticResource FormEntry}" Placeholder="Contacto" Keyboard="Telephone"/>
+                                            <Label x:Name="lblContactError"
+                                                   Text=""
+                                                   IsVisible="False"
+                                                   Style="{StaticResource LabelErro}" />
+                                            <Entry x:Name="entryEmail"      Style="{StaticResource FormEntry}" Placeholder="Email" Keyboard="Email"/>
+                                            <Label x:Name="lblEmailError"
+                                                   Text=""
+                                                   IsVisible="False"
+                                                   Style="{StaticResource LabelErro}" />
+                                            <Entry x:Name="entryCategoria1" Style="{StaticResource FormEntry}" Placeholder="Categoria 1"/>
+                                            <Label x:Name="lblCategoria1Error"
+                                                   Text=""
+                                                   IsVisible="False"
+                                                   Style="{StaticResource LabelErro}" />
+                                            <Entry x:Name="entryCategoria2" Style="{StaticResource FormEntry}" Placeholder="Categoria 2"/>
+                                            <Label x:Name="lblCategoria2Error"
+                                                   Text=""
+                                                   IsVisible="False"
+                                                   Style="{StaticResource LabelErro}" />
+                                            <Entry x:Name="entryTipo"       Style="{StaticResource FormEntry}" Placeholder="Tipo de utilizador"/>
+                                            <Label x:Name="lblTipoError"
+                                                   Text=""
+                                                   IsVisible="False"
+                                                   Style="{StaticResource LabelErro}" />
+                                        </VerticalStackLayout>
+                                    </Grid>
+
+                                    <VerticalStackLayout x:Name="ButtonsStack" Grid.Column="2" Spacing="10" Margin="0,0,20,0">
+
+                                        <VerticalStackLayout x:Name="AvatarStack">
+                                            <Grid x:Name="AvatarContainer"
+                                                WidthRequest="120" HeightRequest="120"
+                                                SizeChanged="OnAvatarContainerSizeChanged"
+                                                HorizontalOptions="Center"
+                                                VerticalOptions="Center">
+                                                <Label x:Name="UserIcon"
+                                                       FontFamily="FA7Solid"
+                                                       Text="&#xF007;"
+                                                       FontSize="120"
+                                                       TextColor="#6B7280"
+                                                       HorizontalOptions="Center"
+                                                       VerticalOptions="Center"
+                                                       IsVisible="True"/>
+                                                <Image x:Name="UserImage" IsVisible="False" Aspect="AspectFill"/>
+                                            </Grid>
+
+                                            <Button Clicked="OnEscolherImagemClicked"
+                                                Style="{StaticResource BtnAccent}"
+                                                Margin="0,10,0,65">
+                                                <Button.ImageSource>
+                                                    <FontImageSource Glyph="&#xF03E;" FontFamily="FA7Solid" Color="White" Size="18"/>
+                                                </Button.ImageSource>
+                                                <Button.Text>
+                                                    <OnIdiom x:TypeArguments="x:String" Phone="" Desktop="Imagem" />
+                                                </Button.Text>
+                                                <Button.Behaviors>
+                                                </Button.Behaviors>
+                                            </Button>
+                                        </VerticalStackLayout>
+
+                                        <Button Clicked="OnGuardarClicked" Style="{StaticResource BtnSuccess}">
+                                            <Button.ImageSource>
+                                                <FontImageSource Glyph="&#xF0C7;" FontFamily="FA7Solid" Color="White" Size="18"/>
+                                            </Button.ImageSource>
+                                            <Button.Text>
+                                                <OnIdiom x:TypeArguments="x:String" Phone="" Desktop="Guardar" />
+                                            </Button.Text>
+                                            <Button.Behaviors>
+                                            </Button.Behaviors>
+                                        </Button>
+
+                                        <Button Clicked="OnAtualizarClicked" Style="{StaticResource BtnWarn}">
+                                            <Button.ImageSource>
+                                                <FontImageSource Glyph="&#xF044;" FontFamily="FA7Solid" Color="White" Size="18"/>
+                                            </Button.ImageSource>
+                                            <Button.Text>
+                                                <OnIdiom x:TypeArguments="x:String" Phone="" Desktop="Atualizar" />
+                                            </Button.Text>
+                                            <Button.Behaviors>
+                                            </Button.Behaviors>
+                                        </Button>
+
+                                        <Button Clicked="OnEliminarClicked" Style="{StaticResource BtnDanger}">
+                                            <Button.ImageSource>
+                                                <FontImageSource Glyph="&#xF1F8;" FontFamily="FA7Solid" Color="White" Size="18"/>
+                                            </Button.ImageSource>
+                                            <Button.Text>
+                                                <OnIdiom x:TypeArguments="x:String" Phone="" Desktop="Eliminar" />
+                                            </Button.Text>
+                                            <Button.Behaviors>
+                                            </Button.Behaviors>
+                                        </Button>
+
+                                        <Button Clicked="OnNovoClicked" Style="{StaticResource BtnBase}" BackgroundColor="#6B7280">
+                                            <Button.ImageSource>
+                                                <FontImageSource Glyph="&#xF51A;" FontFamily="FA7Solid" Color="White" Size="18"/>
+                                            </Button.ImageSource>
+                                            <Button.Text>
+                                                <OnIdiom x:TypeArguments="x:String" Phone="" Desktop="Limpar" />
+                                            </Button.Text>
+                                            <Button.Behaviors>
+                                            </Button.Behaviors>
+                                        </Button>
+                                    </VerticalStackLayout>
+                                </Grid>
+
+                                <Label x:Name="labelResultado"
+                                       IsVisible="False"
+                                       TextColor="{DynamicResource EntryBorderColorError}"
+                                       FontFamily="Inter"
+                                       FontSize="14"
+                                       HorizontalOptions="Center" />
+                            </VerticalStackLayout>
+                        </OnIdiom.Desktop>
+
+                        <!-- Mobile -->
+                        <OnIdiom.Phone>
+                            <VerticalStackLayout x:Name="RootStackMobile" Spacing="16">
+                                <Grid ColumnDefinitions="*,Auto,Auto" RowDefinitions="Auto" ColumnSpacing="10">
+                                    <Label Text="Lista de Utilizadores"
+                                           FontFamily="InterSemiBold"
+                                           FontSize="18"
+                                           FontAttributes="Bold"
+                                           TextColor="{DynamicResource BodyTextColor}"
+                                           VerticalOptions="Center"/>
+
+                                    <Button Grid.Column="1"
+                                            x:Name="BtnAtualizarMobile"
+                                            Clicked="OnAtualizarListaClicked"
+                                            SemanticProperties.Hint="Atualizar lista"
+                                            Padding="10,8"
+                                            HorizontalOptions="End"
+                                            Style="{StaticResource BtnAccent}">
+                                        <Button.ImageSource>
+                                            <FontImageSource Glyph="&#xF021;" FontFamily="FA7Solid" Color="White" Size="18"/>
+                                        </Button.ImageSource>
+                                        <Button.Text>
+                                            <OnIdiom x:TypeArguments="x:String" Phone="Atualizar" Desktop="" />
+                                        </Button.Text>
+                                        <Button.Behaviors>
+                                        </Button.Behaviors>
+                                    </Button>
+
+                                    <Button Grid.Column="2"
+                                            x:Name="BtnNovoMobile"
+                                            Clicked="OnNovoClicked"
+                                            SemanticProperties.Hint="Novo utilizador"
+                                            Padding="10,8"
+                                            Margin="8,0,0,0"
+                                            HorizontalOptions="End"
+                                            Style="{StaticResource BtnBase}"
+                                            BackgroundColor="#6B7280">
+                                        <Button.ImageSource>
+                                            <FontImageSource Glyph="&#xF067;" FontFamily="FA7Solid" Color="White" Size="18"/>
+                                        </Button.ImageSource>
+                                        <Button.Text>
+                                            <OnIdiom x:TypeArguments="x:String" Phone="Novo" Desktop="" />
+                                        </Button.Text>
+                                        <Button.Behaviors>
+                                        </Button.Behaviors>
+                                    </Button>
+                                </Grid>
+
+                                <Border Style="{StaticResource CardBorder}">
+                                    <Grid RowDefinitions="Auto,Auto" RowSpacing="0">
+                                        <Grid BackgroundColor="{DynamicResource ListHeaderBackgroundColor}"
+                                              ColumnDefinitions="60,*,*,*,*"
+                                              Padding="8" ColumnSpacing="12">
+                                            <Label Text="Foto" FontFamily="InterSemiBold" FontSize="14" TextColor="{DynamicResource ListHeaderTextColor}"/>
+                                            <Label Grid.Column="1" Text="User" FontFamily="InterSemiBold" FontSize="14" TextColor="{DynamicResource ListHeaderTextColor}"/>
+                                            <Label Grid.Column="2" Text="Nome"     FontFamily="InterSemiBold" FontSize="14" TextColor="{DynamicResource ListHeaderTextColor}"/>
+                                            <Label Grid.Column="3" Text="Email"    FontFamily="InterSemiBold" FontSize="14" TextColor="{DynamicResource ListHeaderTextColor}"/>
+                                            <Label Grid.Column="4" Text="Tipo"     FontFamily="InterSemiBold" FontSize="14" TextColor="{DynamicResource ListHeaderTextColor}"/>
+                                        </Grid>
+
+                                        <CollectionView x:Name="UsersViewMobile"
+                                                        Grid.Row="1"
+                                                        SelectionMode="Single"
+                                                        SelectionChanged="OnUserSelected">
+                                            <CollectionView.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid ColumnDefinitions="60,*,*,*,*" Padding="8" ColumnSpacing="12">
+                                                        <Image WidthRequest="40" HeightRequest="40"
+                                                               Aspect="AspectFill"
+                                                               Source="{Binding ProfilePicture, Converter={StaticResource BytesToImage}}">
+                                                            <Image.Clip>
+                                                                <EllipseGeometry Center="20,20" RadiusX="20" RadiusY="20"/>
+                                                            </Image.Clip>
+                                                        </Image>
+                                                        <Label Grid.Column="1" Text="{Binding Username}" FontFamily="Inter" FontSize="14" TextColor="{DynamicResource ListRowTextColor}"/>
+                                                        <Label Grid.Column="2" Text="{Binding Name}"     FontFamily="Inter" FontSize="14" TextColor="{DynamicResource ListRowTextColor}"/>
+                                                        <Label Grid.Column="3" Text="{Binding Email}"    FontFamily="Inter" FontSize="14" TextColor="{DynamicResource ListRowTextColor}"/>
+                                                        <Label Grid.Column="4" Text="{Binding TipoUtilizador}" FontFamily="Inter" FontSize="14" TextColor="{DynamicResource ListRowTextColor}"/>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </CollectionView.ItemTemplate>
+                                        </CollectionView>
+                                    </Grid>
+                                </Border>
+
+                                <Label Text="Detalhe / Edição" FontFamily="InterSemiBold" FontSize="18" TextColor="{DynamicResource BodyTextColor}" />
+
+                                <VerticalStackLayout x:Name="DetailsStackMobile" Spacing="18">
+                                    <VerticalStackLayout x:Name="AvatarStackMobile">
+                                        <Grid x:Name="AvatarContainerMobile"
+                                              WidthRequest="120" HeightRequest="120"
+                                              HorizontalOptions="Center"
+                                              SizeChanged="OnAvatarContainerSizeChanged">
+                                            <Label x:Name="UserIconMobile"
+                                                   FontFamily="FA7Solid"
+                                                   Text="&#xF007;"
+                                                   FontSize="64"
+                                                   TextColor="#6B7280"
+                                                   HorizontalOptions="Center"
+                                                   VerticalOptions="Center"
+                                                   IsVisible="True"/>
+                                            <Image x:Name="UserImageMobile" IsVisible="False" Aspect="AspectFill"/>
+                                        </Grid>
+
+                                        <Button Clicked="OnEscolherImagemClicked"
+                                                Style="{StaticResource BtnAccent}"
+                                                Margin="0,10,0,30"
+                                                HorizontalOptions="Center">
+                                            <Button.ImageSource>
+                                                <FontImageSource Glyph="&#xF03E;" FontFamily="FA7Solid" Color="White" Size="18"/>
+                                            </Button.ImageSource>
+                                            <Button.Text>
+                                                <OnIdiom x:TypeArguments="x:String" Phone="Imagem" Desktop="" />
+                                            </Button.Text>
+                                            <Button.Behaviors>
+                                            </Button.Behaviors>
+                                        </Button>
+                                    </VerticalStackLayout>
+
+                                    <VerticalStackLayout x:Name="FieldsCol1Mobile" Spacing="5">
+                                        <Entry x:Name="entryUsernameMobile" Style="{StaticResource FormEntry}" Placeholder="Nome de utilizador"/>
+                                        <Label x:Name="lblUsernameErrorMobile"
+                                               Text=""
+                                               IsVisible="False"
+                                               Style="{StaticResource LabelErro}" />
+                                        <Entry x:Name="entryPasswordMobile" Style="{StaticResource FormEntry}" Placeholder="Palavra-passe" IsPassword="True"/>
+                                        <Label x:Name="lblPasswordErrorMobile"
+                                               Text=""
+                                               IsVisible="False"
+                                               Style="{StaticResource LabelErro}" />
+                                        <Entry x:Name="entryNameMobile"     Style="{StaticResource FormEntry}" Placeholder="Nome completo"/>
+                                        <Label x:Name="lblNameErrorMobile"
+                                               Text=""
+                                               IsVisible="False"
+                                               Style="{StaticResource LabelErro}" />
+                                        <Entry x:Name="entryContactMobile"  Style="{StaticResource FormEntry}" Placeholder="Contacto" Keyboard="Telephone"/>
+                                        <Label x:Name="lblContactErrorMobile"
+                                               Text=""
+                                               IsVisible="False"
+                                               Style="{StaticResource LabelErro}" />
+                                        <Entry x:Name="entryEmailMobile"      Style="{StaticResource FormEntry}" Placeholder="Email" Keyboard="Email"/>
+                                        <Label x:Name="lblEmailErrorMobile"
+                                               Text=""
+                                               IsVisible="False"
+                                               Style="{StaticResource LabelErro}" />
+                                        <Entry x:Name="entryCategoria1Mobile" Style="{StaticResource FormEntry}" Placeholder="Categoria 1"/>
+                                        <Label x:Name="lblCategoria1ErrorMobile"
+                                               Text=""
+                                               IsVisible="False"
+                                               Style="{StaticResource LabelErro}" />
+                                        <Entry x:Name="entryCategoria2Mobile" Style="{StaticResource FormEntry}" Placeholder="Categoria 2"/>
+                                        <Label x:Name="lblCategoria2ErrorMobile"
+                                               Text=""
+                                               IsVisible="False"
+                                               Style="{StaticResource LabelErro}" />
+                                        <Entry x:Name="entryTipoMobile"       Style="{StaticResource FormEntry}" Placeholder="Tipo de utilizador"/>
+                                        <Label x:Name="lblTipoErrorMobile"
+                                               Text=""
+                                               IsVisible="False"
+                                               Style="{StaticResource LabelErro}" />
+                                    </VerticalStackLayout>
+
+                                    <VerticalStackLayout x:Name="ButtonsStackMobile" Spacing="10">
+                                        <Button Clicked="OnGuardarClicked" Style="{StaticResource BtnSuccess}">
+                                            <Button.ImageSource>
+                                                <FontImageSource Glyph="&#xF0C7;" FontFamily="FA7Solid" Color="White" Size="18"/>
+                                            </Button.ImageSource>
+                                            <Button.Text>
+                                                <OnIdiom x:TypeArguments="x:String" Phone="Guardar" Desktop="" />
+                                            </Button.Text>
+                                            <Button.Behaviors>
+                                            </Button.Behaviors>
+                                        </Button>
+
+                                        <Button Clicked="OnAtualizarClicked" Style="{StaticResource BtnWarn}">
+                                            <Button.ImageSource>
+                                                <FontImageSource Glyph="&#xF044;" FontFamily="FA7Solid" Color="White" Size="18"/>
+                                            </Button.ImageSource>
+                                            <Button.Text>
+                                                <OnIdiom x:TypeArguments="x:String" Phone="Atualizar" Desktop="" />
+                                            </Button.Text>
+                                            <Button.Behaviors>
+                                            </Button.Behaviors>
+                                        </Button>
+
+                                        <Button Clicked="OnEliminarClicked" Style="{StaticResource BtnDanger}">
+                                            <Button.ImageSource>
+                                                <FontImageSource Glyph="&#xF1F8;" FontFamily="FA7Solid" Color="White" Size="18"/>
+                                            </Button.ImageSource>
+                                            <Button.Text>
+                                                <OnIdiom x:TypeArguments="x:String" Phone="Eliminar" Desktop="" />
+                                            </Button.Text>
+                                            <Button.Behaviors>
+                                            </Button.Behaviors>
+                                        </Button>
+
+                                        <Button Clicked="OnNovoClicked" Style="{StaticResource BtnBase}" BackgroundColor="#6B7280">
+                                            <Button.ImageSource>
+                                                <FontImageSource Glyph="&#xF51A;" FontFamily="FA7Solid" Color="White" Size="18"/>
+                                            </Button.ImageSource>
+                                            <Button.Text>
+                                                <OnIdiom x:TypeArguments="x:String" Phone="Limpar" Desktop="" />
+                                            </Button.Text>
+                                            <Button.Behaviors>
+                                            </Button.Behaviors>
+                                        </Button>
+                                    </VerticalStackLayout>
+                                </VerticalStackLayout>
+
+                                <Label x:Name="labelResultadoMobile"
+                                       IsVisible="False"
+                                       TextColor="{DynamicResource EntryBorderColorError}"
+                                       FontFamily="Inter"
+                                       FontSize="14"
+                                       HorizontalOptions="Center" />
+                            </VerticalStackLayout>
+                        </OnIdiom.Phone>
+                    </OnIdiom>
+                </Border>
+            </Grid>
+        </ScrollView>
+    </Grid>
+</ContentPage>
+
+

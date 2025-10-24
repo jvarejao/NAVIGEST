@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:pm="clr-namespace:NAVIGEST.Android.PageModels"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:beh="clr-namespace:NAVIGEST.Android.Behaviors"
+             x:Class="NAVIGEST.Android.Pages.LoginPage"
+             BackgroundColor="Transparent"
+             Title="Entrar"
+             SizeChanged="OnPageSizeChanged"
+             Shell.FlyoutBehavior="Disabled"
+             Shell.NavBarIsVisible="False">
+  
+    <Grid RowDefinitions="*,Auto,*">
+        <!-- Fundo gradiente animado -->
+        <BoxView Grid.RowSpan="3">
+            <BoxView.Background>
+                <LinearGradientBrush EndPoint="1,1">
+                    <GradientStop Color="#4F46E5" Offset="0.0" />
+                    <GradientStop Color="#6366F1" Offset="0.5" />
+                    <GradientStop Color="#A5B4FC" Offset="1.0" />
+                </LinearGradientBrush>
+            </BoxView.Background>
+        </BoxView>
+
+        <ScrollView Grid.Row="1" HorizontalOptions="Center" VerticalOptions="Center">
+            <Grid x:Name="CenterHost"
+                  VerticalOptions="Center"
+                  HorizontalOptions="Center">
+
+                <Border x:Name="LoginCard"
+                        BackgroundColor="{DynamicResource PageBackgroundColor}"
+                        Padding="5"
+                        Margin="24"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center">
+                    <!-- FIX StrokeShape (formato correto em MAUI) -->
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="32" />
+                    </Border.StrokeShape>
+
+                    <Grid x:Name="LoginContainer"
+                          Padding="20"
+                          HorizontalOptions="Center"
+                          VerticalOptions="Center">
+                        <Grid.MaximumWidthRequest>
+                            <OnIdiom x:TypeArguments="x:Double" Phone="420" Tablet="520" Desktop="520"/>
+                        </Grid.MaximumWidthRequest>
+
+                        <VerticalStackLayout x:Name="RootStack" Spacing="20">
+                            <!-- Avatar animado -->
+                            <Grid x:Name="AvatarContainer"
+                                  WidthRequest="120" HeightRequest="120"
+                                  HorizontalOptions="Center"
+                                  SizeChanged="OnAvatarSizeChanged">
+                                <Image x:Name="LoginAvatarImage"
+                                       Source="user_placeholder.png"
+                                       Aspect="AspectFill"
+                                       Opacity="0.95"/>
+                                <Border BackgroundColor="Transparent">
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="60" />
+                                    </Border.StrokeShape>
+                                    <Border.Stroke>
+                                        <SolidColorBrush Color="#6366F1"/>
+                                    </Border.Stroke>
+                                    <Border.StrokeThickness>2</Border.StrokeThickness>
+                                </Border>
+                            </Grid>
+
+                            <Label Text="Bem-vindo 👋"
+                                   FontFamily="InterSemiBold"
+                                   FontSize="28"
+                                   TextColor="#4F46E5"
+                                   HorizontalTextAlignment="Center"
+                                   Margin="0,8,0,0"/>
+
+                            <Label x:Name="lblUserFound"
+                                   IsVisible="False"
+                                   Text="Utilizador encontrado"
+                                   FontFamily="InterSemiBold"
+                                   FontSize="14"
+                                   TextColor="#22C55E"
+                                   HorizontalTextAlignment="Center"/>
+
+                            <Label x:Name="lblEmailInfo"
+                                   IsVisible="False"
+                                   Text="email@dominio.tld"
+                                   FontFamily="Inter"
+                                   FontSize="13"
+                                   TextColor="#6B7280"
+                                   HorizontalTextAlignment="Center"/>
+
+                            <Label x:Name="lblSub"
+                                   Text="Inicia sessão para continuar"
+                                   FontFamily="Inter"
+                                   FontSize="15"
+                                   TextColor="#6B7280"
+                                   HorizontalTextAlignment="Center"
+                                   Margin="0,0,0,8"/>
+
+                            <!-- FORM -->
+                            <VerticalStackLayout x:Name="FormNarrow"
+                                                 Spacing="16"
+                                                 HorizontalOptions="Center"
+                                                 WidthRequest="320">
+                                <VerticalStackLayout.MaximumWidthRequest>
+                                    <OnIdiom x:TypeArguments="x:Double" Phone="320" Tablet="360" Desktop="360"/>
+                                </VerticalStackLayout.MaximumWidthRequest>
+
+                                <!-- Username -->
+                                <Grid ColumnDefinitions="28,*,32" ColumnSpacing="8" HorizontalOptions="Fill" WidthRequest="320" Margin="20,0,0,0">
+                                    <Label Text="&#xf007;"
+                                           FontFamily="FA7Solid"
+                                           FontSize="18"
+                                           VerticalTextAlignment="Center"
+                                           Margin="10,10,0,0"
+                                           TextColor="#6366F1"/>
+                                    <Border Grid.Column="1" Padding="0" HorizontalOptions="Fill" BackgroundColor="#E0F2FE">
+                                        <Border.StrokeShape>
+                                            <RoundRectangle CornerRadius="12" />
+                                        </Border.StrokeShape>
+                                        <Grid>
+                                            <Entry x:Name="entryUsername"
+                                                   Placeholder="Utilizador"
+                                                   Text="{Binding Username, Mode=TwoWay}"
+                                                   TextChanged="OnUsernameChanged"
+                                                   Completed="OnEntryCompleted"
+                                                   FontSize="16"
+                                                   BackgroundColor="Transparent"
+                                                   Margin="0"
+                                                   HeightRequest="44"
+                                                   HorizontalOptions="Fill"/>
+                                            <Button x:Name="btnClearUser"
+                                                    BackgroundColor="Transparent"
+                                                    Padding="0"
+                                                    Clicked="OnClearUserClicked"
+                                                    IsVisible="False"
+                                                    Text="&#xf00d;"
+                                                    FontFamily="FA7Solid"
+                                                    TextColor="#9CA3AF"
+                                                    HorizontalOptions="End"
+                                                    VerticalOptions="Center"
+                                                    WidthRequest="32"
+                                                    HeightRequest="32"
+                                                    Margin="0,0,8,0">
+                                                <Button.Behaviors>
+                                                </Button.Behaviors>
+                                            </Button>
+                                        </Grid>
+                                    </Border>
+                                </Grid>
+
+                                <!-- Password -->
+                                <Grid ColumnDefinitions="28,*,32" ColumnSpacing="8" HorizontalOptions="Fill" WidthRequest="320" Margin="20,0,0,0">
+                                    <Label Text="&#xf084;"
+                                           FontFamily="FA7Solid"
+                                           FontSize="18"
+                                           VerticalTextAlignment="Center"
+                                           Margin="10,10,0,0"
+                                           TextColor="#6366F1"/>
+                                    <Border Grid.Column="1" Padding="0" HorizontalOptions="Fill" BackgroundColor="#E0F2FE">
+                                        <Border.StrokeShape>
+                                            <RoundRectangle CornerRadius="12" />
+                                        </Border.StrokeShape>
+                                        <Grid>
+                                            <Entry x:Name="entryPassword"
+                                                   Placeholder="Palavra-passe"
+                                                   IsPassword="True"
+                                                   Text="{Binding Password, Mode=TwoWay}"
+                                                   Completed="OnEntryCompleted"
+                                                   FontSize="16"
+                                                   BackgroundColor="Transparent"
+                                                   Margin="0"
+                                                   HeightRequest="44"
+                                                   HorizontalOptions="Fill"/>
+                                            <Button x:Name="btnToggle"
+                                                    BackgroundColor="Transparent"
+                                                    Padding="0"
+                                                    Clicked="OnTogglePasswordClicked"
+                                                    HorizontalOptions="End"
+                                                    VerticalOptions="Center"
+                                                    WidthRequest="32"
+                                                    HeightRequest="32"
+                                                    Margin="0,0,8,0">
+                                                <Button.ImageSource>
+                                                    <FontImageSource Glyph="&#xf06e;" FontFamily="FA7Solid" Color="#6366F1" Size="20"/>
+                                                </Button.ImageSource>
+                                                <Button.Behaviors>
+                                                </Button.Behaviors>
+                                            </Button>
+                                        </Grid>
+                                    </Border>
+                                </Grid>
+
+                                <!-- Lembrar-me -->
+                                <HorizontalStackLayout Padding="0" Spacing="0"
+                                                       HorizontalOptions="Start"
+                                                       VerticalOptions="Center"
+                                                       HeightRequest="32"
+                                                       MinimumHeightRequest="32">
+                                    <Frame Padding="0" Margin="40,0,10,0"
+                                           HasShadow="False"
+                                           BorderColor="Transparent"
+                                           BackgroundColor="Transparent"
+                                           HeightRequest="32"
+                                           WidthRequest="32"
+                                           VerticalOptions="Center"
+                                           HorizontalOptions="Start"
+                                           IsClippedToBounds="True">
+                                        <CheckBox x:Name="chkRemember"
+                                                  VerticalOptions="Center"
+                                                  HorizontalOptions="Center"
+                                                  HeightRequest="18"
+                                                  WidthRequest="18"
+                                                  Margin="0,0,0,15"/>
+                                    </Frame>
+                                    <Label Text="Lembrar-me neste dispositivo"
+                                           VerticalTextAlignment="Center"
+                                           FontFamily="Inter"
+                                           FontSize="14"
+                                           Margin="0,0,0,15"
+                                           LineBreakMode="NoWrap"/>
+                                </HorizontalStackLayout>
+
+                                <!-- Biometria: aparece só se foi ativada pelo utilizador -->
+                                <Grid ColumnDefinitions="*,Auto"
+                                      Padding="0"
+                                      Margin="40,0,0,0"
+                                      IsVisible="{Binding BiometricEnabled}">
+                                    <Label Text="Usar biometria (Face ID/Touch ID)"
+                                           VerticalTextAlignment="Center"
+                                           FontFamily="Inter"
+                                           FontSize="14"/>
+                                    <Switch Grid.Column="1"
+                                            IsToggled="{Binding BiometricEnabled}" />
+                                </Grid>
+
+                                <!-- Entrar -->
+                                <Button x:Name="btnLogin"
+                                        Text=" Entrar"
+                                        Clicked="OnLoginClicked"
+                                        HorizontalOptions="Fill"
+                                        FontSize="18"
+                                        HeightRequest="48"
+                                        CornerRadius="16"
+                                        BackgroundColor="#4F46E5"
+                                        TextColor="White"
+                                        FontFamily="InterSemiBold"
+                                        WidthRequest="300">
+                                    <Button.ImageSource>
+                                        <FontImageSource Glyph="&#xf2f6;" FontFamily="FA7Solid" Color="White" Size="20"/>
+                                    </Button.ImageSource>
+                                </Button>
+
+                                <!-- Entrar com Face ID / Biometria (só aparece após Face ID ativado) -->
+                                <Button Text=" Entrar com Face ID"
+                                        Command="{Binding BiometricLoginCommand}"
+                                        IsVisible="{Binding BiometricEnabled}"
+                                        IsEnabled="{Binding BiometricAvailable}"
+                                        HorizontalOptions="Fill"
+                                        FontSize="18"
+                                        HeightRequest="48"
+                                        CornerRadius="16"
+                                        BackgroundColor="Transparent"
+                                        BorderColor="#4F46E5"
+                                        BorderWidth="1"
+                                        TextColor="#4F46E5"
+                                        FontFamily="InterSemiBold"
+                                        WidthRequest="300">
+                                    <Button.ImageSource>
+                                        <FontImageSource Glyph="&#xF577;" FontFamily="FA7Solid" Color="#4F46E5" Size="20"/>
+                                    </Button.ImageSource>
+                                </Button>
+
+                                <!-- Loading + Mensagem -->
+                                <ActivityIndicator x:Name="loading"
+                                                   IsVisible="False"
+                                                   IsRunning="False"
+                                                   Color="#4F46E5" />
+                                <Label x:Name="labelMensagem"
+                                       IsVisible="False"
+                                       FontFamily="Inter"
+                                       FontSize="14"
+                                       HorizontalTextAlignment="Center"
+                                       Margin="0,8,0,0"/>
+                            </VerticalStackLayout>
+
+                            <!-- Links -->
+                            <VerticalStackLayout Spacing="8" HorizontalOptions="Center" Margin="0,12,0,0">
+                                <Label Text="Esqueci-me da palavra-passe (e-mail)" TextColor="#4F46E5" FontSize="14" FontFamily="Inter">
+                                    <Label.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnForgotByEmailTapped" NumberOfTapsRequired="1"/>
+                                    </Label.GestureRecognizers>
+                                    <Label.Behaviors>
+                                    </Label.Behaviors>
+                                </Label>
+                                <Label Text="Tenho um código do e-mail" TextColor="#4F46E5" FontSize="14" FontFamily="Inter">
+                                    <Label.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnHaveCodeTapped" NumberOfTapsRequired="1"/>
+                                        </Label.GestureRecognizers>
+                                        <Label.Behaviors>
+                                        </Label.Behaviors>
+                                </Label>
+                                <Label Text="Reset interno (admin)" TextColor="#4F46E5" FontSize="14" FontFamily="Inter">
+                                    <Label.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnInternalResetTapped" NumberOfTapsRequired="1"/>
+                                    </Label.GestureRecognizers>
+                                    <Label.Behaviors>
+                                    </Label.Behaviors>
+                                </Label>
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
+            </Grid>
+        </ScrollView>
+    </Grid>
+</ContentPage>

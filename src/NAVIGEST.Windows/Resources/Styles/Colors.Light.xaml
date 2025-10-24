@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<?xaml-comp compile="true" ?>
+<ResourceDictionary
+    x:Class="NAVIGEST.macOS.Resources.Styles.Colors_Light"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!-- Acentos -->
+    <Color x:Key="AppAccent">#6EC0FF</Color>
+    <Color x:Key="SidebarAccent">#6EC0FF</Color>
+    <Color x:Key="TopbarAccent">#6EC0FF</Color>
+
+    <!-- Estrutura / Layout -->
+    <Color x:Key="PageBackgroundColor">#F5F7FB</Color>
+    <Color x:Key="BodyBg">#F8FAFC</Color>
+    <Color x:Key="BodyFg">#1E293B</Color>
+    <Color x:Key="CardBackgroundColor">#FFFFFF</Color>
+    <Color x:Key="DividerColor">#E5E7EB</Color>
+
+    <!-- Sidebar -->
+    <Color x:Key="SidebarBg">#F1F5F9</Color>
+    <Color x:Key="SidebarItem">#FFFFFF</Color>
+    <Color x:Key="SidebarDivider">#CBD5E1</Color>
+
+    <!-- Topbar -->
+    <Color x:Key="TopbarBg">#FFFFFF</Color>
+    <Color x:Key="TopbarFg">#1E293B</Color>
+
+    <!-- Tipografia -->
+    <Color x:Key="BodyTextColor">#111827</Color>
+    <Color x:Key="White">#FFFFFF</Color>
+
+    <!-- ENTRY (Light) -->
+    <Color x:Key="EntryBackgroundColor">#FFFFFF</Color>
+    <Color x:Key="EntryTextColor">#0F172A</Color>
+    <!-- slate-900 para melhor contraste -->
+    <Color x:Key="EntryPlaceholderColor">#94A3B8</Color>
+    <!-- slate-400 -->
+    <Color x:Key="EntryBorderColor">#CBD5E1</Color>
+    <!-- slate-300 -->
+    <Color x:Key="EntryBorderColorFocused">#22C55E</Color>
+    <!-- verde “neon” focus -->
+    <Color x:Key="EntryBorderColorError">#EF4444</Color>
+    <!-- erro -->
+    <Color x:Key="EntrySelectionColor">#93C5FD</Color>
+    <!-- seleção (azul suave) -->
+    <Color x:Key="EntryCaretColor">#2563EB</Color>
+    <!-- cursor azul -->
+
+
+    <!-- Listas / Tabelas -->
+    <Color x:Key="ListHeaderBackgroundColor">#E8ECF2</Color>
+    <Color x:Key="ListHeaderTextColor">#1E293B</Color>
+    <Color x:Key="ListRowTextColor">#111827</Color>
+    <Color x:Key="ListRowAltBackgroundColor">#F5F7FB</Color>
+    <Color x:Key="ListRowBackgroundColor">#FFFFFF</Color>
+
+    <!-- Brushes equivalentes (úteis no Windows) -->
+    <SolidColorBrush x:Key="Brush.AppAccent" Color="{StaticResource AppAccent}" />
+    <SolidColorBrush x:Key="Brush.PageBackgroundColor" Color="{StaticResource PageBackgroundColor}" />
+    <SolidColorBrush x:Key="Brush.BodyBg" Color="{StaticResource BodyBg}" />
+    <SolidColorBrush x:Key="Brush.BodyFg" Color="{StaticResource BodyFg}" />
+    <SolidColorBrush x:Key="Brush.CardBackgroundColor" Color="{StaticResource CardBackgroundColor}" />
+    <SolidColorBrush x:Key="Brush.DividerColor" Color="{StaticResource DividerColor}" />
+
+    <SolidColorBrush x:Key="Brush.SidebarBg" Color="{StaticResource SidebarBg}" />
+    <SolidColorBrush x:Key="Brush.SidebarItem" Color="{StaticResource SidebarItem}" />
+    <SolidColorBrush x:Key="Brush.SidebarDivider" Color="{StaticResource SidebarDivider}" />
+
+    <SolidColorBrush x:Key="Brush.TopbarBg" Color="{StaticResource TopbarBg}" />
+    <SolidColorBrush x:Key="Brush.TopbarFg" Color="{StaticResource TopbarFg}" />
+
+    <SolidColorBrush x:Key="Brush.BodyTextColor" Color="{StaticResource BodyTextColor}" />
+    <SolidColorBrush x:Key="Brush.White" Color="{StaticResource White}" />
+
+    <SolidColorBrush x:Key="Brush.EntryBackgroundColor" Color="{StaticResource EntryBackgroundColor}" />
+    <SolidColorBrush x:Key="Brush.EntryTextColor" Color="{StaticResource EntryTextColor}" />
+    <SolidColorBrush x:Key="Brush.EntryBorderColor" Color="{StaticResource EntryBorderColor}" />
+    <SolidColorBrush x:Key="Brush.EntryPlaceholderColor" Color="{StaticResource EntryPlaceholderColor}" />
+    <SolidColorBrush x:Key="Brush.EntrySelectionColor" Color="{StaticResource EntrySelectionColor}" />
+    <SolidColorBrush x:Key="Brush.EntryCaretColor" Color="{StaticResource EntryCaretColor}" />
+    <SolidColorBrush x:Key="Brush.EntryBorderColorFocused" Color="{StaticResource EntryBorderColorFocused}" />
+    <SolidColorBrush x:Key="Brush.EntryBorderColorError" Color="{StaticResource EntryBorderColorError}" />
+
+    <SolidColorBrush x:Key="Brush.ListHeaderBackgroundColor" Color="{StaticResource ListHeaderBackgroundColor}" />
+    <SolidColorBrush x:Key="Brush.ListHeaderTextColor" Color="{StaticResource ListHeaderTextColor}" />
+    <SolidColorBrush x:Key="Brush.ListRowTextColor" Color="{StaticResource ListRowTextColor}" />
+    <SolidColorBrush x:Key="Brush.ListRowAltBackgroundColor" Color="{StaticResource ListRowAltBackgroundColor}" />
+    <SolidColorBrush x:Key="Brush.ListRowBackgroundColor" Color="{StaticResource ListRowBackgroundColor}" />
+
+</ResourceDictionary>

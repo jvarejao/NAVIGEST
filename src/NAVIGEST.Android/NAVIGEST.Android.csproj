@@ -1,0 +1,149 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net9.0-android</TargetFrameworks>
+		<OutputType>Exe</OutputType>
+		<RootNamespace>NAVIGEST.Android</RootNamespace>
+		<UseMaui>true</UseMaui>
+		<SingleProject>true</SingleProject>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+
+		<!-- CommunityToolkit warning -->
+		<NoWarn>XC0103</NoWarn>
+		<MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
+
+		<!-- App Info -->
+		<ApplicationTitle>NAVIGEST</ApplicationTitle>
+		<ApplicationId>com.tuaempresa.navigest</ApplicationId>
+		<ApplicationDisplayVersion>1.0.0</ApplicationDisplayVersion>
+		<ApplicationVersion>3</ApplicationVersion>
+
+		<!-- Supported platforms -->
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+
+		<!-- Android specific -->
+		<AndroidStoreUncompressedDex>False</AndroidStoreUncompressedDex>
+		<AndroidCreatePackagePerAbi>True</AndroidCreatePackagePerAbi>
+		<AndroidKeyStore>False</AndroidKeyStore>
+		<AndroidPackageFormat>apk</AndroidPackageFormat>
+
+		<!-- Optimizations -->
+		<RunAOT>false</RunAOT>
+		<PublishTrimmed>false</PublishTrimmed>
+		
+		<!-- Disable Fast Deployment (causes assembly loading issues) -->
+		<EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
+		<AndroidUseAssemblyStore>false</AndroidUseAssemblyStore>
+	</PropertyGroup>
+
+	<!-- Android Debug Configuration -->
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-android|AnyCPU'">
+		<AndroidCreatePackagePerAbi>True</AndroidCreatePackagePerAbi>
+		<AndroidKeyStore>False</AndroidKeyStore>
+	</PropertyGroup>
+
+	<!-- Android Release Configuration -->
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-android|AnyCPU'">
+		<AndroidCreatePackagePerAbi>True</AndroidCreatePackagePerAbi>
+		<AndroidLinkTool>r8</AndroidLinkTool>
+		<AndroidKeyStore>False</AndroidKeyStore>
+	</PropertyGroup>
+
+	<!-- Resources -->
+	<ItemGroup>
+		<MauiIcon Include="Resources\AppIcon\appicon.png" />
+		<MauiSplashScreen Include="Resources\Splash\appicon.png" Color="#17171a" BaseSize="128,128" />
+		<MauiAsset Include="Resources\Images\startup.gif" LogicalName="startup.gif" />
+	</ItemGroup>
+
+	<!-- Fonts -->
+	<ItemGroup>
+		<MauiFont Include="Resources\Fonts\fa7_solid.otf" Alias="FA7Solid">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</MauiFont>
+		<MauiFont Include="Resources\Fonts\fa7-regular.otf" Alias="FA7Regular">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</MauiFont>
+		<MauiFont Include="Resources\Fonts\fa7_brands.otf" Alias="FA7Brands">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</MauiFont>
+	</ItemGroup>
+
+	<!-- NuGet Packages -->
+	<ItemGroup>
+		<PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+		<PackageReference Include="MailKit" Version="4.13.0" />
+		<PackageReference Include="Microsoft.Maui.Controls" Version="9.0.110" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0-rc.1.25451.107" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+		<PackageReference Include="CommunityToolkit.Maui" Version="12.2.0" />
+		<PackageReference Include="Microsoft.Data.Sqlite.Core" Version="10.0.0-rc.1.25451.107" />
+		<PackageReference Include="MySqlConnector" Version="2.4.0" />
+		<PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.11" />
+		<PackageReference Include="Syncfusion.Maui.Toolkit" Version="1.0.6" />
+		<PackageReference Include="Plugin.Fingerprint" Version="3.0.0-beta.1" />
+	</ItemGroup>
+
+	<!-- Android Material Design -->
+	<ItemGroup Condition="'$(TargetFramework)'=='net9.0-android'">
+		<PackageReference Include="Xamarin.Google.Android.Material" Version="1.12.0.3" />
+	</ItemGroup>
+
+	<!-- XAML Compilation -->
+	<ItemGroup>
+		<MauiXaml Update="Pages\ClientsPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\DbConfigPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\HoursEntryPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\LoginPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\MainYahPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\ProductsPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\RegisterPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\ServicePage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\SplashIntroPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\WelcomePage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Resources\Styles\Buttons.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Resources\Styles\DesignSystem.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Resources\Styles\Inputs.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+	</ItemGroup>
+
+	<!-- References to Shared Project -->
+	<ItemGroup>
+		<ProjectReference Include="..\NAVIGEST.Shared\NAVIGEST.Shared.csproj" />
+	</ItemGroup>
+
+	<!-- Folder Structure -->
+	<ItemGroup>
+		<Folder Include="Platforms\Android\Handlers\" />
+	</ItemGroup>
+
+</Project>

@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage x:Class="NAVIGEST.iOS.Pages.ProductsPage"
+             x:Name="ProductsPageRoot"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:NAVIGEST.iOS.Models"
+             xmlns:behaviors="clr-namespace:NAVIGEST.iOS.Behaviors"
+             BackgroundColor="{DynamicResource PageBackgroundColor}"
+             Title="Produtos">
+
+    <ContentPage.Resources>
+        <Style TargetType="Button" x:Key="BtnBase">
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="HeightRequest" Value="46"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="TextColor" Value="White"/>
+            <Setter Property="Padding" Value="14,8"/>
+        </Style>
+        <Style TargetType="Button" x:Key="BtnSuccess" BasedOn="{StaticResource BtnBase}"><Setter Property="BackgroundColor" Value="#10B981"/></Style>
+        <Style TargetType="Button" x:Key="BtnWarn" BasedOn="{StaticResource BtnBase}"><Setter Property="BackgroundColor" Value="#F59E0B"/></Style>
+        <Style TargetType="Button" x:Key="BtnDanger" BasedOn="{StaticResource BtnBase}"><Setter Property="BackgroundColor" Value="#EF4444"/></Style>
+        <Style TargetType="Button" x:Key="BtnNeutral" BasedOn="{StaticResource BtnBase}"><Setter Property="BackgroundColor" Value="#6B7280"/></Style>
+        <Style TargetType="Entry" x:Key="FormEntry">
+            <Setter Property="HeightRequest" Value="44"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="Margin" Value="0,4,0,0"/>
+        </Style>
+        <Style TargetType="Picker" x:Key="FormPicker">
+            <Setter Property="HeightRequest" Value="70"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="Margin" Value="0,4,0,0"/>
+            <Setter Property="HorizontalOptions" Value="Fill"/>
+            <Setter Property="VerticalOptions" Value="Center"/>
+            <Setter Property="TitleColor" Value="{AppThemeBinding Light=#6B7280, Dark=#CBD5E1}"/>
+        </Style>
+    </ContentPage.Resources>
+
+    <Grid>
+        <!-- Scroll principal -->
+        <ScrollView>
+            <VerticalStackLayout Spacing="18" Padding="24,24,24,60" HorizontalOptions="Center" MaximumWidthRequest="1080">
+                <!-- Botão abrir picker (mobile/tablet) -->
+                <Button Text="Selecionar Produto" IsVisible="{OnIdiom Phone=true, Tablet=true, Desktop=false}" Style="{StaticResource AppleTintedButton}" Clicked="OnOpenProductPicker" />
+
+                <!-- FORM -->
+                <Border StrokeShape="RoundRectangle 18" StrokeThickness="1" Stroke="{DynamicResource DividerColor}" Background="{DynamicResource CardBackgroundColor}" Padding="20">
+                    <VerticalStackLayout Spacing="18">
+                        <Entry Style="{StaticResource AppleEntry}" Placeholder="Código" Text="{Binding Editing.PRODCODIGO}" IsReadOnly="True"/>
+                        <Entry Style="{StaticResource AppleEntry}" Placeholder="Descrição" Text="{Binding Editing.PRODNOME}" />
+                        <Grid ColumnDefinitions="*,Auto" Margin="0,-4,0,0">
+                            <Picker x:Name="FamilyPicker" Grid.Column="0" Style="{StaticResource FormPicker}" Title="Selecionar família" ItemsSource="{Binding Families}" SelectedItem="{Binding Editing.FAMILIA}" SemanticProperties.Description="Selecionar família"/>
+                            <Border Grid.Column="1" Margin="8,28,0,0" WidthRequest="46" StrokeThickness="0" BackgroundColor="#2563EB" StrokeShape="RoundRectangle 10">
+                                <Button x:Name="BtnAddFamily" Clicked="OnAddFamilyClicked" BackgroundColor="Transparent" Padding="0" HeightRequest="46" WidthRequest="46" SemanticProperties.Description="Adicionar família">
+                                    <Button.ImageSource><FontImageSource Glyph="&#xF067;" FontFamily="FA7Solid" Color="White" Size="20"/></Button.ImageSource>
+                                </Button>
+                            </Border>
+                        </Grid>
+                        <Entry Style="{StaticResource AppleEntry}" Placeholder="Colaborador" Text="{Binding Editing.COLABORADOR}" IsReadOnly="True"/>
+                        <Label Text="{Binding StatusMessage}" TextColor="Tomato" FontSize="13" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- BOTÕES -->
+                <Border StrokeThickness="1"
+        Stroke="{DynamicResource DividerColor}"
+        Background="{DynamicResource CardBackgroundColor}"
+        Padding="18">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="18" />
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="10">
+
+                        <!-- Guardar -->
+                        <Button Style="{StaticResource Button.PrimaryIcon}" Text="Guardar" Command="{Binding SaveCommand}">
+                            <Button.ImageSource>
+                                <FontImageSource Glyph="&#xF0C7;" FontFamily="FA7Solid" Size="{StaticResource BtnIconSize}"
+                         Color="{StaticResource BtnPrimaryIconColor}" />
+                            </Button.ImageSource>
+                        </Button>
+
+                        <!-- Novo Produto -->
+                        <Button Style="{StaticResource Button.Outline}" Text="Novo" Command="{Binding NewCommand}">
+                            <Button.ImageSource>
+                                <FontImageSource Glyph="&#xF067;" FontFamily="FA7Solid" Size="{StaticResource BtnIconSize}"
+                         Color="{StaticResource BtnAltIconColor}" />
+                            </Button.ImageSource>
+                        </Button>
+
+                        <!-- Eliminar -->
+                        <Button Style="{StaticResource Button.Outline}" Text="Eliminar" Command="{Binding DeleteCommand}">
+                            <Button.ImageSource>
+                                <FontImageSource Glyph="&#xF1F8;" FontFamily="FA7Solid" Size="{StaticResource BtnIconSize}"
+                         Color="{StaticResource BtnAltIconColor}" />
+                            </Button.ImageSource>
+                        </Button>
+
+                        <!-- Limpar -->
+                        <Button Style="{StaticResource Button.Ghost}" Text="Limpar" Command="{Binding ClearCommand}">
+                            <Button.ImageSource>
+                                <FontImageSource Glyph="&#xF12D;" FontFamily="FA7Solid" Size="{StaticResource BtnIconSize}"
+                         Color="{StaticResource BtnAltIconColor}" />
+                            </Button.ImageSource>
+                        </Button>
+
+                        <!-- Recarregar -->
+                        <Button Style="{StaticResource Button.Ghost}" Text="Recarregar" Command="{Binding RefreshCommand}">
+                            <Button.ImageSource>
+                                <FontImageSource Glyph="&#xF021;" FontFamily="FA7Solid" Size="{StaticResource BtnIconSize}"
+                         Color="{StaticResource BtnAltIconColor}" />
+                            </Button.ImageSource>
+                        </Button>
+
+                    </VerticalStackLayout>
+                </Border>
+
+
+                <!-- PESQUISA -->
+                <Border StrokeShape="RoundRectangle 18" StrokeThickness="1" Stroke="{DynamicResource DividerColor}" Background="{DynamicResource CardBackgroundColor}" Padding="18">
+                    <Entry Placeholder="Pesquisar (código, descrição, família...)" Text="{Binding Filter}"/>
+                </Border>
+
+                <!-- LISTA Desktop -->
+                <Border StrokeShape="RoundRectangle 18" StrokeThickness="1" Stroke="{DynamicResource DividerColor}" Background="{DynamicResource CardBackgroundColor}" Padding="0" IsVisible="{OnIdiom Desktop=true, Phone=false, Tablet=false}">
+                    <VerticalStackLayout Spacing="0">
+                        <Grid BackgroundColor="{DynamicResource ListHeaderBackgroundColor}" Padding="10" ColumnDefinitions="120,4*,2*,2*" ColumnSpacing="14">
+                            <Label Text="Código" FontAttributes="Bold" FontSize="13"/>
+                            <Label Grid.Column="1" Text="Descrição" FontAttributes="Bold" FontSize="13"/>
+                            <Label Grid.Column="2" Text="Família" FontAttributes="Bold" FontSize="13"/>
+                            <Label Grid.Column="3" Text="Colaborador" FontAttributes="Bold" FontSize="13"/>
+                        </Grid>
+                        <CollectionView ItemsSource="{Binding Filtered}" SelectionMode="Single" SelectedItem="{Binding SelectedProduct, Mode=TwoWay}" SelectionChanged="OnProductSelectionChanged">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="models:Product">
+                                    <Grid Padding="10" ColumnSpacing="14" ColumnDefinitions="120,4*,2*,2*" MinimumHeightRequest="44">
+                                        <VisualStateManager.VisualStateGroups>
+                                            <VisualStateGroup Name="SelectionStates">
+                                                <VisualState Name="Normal"><VisualState.Setters><Setter Property="BackgroundColor" Value="Transparent"/></VisualState.Setters></VisualState>
+                                                <VisualState Name="Selected"><VisualState.Setters><Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#E0F2FE, Dark=#204454}"/></VisualState.Setters></VisualState>
+                                            </VisualStateGroup>
+                                        </VisualStateManager.VisualStateGroups>
+                                        <Label Text="{Binding PRODCODIGO}" FontSize="13"/>
+                                        <Label Grid.Column="1" Text="{Binding PRODNOME}" FontSize="13" LineBreakMode="TailTruncation"/>
+                                        <Label Grid.Column="2" Text="{Binding FAMILIA}" FontSize="13" LineBreakMode="TailTruncation"/>
+                                        <Label Grid.Column="3" Text="{Binding COLABORADOR}" FontSize="13" LineBreakMode="TailTruncation"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Overlay Picker Produtos (mobile/tablet) -->
+        <Grid x:Name="ProductPickerOverlay" IsVisible="False" BackgroundColor="#80000000" IsEnabled="{Binding Source={x:Reference ProductPickerOverlay}, Path=IsVisible}">
+            <Border StrokeShape="RoundRectangle 18" Background="{DynamicResource CardBackgroundColor}" StrokeThickness="1" Stroke="{DynamicResource DividerColor}" Padding="18" Margin="20" HorizontalOptions="Center" VerticalOptions="Center" MaximumWidthRequest="600" MaximumHeightRequest="700">
+                <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12">
+                    <Label Text="Selecionar Produto" FontAttributes="Bold" FontSize="18"/>
+                    <Entry Grid.Row="1" Placeholder="Filtrar..." Text="{Binding Filter}" />
+                    <CollectionView Grid.Row="2" ItemsSource="{Binding Filtered}" SelectionMode="Single" SelectionChanged="OnProductPickerSelectionChanged">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:Product">
+                                <Grid Padding="10" ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                                    <Label Text="{Binding PRODNOME}" FontSize="14" LineBreakMode="TailTruncation"/>
+                                    <Label Grid.Column="1" Text="{Binding PRODCODIGO}" FontSize="13"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                    <Button Grid.Row="3" Text="Fechar" Clicked="OnCloseProductPicker" Style="{StaticResource AppleTintedButton}" />
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Popup Adicionar Família -->
+        <Grid x:Name="AddFamilyOverlay" IsVisible="False" BackgroundColor="#66000000" InputTransparent="False">
+            <Border StrokeShape="RoundRectangle 18" Background="{DynamicResource CardBackgroundColor}" StrokeThickness="1" Stroke="{DynamicResource DividerColor}" Padding="22" WidthRequest="400" HorizontalOptions="Center" VerticalOptions="Center">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Nova Família" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource BodyTextColor}" HorizontalTextAlignment="Center"/>
+                    <Entry x:Name="NewFamilyCodeEntry" Placeholder="Código família" ClearButtonVisibility="WhileEditing"/>
+                    <Entry x:Name="NewFamilyNameEntry" Placeholder="Descrição família" ClearButtonVisibility="WhileEditing"/>
+                    <Label x:Name="AddFamilyErrorLabel" FontSize="12" TextColor="Tomato" IsVisible="False"/>
+                    <HorizontalStackLayout Spacing="10" HorizontalOptions="End">
+                        <Button x:Name="BtnCancelAddFamily" Text="Cancelar" Clicked="OnCancelAddFamily" Style="{StaticResource BtnDanger}" ContentLayout="Left,6"><Button.ImageSource><FontImageSource Glyph="&#xF05E;" FontFamily="FA7Solid" Color="White" Size="16"/></Button.ImageSource></Button>
+                        <Button x:Name="BtnSaveAddFamily" Text="Guardar" Clicked="OnSaveAddFamily" Style="{StaticResource AppleFilledButton}" ContentLayout="Left,6"><Button.ImageSource><FontImageSource Glyph="&#xF0C7;" FontFamily="FA7Solid" Color="White" Size="16"/></Button.ImageSource></Button>
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+
+        <!-- Busy -->
+        <Grid IsVisible="{Binding IsBusy}" BackgroundColor="#66000000" Padding="30" VerticalOptions="Center" HorizontalOptions="Center">
+            <ActivityIndicator IsRunning="True" Color="{DynamicResource AppAccent}" />
+        </Grid>
+    </Grid>
+</ContentPage>

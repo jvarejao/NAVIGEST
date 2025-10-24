@@ -1,0 +1,62 @@
+# Build results
+bin/
+obj/
+.vs/
+.vscode/
+
+# User-specific files
+*.user
+*.suo
+*.userprefs
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+
+# IDE
+.idea/
+*.swp
+*.swo
+*.swn
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# Rider
+.idea/
+*.sln.iml
+
+# Test results
+TestResults/
+coverage/
+
+# Logs
+*.log
+
+# Temporary files
+temp/
+tmp/
+*.tmp
+
+# OS specific
+Thumbs.db
+.DS_Store
+
+# Package manager
+node_modules/
+dist/
+build/
+
+# Other
+.env
+.env.local
+*.pfx
+*.p12
+*.p8

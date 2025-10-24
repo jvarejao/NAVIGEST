@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!-- Paleta -->
+    <Color x:Key="BtnAppleBlue">#0A84FF</Color>
+    <Color x:Key="BtnAppleBluePressed">#0062DC</Color>
+    <Color x:Key="BtnAppleBlueDisabled">#99C2FF</Color>
+
+    <Color x:Key="BtnFgOnBlue">#FFFFFF</Color>
+    <Color x:Key="BtnFgDisabled">#9AA3B2</Color>
+    <Color x:Key="BtnAltIconColor">#0A84FF</Color>   
+    <Color x:Key="BtnPrimaryIconColor">#FFFFFF</Color>
+
+    <Color x:Key="BtnStroke">#CBD5E1</Color>
+    <Color x:Key="BtnGhostBg">#F1F5F9</Color>
+    <Color x:Key="BtnGhostBgPressed">#E2E8F0</Color>
+
+    <!-- Dimensão -->
+    <x:Double x:Key="BtnHeight">48</x:Double>
+    <x:Int32  x:Key="BtnCorner">12</x:Int32>
+    <Thickness x:Key="BtnPadding">16,10</Thickness>
+    <x:Double x:Key="BtnFontSize">16</x:Double>
+    <x:Double x:Key="BtnIconSize">18</x:Double>
+
+    <!-- BASE -->
+    <Style x:Key="Button.Base" TargetType="Button">
+        <Setter Property="HeightRequest" Value="{StaticResource BtnHeight}" />
+        <Setter Property="Padding" Value="{StaticResource BtnPadding}" />
+        <Setter Property="CornerRadius" Value="{StaticResource BtnCorner}" />
+        <Setter Property="FontSize" Value="{StaticResource BtnFontSize}" />
+        <Setter Property="ContentLayout" Value="Left,8" />
+    </Style>
+
+    <!-- PRIMARY -->
+    <Style x:Key="Button.Primary" TargetType="Button" BasedOn="{StaticResource Button.Base}">
+        <Setter Property="BackgroundColor" Value="{StaticResource BtnAppleBlue}" />
+        <Setter Property="TextColor" Value="{StaticResource BtnFgOnBlue}" />
+        <Setter Property="BorderColor" Value="Transparent" />
+        <Setter Property="BorderWidth" Value="0" />
+        <Style.Triggers>
+            <Trigger TargetType="Button" Property="IsPressed" Value="True">
+                <Setter Property="BackgroundColor" Value="{StaticResource BtnAppleBluePressed}" />
+            </Trigger>
+            <Trigger TargetType="Button" Property="IsEnabled" Value="False">
+                <Setter Property="BackgroundColor" Value="{StaticResource BtnAppleBlueDisabled}" />
+                <Setter Property="TextColor" Value="{StaticResource BtnFgDisabled}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- PRIMARY + ÍCONE -->
+    <Style x:Key="Button.PrimaryIcon" TargetType="Button" BasedOn="{StaticResource Button.Primary}">
+        <Setter Property="ContentLayout" Value="Left,10" />
+    </Style>
+
+    <!-- OUTLINE -->
+    <Style x:Key="Button.Outline" TargetType="Button" BasedOn="{StaticResource Button.Base}">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="{StaticResource BtnAppleBlue}" />
+        <Setter Property="BorderWidth" Value="1" />
+        <Setter Property="BorderColor" Value="{StaticResource BtnAppleBlue}" />
+        <Style.Triggers>
+            <Trigger TargetType="Button" Property="IsPressed" Value="True">
+                <Setter Property="BackgroundColor" Value="#0F172A0F" />
+            </Trigger>
+            <Trigger TargetType="Button" Property="IsEnabled" Value="False">
+                <Setter Property="TextColor" Value="{StaticResource BtnFgDisabled}" />
+                <Setter Property="BorderColor" Value="{StaticResource BtnStroke}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- GHOST -->
+    <Style x:Key="Button.Ghost" TargetType="Button" BasedOn="{StaticResource Button.Base}">
+        <Setter Property="BackgroundColor" Value="{StaticResource BtnGhostBg}" />
+        <Setter Property="TextColor" Value="{StaticResource BtnAppleBlue}" />
+        <Setter Property="BorderColor" Value="Transparent" />
+        <Setter Property="BorderWidth" Value="0" />
+        <Style.Triggers>
+            <Trigger TargetType="Button" Property="IsPressed" Value="True">
+                <Setter Property="BackgroundColor" Value="{StaticResource BtnGhostBgPressed}" />
+            </Trigger>
+            <Trigger TargetType="Button" Property="IsEnabled" Value="False">
+                <Setter Property="TextColor" Value="{StaticResource BtnFgDisabled}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+</ResourceDictionary>

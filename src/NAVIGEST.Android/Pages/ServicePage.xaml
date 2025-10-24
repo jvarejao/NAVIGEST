@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="NAVIGEST.Android.Pages.ServicePage"
+             x:Name="ServicePageRoot"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:NAVIGEST.Android.Models"
+             Title="Serviços"
+             Padding="16"
+             Loaded="OnPageLoaded">
+    <Grid>
+        <VerticalStackLayout Spacing="14">
+
+            <!-- Topo: Botão Novo (direita) + ícone -->
+            <Grid ColumnDefinitions="*,Auto">
+                <Label Text="Serviços" FontAttributes="Bold" FontSize="18" VerticalOptions="Center"/>
+                <Button Grid.Column="1"
+                Text="Novo"
+                Command="{Binding NewCommand}"
+                HeightRequest="40"
+                Margin="0,0,10,8"
+                CornerRadius="10">
+                    <Button.ImageSource>
+                        <FontImageSource Glyph="&#xf067;" FontFamily="FA7Solid" Size="18"/>
+                    </Button.ImageSource>
+                </Button>
+            </Grid>
+
+            <!-- Pesquisa: aparece logo -->
+            <Grid ColumnDefinitions="*,Auto">
+                <Entry Placeholder="Pesquisar por nº, cliente ou estado…"
+               Text="{Binding Filter}"
+               ReturnType="Search"/>
+                <Button Grid.Column="1"
+                Command="{Binding SearchCommand}"
+                Padding="12,8">
+                    <Button.ImageSource>
+                        <FontImageSource Glyph="&#xf002;" FontFamily="FA7Solid" Size="18"/>
+                    </Button.ImageSource>
+                </Button>
+            </Grid>
+            <!-- imediatamente por baixo do Grid de pesquisa -->
+            <Label Text="{Binding Orders.Count, StringFormat='Registos: {0}'}"
+       FontSize="12" Opacity="0.7"/>
+
+            <!-- Lista: CustomerName (bold), por baixo OrderNo (esq) e TotalAmount (dir) -->
+            <CollectionView ItemsSource="{Binding Orders}" SelectionMode="None" ItemSizingStrategy="MeasureFirstItem">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:OrderInfoModel">
+                        <Frame HasShadow="False" Padding="10,8" Margin="0,0,0,8" CornerRadius="12" BackgroundColor="{DynamicResource CardBackgroundColor}">
+                            <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto">
+                                <!-- Cliente (negrito) -->
+                                <Label Grid.Row="0" Grid.ColumnSpan="2"
+                 Text="{Binding CustomerName}"
+                 FontAttributes="Bold" FontSize="16" TextColor="{DynamicResource ListRowTextColor}"/>
+                                <!-- Em baixo: Nº (esq) e Total (dir) -->
+                                <Label Grid.Row="1" Grid.Column="0"
+                 Text="{Binding OrderNo}"
+                 FontSize="13" Opacity="0.85" TextColor="{DynamicResource ListRowTextColor}"/>
+                                <Label Grid.Row="1" Grid.Column="1"
+                 Text="{Binding TotalAmount, StringFormat='{}{0:N2} €'}"
+                 FontSize="13" Opacity="0.85"
+                 HorizontalTextAlignment="End" TextColor="{DynamicResource ListRowTextColor}"/>
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+        </VerticalStackLayout>
+
+        <!-- Overlay da "rodinha" (leve, não tapa tudo) -->
+        <Grid IsVisible="{Binding IsBusy}"
+          BackgroundColor="#40000000"
+          InputTransparent="False"
+          ZIndex="100">
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                         IsVisible="{Binding IsBusy}"
+                         VerticalOptions="Center"
+                         HorizontalOptions="Center"/>
+        </Grid>
+    </Grid>
+</ContentPage>

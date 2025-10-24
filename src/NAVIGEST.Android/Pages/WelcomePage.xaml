@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:beh="clr-namespace:NAVIGEST.Android.Behaviors"
+             x:Class="NAVIGEST.Android.Pages.WelcomePage"
+             Title="Bem-vindo"
+             BackgroundColor="{DynamicResource PageBackgroundColor}">
+
+    <!-- Toolbar com ação para abrir a DbConfigPage manualmente -->
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Configurar"
+                     Order="Primary"
+                     Priority="0"
+                     Clicked="OnOpenConfigClicked">
+            <ToolbarItem.IconImageSource>
+                <FontImageSource Glyph="&#xF013;" FontFamily="FA7Solid" Size="20"
+                                 Color="{DynamicResource PrimaryTextColor}" />
+            </ToolbarItem.IconImageSource>
+        </ToolbarItem>
+    </ContentPage.ToolbarItems>
+
+    <Grid>
+        <!-- Fundo -->
+        <Image Source="background.jpg"
+               Aspect="AspectFill"
+               Opacity="0.2"
+               IsVisible="True" />
+
+        <!-- Conteúdo principal (mantido) -->
+        <VerticalStackLayout Padding="30" Spacing="30" VerticalOptions="Center">
+
+            <Image x:Name="LogoImage"
+                   Source="yahcores.png"
+                   HeightRequest="120"
+                   HorizontalOptions="Center"
+                   Opacity="0"
+                   Scale="0.8"
+                   Margin="0,20" />
+
+            <Label x:Name="TituloLabel"
+                   Text="Bem-vindo à YAHPUBLICIDADE"
+                   FontSize="28"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"
+                   TextColor="{DynamicResource PrimaryTextColor}"
+                   Opacity="0" />
+
+            <Label x:Name="DescricaoLabel"
+                   Text="Comece agora a gerir os seus dados de forma simples e moderna."
+                   FontSize="16"
+                   HorizontalOptions="Center"
+                   HorizontalTextAlignment="Center"
+                   TextColor="{DynamicResource SecondaryTextColor}"
+                   Opacity="0" />
+           
+        </VerticalStackLayout>
+
+        <!-- OVERLAY DE LOADING (mantido) -->
+        <Grid x:Name="LoadingOverlay"
+              IsVisible="False"
+              BackgroundColor="#80000000"
+              InputTransparent="False">
+            <Border Padding="24"
+                    BackgroundColor="{AppThemeBinding Light=#F9FAFB, Dark=#1F2937}"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center">
+                <Border.Shadow>
+                    <Shadow Opacity="0.25" Radius="12" Offset="0,6" />
+                </Border.Shadow>
+                <VerticalStackLayout Spacing="12" HorizontalOptions="Center" VerticalOptions="Center">
+                    <ActivityIndicator IsRunning="True"
+                                       WidthRequest="32" HeightRequest="32"/>
+                    <Label x:Name="LoadingLabel"
+                           Text="A ligar à base de dados…"
+                           FontSize="14"
+                           TextColor="{AppThemeBinding Light=#111827, Dark=White}"
+                           HorizontalTextAlignment="Center"/>
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+
+        <!-- TOAST (mantido, com cor) -->
+        <Grid Padding="16" InputTransparent="True"
+              HorizontalOptions="Fill" VerticalOptions="End">
+            <Border x:Name="StatusToast"
+                    IsVisible="False"
+                    Opacity="0"
+                    StrokeShape="RoundRectangle 12"
+                    Padding="14,10"
+                    BackgroundColor="#8022C55E">
+                <Label x:Name="StatusText"
+                       Text="mensagem"
+                       FontSize="14"
+                       TextColor="White"
+                       HorizontalTextAlignment="Center"/>
+            </Border>
+        </Grid>
+
+        <!-- PAINEL: escolher empresa ativa -->
+        <Grid x:Name="CompanyPickerPanel"
+              IsVisible="False"
+              BackgroundColor="#80000000"
+              InputTransparent="False">
+            <Border Padding="20"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center"
+                    BackgroundColor="{AppThemeBinding Light=#F9FAFB, Dark=#111827}">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="16"/>
+                </Border.StrokeShape>
+                <Border.Shadow>
+                    <Shadow Opacity="0.25" Radius="12" Offset="0,6" />
+                </Border.Shadow>
+
+                <VerticalStackLayout Spacing="12"
+                    x:Name="CompanyListContainer"
+                    WidthRequest="{OnPlatform Default=600, Android=250, iOS=250}"
+                    MaximumWidthRequest="{OnPlatform Default=600, Android=250, iOS=250}">
+                    <Label Text="Escolhe a empresa"
+                           FontSize="20"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center"
+                           TextColor="{AppThemeBinding Light=#111827, Dark=White}"/>
+
+                    <CollectionView x:Name="CompanyList"
+                                    SelectionMode="Single"
+                                    SelectionChanged="OnCompanySelected"
+                                    HorizontalOptions="Fill">
+                        <CollectionView.ItemsLayout>
+                            <LinearItemsLayout Orientation="Vertical" ItemSpacing="10"/>
+                        </CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="Auto,*"
+                                      Padding="10"
+                                      BackgroundColor="{AppThemeBinding Light=#E0F2FE, Dark=#1F2937}"
+                                      HorizontalOptions="Fill">
+                                    <Grid.Behaviors>
+                                    </Grid.Behaviors>
+                                    <Grid.GestureRecognizers>
+                                        <!-- FIX: passa o item como CommandParameter -->
+                                        <TapGestureRecognizer NumberOfTapsRequired="1"
+                                                              Tapped="OnCompanyTapped"
+                                                              CommandParameter="{Binding .}"/>
+                                    </Grid.GestureRecognizers>
+
+                                    <!-- LOGO CIRCULAR COM BORDA COLORIDA -->
+                                    <Image Source="{Binding LogoSrc}"
+                                           Aspect="AspectFill"                                            
+                                           WidthRequest="56" HeightRequest="56" Margin="2">
+                                        <Image.Clip>
+                                            <EllipseGeometry Center="28,28" RadiusX="28" RadiusY="28" />
+                                        </Image.Clip>
+                                    </Image>
+
+                                    <!-- NOME DA EMPRESA -->
+                                    <Label Grid.Column="1"
+                                           Text="{Binding Empresa}"
+                                           FontSize="16"
+                                           VerticalTextAlignment="Center"
+                                           TextColor="{AppThemeBinding Light=#111827, Dark=White}"
+                                           Margin="14,0,0,0"
+                                           LineBreakMode="TailTruncation"
+                                           HorizontalOptions="Fill"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+    </Grid>
+</ContentPage>

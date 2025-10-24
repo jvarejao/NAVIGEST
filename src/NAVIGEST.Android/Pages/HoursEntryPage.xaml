@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="NAVIGEST.Android.Pages.HoursEntryPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:NAVIGEST.Android.ViewModels"
+    BackgroundColor="{DynamicResource PageBackgroundColor}"
+    Title="Horas de Colaborador"
+    x:DataType="vm:HoursEntryViewModel"
+    Shell.NavBarIsVisible="True"
+    Shell.FlyoutBehavior="Disabled">
+
+    <ContentPage.Resources>
+        <Style x:Key="CardFrame" TargetType="Frame">
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="CornerRadius" Value="18"/>
+            <Setter Property="HasShadow" Value="True"/>
+            <Setter Property="BackgroundColor" Value="{DynamicResource CardBackgroundColor}"/>
+        </Style>
+
+        <Style x:Key="BtnBase" TargetType="Button">
+            <Setter Property="HeightRequest" Value="42"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontFamily" Value="{DynamicResource AppFontSemibold}"/>
+            <Setter Property="Padding" Value="14,8"/>
+        </Style>
+
+        <Style x:Key="EntryBase" TargetType="Entry">
+            <Setter Property="TextColor" Value="{DynamicResource TextPrimaryColor}"/>
+            <Setter Property="FontFamily" Value="{DynamicResource AppFontRegular}"/>
+            <Setter Property="HeightRequest" Value="40"/>
+            <Setter Property="Margin" Value="0,2,0,2"/>
+            <Setter Property="Keyboard" Value="Default"/>
+        </Style>
+
+        <Style x:Key="PickerBase" TargetType="Picker">
+            <Setter Property="TextColor" Value="{DynamicResource TextPrimaryColor}"/>
+            <Setter Property="FontFamily" Value="{DynamicResource AppFontRegular}"/>
+            <Setter Property="HeightRequest" Value="40"/>
+            <Setter Property="Margin" Value="0,2,0,2"/>
+            <Setter Property="TitleColor" Value="{DynamicResource TextSecondaryColor}"/>
+        </Style>
+
+        <Style x:Key="NeonBorder" TargetType="Border">
+            <Setter Property="Stroke" Value="{DynamicResource BorderColor}"/>
+            <Setter Property="StrokeThickness" Value="1"/>
+            <Setter Property="StrokeShape">
+                <Setter.Value>
+                    <RoundRectangle CornerRadius="10"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="BackgroundColor" Value="{DynamicResource CardBackgroundColor}"/>
+        </Style>
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <Grid Padding="20,16" RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="*"
+              MaximumWidthRequest="1200" HorizontalOptions="Center">
+
+            <!-- Header -->
+            <Frame Grid.Row="0" Style="{StaticResource CardFrame}">
+                <Grid ColumnDefinitions="*,120,160,140,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="10" RowSpacing="10">
+                    <VerticalStackLayout Grid.Column="0">
+                        <Label Text="Colaborador" StyleClass="Caption" TextColor="{DynamicResource TextSecondaryColor}" />
+                        <Grid>
+                            <Border x:Name="BCol" Style="{StaticResource NeonBorder}"/>
+                            <Picker x:Name="PickerColaborador" AutomationId="PickerColaborador"
+                                    Style="{StaticResource PickerBase}"
+                                    Margin="10,6"
+                                    Title="Selecionar colaborador"
+                                    ItemsSource="{Binding Collaborators}"
+                                    ItemDisplayBinding="{Binding Name}"
+                                    SelectedItem="{Binding SelectedCollaborator}" />
+                            <Grid.Triggers>
+                                <DataTrigger TargetType="Grid" Binding="{Binding Source={x:Reference PickerColaborador}, Path=IsFocused}" Value="True">
+                                    <Setter TargetName="BCol" Property="Border.Stroke" Value="{DynamicResource NeonFocus}"/>
+                                    <Setter TargetName="BCol" Property="Border.StrokeThickness" Value="2"/>
+                                </DataTrigger>
+                            </Grid.Triggers>
+                        </Grid>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Grid.Column="1">
+                        <Label Text="Ano" StyleClass="Caption" TextColor="{DynamicResource TextSecondaryColor}"/>
+                        <Grid>
+                            <Border x:Name="BAno" Style="{StaticResource NeonBorder}"/>
+                            <Entry x:Name="EntryAno" AutomationId="EntryAno"
+                                   Style="{StaticResource EntryBase}"
+                                   Margin="10,6"
+                                   Keyboard="Numeric"
+                                   Text="{Binding YearText, Mode=TwoWay}"/>
+                            <Grid.Triggers>
+                                <DataTrigger TargetType="Grid" Binding="{Binding Source={x:Reference EntryAno}, Path=IsFocused}" Value="True">
+                                    <Setter TargetName="BAno" Property="Border.Stroke" Value="{DynamicResource NeonFocus}"/>
+                                    <Setter TargetName="BAno" Property="Border.StrokeThickness" Value="2"/>
+                                </DataTrigger>
+                            </Grid.Triggers>
+                        </Grid>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Grid.Column="2">
+                        <Label Text="Mês" StyleClass="Caption" TextColor="{DynamicResource TextSecondaryColor}"/>
+                        <Grid>
+                            <Border x:Name="BMes" Style="{StaticResource NeonBorder}"/>
+                            <Picker x:Name="PickerMes" AutomationId="PickerMes"
+                                    Style="{StaticResource PickerBase}"
+                                    Margin="10,6"
+                                    Title="Selecionar mês"
+                                    ItemsSource="{Binding Months}"
+                                    SelectedItem="{Binding SelectedMonth}" />
+                            <Grid.Triggers>
+                                <DataTrigger TargetType="Grid" Binding="{Binding Source={x:Reference PickerMes}, Path=IsFocused}" Value="True">
+                                    <Setter TargetName="BMes" Property="Border.Stroke" Value="{DynamicResource NeonFocus}"/>
+                                    <Setter TargetName="BMes" Property="Border.StrokeThickness" Value="2"/>
+                                </DataTrigger>
+                            </Grid.Triggers>
+                        </Grid>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Grid.Column="3" IsVisible="{Binding IsAdmin}">
+                        <Label Text="Valor Hora" StyleClass="Caption" TextColor="{DynamicResource TextSecondaryColor}"/>
+                        <Grid>
+                            <Border x:Name="BVh" Style="{StaticResource NeonBorder}"/>
+                            <Entry x:Name="EntryValorHora" AutomationId="EntryValorHora"
+                                   Style="{StaticResource EntryBase}"
+                                   Margin="10,6"
+                                   Keyboard="Numeric"
+                                   Text="{Binding HourRateText, Mode=TwoWay}"/>
+                            <Grid.Triggers>
+                                <DataTrigger TargetType="Grid" Binding="{Binding Source={x:Reference EntryValorHora}, Path=IsFocused}" Value="True">
+                                    <Setter TargetName="BVh" Property="Border.Stroke" Value="{DynamicResource NeonFocus}"/>
+                                    <Setter TargetName="BVh" Property="Border.StrokeThickness" Value="2"/>
+                                </DataTrigger>
+                            </Grid.Triggers>
+                        </Grid>
+                    </VerticalStackLayout>
+
+                    <Grid Grid.Column="4" RowSpan="2" VerticalOptions="End" HorizontalOptions="End">
+                        <Button AutomationId="BtnLoad" Style="{StaticResource BtnBase}" Text="Carregar"
+                                Command="{Binding LoadMonthCommand}" />
+                    </Grid>
+
+                    <Label Grid.Row="1" Grid.ColumnSpan="4" Text="{Binding InlineMessage}" TextColor="{DynamicResource TextSecondaryColor}"/>
+                </Grid>
+            </Frame>
+
+            <!-- Barra de Ações -->
+            <Frame Grid.Row="1" Style="{StaticResource CardFrame}" Margin="0,12,0,0">
+                <Grid ColumnDefinitions="Auto,8,Auto,8,Auto,8,Auto,8,Auto,*,Auto" VerticalOptions="Center">
+                    <Button AutomationId="BtnSave" Style="{StaticResource BtnBase}" Text="Guardar"
+                            Command="{Binding SaveMonthCommand}" IsEnabled="{Binding HasChanges}"/>
+                    <BoxView Grid.Column="1" WidthRequest="8" />
+                    <Button Grid.Column="2" AutomationId="BtnDeleteMonth" Style="{StaticResource BtnBase}" Text="Eliminar mês"
+                            Command="{Binding DeleteMonthCommand}"/>
+                    <BoxView Grid.Column="3" WidthRequest="8" />
+                    <Button Grid.Column="4" AutomationId="BtnCopy" Style="{StaticResource BtnBase}" Text="Copiar"
+                            Command="{Binding CopyRowsCommand}" />
+                    <BoxView Grid.Column="5" WidthRequest="8" />
+                    <Button Grid.Column="6" AutomationId="BtnPaste" Style="{StaticResource BtnBase}" Text="Colar"
+                            Command="{Binding PasteRowsCommand}" IsEnabled="{Binding CanPaste}" />
+                    <BoxView Grid.Column="7" WidthRequest="8" />
+                    <Button Grid.Column="8" AutomationId="BtnExportMonth" Style="{StaticResource BtnBase}" Text="Exportar mês"
+                            Command="{Binding ExportMonthCommand}" />
+                    <BoxView Grid.Column="9" WidthRequest="8" />
+                    <Button Grid.Column="10" AutomationId="BtnExportYear" Style="{StaticResource BtnBase}" Text="Exportar ano"
+                            Command="{Binding ExportYearCommand}" />
+                </Grid>
+            </Frame>
+
+            <!-- Lista -->
+            <Frame Grid.Row="2" Style="{StaticResource CardFrame}" Margin="0,12,0,0">
+                <Grid RowDefinitions="Auto,Auto" RowSpacing="8">
+
+                    <!-- Header -->
+                    <Grid x:Name="GridHeaderHours"
+                          ColumnDefinitions="56,110,80,220,220,100,100,Auto"
+                          Padding="6,0" ColumnSpacing="8">
+                        <Label Text="Sel" />
+                        <Label Grid.Column="1" Text="Data" />
+                        <Label Grid.Column="2" Text="+/–" />
+                        <Label Grid.Column="3" Text="Cliente" />
+                        <Label Grid.Column="4" Text="Centro Custo" />
+                        <Label Grid.Column="5" Text="Horas" />
+                        <Label Grid.Column="6" Text="Extras" />
+                        <Label Grid.Column="7" Text="Obs." />
+                    </Grid>
+
+                    <!-- Itens -->
+                    <CollectionView x:Name="RowsList"
+                                    Grid.Row="1"
+                                    ItemsSource="{Binding Rows}"
+                                    SelectionMode="None"
+                                    ItemsUpdatingScrollMode="KeepScrollOffset">
+                        <CollectionView.ItemsLayout>
+                            <LinearItemsLayout Orientation="Vertical" ItemSpacing="6"/>
+                        </CollectionView.ItemsLayout>
+
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="vm:TimeEntry">
+                                <Grid ColumnDefinitions="56,110,80,220,220,100,100,Auto"
+                                      Padding="6,0" ColumnSpacing="8">
+
+                                    <!-- Sel -->
+                                    <CheckBox AutomationId="ChkSelect"
+                                              IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                              HorizontalOptions="Center" VerticalOptions="Center" />
+
+                                    <!-- Data -->
+                                    <Label Grid.Column="1" AutomationId="LblDate"
+                                           Text="{Binding Date, StringFormat='{0:dd/MM/yyyy}'}"
+                                           VerticalTextAlignment="Center" />
+
+                                    <!-- ADD/DEL -->
+                                    <Button Grid.Column="2" AutomationId="BtnAddDel"
+                                            Style="{StaticResource BtnBase}"
+                                            Text="{Binding AddDelText}"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.AddDelCommand}"
+                                            CommandParameter="{Binding .}" />
+
+                                    <!-- Cliente -->
+                                    <Grid Grid.Column="3">
+                                        <Border x:Name="BClient" Style="{StaticResource NeonBorder}"/>
+                                        <Picker x:Name="PickClient" AutomationId="PickClient"
+                                                Style="{StaticResource PickerBase}"
+                                                Margin="10,6"
+                                                ItemsSource="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.Clients}"
+                                                ItemDisplayBinding="{Binding Name}"
+                                                SelectedItem="{Binding SelectedClient, Mode=TwoWay}" />
+                                        <Grid.Triggers>
+                                            <DataTrigger TargetType="Grid" Binding="{Binding Source={x:Reference PickClient}, Path=IsFocused}" Value="True">
+                                                <Setter TargetName="BClient" Property="Border.Stroke" Value="{DynamicResource NeonFocus}"/>
+                                                <Setter TargetName="BClient" Property="Border.StrokeThickness" Value="2"/>
+                                            </DataTrigger>
+                                            <!-- ERRO visual -->
+                                            <DataTrigger TargetType="Grid" Binding="{Binding HasError}" Value="True">
+                                                <Setter TargetName="BClient" Property="Border.Stroke" Value="{DynamicResource NeonError}"/>
+                                                <Setter TargetName="BClient" Property="Border.StrokeThickness" Value="2"/>
+                                            </DataTrigger>
+                                        </Grid.Triggers>
+                                    </Grid>
+
+                                    <!-- Centro de Custo -->
+                                    <Grid Grid.Column="4">
+                                        <Border x:Name="BCc" Style="{StaticResource NeonBorder}"/>
+                                        <Picker x:Name="PickCostCenter" AutomationId="PickCostCenter"
+                                                Style="{StaticResource PickerBase}"
+                                                Margin="10,6"
+                                                ItemsSource="{Binding FilteredCostCenters}"
+                                                ItemDisplayBinding="{Binding Name}"
+                                                SelectedItem="{Binding SelectedCostCenter, Mode=TwoWay}" />
+                                        <Grid.Triggers>
+                                            <DataTrigger TargetType="Grid" Binding="{Binding Source={x:Reference PickCostCenter}, Path=IsFocused}" Value="True">
+                                                <Setter TargetName="BCc" Property="Border.Stroke" Value="{DynamicResource NeonFocus}"/>
+                                                <Setter TargetName="BCc" Property="Border.StrokeThickness" Value="2"/>
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Grid" Binding="{Binding HasError}" Value="True">
+                                                <Setter TargetName="BCc" Property="Border.Stroke" Value="{DynamicResource NeonError}"/>
+                                                <Setter TargetName="BCc" Property="Border.StrokeThickness" Value="2"/>
+                                            </DataTrigger>
+                                        </Grid.Triggers>
+                                    </Grid>
+
+                                    <!-- Horas -->
+                                    <Grid Grid.Column="5">
+                                        <Border x:Name="BH" Style="{StaticResource NeonBorder}"/>
+                                        <Entry x:Name="EntryHours" AutomationId="EntryHours"
+                                               Style="{StaticResource EntryBase}"
+                                               Margin="10,6"
+                                               Keyboard="Numeric"
+                                               Text="{Binding HoursText, Mode=TwoWay}" />
+                                        <Grid.Triggers>
+                                            <DataTrigger TargetType="Grid" Binding="{Binding Source={x:Reference EntryHours}, Path=IsFocused}" Value="True">
+                                                <Setter TargetName="BH" Property="Border.Stroke" Value="{DynamicResource NeonFocus}"/>
+                                                <Setter TargetName="BH" Property="Border.StrokeThickness" Value="2"/>
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Grid" Binding="{Binding HasError}" Value="True">
+                                                <Setter TargetName="BH" Property="Border.Stroke" Value="{DynamicResource NeonError}"/>
+                                                <Setter TargetName="BH" Property="Border.StrokeThickness" Value="2"/>
+                                            </DataTrigger>
+                                        </Grid.Triggers>
+                                    </Grid>
+
+                                    <!-- Extras -->
+                                    <Grid Grid.Column="6">
+                                        <Border x:Name="BEx" Style="{StaticResource NeonBorder}"/>
+                                        <Entry x:Name="EntryOvertime" AutomationId="EntryOvertime"
+                                               Style="{StaticResource EntryBase}"
+                                               Margin="10,6"
+                                               Keyboard="Numeric"
+                                               Text="{Binding OvertimeText, Mode=TwoWay}" />
+                                        <Grid.Triggers>
+                                            <DataTrigger TargetType="Grid" Binding="{Binding Source={x:Reference EntryOvertime}, Path=IsFocused}" Value="True">
+                                                <Setter TargetName="BEx" Property="Border.Stroke" Value="{DynamicResource NeonFocus}"/>
+                                                <Setter TargetName="BEx" Property="Border.StrokeThickness" Value="2"/>
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Grid" Binding="{Binding HasError}" Value="True">
+                                                <Setter TargetName="BEx" Property="Border.Stroke" Value="{DynamicResource NeonError}"/>
+                                                <Setter TargetName="BEx" Property="Border.StrokeThickness" Value="2"/>
+                                            </DataTrigger>
+                                        </Grid.Triggers>
+                                    </Grid>
+
+                                    <!-- Observações -->
+                                    <Grid Grid.Column="7" ColumnDefinitions="*,Auto" ColumnSpacing="6">
+                                        <Grid>
+                                            <Border x:Name="BObs" Style="{StaticResource NeonBorder}"/>
+                                            <Entry x:Name="EntryObs" AutomationId="EntryObs"
+                                                   Style="{StaticResource EntryBase}"
+                                                   Margin="10,6"
+                                                   Text="{Binding Notes, Mode=TwoWay}" />
+                                            <Grid.Triggers>
+                                                <DataTrigger TargetType="Grid" Binding="{Binding Source={x:Reference EntryObs}, Path=IsFocused}" Value="True">
+                                                    <Setter TargetName="BObs" Property="Border.Stroke" Value="{DynamicResource NeonFocus}"/>
+                                                    <Setter TargetName="BObs" Property="Border.StrokeThickness" Value="2"/>
+                                                </DataTrigger>
+                                            </Grid.Triggers>
+                                        </Grid>
+                                        <Button Grid.Column="1" AutomationId="BtnObsExpand"
+                                                Style="{StaticResource BtnBase}"
+                                                Text="…"
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.EditNotesCommand}"
+                                                CommandParameter="{Binding .}" />
+                                    </Grid>
+
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Grid>
+            </Frame>
+
+            <!-- Rodapé -->
+            <Frame Grid.Row="3" Style="{StaticResource CardFrame}" Margin="0,12,0,36">
+                <Grid ColumnDefinitions="*,Auto,16,Auto,16,Auto" VerticalOptions="Center">
+                    <Label Text="Totais do mês:" VerticalTextAlignment="Center" />
+                    <Label Grid.Column="1" AutomationId="LblTotalHoras" Text="{Binding TotalHoursText}" />
+                    <BoxView Grid.Column="2" WidthRequest="16" />
+                    <Label Grid.Column="3" AutomationId="LblTotalExtras" Text="{Binding TotalOvertimeText}" />
+                    <BoxView Grid.Column="4" WidthRequest="16" />
+                    <Label Grid.Column="5" AutomationId="LblCustoEstimado" IsVisible="{Binding IsAdmin}" Text="{Binding TotalCostText}" />
+                </Grid>
+            </Frame>
+        </Grid>
+    </ScrollView>
+</ContentPage>

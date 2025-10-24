@@ -1,0 +1,216 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- TargetFramework para macOS -->
+    <TargetFrameworks>net9.0-maccatalyst</TargetFrameworks>
+
+    <OutputType>Exe</OutputType>
+    <RootNamespace>NAVIGEST.macOS</RootNamespace>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <!-- CommunityToolkit warning conhecido -->
+    <NoWarn>XC0103</NoWarn>
+    <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
+
+    <!-- App -->
+    <ApplicationTitle>NAVIGEST</ApplicationTitle>
+    <ApplicationId>com.tuaempresa.navigest</ApplicationId>
+    <ApplicationDisplayVersion>1.0.0</ApplicationDisplayVersion>
+    <!-- IMPORTANT for Android: integer version -->
+    <ApplicationVersion>3</ApplicationVersion>
+
+    <!-- Windows packaging -->
+    <WindowsPackageType>MSIX</WindowsPackageType>
+
+    <!-- Optimizations -->
+    <RunAOT>false</RunAOT>
+    <PublishTrimmed>false</PublishTrimmed>
+    
+    <!-- macOS/MacCatalyst specifics -->
+    <MtouchLink>None</MtouchLink>
+
+    <!-- Supported platforms -->
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
+
+    <PackageIcon>yah.png</PackageIcon>
+    <PackageLicenseFile>YAH-Dev-CodeSign.pfx</PackageLicenseFile>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
+    <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
+    <PackageCertificateThumbprint>FD23DD86B90DC68872BCA64FFA3A65B9CE6453BE</PackageCertificateThumbprint>
+    <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
+    <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
+    <AppxSymbolPackageEnabled>True</AppxSymbolPackageEnabled>
+    <GenerateTestArtifacts>True</GenerateTestArtifacts>
+    <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
+  </PropertyGroup>
+
+  <!-- Windows: garantir versão 1.0.0 e BaseOutputPath apenas para builds Windows locais -->
+  <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+    <ApplicationVersion>1.0.0</ApplicationVersion>
+    <BaseOutputPath>C:\Users\joao7\Desktop\TESTE DADOS</BaseOutputPath>
+  </PropertyGroup>
+
+  <!-- iOS-specific properties — continuam a existir e só serão avaliadas quando net9.0-ios fizer parte do TargetFramework -->
+  <PropertyGroup Condition="'$(TargetFramework)'=='net9.0-ios'">
+    <ApplicationTitle>NAVIGEST</ApplicationTitle>
+    <ApplicationDisplayName>NAVIGEST</ApplicationDisplayName>
+    <ApplicationId>com.tuaempresa.apploginmaui</ApplicationId>
+    <ApplicationVersion>1.0.0</ApplicationVersion>
+    <ApplicationBuild>1</ApplicationBuild>
+    <CodesignKey>Apple Development: Created via API (HRXXM344JN)</CodesignKey>
+    <CodesignTeamId>HRXXM344JN</CodesignTeamId>
+    <ProvisioningType>automatic</ProvisioningType>
+    <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
+    <PublishTrimmed>true</PublishTrimmed>
+    <CodesignProvision>VS: com.tuaempresa.apploginmaui Development</CodesignProvision>
+  </PropertyGroup>
+
+  <!-- macOS/MacCatalyst-specific properties -->
+  <PropertyGroup Condition="'$(TargetFramework)'=='net9.0-maccatalyst'">
+    <ApplicationTitle>NAVIGEST</ApplicationTitle>
+    <ApplicationDisplayName>NAVIGEST</ApplicationDisplayName>
+    <ApplicationId>com.tuaempresa.navigest.macos</ApplicationId>
+    <ApplicationVersion>1.0.0</ApplicationVersion>
+    <CodesignKey>Apple Development: Created via API (HRXXM344JN)</CodesignKey>
+    <CodesignTeamId>HRXXM344JN</CodesignTeamId>
+    <ProvisioningType>automatic</ProvisioningType>
+    <PublishTrimmed>true</PublishTrimmed>
+    <CodesignEntitlements>Platforms/MacCatalyst/Entitlements.plist</CodesignEntitlements>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-ios|AnyCPU'">
+    <BuildIpa>True</BuildIpa>
+    <IpaIncludeArtwork>True</IpaIncludeArtwork>
+    <MtouchUseLlvm>True</MtouchUseLlvm>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-ios|AnyCPU'">
+    <BuildIpa>True</BuildIpa>
+    <IpaIncludeArtwork>True</IpaIncludeArtwork>
+  </PropertyGroup>
+
+  <!-- Android build flags -->
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-android|AnyCPU'">
+    <AndroidCreatePackagePerAbi>True</AndroidCreatePackagePerAbi>
+    <AndroidKeyStore>False</AndroidKeyStore>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-android|AnyCPU'">
+    <AndroidCreatePackagePerAbi>True</AndroidCreatePackagePerAbi>
+    <AndroidLinkTool>r8</AndroidLinkTool>
+    <AndroidKeyStore>False</AndroidKeyStore>
+  </PropertyGroup>
+	
+	<!-- Removido Plugin.Fingerprint - usando LocalAuthentication nativa do macOS -->
+
+	<ItemGroup>
+    <AndroidResource Remove="Platforms\Android\Resources\values\strings.xml" />
+  </ItemGroup>
+
+  <!-- Recursos -->
+  <ItemGroup>
+    <MauiIcon Include="Resources\AppIcon\appicon.png" />
+    <MauiSplashScreen Include="Resources\Splash\appicon.png" Color="#17171a" BaseSize="128,128" />
+    <MauiAsset Include="Resources\Images\startup.gif" LogicalName="startup.gif" />
+  </ItemGroup>
+
+  <!-- Fonts -->
+  <ItemGroup>
+    <MauiFont Include="Resources\Fonts\fa7_solid.otf" Alias="FA7Solid">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </MauiFont>
+    <MauiFont Include="Resources\Fonts\fa7-regular.otf" Alias="FA7Regular">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </MauiFont>
+    <MauiFont Include="Resources\Fonts\fa7_brands.otf" Alias="FA7Brands">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </MauiFont>
+  </ItemGroup>
+
+  <!-- PFX empacotado -->
+  <ItemGroup>
+    <None Include="..\..\..\Users\joao7\Desktop\YAH-Dev-CodeSign.pfx">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <!-- Pacotes -->
+  <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="MailKit" Version="4.13.0" />
+    <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.110" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0-rc.1.25451.107" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="CommunityToolkit.Maui" Version="12.2.0" />
+    <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="10.0.0-rc.1.25451.107" />
+    <PackageReference Include="MySqlConnector" Version="2.4.0" />
+    <PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.11" />
+    <PackageReference Include="Syncfusion.Maui.Toolkit" Version="1.0.6" />
+  </ItemGroup>
+
+  <!-- Só Android: alinhar Material se precisares (caso apareça NU1605). -->
+  <ItemGroup Condition="'$(TargetFramework)'=='net9.0-android'">
+    <PackageReference Include="Xamarin.Google.Android.Material" Version="1.12.0.3" />
+  </ItemGroup>
+
+  <!-- XAMLs -->
+  <ItemGroup>
+    <MauiXaml Update="Pages\ClientsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Pages\DbConfigPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Pages\HoursEntryPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Pages\LoginPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Pages\MainYahPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Pages\ProductsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Pages\RegisterPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Pages\ServicePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Pages\SplashIntroPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Pages\WelcomePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Resources\Styles\Buttons.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Resources\Styles\DesignSystem.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Resources\Styles\Inputs.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Platforms\Android\Handlers\" />
+  </ItemGroup>
+
+</Project>
