@@ -247,7 +247,7 @@
 
         <!-- OVERLAY Picker Mobile -->
         <Grid x:Name="ClientPickerOverlay" IsVisible="False" BackgroundColor="#80000000" IsEnabled="{Binding Source={x:Reference ClientPickerOverlay}, Path=IsVisible}">
-            <Border StrokeShape="RoundRectangle 18" Background="{DynamicResource CardBackgroundColor}" StrokeThickness="1" Stroke="{DynamicResource DividerColor}" Padding="18" Margin="20" HorizontalOptions="Center" VerticalOptions="Center" MaximumWidthRequest="600" MaximumHeightRequest="700">
+            <Border StrokeShape="RoundRectangle 18" Background="{DynamicResource CardBackgroundColor}" StrokeThickness="1" Stroke="{DynamicResource DividerColor}" Padding="18" Margin="16" HorizontalOptions="Fill" VerticalOptions="Center" MaximumHeightRequest="700">
                 <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12">
                     <Label Text="Selecionar Cliente" FontAttributes="Bold" FontSize="18"/>
                     <Entry Grid.Row="1" Style="{StaticResource AppleEntry}" Placeholder="Filtrar..." Text="{Binding Filter}" />

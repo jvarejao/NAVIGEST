@@ -154,10 +154,10 @@
 
         <!-- Overlay Picker Produtos (mobile/tablet) -->
         <Grid x:Name="ProductPickerOverlay" IsVisible="False" BackgroundColor="#80000000" IsEnabled="{Binding Source={x:Reference ProductPickerOverlay}, Path=IsVisible}">
-            <Border StrokeShape="RoundRectangle 18" Background="{DynamicResource CardBackgroundColor}" StrokeThickness="1" Stroke="{DynamicResource DividerColor}" Padding="18" Margin="20" HorizontalOptions="Center" VerticalOptions="Center" MaximumWidthRequest="600" MaximumHeightRequest="700">
+            <Border StrokeShape="RoundRectangle 18" Background="{DynamicResource CardBackgroundColor}" StrokeThickness="1" Stroke="{DynamicResource DividerColor}" Padding="18" Margin="16" HorizontalOptions="Fill" VerticalOptions="Center" MaximumHeightRequest="700">
                 <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12">
                     <Label Text="Selecionar Produto" FontAttributes="Bold" FontSize="18"/>
-                    <Entry Grid.Row="1" Placeholder="Filtrar..." Text="{Binding Filter}" />
+                    <Entry Grid.Row="1" Placeholder="Filtrar..." Text="{Binding Filter}" Style="{StaticResource AppleEntry}" />
                     <CollectionView Grid.Row="2" ItemsSource="{Binding Filtered}" SelectionMode="Single" SelectionChanged="OnProductPickerSelectionChanged">
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="models:Product">
