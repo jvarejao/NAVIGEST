@@ -39,94 +39,62 @@
                         <!-- Swipe Actions (deslizar para esquerda) -->
                         <SwipeView.RightItems>
                             <SwipeItems Mode="Reveal">
-                                <!-- Botão Pastas (azul neon) -->
-                                <SwipeItemView>
-                                    <Button BackgroundColor="Transparent" 
-                                            WidthRequest="80"
-                                            Padding="15,12"
-                                            BindingContext="{Binding .}"
-                                            Clicked="OnPastasClientTapped"
-                                            BorderWidth="0">
-                                        <Button.Content>
-                                            <Grid WidthRequest="56"
-                                                  HeightRequest="56"
-                                                  HorizontalOptions="Center"
-                                                  VerticalOptions="Center">
-                                                <BoxView Color="#00D9FF"
-                                                         CornerRadius="28"
-                                                         WidthRequest="56"
-                                                         HeightRequest="56"/>
-                                                <Label FontFamily="FA7Solid"
-                                                       Text="&#xF07C;"
-                                                       FontSize="24"
-                                                       TextColor="White"
-                                                       HorizontalOptions="Center"
-                                                       VerticalOptions="Center"
-                                                       InputTransparent="True"/>
-                                            </Grid>
-                                        </Button.Content>
-                                    </Button>
-                                </SwipeItemView>
-                                
-                                <!-- Botão Editar (amarelo neon) -->
-                                <SwipeItemView>
-                                    <Grid BackgroundColor="Transparent" 
-                                          WidthRequest="80"
-                                          Padding="15,12"
-                                          BindingContext="{Binding .}">
-                                        <Grid.GestureRecognizers>
-                                            <TapGestureRecognizer Tapped="OnEditClientTapped"/>
-                                        </Grid.GestureRecognizers>
-                                        <Grid WidthRequest="56"
-                                              HeightRequest="56"
-                                              HorizontalOptions="Center"
-                                              VerticalOptions="Center"
-                                              InputTransparent="True">
-                                            <BoxView Color="#FFE400"
-                                                     CornerRadius="28"
-                                                     WidthRequest="56"
-                                                     HeightRequest="56"
-                                                     InputTransparent="True"/>
-                                            <Label FontFamily="FA7Solid"
-                                                   Text="&#xF044;"
-                                                   FontSize="24"
-                                                   TextColor="#333333"
-                                                   HorizontalOptions="Center"
-                                                   VerticalOptions="Center"
-                                                   InputTransparent="True"/>
-                                        </Grid>
-                                    </Grid>
-                                </SwipeItemView>
-                                
-                                <!-- Botão Eliminar (vermelho neon) -->
-                                <SwipeItemView>
-                                    <Grid BackgroundColor="Transparent" 
-                                          WidthRequest="80"
-                                          Padding="15,12"
-                                          BindingContext="{Binding .}">
-                                        <Grid.GestureRecognizers>
-                                            <TapGestureRecognizer Tapped="OnDeleteClientTapped"/>
-                                        </Grid.GestureRecognizers>
-                                        <Grid WidthRequest="56"
-                                              HeightRequest="56"
-                                              HorizontalOptions="Center"
-                                              VerticalOptions="Center"
-                                              InputTransparent="True">
-                                            <BoxView Color="#FF006E"
-                                                     CornerRadius="28"
-                                                     WidthRequest="56"
-                                                     HeightRequest="56"
-                                                     InputTransparent="True"/>
-                                            <Label FontFamily="FA7Solid"
-                                                   Text="&#xF1F8;"
-                                                   FontSize="24"
-                                                   TextColor="White"
-                                                   HorizontalOptions="Center"
-                                                   VerticalOptions="Center"
-                                                   InputTransparent="True"/>
-                                        </Grid>
-                                    </Grid>
-                                </SwipeItemView>
+           <!-- PASTAS -->
+<SwipeItemView>
+  <Grid BackgroundColor="Transparent" WidthRequest="80" Padding="15,12">
+    <Grid WidthRequest="56" HeightRequest="56"
+          HorizontalOptions="Center" VerticalOptions="Center"
+          BindingContext="{Binding .}">
+      <BoxView Color="#00D9FF" CornerRadius="28"
+               WidthRequest="56" HeightRequest="56"/>
+      <Label FontFamily="FA7Solid" Text="&#xF07C;" FontSize="24"
+             TextColor="White" HorizontalOptions="Center" VerticalOptions="Center"/>
+      <!-- TAP no botão circular -->
+      <Grid.GestureRecognizers>
+        <TapGestureRecognizer
+          NumberOfTapsRequired="1"
+          Tapped="OnPastasClientTapped" />
+      </Grid.GestureRecognizers>
+    </Grid>
+  </Grid>
+</SwipeItemView>
+
+<!-- EDITAR -->
+<SwipeItemView>
+  <Grid BackgroundColor="Transparent" WidthRequest="80" Padding="15,12">
+    <Grid WidthRequest="56" HeightRequest="56"
+          HorizontalOptions="Center" VerticalOptions="Center"
+          BindingContext="{Binding .}">
+      <BoxView Color="#FFE400" CornerRadius="28" WidthRequest="56" HeightRequest="56"/>
+      <Label FontFamily="FA7Solid" Text="&#xF044;" FontSize="24"
+             TextColor="#333333" HorizontalOptions="Center" VerticalOptions="Center"/>
+      <Grid.GestureRecognizers>
+        <TapGestureRecognizer
+          NumberOfTapsRequired="1"
+          Tapped="OnEditClientTapped" />
+      </Grid.GestureRecognizers>
+    </Grid>
+  </Grid>
+</SwipeItemView>
+
+<!-- ELIMINAR -->
+<SwipeItemView>
+  <Grid BackgroundColor="Transparent" WidthRequest="80" Padding="15,12">
+    <Grid WidthRequest="56" HeightRequest="56"
+          HorizontalOptions="Center" VerticalOptions="Center"
+          BindingContext="{Binding .}">
+      <BoxView Color="#FF006E" CornerRadius="28" WidthRequest="56" HeightRequest="56"/>
+      <Label FontFamily="FA7Solid" Text="&#xF1F8;" FontSize="24"
+             TextColor="White" HorizontalOptions="Center" VerticalOptions="Center"/>
+      <Grid.GestureRecognizers>
+        <TapGestureRecognizer
+          NumberOfTapsRequired="1"
+          Tapped="OnDeleteClientTapped" />
+      </Grid.GestureRecognizers>
+    </Grid>
+  </Grid>
+</SwipeItemView>
+
                             </SwipeItems>
                         </SwipeView.RightItems>
 

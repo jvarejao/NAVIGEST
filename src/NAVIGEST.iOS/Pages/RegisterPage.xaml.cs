@@ -511,7 +511,7 @@ namespace NAVIGEST.iOS.Pages
                 userImage.IsVisible = temImagem;
                 userIcon.IsVisible = !temImagem;
                 userImage.Source = temImagem
-                    ? ImageSource.FromStream(() => new MemoryStream(_imagemBytes))
+                    ? ImageSource.FromStream(() => new MemoryStream(_imagemBytes!))
                     : null;
             }
 
@@ -523,7 +523,7 @@ namespace NAVIGEST.iOS.Pages
                 userImageMobile.IsVisible = temImagem;
                 userIconMobile.IsVisible = !temImagem;
                 userImageMobile.Source = temImagem
-                    ? ImageSource.FromStream(() => new MemoryStream(_imagemBytes))
+                    ? ImageSource.FromStream(() => new MemoryStream(_imagemBytes!))
                     : null;
             }
         }

@@ -148,188 +148,131 @@ namespace NAVIGEST.iOS.Pages
             SearchBar.Unfocus();
         }
 
-        // Swipe Action: Pastas do Cliente (abrir via Qfile)
+        // PASTAS
         private async void OnPastasClientTapped(object sender, EventArgs e)
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"[PASTAS] EVENTO DISPARADO!");
-                await DisplayAlert("DEBUG", $"PASTAS CLICADO! Sender: {sender?.GetType().Name}", "OK");
-                System.Diagnostics.Debug.WriteLine($"[PASTAS] Sender type: {sender?.GetType().Name}");
+                System.Diagnostics.Debug.WriteLine($"[PASTAS] Tap detectado! Sender: {sender?.GetType().Name}");
                 
-                // O sender pode ser Label, BoxView, etc. Subir até encontrar o Grid com BindingContext
+                await DisplayAlert("DEBUG", $"Pastas tap! Sender: {sender?.GetType().Name}", "OK");
+                
+                // Obter o Cliente do BindingContext do Grid
                 Cliente? cliente = null;
-                if (sender is Element element)
+                if (sender is Element element && element.BindingContext is Cliente c)
                 {
-                    var parent = element.Parent;
-                    while (parent != null && cliente == null)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"[PASTAS] Checking parent: {parent.GetType().Name}");
-                        if (parent.BindingContext is Cliente c)
-                        {
-                            cliente = c;
-                            System.Diagnostics.Debug.WriteLine($"[PASTAS] Found cliente: {c.CLINOME}");
-                            break;
-                        }
-                        parent = parent.Parent;
-                    }
+                    cliente = c;
                 }
                 
                 if (cliente == null)
                 {
-                    System.Diagnostics.Debug.WriteLine("[PASTAS] Cliente not found!");
                     await DisplayAlert("Erro", "Não foi possível identificar o cliente.", "OK");
                     return;
-                }
+                }        CloseSwipe(sender);
 
-                // Fechar o swipe
-                if (sender is Element el)
-                {
-                    var swipeView = FindParentSwipeView(el);
-                    swipeView?.Close();
-                }
-
-                if (string.IsNullOrWhiteSpace(cliente.CLICODIGO))
-                {
-                    await DisplayAlert("Aviso", "Cliente sem código definido.", "OK");
-                    return;
-                }
-
-                var folderPath = $"qfile://open?path=/mnt/remote/CLIENTES/{cliente.CLICODIGO}";
-                
-                try
-                {
-                    await Launcher.OpenAsync(new Uri(folderPath));
-                }
-                catch (Exception)
-                {
-                    await DisplayAlert("Qfile", 
-                        $"A abrir pasta do cliente {cliente.CLINOME}...\n\nCaminho: CLIENTES/{cliente.CLICODIGO}", 
-                        "OK");
-                }
-            }
-            catch (Exception ex)
-            {
-                await DisplayAlert("Erro", $"Erro: {ex.Message}", "OK");
-                GlobalErro.TratarErro(ex, mostrarAlerta: false);
-            }
+        if (string.IsNullOrWhiteSpace(cliente.CLICODIGO))
+        {
+            await DisplayAlert("Aviso", "Cliente sem código definido.", "OK");
+            return;
         }
 
-        // Swipe Action: Editar
+        var uri = new Uri($"qfile://open?path=/mnt/remote/CLIENTES/{cliente.CLICODIGO}");
+        try { await Launcher.OpenAsync(uri); }
+        catch
+        {
+            await DisplayAlert("Qfile",
+                $"A abrir pasta do cliente {cliente.CLINOME}...\n\nCaminho: CLIENTES/{cliente.CLICODIGO}",
+                "OK");
+        }
+    }
+    catch (Exception ex)
+    {
+        GlobalErro.TratarErro(ex, mostrarAlerta: true);
+    }
+}
+
+        // EDITAR
         private void OnEditClientTapped(object sender, EventArgs e)
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"[EDITAR] Sender type: {sender?.GetType().Name}");
+                System.Diagnostics.Debug.WriteLine($"[EDITAR] Tap detectado! Sender: {sender?.GetType().Name}");
                 
-                // O sender pode ser Label, BoxView, etc. Subir até encontrar o Grid com BindingContext
+                // Obter o Cliente do BindingContext do Grid
                 Cliente? cliente = null;
-                if (sender is Element element)
+                if (sender is Element element && element.BindingContext is Cliente c)
                 {
-                    var parent = element.Parent;
-                    while (parent != null && cliente == null)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"[EDITAR] Checking parent: {parent.GetType().Name}");
-                        if (parent.BindingContext is Cliente c)
-                        {
-                            cliente = c;
-                            System.Diagnostics.Debug.WriteLine($"[EDITAR] Found cliente: {c.CLINOME}");
-                            break;
-                        }
-                        parent = parent.Parent;
-                    }
+                    cliente = c;
                 }
                 
-                if (cliente == null)
-                {
-                    System.Diagnostics.Debug.WriteLine("[EDITAR] Cliente not found!");
-                    return;
-                }
+                if (cliente == null) return;        CloseSwipe(sender);
 
-                // Fechar o swipe
-                if (sender is Element el)
-                {
-                    var swipeView = FindParentSwipeView(el);
-                    swipeView?.Close();
-                }
-
-                if (BindingContext is ClientsPageModel vm)
-                {
-                    if (vm.SelectCommand?.CanExecute(cliente) == true)
-                    {
-                        vm.SelectCommand.Execute(cliente);
-                    }
-                }
-                ShowFormView(isNew: false);
-            }
-            catch (Exception ex)
-            {
-                GlobalErro.TratarErro(ex, mostrarAlerta: true);
-            }
+        if (BindingContext is ClientsPageModel vm &&
+            vm.SelectCommand?.CanExecute(cliente) == true)
+        {
+            vm.SelectCommand.Execute(cliente);
         }
 
-        // Swipe Action: Eliminar
+        ShowFormView(isNew: false);
+    }
+    catch (Exception ex)
+    {
+        GlobalErro.TratarErro(ex, mostrarAlerta: true);
+    }
+}
+
+        // ELIMINAR
         private async void OnDeleteClientTapped(object sender, EventArgs e)
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"[ELIMINAR] EVENTO DISPARADO!");
-                await DisplayAlert("DEBUG", $"ELIMINAR CLICADO! Sender: {sender?.GetType().Name}", "OK");
-                System.Diagnostics.Debug.WriteLine($"[ELIMINAR] Sender type: {sender?.GetType().Name}");
+                System.Diagnostics.Debug.WriteLine($"[ELIMINAR] Tap detectado! Sender: {sender?.GetType().Name}");
                 
-                // O sender pode ser Label, BoxView, etc. Subir até encontrar o Grid com BindingContext
+                await DisplayAlert("DEBUG", $"Eliminar tap! Sender: {sender?.GetType().Name}", "OK");
+                
+                // Obter o Cliente do BindingContext do Grid
                 Cliente? cliente = null;
-                if (sender is Element element)
+                if (sender is Element element && element.BindingContext is Cliente c)
                 {
-                    var parent = element.Parent;
-                    while (parent != null && cliente == null)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"[ELIMINAR] Checking parent: {parent.GetType().Name}");
-                        if (parent.BindingContext is Cliente c)
-                        {
-                            cliente = c;
-                            System.Diagnostics.Debug.WriteLine($"[ELIMINAR] Found cliente: {c.CLINOME}");
-                            break;
-                        }
-                        parent = parent.Parent;
-                    }
+                    cliente = c;
                 }
                 
                 if (cliente == null)
                 {
-                    System.Diagnostics.Debug.WriteLine("[ELIMINAR] Cliente not found!");
                     await DisplayAlert("Erro", "Não foi possível identificar o cliente.", "OK");
                     return;
                 }
 
-                // Fechar o swipe
-                if (sender is Element el)
-                {
-                    var swipeView = FindParentSwipeView(el);
-                    swipeView?.Close();
-                }
+        CloseSwipe(sender);
 
-                var confirm = await DisplayAlert(
-                    "Eliminar Cliente",
-                    $"Tem a certeza que deseja eliminar '{cliente.CLINOME}'?",
-                    "Eliminar",
-                    "Cancelar"
-                );
+        var confirm = await DisplayAlert(
+            "Eliminar Cliente",
+            $"Tem a certeza que deseja eliminar '{cliente.CLINOME}'?",
+            "Eliminar", "Cancelar");
 
-                if (confirm && BindingContext is ClientsPageModel vm)
-                {
-                    if (vm.DeleteCommand?.CanExecute(cliente) == true)
-                    {
-                        vm.DeleteCommand.Execute(cliente);
-                        await GlobalToast.ShowAsync("Cliente eliminado com sucesso.", ToastTipo.Sucesso, 2000);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                GlobalErro.TratarErro(ex, mostrarAlerta: true);
-            }
+        if (confirm && BindingContext is ClientsPageModel vm &&
+            vm.DeleteCommand?.CanExecute(cliente) == true)
+        {
+            vm.DeleteCommand.Execute(cliente);
+            await GlobalToast.ShowAsync("Cliente eliminado com sucesso.", ToastTipo.Sucesso, 2000);
         }
+    }
+    catch (Exception ex)
+    {
+        GlobalErro.TratarErro(ex, mostrarAlerta: true);
+    }
+}
+
+private void CloseSwipe(object sender)
+{
+    if (sender is Element el)
+    {
+        var p = el.Parent;
+        while (p != null && p is not SwipeView) p = (p as Element)?.Parent;
+        (p as SwipeView)?.Close();
+    }
+}
+
 
         // Helper: Encontrar o SwipeView pai
         private SwipeView? FindParentSwipeView(Element element)
