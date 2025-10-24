@@ -98,9 +98,9 @@ namespace NAVIGEST.iOS
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                     fonts.AddFont("SegoeUI-Semibold.ttf", "SegoeSemibold");
                     fonts.AddFont("FluentSystemIcons-Regular.ttf", FluentUI.FontFamily);
-                    fonts.AddFont("Inter-Light.ttf", "InterLight");
-                    fonts.AddFont("Inter-Regular.ttf", "Inter");
-                    fonts.AddFont("Inter-SemiBold.ttf", "InterSemiBold");
+                    // fonts.AddFont("Inter-Light.ttf", "InterLight");        // Fonte não existe no iOS
+                    // fonts.AddFont("Inter-Regular.ttf", "Inter");           // Fonte não existe no iOS
+                    // fonts.AddFont("Inter-SemiBold.ttf", "InterSemiBold");  // Fonte não existe no iOS
                     fonts.AddFont("fa7_solid.otf", "FA7Solid");
                     fonts.AddFont("fa7-regular.otf", "FA7Regular");
                     fonts.AddFont("fa7_brands.otf", "FA7Brands");
