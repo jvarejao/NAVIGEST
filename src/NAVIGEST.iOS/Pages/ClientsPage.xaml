@@ -19,7 +19,8 @@
                            PlaceholderColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
                            TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
                            BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
-                           Text="{Binding Filter}"/>
+                           Text="{Binding Filter}"
+                           SearchButtonPressed="OnSearchBarSearchButtonPressed"/>
             </Grid>
 
             <!-- CollectionView com swipe -->
@@ -37,79 +38,22 @@
                         <SwipeView.RightItems>
                             <SwipeItems Mode="Reveal">
                                 <!-- Botão Pastas (azul) -->
-                                <SwipeItemView>
-                                    <Grid BackgroundColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}" 
-                                          WidthRequest="75"
-                                          Padding="0">
-                                        <VerticalStackLayout VerticalOptions="Center" 
-                                                           HorizontalOptions="Center"
-                                                           Spacing="4">
-                                            <Label FontFamily="FA7Solid" 
-                                                   Text="&#xF07C;" 
-                                                   FontSize="20"
-                                                   TextColor="White"
-                                                   HorizontalOptions="Center"/>
-                                            <Label Text="Pastas" 
-                                                   FontSize="11"
-                                                   TextColor="White"
-                                                   HorizontalOptions="Center"/>
-                                        </VerticalStackLayout>
-                                        <Grid.GestureRecognizers>
-                                            <TapGestureRecognizer Tapped="OnPastasClientTapped" 
-                                                                CommandParameter="{Binding .}"/>
-                                        </Grid.GestureRecognizers>
-                                    </Grid>
-                                </SwipeItemView>
+                                <SwipeItem Text="Pastas"
+                                          BackgroundColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"
+                                          IconImageSource="folder.png"
+                                          Invoked="OnPastasClientInvoked"/>
                                 
                                 <!-- Botão Editar (laranja) -->
-                                <SwipeItemView>
-                                    <Grid BackgroundColor="#FF9500" 
-                                          WidthRequest="75"
-                                          Padding="0">
-                                        <VerticalStackLayout VerticalOptions="Center" 
-                                                           HorizontalOptions="Center"
-                                                           Spacing="4">
-                                            <Label FontFamily="FA7Solid" 
-                                                   Text="&#xF044;" 
-                                                   FontSize="20"
-                                                   TextColor="White"
-                                                   HorizontalOptions="Center"/>
-                                            <Label Text="Editar" 
-                                                   FontSize="11"
-                                                   TextColor="White"
-                                                   HorizontalOptions="Center"/>
-                                        </VerticalStackLayout>
-                                        <Grid.GestureRecognizers>
-                                            <TapGestureRecognizer Tapped="OnEditClientTapped" 
-                                                                CommandParameter="{Binding .}"/>
-                                        </Grid.GestureRecognizers>
-                                    </Grid>
-                                </SwipeItemView>
+                                <SwipeItem Text="Editar"
+                                          BackgroundColor="#FF9500"
+                                          IconImageSource="edit.png"
+                                          Invoked="OnEditClientInvoked"/>
                                 
                                 <!-- Botão Eliminar (vermelho) -->
-                                <SwipeItemView>
-                                    <Grid BackgroundColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}" 
-                                          WidthRequest="75"
-                                          Padding="0">
-                                        <VerticalStackLayout VerticalOptions="Center" 
-                                                           HorizontalOptions="Center"
-                                                           Spacing="4">
-                                            <Label FontFamily="FA7Solid" 
-                                                   Text="&#xF1F8;" 
-                                                   FontSize="20"
-                                                   TextColor="White"
-                                                   HorizontalOptions="Center"/>
-                                            <Label Text="Eliminar" 
-                                                   FontSize="11"
-                                                   TextColor="White"
-                                                   HorizontalOptions="Center"/>
-                                        </VerticalStackLayout>
-                                        <Grid.GestureRecognizers>
-                                            <TapGestureRecognizer Tapped="OnDeleteClientTapped" 
-                                                                CommandParameter="{Binding .}"/>
-                                        </Grid.GestureRecognizers>
-                                    </Grid>
-                                </SwipeItemView>
+                                <SwipeItem Text="Eliminar"
+                                          BackgroundColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}"
+                                          IconImageSource="delete.png"
+                                          Invoked="OnDeleteClientInvoked"/>
                             </SwipeItems>
                         </SwipeView.RightItems>
 

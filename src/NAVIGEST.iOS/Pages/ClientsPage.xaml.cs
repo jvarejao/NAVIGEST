@@ -99,12 +99,55 @@ namespace NAVIGEST.iOS.Pages
             }
         }
 
-        // Swipe Action: Editar
-        private void OnEditClientTapped(object sender, EventArgs e)
+        // SearchBar: esconder teclado quando pressiona botão de pesquisa
+        private void OnSearchBarSearchButtonPressed(object sender, EventArgs e)
+        {
+            if (sender is SearchBar searchBar)
+            {
+                searchBar.Unfocus();
+            }
+        }
+
+        // Swipe Action: Pastas do Cliente (abrir via Qfile)
+        private async void OnPastasClientInvoked(object sender, EventArgs e)
         {
             try
             {
-                if (sender is Grid grid && grid.BindingContext is Cliente cliente)
+                if (sender is SwipeItem swipeItem && swipeItem.BindingContext is Cliente cliente)
+                {
+                    if (string.IsNullOrWhiteSpace(cliente.CLICODIGO))
+                    {
+                        await DisplayAlert("Aviso", "Cliente sem código definido.", "OK");
+                        return;
+                    }
+
+                    var folderPath = $"qfile://open?path=/mnt/remote/CLIENTES/{cliente.CLICODIGO}";
+                    
+                    try
+                    {
+                        await Launcher.OpenAsync(new Uri(folderPath));
+                    }
+                    catch
+                    {
+                        await DisplayAlert("Qfile", 
+                            $"A abrir pasta do cliente {cliente.CLINOME}...\n\nCaminho: CLIENTES/{cliente.CLICODIGO}", 
+                            "OK");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Erro", $"Não foi possível abrir a pasta: {ex.Message}", "OK");
+                GlobalErro.TratarErro(ex, mostrarAlerta: false);
+            }
+        }
+
+        // Swipe Action: Editar
+        private void OnEditClientInvoked(object sender, EventArgs e)
+        {
+            try
+            {
+                if (sender is SwipeItem swipeItem && swipeItem.BindingContext is Cliente cliente)
                 {
                     if (BindingContext is ClientsPageModel vm)
                     {
@@ -122,49 +165,12 @@ namespace NAVIGEST.iOS.Pages
             }
         }
 
-        // Swipe Action: Pastas do Cliente (abrir via Qfile)
-        private async void OnPastasClientTapped(object sender, EventArgs e)
-        {
-            try
-            {
-                if (sender is Grid grid && grid.BindingContext is Cliente cliente)
-                {
-                    if (string.IsNullOrWhiteSpace(cliente.CLICODIGO))
-                    {
-                        await DisplayAlert("Aviso", "Cliente sem código definido.", "OK");
-                        return;
-                    }
-
-                    // Caminho Tailscale via Qfile
-                    // Formato: qfile://open?path=/mnt/remote/CLIENTES/[CODIGO]
-                    var folderPath = $"qfile://open?path=/mnt/remote/CLIENTES/{cliente.CLICODIGO}";
-                    
-                    try
-                    {
-                        await Launcher.OpenAsync(new Uri(folderPath));
-                    }
-                    catch
-                    {
-                        // Fallback: tentar abrir Qfile app
-                        await DisplayAlert("Qfile", 
-                            $"A abrir pasta do cliente {cliente.CLINOME}...\n\nCaminho: CLIENTES/{cliente.CLICODIGO}", 
-                            "OK");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                await DisplayAlert("Erro", $"Não foi possível abrir a pasta: {ex.Message}", "OK");
-                GlobalErro.TratarErro(ex, mostrarAlerta: false);
-            }
-        }
-
         // Swipe Action: Eliminar
-        private async void OnDeleteClientTapped(object sender, EventArgs e)
+        private async void OnDeleteClientInvoked(object sender, EventArgs e)
         {
             try
             {
-                if (sender is Grid grid && grid.BindingContext is Cliente cliente)
+                if (sender is SwipeItem swipeItem && swipeItem.BindingContext is Cliente cliente)
                 {
                     var confirm = await DisplayAlert(
                         "Eliminar Cliente",
