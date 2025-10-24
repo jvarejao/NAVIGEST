@@ -71,27 +71,22 @@ namespace NAVIGEST.iOS.Pages
             SaveButton.Text = isNew ? "Adicionar" : "Atualizar";
         }
 
-        // Seleção na lista principal (toque simples)
-        private void OnClientSelectionChanged(object sender, SelectionChangedEventArgs e)
+        // Seleção na lista principal (toque na célula)
+        private void OnClientCellTapped(object sender, EventArgs e)
         {
             try
             {
-                if (e.CurrentSelection?.FirstOrDefault() is not Cliente cliente)
-                    return;
-
-                // Limpar seleção
-                if (sender is CollectionView collectionView)
-                    collectionView.SelectedItem = null;
-
-                if (BindingContext is ClientsPageModel vm)
+                if (sender is Grid grid && grid.BindingContext is Cliente cliente)
                 {
-                    if (vm.SelectCommand?.CanExecute(cliente) == true)
+                    if (BindingContext is ClientsPageModel vm)
                     {
-                        vm.SelectCommand.Execute(cliente);
+                        if (vm.SelectCommand?.CanExecute(cliente) == true)
+                        {
+                            vm.SelectCommand.Execute(cliente);
+                        }
                     }
+                    ShowFormView(isNew: false);
                 }
-                
-                ShowFormView(isNew: false);
             }
             catch (Exception ex) 
             { 

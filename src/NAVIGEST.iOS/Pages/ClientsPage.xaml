@@ -27,8 +27,7 @@
             <CollectionView Grid.Row="1"
                             x:Name="ClientsCollectionView"
                             ItemsSource="{Binding Filtered}"
-                            SelectionMode="Single"
-                            SelectionChanged="OnClientSelectionChanged"
+                            SelectionMode="None"
                             BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}">
                 
             <CollectionView.ItemTemplate>
@@ -63,6 +62,11 @@
                               ColumnDefinitions="50,*,Auto" 
                               ColumnSpacing="12"
                               RowSpacing="4">
+                            
+                            <!-- TapGestureRecognizer para abrir formulário de edição -->
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnClientCellTapped"/>
+                            </Grid.GestureRecognizers>
                             
                             <!-- Avatar -->
                             <Border Grid.RowSpan="2"
@@ -117,19 +121,6 @@
                                      Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}"
                                      VerticalOptions="End"
                                      Margin="62,0,0,0"/>
-                            
-                            <!-- Visual State para seleção -->
-                            <VisualStateManager.VisualStateGroups>
-                                <VisualStateGroup Name="CommonStates">
-                                    <VisualState Name="Normal"/>
-                                    <VisualState Name="Selected">
-                                        <VisualState.Setters>
-                                            <Setter Property="BackgroundColor" 
-                                                    Value="{AppThemeBinding Light=#E0F2FE, Dark=#204454}"/>
-                                        </VisualState.Setters>
-                                    </VisualState>
-                                </VisualStateGroup>
-                            </VisualStateManager.VisualStateGroups>
                         </Grid>
                     </SwipeView>
                 </DataTemplate>
