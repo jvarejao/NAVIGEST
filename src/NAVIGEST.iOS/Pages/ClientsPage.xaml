@@ -5,274 +5,199 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:models="clr-namespace:NAVIGEST.iOS.Models"
              xmlns:behaviors="clr-namespace:NAVIGEST.iOS.Behaviors"
-             BackgroundColor="{DynamicResource PageBackgroundColor}"
-             Title="Clientes"
-             SizeChanged="OnPageSizeChanged"
-             Loaded="OnPageLoaded">
+             BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}"
+             Title="Clientes">
 
-    <ContentPage.Resources>
-        <ResourceDictionary>
-
-            <!-- (já existia) Estilo local de Entry desta página -->
-            <Style TargetType="Entry" x:Key="FormEntry">
-                <Setter Property="HeightRequest" Value="44"/>
-                <Setter Property="FontSize" Value="15"/>
-                <Setter Property="Margin" Value="0,4,0,0"/>
-            </Style>
-
-            <!-- NOVO: força listas a ocuparem a largura no iPhone -->
-            <Style TargetType="CollectionView">
-                <Setter Property="HorizontalOptions">
-                    <Setter.Value>
-                        <OnPlatform x:TypeArguments="LayoutOptions">
-                            <On Platform="iOS" Value="Fill" />
-                            <On Platform="Android" Value="Fill" />
-                            <On Platform="MacCatalyst" Value="Center" />
-                            <On Platform="WinUI" Value="Center" />
-                        </OnPlatform>
-                    </Setter.Value>
-                </Setter>
-                <!-- Em telemóvel: 0 deixa expandir ao ecrã completo; em desktop/tablet: limite 1080 como o resto -->
-                <Setter Property="WidthRequest" Value="{OnIdiom Phone=0, Tablet=1080, Desktop=1080}" />
-                <Setter Property="MaximumWidthRequest" Value="{OnIdiom Phone=0, Tablet=1080, Desktop=1080}" />
-                <Setter Property="Margin" Value="0,8,0,0" />
-                <Setter Property="VerticalOptions" Value="Fill" />
-                <Setter Property="ItemsLayout" Value="VerticalList" />
-            </Style>
-
-            <!-- Opcional: se tiveres ContentView a envolver listas, também abre a largura -->
-            <Style TargetType="ContentView">
-                <Setter Property="HorizontalOptions">
-                    <Setter.Value>
-                        <OnPlatform x:TypeArguments="LayoutOptions">
-                            <On Platform="iOS" Value="Fill" />
-                            <On Platform="Android" Value="Fill" />
-                            <On Platform="MacCatalyst" Value="Center" />
-                            <On Platform="WinUI" Value="Center" />
-                        </OnPlatform>
-                    </Setter.Value>
-                </Setter>
-                <Setter Property="WidthRequest" Value="{OnIdiom Phone=0, Tablet=1080, Desktop=1080}" />
-                <Setter Property="MaximumWidthRequest" Value="{OnIdiom Phone=0, Tablet=1080, Desktop=1080}" />
-            </Style>
-
-        </ResourceDictionary>
-    </ContentPage.Resources>
-
-
-    <Grid>
-        <ScrollView>
-            <VerticalStackLayout x:Name="PageContainer" Spacing="18" Padding="24,24,24,60" HorizontalOptions="Center" MaximumWidthRequest="1080">
-
-                <!-- ================== BLOCO DE TESTE DO TEMA ================== -->
-                <Label Text="Teste Tema"
-                       TextColor="{DynamicResource BodyTextColor}" />
-                <Border Style="{StaticResource CardBorder}">
-                    <Label Text="Card"
-                           TextColor="{DynamicResource BodyTextColor}" />
-                </Border>
-                <!-- ============================================================ -->
-
-                <!-- Botão para picker (mobile/tablet) -->
-                <Button Text="Selecionar Cliente" IsVisible="{OnIdiom Phone=true, Tablet=true, Desktop=false}" Style="{StaticResource AppleFilledButton}" Clicked="OnOpenClientPicker">
-                    <Button.Behaviors>
-                        <behaviors:ButtonMicroAnimationsBehavior />
-                    </Button.Behaviors>
-                </Button>
-
-                <!-- FORM -->
-                <Border StrokeShape="RoundRectangle 18" StrokeThickness="1" Stroke="{DynamicResource DividerColor}" Background="{DynamicResource CardBackgroundColor}" Padding="20">
-                    <VerticalStackLayout Spacing="10">
-                        <Entry Style="{StaticResource AppleEntry}" Placeholder="Código" Text="{Binding Editing.CLICODIGO}" IsReadOnly="True" />
-                        <Entry Style="{StaticResource AppleEntry}" Placeholder="Nome"   Text="{Binding Editing.CLINOME}" />
-                        
-                        <!-- Telefone com validação -->
-                        <Entry Style="{StaticResource AppleEntry}" Placeholder="Telefone" Keyboard="Telephone" Text="{Binding Editing.TELEFONE}">
-                            <Entry.Behaviors>
-                                <behaviors:EntryValidationBehavior ValidationKind="Phone" />
-                            </Entry.Behaviors>
-                        </Entry>
-                        
-                        <!-- Email com validação -->
-                        <Entry Style="{StaticResource AppleEntry}" Placeholder="Email" Keyboard="Email" Text="{Binding Editing.EMAIL}">
-                            <Entry.Behaviors>
-                                <behaviors:EntryValidationBehavior ValidationKind="Email" />
-                            </Entry.Behaviors>
-                        </Entry>
-                        
-                        <Entry Style="{StaticResource AppleEntry}" Placeholder="Vendedor" Text="{Binding Editing.VENDEDOR}" />
-                        
-                        <!-- Valor Crédito com validação numérica -->
-                        <Entry x:Name="EntryValorCredito" Style="{StaticResource AppleEntry}" Placeholder="Valor Crédito" Text="{Binding Editing.VALORCREDITO}" Focused="OnValorCreditoFocused" Unfocused="OnValorCreditoUnfocused" TextChanged="OnValorCreditoTextChanged">
-                            <Entry.Behaviors>
-                                <behaviors:EntryValidationBehavior ValidationKind="Numeric" />
-                            </Entry.Behaviors>
-                        </Entry>
-                        <Grid ColumnDefinitions="Auto,*,Auto,*,Auto,*" ColumnSpacing="12" Margin="0,8,0,0">
-                            <Label Text="Externo" Grid.Column="0" VerticalTextAlignment="Center"/>
-                            <Switch Grid.Column="1" IsToggled="{Binding Editing.EXTERNO}" />
-                            <Label Text="Anulado" Grid.Column="2" VerticalTextAlignment="Center"/>
-                            <Switch Grid.Column="3" IsToggled="{Binding Editing.ANULADO}" />
-                            <Label Text="Pastas" Grid.Column="4" VerticalTextAlignment="Center"/>
-                            <Switch Grid.Column="5" IsToggled="{Binding Editing.PastasSincronizadas}" IsEnabled="False"/>
-                        </Grid>
-                    </VerticalStackLayout>
-                </Border>
-
-                <!-- BOTÕES -->
-                <Border StrokeThickness="1"
-                        Stroke="{DynamicResource DividerColor}"
-                        Background="{DynamicResource CardBackgroundColor}"
-                        Padding="18">
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="18" />
-                    </Border.StrokeShape>
-
-                    <VerticalStackLayout Spacing="10">
-
-                        <!-- Guardar -->
-                        <Button Style="{StaticResource Button.PrimaryIcon}" Text="Guardar">
-                            <Button.ImageSource>
-                                <FontImageSource Glyph="&#xF0C7;" FontFamily="FA7Solid" Size="{StaticResource BtnIconSize}"
-                         Color="{StaticResource BtnPrimaryIconColor}" />
-                            </Button.ImageSource>
-                            <Button.Behaviors>
-                                <behaviors:ButtonMicroAnimationsBehavior />
-                            </Button.Behaviors>
-                        </Button>
-
-                        <!-- Novo -->
-                        <Button Style="{StaticResource Button.Outline}" Text="Novo" Command="{Binding NewCommand}">
-                            <Button.ImageSource>
-                                <FontImageSource Glyph="&#xF067;" FontFamily="FA7Solid" Size="{StaticResource BtnIconSize}"
-                         Color="{StaticResource BtnAltIconColor}" />
-                            </Button.ImageSource>
-                            <Button.Behaviors>
-                                <behaviors:ButtonMicroAnimationsBehavior />
-                            </Button.Behaviors>
-                        </Button>
-
-                        <!-- Eliminar -->
-                        <Button Style="{StaticResource Button.Outline}" Text="Eliminar" Command="{Binding DeleteCommand}">
-                            <Button.ImageSource>
-                                <FontImageSource Glyph="&#xF1F8;" FontFamily="FA7Solid" Size="{StaticResource BtnIconSize}"
-                         Color="{StaticResource BtnAltIconColor}" />
-                            </Button.ImageSource>
-                            <Button.Behaviors>
-                                <behaviors:ButtonMicroAnimationsBehavior />
-                            </Button.Behaviors>
-                        </Button>
-
-                        <!-- Limpar -->
-                        <Button Style="{StaticResource Button.Ghost}" Text="Limpar" Command="{Binding ClearCommand}">
-                            <Button.ImageSource>
-                                <FontImageSource Glyph="&#xF12D;" FontFamily="FA7Solid" Size="{StaticResource BtnIconSize}"
-                         Color="{StaticResource BtnAltIconColor}" />
-                            </Button.ImageSource>
-                            <Button.Behaviors>
-                                <behaviors:ButtonMicroAnimationsBehavior />
-                            </Button.Behaviors>
-                        </Button>
-
-                        <!-- Pastas do Cliente -->
-                        <Button Style="{StaticResource Button.Ghost}" Text="Pastas do Cliente" Command="{Binding PastasCommand}">
-                            <Button.ImageSource>
-                                <FontImageSource Glyph="&#xF07C;" FontFamily="FA7Solid" Size="{StaticResource BtnIconSize}"
-                         Color="{StaticResource BtnAltIconColor}" />
-                            </Button.ImageSource>
-                            <Button.Behaviors>
-                                <behaviors:ButtonMicroAnimationsBehavior />
-                            </Button.Behaviors>
-                        </Button>
-
-                        <!-- Atualizar -->
-                        <Button Style="{StaticResource Button.Ghost}" Text="Atualizar" Command="{Binding RefreshCommand}">
-                            <Button.ImageSource>
-                                <FontImageSource Glyph="&#xF021;" FontFamily="FA7Solid" Size="{StaticResource BtnIconSize}"
-                         Color="{StaticResource BtnAltIconColor}" />
-                            </Button.ImageSource>
-                            <Button.Behaviors>
-                                <behaviors:ButtonMicroAnimationsBehavior />
-                            </Button.Behaviors>
-                        </Button>
-
-                    </VerticalStackLayout>
-                </Border>
-
-
-                <!-- PESQUISA -->
-                <Border StrokeShape="RoundRectangle 18" StrokeThickness="1" Stroke="{DynamicResource DividerColor}" Background="{DynamicResource CardBackgroundColor}" Padding="18">
-                    <Entry Style="{StaticResource AppleEntry}" Placeholder="Pesquisar (código, nome, email...)" Text="{Binding Filter}"/>
-                </Border>
-
-                <!-- LISTA (ocultada em mobile para usar picker) -->
-                <Border StrokeShape="RoundRectangle 18" StrokeThickness="1" Stroke="{DynamicResource DividerColor}" Background="{DynamicResource CardBackgroundColor}" Padding="0" IsVisible="{OnIdiom Desktop=true, Phone=false, Tablet=false}">
-                    <VerticalStackLayout Spacing="0">
-                        <Grid BackgroundColor="{DynamicResource ListHeaderBackgroundColor}" Padding="10" ColumnDefinitions="110,3*,4*,140" ColumnSpacing="14">
-                            <Label Text="Código" FontAttributes="Bold" FontSize="13"/>
-                            <Label Grid.Column="1" Text="Nome" FontAttributes="Bold" FontSize="13"/>
-                            <Label Grid.Column="2" Text="Email" FontAttributes="Bold" FontSize="13"/>
-                            <Label Grid.Column="3" Text="Telefone" FontAttributes="Bold" FontSize="13"/>
-                        </Grid>
-                        <CollectionView x:Name="ClientsView" ItemsSource="{Binding Filtered}" SelectionMode="Single" SelectedItem="{Binding SelectedCliente, Mode=TwoWay}" SelectionChanged="OnClientSelectionChanged">
-                            <CollectionView.ItemTemplate>
-                                <DataTemplate x:DataType="models:Cliente">
-                                    <Grid Padding="10" ColumnSpacing="14" ColumnDefinitions="110,3*,4*,140" MinimumHeightRequest="44">
-                                        <VisualStateManager.VisualStateGroups>
-                                            <VisualStateGroup Name="SelectionStates">
-                                                <VisualState Name="Normal">
-                                                    <VisualState.Setters>
-                                                        <Setter Property="BackgroundColor" Value="Transparent"/>
-                                                    </VisualState.Setters>
-                                                </VisualState>
-                                                <VisualState Name="Selected">
-                                                    <VisualState.Setters>
-                                                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#E0F2FE, Dark=#204454}"/>
-                                                    </VisualState.Setters>
-                                                </VisualState>
-                                            </VisualStateGroup>
-                                        </VisualStateManager.VisualStateGroups>
-                                        <Label Text="{Binding CLICODIGO}" FontSize="13"/>
-                                        <Label Grid.Column="1" Text="{Binding CLINOME}" FontSize="13" LineBreakMode="TailTruncation"/>
-                                        <Label Grid.Column="2" Text="{Binding EMAIL}" FontSize="13" LineBreakMode="TailTruncation"/>
-                                        <Label Grid.Column="3" Text="{Binding TELEFONE}" FontSize="13" LineBreakMode="TailTruncation"/>
-                                    </Grid>
-                                </DataTemplate>
-                            </CollectionView.ItemTemplate>
-                        </CollectionView>
-                    </VerticalStackLayout>
-                </Border>
-            </VerticalStackLayout>
-        </ScrollView>
-
-        <!-- OVERLAY Picker Mobile -->
-        <Grid x:Name="ClientPickerOverlay" IsVisible="False" BackgroundColor="#80000000" IsEnabled="{Binding Source={x:Reference ClientPickerOverlay}, Path=IsVisible}">
-            <Border StrokeShape="RoundRectangle 18" Background="{DynamicResource CardBackgroundColor}" StrokeThickness="1" Stroke="{DynamicResource DividerColor}" Padding="18" Margin="16" HorizontalOptions="Fill" VerticalOptions="Center" MaximumHeightRequest="700">
-                <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12">
-                    <Label Text="Selecionar Cliente" FontAttributes="Bold" FontSize="18"/>
-                    <Entry Grid.Row="1" Style="{StaticResource AppleEntry}" Placeholder="Filtrar..." Text="{Binding Filter}" />
-                    <CollectionView Grid.Row="2" ItemsSource="{Binding Filtered}" SelectionMode="Single" SelectionChanged="OnClientPickerSelectionChanged">
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate x:DataType="models:Cliente">
-                                <Grid Padding="10" ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                                    <Label Text="{Binding CLINOME}" FontSize="14" LineBreakMode="TailTruncation"/>
-                                    <Label Grid.Column="1" Text="{Binding TELEFONE}" FontSize="13"/>
-                                </Grid>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
-                    <Button Grid.Row="3" Text="Fechar" Clicked="OnCloseClientPicker" Style="{StaticResource AppleFilledButton}">
-                        <Button.Behaviors>
-                            <behaviors:ButtonMicroAnimationsBehavior />
-                        </Button.Behaviors>
-                    </Button>
-                </Grid>
-            </Border>
+    <Grid RowDefinitions="Auto,*">
+        
+        <!-- Header com SearchBar -->
+        <Grid Padding="16,16,16,12" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}">
+            <SearchBar x:Name="SearchBar"
+                       Placeholder="Pesquisar clientes..."
+                       PlaceholderColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
+                       TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
+                       BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
+                       Text="{Binding Filter}"/>
         </Grid>
 
-        <!-- Busy -->
-        <Grid IsVisible="{Binding IsBusy}" BackgroundColor="#66000000" Padding="30" VerticalOptions="Center" HorizontalOptions="Center">
-            <ActivityIndicator IsRunning="True" Color="{DynamicResource AccentColor}" />
+        <!-- CollectionView com swipe -->
+        <CollectionView Grid.Row="1"
+                        x:Name="ClientsCollectionView"
+                        ItemsSource="{Binding Filtered}"
+                        SelectionMode="Single"
+                        SelectionChanged="OnClientSelectionChanged"
+                        BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}">
+            
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Cliente">
+                    <SwipeView>
+                        <!-- Swipe Actions (esquerda para direita) -->
+                        <SwipeView.RightItems>
+                            <SwipeItems Mode="Reveal">
+                                <!-- Botão Editar (laranja) -->
+                                <SwipeItemView>
+                                    <Grid BackgroundColor="#FF9500" 
+                                          WidthRequest="80"
+                                          Padding="0">
+                                        <VerticalStackLayout VerticalOptions="Center" 
+                                                           HorizontalOptions="Center"
+                                                           Spacing="4">
+                                            <Label FontFamily="FA7Solid" 
+                                                   Text="&#xF044;" 
+                                                   FontSize="20"
+                                                   TextColor="White"
+                                                   HorizontalOptions="Center"/>
+                                            <Label Text="Editar" 
+                                                   FontSize="12"
+                                                   TextColor="White"
+                                                   HorizontalOptions="Center"/>
+                                        </VerticalStackLayout>
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnEditClientTapped" 
+                                                                CommandParameter="{Binding .}"/>
+                                        </Grid.GestureRecognizers>
+                                    </Grid>
+                                </SwipeItemView>
+                                
+                                <!-- Botão Eliminar (vermelho) -->
+                                <SwipeItemView>
+                                    <Grid BackgroundColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}" 
+                                          WidthRequest="80"
+                                          Padding="0">
+                                        <VerticalStackLayout VerticalOptions="Center" 
+                                                           HorizontalOptions="Center"
+                                                           Spacing="4">
+                                            <Label FontFamily="FA7Solid" 
+                                                   Text="&#xF1F8;" 
+                                                   FontSize="20"
+                                                   TextColor="White"
+                                                   HorizontalOptions="Center"/>
+                                            <Label Text="Eliminar" 
+                                                   FontSize="12"
+                                                   TextColor="White"
+                                                   HorizontalOptions="Center"/>
+                                        </VerticalStackLayout>
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnDeleteClientTapped" 
+                                                                CommandParameter="{Binding .}"/>
+                                        </Grid.GestureRecognizers>
+                                    </Grid>
+                                </SwipeItemView>
+                            </SwipeItems>
+                        </SwipeView.RightItems>
+
+                        <!-- Conteúdo da célula -->
+                        <Grid Padding="16,12" 
+                              BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
+                              ColumnDefinitions="50,*,Auto" 
+                              ColumnSpacing="12"
+                              RowSpacing="4">
+                            
+                            <!-- Avatar -->
+                            <Border Grid.RowSpan="2"
+                                    WidthRequest="50" 
+                                    HeightRequest="50"
+                                    StrokeThickness="0"
+                                    BackgroundColor="{Binding AvatarColor}"
+                                    VerticalOptions="Center">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="25"/>
+                                </Border.StrokeShape>
+                                <Label Text="{Binding Initials}"
+                                       FontSize="20"
+                                       FontAttributes="Bold"
+                                       TextColor="White"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center"/>
+                            </Border>
+
+                            <!-- Nome -->
+                            <Label Grid.Column="1"
+                                   Text="{Binding CLINOME}"
+                                   FontSize="17"
+                                   FontAttributes="None"
+                                   TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
+                                   LineBreakMode="TailTruncation"
+                                   VerticalOptions="End"/>
+
+                            <!-- Telefone -->
+                            <Label Grid.Column="1" 
+                                   Grid.Row="1"
+                                   Text="{Binding TELEFONE}"
+                                   FontSize="14"
+                                   TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
+                                   LineBreakMode="TailTruncation"
+                                   VerticalOptions="Start"/>
+
+                            <!-- Status Icon (direita) -->
+                            <Label Grid.Column="2"
+                                   Grid.RowSpan="2"
+                                   FontFamily="FA7Solid"
+                                   Text="{Binding StatusIcon}"
+                                   FontSize="16"
+                                   TextColor="{Binding StatusColor}"
+                                   VerticalOptions="Center"
+                                   HorizontalOptions="End"/>
+                            
+                            <!-- Separador inferior -->
+                            <BoxView Grid.ColumnSpan="3"
+                                     Grid.Row="1"
+                                     HeightRequest="0.5"
+                                     Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}"
+                                     VerticalOptions="End"
+                                     Margin="62,0,0,0"/>
+                            
+                            <!-- Visual State para seleção -->
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup Name="CommonStates">
+                                    <VisualState Name="Normal"/>
+                                    <VisualState Name="Selected">
+                                        <VisualState.Setters>
+                                            <Setter Property="BackgroundColor" 
+                                                    Value="{AppThemeBinding Light=#E0F2FE, Dark=#204454}"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                        </Grid>
+                    </SwipeView>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Floating Action Button (adicionar cliente) -->
+        <Border Grid.Row="1"
+                WidthRequest="56"
+                HeightRequest="56"
+                BackgroundColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"
+                StrokeThickness="0"
+                Margin="0,0,16,16"
+                HorizontalOptions="End"
+                VerticalOptions="End"
+                Shadow="{StaticResource AppleShadow}">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="28"/>
+            </Border.StrokeShape>
+            <Label FontFamily="FA7Solid"
+                   Text="&#xF067;"
+                   FontSize="24"
+                   TextColor="White"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"/>
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnAddClientTapped"/>
+            </Border.GestureRecognizers>
+        </Border>
+
+        <!-- Busy Indicator -->
+        <Grid Grid.RowSpan="2"
+              IsVisible="{Binding IsBusy}" 
+              BackgroundColor="#66000000">
+            <ActivityIndicator IsRunning="True" 
+                             Color="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"
+                             WidthRequest="40"
+                             HeightRequest="40"/>
         </Grid>
     </Grid>
 </ContentPage>
+

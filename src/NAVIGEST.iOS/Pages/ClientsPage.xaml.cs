@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Devices;
 using NAVIGEST.iOS.PageModels;
+using NAVIGEST.iOS.Models;
 using NAVIGEST.iOS; // GlobalToast / GlobalErro
 
 namespace NAVIGEST.iOS.Pages
@@ -13,7 +14,6 @@ namespace NAVIGEST.iOS.Pages
     public partial class ClientsPage : ContentPage
     {
         private bool _loadedOnce;
-        private bool _suppressValorChange;
 
         public ClientsPage() : this(new ClientsPageModel()) { }
 
@@ -24,13 +24,10 @@ namespace NAVIGEST.iOS.Pages
             Dispatcher.Dispatch(async () => await EnsureLoadedAsync());
         }
 
-        private async void OnPageLoaded(object? sender, EventArgs e) => await EnsureLoadedAsync();
-
         protected override async void OnAppearing()
         {
             base.OnAppearing();
             await EnsureLoadedAsync();
-            // Desktop header visibilidade já tratada em XAML condicional; manter se necessário
         }
 
         private async Task EnsureLoadedAsync()
@@ -48,115 +45,104 @@ namespace NAVIGEST.iOS.Pages
             }
         }
 
-        private void OnPageSizeChanged(object sender, EventArgs e) { }
-
-        // -------- Seleção Desktop --------
-        private void OnClientSelectionChanged(object sender, SelectionChangedEventArgs e)
+        // SeleÃ§Ã£o na lista principal
+        private async void OnClientSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             try
             {
-                if (BindingContext is ClientsPageModel vm && e.CurrentSelection?.FirstOrDefault() is object item)
+                if (BindingContext is ClientsPageModel vm && e.CurrentSelection?.FirstOrDefault() is Cliente cliente)
                 {
-                    if (vm.SelectCommand?.CanExecute(item) == true)
-                        vm.SelectCommand.Execute(item);
-                }
-            }
-            catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
-        }
-
-        // -------- Overlay Mobile --------
-        private void OnOpenClientPicker(object sender, EventArgs e)
-        {
-            ClientPickerOverlay.IsVisible = true;
-        }
-
-        private void OnCloseClientPicker(object sender, EventArgs e)
-        {
-            ClientPickerOverlay.IsVisible = false;
-        }
-
-        private void OnClientPickerSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            try
-            {
-                if (BindingContext is ClientsPageModel vm && e.CurrentSelection?.FirstOrDefault() is object item)
-                {
-                    if (vm.SelectCommand?.CanExecute(item) == true)
-                        vm.SelectCommand.Execute(item);
-                    ClientPickerOverlay.IsVisible = false;
-                }
-            }
-            catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
-        }
-
-        // -------- Valor Crédito --------
-        private void OnValorCreditoFocused(object sender, FocusEventArgs e)
-        {
-            try
-            {
-                if (sender is Entry entry)
-                {
-                    var len = entry.Text?.Length ?? 0;
-                    Dispatcher.Dispatch(() =>
+                    // Selecionar cliente no ViewModel
+                    if (vm.SelectCommand?.CanExecute(cliente) == true)
                     {
-                        try { entry.CursorPosition = 0; entry.SelectionLength = len; } catch { }
-                    });
+                        vm.SelectCommand.Execute(cliente);
+                    }
+                    
+                    // Navegar para RegisterPage
+                    await Navigation.PushAsync(new RegisterPage());
                 }
             }
             catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
         }
 
-        private void OnValorCreditoUnfocused(object sender, FocusEventArgs e)
+        // Swipe Action: Editar
+        private async void OnEditClientTapped(object sender, EventArgs e)
+        {
+            try
+            {
+                if (sender is Grid grid && grid.BindingContext is Cliente cliente)
+                {
+                    if (BindingContext is ClientsPageModel vm && vm.SelectCommand?.CanExecute(cliente) == true)
+                    {
+                        vm.SelectCommand.Execute(cliente);
+                    }
+                    await Navigation.PushAsync(new RegisterPage());
+                }
+            }
+            catch (Exception ex)
+            {
+                GlobalErro.TratarErro(ex, mostrarAlerta: true);
+            }
+        }
+
+        // Swipe Action: Eliminar
+        private async void OnDeleteClientTapped(object sender, EventArgs e)
+        {
+            try
+            {
+                if (sender is Grid grid && grid.BindingContext is Cliente cliente)
+                {
+                    var confirm = await DisplayAlert(
+                        "Eliminar Cliente",
+                        $"Tem a certeza que deseja eliminar '{cliente.CLINOME}'?",
+                        "Eliminar",
+                        "Cancelar"
+                    );
+
+                    if (confirm && BindingContext is ClientsPageModel vm)
+                    {
+                        if (vm.DeleteCommand?.CanExecute(cliente) == true)
+                        {
+                            vm.DeleteCommand.Execute(cliente);
+                            await GlobalToast.ShowAsync("Cliente eliminado com sucesso.", ToastTipo.Sucesso, 2000);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                GlobalErro.TratarErro(ex, mostrarAlerta: true);
+            }
+        }
+
+        // Floating Action Button: Adicionar novo cliente
+        private async void OnAddClientTapped(object sender, EventArgs e)
         {
             try
             {
                 if (BindingContext is ClientsPageModel vm)
-                    vm.FormatValorCreditoOnBlur();
+                {
+                    if (vm.NewCommand?.CanExecute(null) == true)
+                    {
+                        vm.NewCommand.Execute(null);
+                    }
+                    await Navigation.PushAsync(new RegisterPage());
+                }
             }
-            catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
-        }
-
-        private void OnValorCreditoTextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (_suppressValorChange) return;
-            if (sender is not Entry entry) return;
-            if (!entry.IsFocused) return;
-            try
+            catch (Exception ex)
             {
-                if (BindingContext is not ClientsPageModel vm || vm.Editing is null) return;
-                var txt = e.NewTextValue ?? string.Empty;
-                var filtered = new string(txt.Where((c, idx) =>
-                    char.IsDigit(c) || (c == '-' && idx == 0) || c == ',' || c == '.').ToArray());
-
-                int firstDec = filtered.IndexOfAny(new[] { ',', '.' });
-                if (firstDec >= 0)
-                {
-                    var tail = filtered[(firstDec + 1)..].Replace(".", string.Empty).Replace(",", string.Empty);
-                    filtered = filtered.Substring(0, firstDec + 1) + tail;
-                    filtered = filtered.Replace('.', ',');
-                }
-
-                if (filtered != txt)
-                {
-                    _suppressValorChange = true;
-                    var caret = filtered.Length;
-                    vm.Editing.VALORCREDITO = filtered;
-                    entry.Text = filtered;
-                    entry.CursorPosition = caret;
-                }
+                GlobalErro.TratarErro(ex, mostrarAlerta: true);
             }
-            catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
-            finally { _suppressValorChange = false; }
         }
     }
 }
 
 #if WINDOWS
-// Código Windows específico (exemplo: animações, navegação, layouts)
+// Cï¿½digo Windows especï¿½fico (exemplo: animaï¿½ï¿½es, navegaï¿½ï¿½o, layouts)
 #endif
 #if ANDROID
-// Código Android específico (exemplo: animações, navegação, layouts)
+// Cï¿½digo Android especï¿½fico (exemplo: animaï¿½ï¿½es, navegaï¿½ï¿½o, layouts)
 #endif
 #if IOS
-// Código iOS específico (exemplo: animações, navegação, layouts)
+// Cï¿½digo iOS especï¿½fico (exemplo: animaï¿½ï¿½es, navegaï¿½ï¿½o, layouts)
 #endif
