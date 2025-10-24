@@ -3,140 +3,223 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="NAVIGEST.iOS.Pages.DbConfigPage"
              Title="Configuração da Ligação"
+             BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}"
              Shell.FlyoutBehavior="Disabled"
              Shell.NavBarIsVisible="False">
 
-    <Grid Padding="24">
-        <ScrollView>
-            <Grid HorizontalOptions="Center" VerticalOptions="Center">
-                <Grid.MaximumWidthRequest>
-                    <OnIdiom x:TypeArguments="x:Double" Phone="460" Tablet="560" Desktop="520"/>
-                </Grid.MaximumWidthRequest>
-
-                <!-- Cartão sem sombra -->
-                <Border x:Name="Card" Padding="20" StrokeThickness="0" BackgroundColor="Transparent">
-                    <VerticalStackLayout Spacing="14">
-
-                        <!-- Cabeçalho simples -->
-                        <HorizontalStackLayout Spacing="8" HorizontalOptions="Center">
-                            <Label Text="&#xF233;" FontFamily="FA7Solid" FontSize="28"
-                     TextColor="{StaticResource Color.Primary}" />
-                            <Label Text="Configuração da Base de Dados"
-                     FontSize="20" FontAttributes="Bold" />
-                        </HorizontalStackLayout>
-
-                        <!-- Servidor -->
-                        <VerticalStackLayout>
-                            <Label Text="Servidor" FontAttributes="Bold"/>
-                            <Border x:Name="ServerBorder" Style="{StaticResource FieldBorder}">
-                                <Entry x:Name="ServerEntry"
-                       Placeholder="ex.: 100.81.152.95"
-                       Text="{Binding Server}"
-                       Completed="OnEntryCompleted"
-                       Focused="OnEntryFocused"
-                       Unfocused="OnEntryUnfocused"
-                       TextChanged="OnEntryTextChanged" />
-                            </Border>
-                            <Label x:Name="ServerError" Text="Servidor obrigatório." TextColor="#FFA500" IsVisible="False" FontSize="12"/>
-                        </VerticalStackLayout>
-
-                        <!-- Porta -->
-                        <VerticalStackLayout>
-                            <Label Text="Porta" FontAttributes="Bold"/>
-                            <Border x:Name="PortBorder" Style="{StaticResource FieldBorder}">
-                                <Entry x:Name="PortEntry"
-                       Placeholder="3307"
-                       Keyboard="Numeric"
-                       Text="{Binding Port}"
-                       Completed="OnEntryCompleted"
-                       Focused="OnEntryFocused"
-                       Unfocused="OnEntryUnfocused"
-                       TextChanged="OnEntryTextChanged" />
-                            </Border>
-                            <Label x:Name="PortError" Text="Porta inválida (1–65535)." TextColor="#FFA500" IsVisible="False" FontSize="12"/>
-                        </VerticalStackLayout>
-
-                        <!-- Base de Dados -->
-                        <VerticalStackLayout>
-                            <Label Text="Base de Dados" FontAttributes="Bold"/>
-                            <Border x:Name="DbBorder" Style="{StaticResource FieldBorder}">
-                                <Entry x:Name="DbEntry"
-                       Placeholder="YAHPUBLICIDADE2025"
-                       Text="{Binding Database}"
-                       Completed="OnEntryCompleted"
-                       Focused="OnEntryFocused"
-                       Unfocused="OnEntryUnfocused"
-                       TextChanged="OnEntryTextChanged" />
-                            </Border>
-                            <Label x:Name="DbError" Text="Nome da base de dados obrigatório." TextColor="#FFA500" IsVisible="False" FontSize="12"/>
-                        </VerticalStackLayout>
-
-                        <!-- Utilizador -->
-                        <VerticalStackLayout>
-                            <Label Text="Utilizador" FontAttributes="Bold"/>
-                            <Border x:Name="UserBorder" Style="{StaticResource FieldBorder}">
-                                <Entry x:Name="UserEntry"
-                       Placeholder="YAH"
-                       Text="{Binding UserId}"
-                       Completed="OnEntryCompleted"
-                       Focused="OnEntryFocused"
-                       Unfocused="OnEntryUnfocused"
-                       TextChanged="OnEntryTextChanged" />
-                            </Border>
-                            <Label x:Name="UserError" Text="Utilizador obrigatório." TextColor="#FFA500" IsVisible="False" FontSize="12"/>
-                        </VerticalStackLayout>
-
-                        <!-- Password -->
-                        <VerticalStackLayout>
-                            <Label Text="Password" FontAttributes="Bold"/>
-                            <Border x:Name="PasswordBorder" Style="{StaticResource FieldBorder}">
-                                <Entry x:Name="PasswordEntry"
-                       Placeholder="Password"
-                       IsPassword="True"
-                       Text="{Binding Password}"
-                       Completed="OnEntryCompleted"
-                       Focused="OnEntryFocused"
-                       Unfocused="OnEntryUnfocused"
-                       TextChanged="OnEntryTextChanged" />
-                            </Border>
-                            <Label x:Name="PasswordError" Text="Password obrigatória." TextColor="#FFA500" IsVisible="False" FontSize="12"/>
-                        </VerticalStackLayout>
-
-                        <!-- Email (opcional) -->
-                        <VerticalStackLayout>
-                            <Label Text="Email de contacto (opcional)" FontAttributes="Bold"/>
-                            <Border x:Name="EmailBorder" Style="{StaticResource FieldBorder}">
-                                <Entry x:Name="EmailEntry"
-                       Placeholder="ex.: admin@yah.pt"
-                       Completed="OnEntryCompleted"
-                       Focused="OnEntryFocused"
-                       Unfocused="OnEntryUnfocused"
-                       TextChanged="OnEntryTextChanged" />
-                            </Border>
-                            <Label x:Name="EmailErrorLabel" Text="Formato de email inválido." TextColor="#FF3B30" IsVisible="False" FontSize="12"/>
-                        </VerticalStackLayout>
-
-                        <!-- Botão principal -->
-                        <Button x:Name="SaveTestButton"
-                    Style="{StaticResource AppleFilledButton}"
-                    Clicked="OnSaveAndTestClicked"
-                    Text=" Guardar e Testar" />
-
-                        <VerticalStackLayout Padding="24" Spacing="18">                        
-                            <Button x:Name="BtnTestarDb"
-             Style="{StaticResource AppleTintedButton}"
-             Text="Testar ligação à Base de Dados"
-             Clicked="BtnTestarDb_Clicked"
-             SemanticProperties.Description="Executa teste de ligação ao MariaDB" />
-                            <Label x:Name="LblResultado"
-            Text=""
-            FontSize="13"
-            TextColor="Gray" />
-                        </VerticalStackLayout>
-
-                    </VerticalStackLayout>
-                </Border>
+    <ScrollView>
+        <VerticalStackLayout Spacing="0" Padding="0">
+            
+            <!-- Header -->
+            <Grid Padding="16,16,16,12" 
+                  BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}">
+                <Label Text="Configuração da Base de Dados"
+                       FontSize="20"
+                       FontAttributes="Bold"
+                       VerticalOptions="Center"
+                       TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
             </Grid>
-        </ScrollView>
-    </Grid>
+
+            <!-- Form Content -->
+            <VerticalStackLayout Spacing="32" Padding="16,8,16,24"
+                               BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}">
+                
+                <!-- Connection Settings Group -->
+                <VerticalStackLayout Spacing="2">
+                    <Border StrokeShape="RoundRectangle 10"
+                            BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
+                            Stroke="Transparent">
+                        <VerticalStackLayout Spacing="0">
+                            <!-- Servidor -->
+                            <Grid Padding="16,12" ColumnDefinitions="100,*" MinimumHeightRequest="44">
+                                <Label Text="Servidor" 
+                                       VerticalOptions="Center"
+                                       TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+                                <Entry Grid.Column="1"
+                                       x:Name="ServerEntry"
+                                       Placeholder="100.81.152.95"
+                                       Background="Transparent"
+                                       TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
+                                       PlaceholderColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
+                                       Text="{Binding Server}"
+                                       Completed="OnEntryCompleted"
+                                       Focused="OnEntryFocused"
+                                       Unfocused="OnEntryUnfocused"
+                                       TextChanged="OnEntryTextChanged"/>
+                            </Grid>
+                            
+                            <BoxView HeightRequest="0.5" 
+                                    Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}"
+                                    Margin="16,0"/>
+                            
+                            <!-- Porta -->
+                            <Grid Padding="16,12" ColumnDefinitions="100,*" MinimumHeightRequest="44">
+                                <Label Text="Porta" 
+                                       VerticalOptions="Center"
+                                       TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+                                <Entry Grid.Column="1"
+                                       x:Name="PortEntry"
+                                       Placeholder="3307"
+                                       Keyboard="Numeric"
+                                       Background="Transparent"
+                                       TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
+                                       PlaceholderColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
+                                       Text="{Binding Port}"
+                                       Completed="OnEntryCompleted"
+                                       Focused="OnEntryFocused"
+                                       Unfocused="OnEntryUnfocused"
+                                       TextChanged="OnEntryTextChanged"/>
+                            </Grid>
+                            
+                            <BoxView HeightRequest="0.5" 
+                                    Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}"
+                                    Margin="16,0"/>
+                            
+                            <!-- Base de Dados -->
+                            <Grid Padding="16,12" ColumnDefinitions="100,*" MinimumHeightRequest="44">
+                                <Label Text="Base de Dados" 
+                                       VerticalOptions="Center"
+                                       TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+                                <Entry Grid.Column="1"
+                                       x:Name="DbEntry"
+                                       Placeholder="YAHPUBLICIDADE2025"
+                                       Background="Transparent"
+                                       TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
+                                       PlaceholderColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
+                                       Text="{Binding Database}"
+                                       Completed="OnEntryCompleted"
+                                       Focused="OnEntryFocused"
+                                       Unfocused="OnEntryUnfocused"
+                                       TextChanged="OnEntryTextChanged"/>
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+
+                <!-- Authentication Group -->
+                <VerticalStackLayout Spacing="2">
+                    <Border StrokeShape="RoundRectangle 10"
+                            BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
+                            Stroke="Transparent">
+                        <VerticalStackLayout Spacing="0">
+                            <!-- Utilizador -->
+                            <Grid Padding="16,12" ColumnDefinitions="100,*" MinimumHeightRequest="44">
+                                <Label Text="Utilizador" 
+                                       VerticalOptions="Center"
+                                       TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+                                <Entry Grid.Column="1"
+                                       x:Name="UserEntry"
+                                       Placeholder="YAH"
+                                       Background="Transparent"
+                                       TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
+                                       PlaceholderColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
+                                       Text="{Binding UserId}"
+                                       Completed="OnEntryCompleted"
+                                       Focused="OnEntryFocused"
+                                       Unfocused="OnEntryUnfocused"
+                                       TextChanged="OnEntryTextChanged"/>
+                            </Grid>
+                            
+                            <BoxView HeightRequest="0.5" 
+                                    Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}"
+                                    Margin="16,0"/>
+                            
+                            <!-- Password -->
+                            <Grid Padding="16,12" ColumnDefinitions="100,*" MinimumHeightRequest="44">
+                                <Label Text="Password" 
+                                       VerticalOptions="Center"
+                                       TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+                                <Entry Grid.Column="1"
+                                       x:Name="PasswordEntry"
+                                       Placeholder="********"
+                                       IsPassword="True"
+                                       Background="Transparent"
+                                       TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
+                                       PlaceholderColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
+                                       Text="{Binding Password}"
+                                       Completed="OnEntryCompleted"
+                                       Focused="OnEntryFocused"
+                                       Unfocused="OnEntryUnfocused"
+                                       TextChanged="OnEntryTextChanged"/>
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+
+                <!-- Optional Settings Group -->
+                <VerticalStackLayout Spacing="2">
+                    <Border StrokeShape="RoundRectangle 10"
+                            BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
+                            Stroke="Transparent">
+                        <Grid Padding="16,12" ColumnDefinitions="140,*" MinimumHeightRequest="44">
+                            <Label Text="Email de contacto" 
+                                   VerticalOptions="Center"
+                                   TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+                            <Entry Grid.Column="1"
+                                   x:Name="EmailEntry"
+                                   Placeholder="admin@yah.pt"
+                                   Keyboard="Email"
+                                   Background="Transparent"
+                                   TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
+                                   PlaceholderColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
+                                   Completed="OnEntryCompleted"
+                                   Focused="OnEntryFocused"
+                                   Unfocused="OnEntryUnfocused"
+                                   TextChanged="OnEntryTextChanged"/>
+                        </Grid>
+                    </Border>
+                    <Label Text="Opcional"
+                           FontSize="13"
+                           Padding="16,4,0,0"
+                           TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"/>
+                </VerticalStackLayout>
+
+                <!-- Error Messages (Hidden by default) -->
+                <VerticalStackLayout Spacing="8" x:Name="ErrorContainer" IsVisible="False">
+                    <Label x:Name="ServerError" Text="Servidor obrigatório" TextColor="#FF3B30" IsVisible="False" FontSize="13" Padding="16,0"/>
+                    <Label x:Name="PortError" Text="Porta inválida (1-65535)" TextColor="#FF3B30" IsVisible="False" FontSize="13" Padding="16,0"/>
+                    <Label x:Name="DbError" Text="Base de dados obrigatória" TextColor="#FF3B30" IsVisible="False" FontSize="13" Padding="16,0"/>
+                    <Label x:Name="UserError" Text="Utilizador obrigatório" TextColor="#FF3B30" IsVisible="False" FontSize="13" Padding="16,0"/>
+                    <Label x:Name="PasswordError" Text="Password obrigatória" TextColor="#FF3B30" IsVisible="False" FontSize="13" Padding="16,0"/>
+                    <Label x:Name="EmailErrorLabel" Text="Email inválido" TextColor="#FF3B30" IsVisible="False" FontSize="13" Padding="16,0"/>
+                </VerticalStackLayout>
+
+                <!-- Action Buttons -->
+                <VerticalStackLayout Spacing="12" Padding="0,8,0,0">
+                    <Button x:Name="SaveTestButton"
+                            Text="Guardar e Testar"
+                            Style="{StaticResource AppleFilledButton}"
+                            Clicked="OnSaveAndTestClicked">
+                        <Button.ImageSource>
+                            <FontImageSource Glyph="&#xF0C7;" FontFamily="FA7Solid" Color="White" Size="16"/>
+                        </Button.ImageSource>
+                    </Button>
+                    
+                    <Button x:Name="BtnTestarDb"
+                            Text="Testar Ligação"
+                            Style="{StaticResource AppleTintedButton}"
+                            Clicked="BtnTestarDb_Clicked">
+                        <Button.ImageSource>
+                            <FontImageSource Glyph="&#xF0AC;" FontFamily="FA7Solid" 
+                                           Color="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}" Size="16"/>
+                        </Button.ImageSource>
+                    </Button>
+                </VerticalStackLayout>
+
+                <!-- Result Message -->
+                <Border StrokeShape="RoundRectangle 10"
+                        BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
+                        Stroke="Transparent"
+                        Padding="16"
+                        IsVisible="{Binding Source={x:Reference LblResultado}, Path=Text, Converter={StaticResource StringToBoolConverter}}">
+                    <Label x:Name="LblResultado"
+                           Text=""
+                           FontSize="14"
+                           TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
+                           LineBreakMode="WordWrap"/>
+                </Border>
+
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

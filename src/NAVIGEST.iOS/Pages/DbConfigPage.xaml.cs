@@ -20,15 +20,10 @@ public partial class DbConfigPage : ContentPage
         BindingContext = _settings;
     }
 
-    protected override async void OnAppearing()
+    protected override void OnAppearing()
     {
         base.OnAppearing();
-        // micro animação discreta
-        if (Card != null)
-        {
-            Card.Opacity = 0;
-            await Card.FadeTo(1, 220, Easing.CubicOut);
-        }
+        // Sem animação necessária - design iOS limpo já está otimizado
     }
 
     // ---------------- helpers de recursos/cores ----------------
@@ -111,22 +106,19 @@ public partial class DbConfigPage : ContentPage
 
     private bool ValidateField(Entry entry)
     {
-        if (entry == ServerEntry) return ValidateRequired(entry, ServerBorder, ServerError);
+        if (entry == ServerEntry) return ValidateRequired(entry, ServerError);
         if (entry == PortEntry) return ValidatePort();
-        if (entry == DbEntry) return ValidateRequired(entry, DbBorder, DbError);
-        if (entry == UserEntry) return ValidateRequired(entry, UserBorder, UserError);
-        if (entry == PasswordEntry) return ValidateRequired(entry, PasswordBorder, PasswordError);
+        if (entry == DbEntry) return ValidateRequired(entry, DbError);
+        if (entry == UserEntry) return ValidateRequired(entry, UserError);
+        if (entry == PasswordEntry) return ValidateRequired(entry, PasswordError);
         if (entry == EmailEntry) return ValidateEmail();
         return true;
     }
 
-    private bool ValidateRequired(Entry entry, Border border, Label errorLabel)
+    private bool ValidateRequired(Entry entry, Label errorLabel)
     {
         var ok = !string.IsNullOrWhiteSpace(entry.Text);
         errorLabel.IsVisible = !ok;
-
-        border.Stroke = ok ? GetStrokeNeutralBrush() : GetWarnBrush();
-        border.StrokeThickness = 1;
         return ok;
     }
 
@@ -136,11 +128,6 @@ public partial class DbConfigPage : ContentPage
         var ok = int.TryParse(text, out var p) && p is >= 1 and <= 65535;
 
         if (PortError != null) PortError.IsVisible = !ok;
-        if (PortBorder != null)
-        {
-            PortBorder.Stroke = ok ? GetStrokeNeutralBrush() : GetWarnBrush();
-            PortBorder.StrokeThickness = 1;
-        }
         return ok;
     }
 
@@ -150,11 +137,6 @@ public partial class DbConfigPage : ContentPage
         var ok = string.IsNullOrEmpty(txt) || IsValidEmail(txt!);
 
         if (EmailErrorLabel != null) EmailErrorLabel.IsVisible = !ok;
-        if (EmailBorder != null)
-        {
-            EmailBorder.Stroke = ok ? GetStrokeNeutralBrush() : GetErrorBrush();
-            EmailBorder.StrokeThickness = 1;
-        }
         return ok;
     }
 
@@ -173,11 +155,11 @@ public partial class DbConfigPage : ContentPage
     private async void OnSaveAndTestClicked(object sender, EventArgs e)
     {
         var allOk =
-            ValidateRequired(ServerEntry, ServerBorder, ServerError) &
+            ValidateRequired(ServerEntry, ServerError) &
             ValidatePort() &
-            ValidateRequired(DbEntry, DbBorder, DbError) &
-            ValidateRequired(UserEntry, UserBorder, UserError) &
-            ValidateRequired(PasswordEntry, PasswordBorder, PasswordError) &
+            ValidateRequired(DbEntry, DbError) &
+            ValidateRequired(UserEntry, UserError) &
+            ValidateRequired(PasswordEntry, PasswordError) &
             ValidateEmail();
 
         if (!allOk)

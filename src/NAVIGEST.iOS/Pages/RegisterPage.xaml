@@ -40,8 +40,9 @@
                 </Grid>
 
                 <!-- Avatar Section -->
-                <Grid Padding="0,24,0,24" 
-                      BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}">
+                <Border Padding="0,32,0,32" 
+                        BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}"
+                        StrokeThickness="0">
                     <VerticalStackLayout Spacing="16" HorizontalOptions="Center">
                         <!-- Avatar Circle -->
                         <Border StrokeShape="RoundRectangle 60"
@@ -75,7 +76,7 @@
                                 Style="{StaticResource AppleTextButton}"
                                 Clicked="OnEscolherImagemClicked"/>
                     </VerticalStackLayout>
-                </Grid>
+                </Border>
 
                 <!-- Form Fields in Grouped Style (iOS Settings-like) -->
                 <VerticalStackLayout Spacing="32" Padding="16,8,16,24"
@@ -236,32 +237,45 @@
                     </VerticalStackLayout>
 
                     <!-- Action Buttons -->
-                    <VerticalStackLayout Spacing="12">
-                        <Button Text="💾 Guardar"
+                    <VerticalStackLayout Spacing="12" Padding="0,8,0,0">
+                        <Button Text="Guardar"
                                 Style="{StaticResource AppleFilledButton}"
-                                Clicked="OnGuardarClicked"/>
+                                Clicked="OnGuardarClicked">
+                            <Button.ImageSource>
+                                <FontImageSource Glyph="&#xF0C7;" FontFamily="FA7Solid" Color="White" Size="16"/>
+                            </Button.ImageSource>
+                        </Button>
                         
-                        <Button Text="✏️ Atualizar"
-                                BackgroundColor="{AppThemeBinding Light=#FF9500, Dark=#FF9F0A}"
-                                TextColor="White"
-                                FontSize="17"
-                                FontAttributes="Bold"
-                                CornerRadius="10"
-                                HeightRequest="50"
-                                Clicked="OnAtualizarClicked"/>
+                        <Button Text="Atualizar"
+                                Style="{StaticResource AppleTintedButton}"
+                                Clicked="OnAtualizarClicked">
+                            <Button.ImageSource>
+                                <FontImageSource Glyph="&#xF044;" FontFamily="FA7Solid" 
+                                               Color="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}" Size="16"/>
+                            </Button.ImageSource>
+                        </Button>
                         
-                        <Button Text="🗑️ Eliminar"
+                        <Button Text="Eliminar"
                                 BackgroundColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}"
                                 TextColor="White"
                                 FontSize="17"
                                 FontAttributes="Bold"
                                 CornerRadius="10"
                                 HeightRequest="50"
-                                Clicked="OnEliminarClicked"/>
+                                Clicked="OnEliminarClicked">
+                            <Button.ImageSource>
+                                <FontImageSource Glyph="&#xF1F8;" FontFamily="FA7Solid" Color="White" Size="16"/>
+                            </Button.ImageSource>
+                        </Button>
                         
-                        <Button Text="🧹 Limpar"
+                        <Button Text="Limpar"
                                 Style="{StaticResource AppleTintedButton}"
-                                Clicked="OnNovoClicked"/>
+                                Clicked="OnNovoClicked">
+                            <Button.ImageSource>
+                                <FontImageSource Glyph="&#xF51A;" FontFamily="FA7Solid" 
+                                               Color="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}" Size="16"/>
+                            </Button.ImageSource>
+                        </Button>
                     </VerticalStackLayout>
 
                 </VerticalStackLayout>
