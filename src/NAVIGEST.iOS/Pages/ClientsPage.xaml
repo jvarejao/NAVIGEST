@@ -45,11 +45,11 @@
     <Grid WidthRequest="56" HeightRequest="56"
           HorizontalOptions="Center" VerticalOptions="Center"
           BindingContext="{Binding .}">
-      <BoxView Color="#00D9FF" CornerRadius="28"
-               WidthRequest="56" HeightRequest="56"/>
+      <BoxView Color="#00D9FF" CornerRadius="28" WidthRequest="56" HeightRequest="56"
+               InputTransparent="True"/>
       <Label FontFamily="FA7Solid" Text="&#xF07C;" FontSize="24"
-             TextColor="White" HorizontalOptions="Center" VerticalOptions="Center"/>
-      <!-- TAP no botão circular -->
+             TextColor="White" HorizontalOptions="Center" VerticalOptions="Center"
+             InputTransparent="True"/>
       <Grid.GestureRecognizers>
         <TapGestureRecognizer
           NumberOfTapsRequired="1"
@@ -65,9 +65,11 @@
     <Grid WidthRequest="56" HeightRequest="56"
           HorizontalOptions="Center" VerticalOptions="Center"
           BindingContext="{Binding .}">
-      <BoxView Color="#FFE400" CornerRadius="28" WidthRequest="56" HeightRequest="56"/>
+      <BoxView Color="#FFE400" CornerRadius="28" WidthRequest="56" HeightRequest="56"
+               InputTransparent="True"/>
       <Label FontFamily="FA7Solid" Text="&#xF044;" FontSize="24"
-             TextColor="#333333" HorizontalOptions="Center" VerticalOptions="Center"/>
+             TextColor="#333333" HorizontalOptions="Center" VerticalOptions="Center"
+             InputTransparent="True"/>
       <Grid.GestureRecognizers>
         <TapGestureRecognizer
           NumberOfTapsRequired="1"
@@ -83,9 +85,11 @@
     <Grid WidthRequest="56" HeightRequest="56"
           HorizontalOptions="Center" VerticalOptions="Center"
           BindingContext="{Binding .}">
-      <BoxView Color="#FF006E" CornerRadius="28" WidthRequest="56" HeightRequest="56"/>
+      <BoxView Color="#FF006E" CornerRadius="28" WidthRequest="56" HeightRequest="56"
+               InputTransparent="True"/>
       <Label FontFamily="FA7Solid" Text="&#xF1F8;" FontSize="24"
-             TextColor="White" HorizontalOptions="Center" VerticalOptions="Center"/>
+             TextColor="White" HorizontalOptions="Center" VerticalOptions="Center"
+             InputTransparent="True"/>
       <Grid.GestureRecognizers>
         <TapGestureRecognizer
           NumberOfTapsRequired="1"

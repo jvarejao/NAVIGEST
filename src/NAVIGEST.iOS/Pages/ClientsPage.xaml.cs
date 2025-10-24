@@ -155,8 +155,6 @@ namespace NAVIGEST.iOS.Pages
             {
                 System.Diagnostics.Debug.WriteLine($"[PASTAS] Tap detectado! Sender: {sender?.GetType().Name}");
                 
-                await DisplayAlert("DEBUG", $"Pastas tap! Sender: {sender?.GetType().Name}", "OK");
-                
                 // Obter o Cliente do BindingContext do Grid
                 Cliente? cliente = null;
                 if (sender is Element element && element.BindingContext is Cliente c)
@@ -168,28 +166,33 @@ namespace NAVIGEST.iOS.Pages
                 {
                     await DisplayAlert("Erro", "Não foi possível identificar o cliente.", "OK");
                     return;
-                }        CloseSwipe(sender);
+                }
+                
+                CloseSwipe(sender);
 
-        if (string.IsNullOrWhiteSpace(cliente.CLICODIGO))
-        {
-            await DisplayAlert("Aviso", "Cliente sem código definido.", "OK");
-            return;
-        }
+                if (string.IsNullOrWhiteSpace(cliente.CLICODIGO))
+                {
+                    await DisplayAlert("Aviso", "Cliente sem código definido.", "OK");
+                    return;
+                }
 
-        var uri = new Uri($"qfile://open?path=/mnt/remote/CLIENTES/{cliente.CLICODIGO}");
-        try { await Launcher.OpenAsync(uri); }
-        catch
-        {
-            await DisplayAlert("Qfile",
-                $"A abrir pasta do cliente {cliente.CLINOME}...\n\nCaminho: CLIENTES/{cliente.CLICODIGO}",
-                "OK");
+                var uri = new Uri($"qfile://open?path=/mnt/remote/CLIENTES/{cliente.CLICODIGO}");
+                try 
+                { 
+                    await Launcher.OpenAsync(uri); 
+                }
+                catch
+                {
+                    await DisplayAlert("Qfile",
+                        $"A abrir pasta do cliente {cliente.CLINOME}...\n\nCaminho: CLIENTES/{cliente.CLICODIGO}",
+                        "OK");
+                }
+            }
+            catch (Exception ex)
+            {
+                GlobalErro.TratarErro(ex, mostrarAlerta: true);
+            }
         }
-    }
-    catch (Exception ex)
-    {
-        GlobalErro.TratarErro(ex, mostrarAlerta: true);
-    }
-}
 
         // EDITAR
         private void OnEditClientTapped(object sender, EventArgs e)
@@ -205,21 +208,23 @@ namespace NAVIGEST.iOS.Pages
                     cliente = c;
                 }
                 
-                if (cliente == null) return;        CloseSwipe(sender);
+                if (cliente == null) return;
+                
+                CloseSwipe(sender);
 
-        if (BindingContext is ClientsPageModel vm &&
-            vm.SelectCommand?.CanExecute(cliente) == true)
-        {
-            vm.SelectCommand.Execute(cliente);
+                if (BindingContext is ClientsPageModel vm &&
+                    vm.SelectCommand?.CanExecute(cliente) == true)
+                {
+                    vm.SelectCommand.Execute(cliente);
+                }
+
+                ShowFormView(isNew: false);
+            }
+            catch (Exception ex)
+            {
+                GlobalErro.TratarErro(ex, mostrarAlerta: true);
+            }
         }
-
-        ShowFormView(isNew: false);
-    }
-    catch (Exception ex)
-    {
-        GlobalErro.TratarErro(ex, mostrarAlerta: true);
-    }
-}
 
         // ELIMINAR
         private async void OnDeleteClientTapped(object sender, EventArgs e)
@@ -228,8 +233,6 @@ namespace NAVIGEST.iOS.Pages
             {
                 System.Diagnostics.Debug.WriteLine($"[ELIMINAR] Tap detectado! Sender: {sender?.GetType().Name}");
                 
-                await DisplayAlert("DEBUG", $"Eliminar tap! Sender: {sender?.GetType().Name}", "OK");
-                
                 // Obter o Cliente do BindingContext do Grid
                 Cliente? cliente = null;
                 if (sender is Element element && element.BindingContext is Cliente c)
@@ -237,31 +240,31 @@ namespace NAVIGEST.iOS.Pages
                     cliente = c;
                 }
                 
-                if (cliente == null)
+                if (cliente == null) 
                 {
                     await DisplayAlert("Erro", "Não foi possível identificar o cliente.", "OK");
                     return;
                 }
 
-        CloseSwipe(sender);
+                CloseSwipe(sender);
 
-        var confirm = await DisplayAlert(
-            "Eliminar Cliente",
-            $"Tem a certeza que deseja eliminar '{cliente.CLINOME}'?",
-            "Eliminar", "Cancelar");
+                var confirm = await DisplayAlert(
+                    "Eliminar Cliente",
+                    $"Tem a certeza que deseja eliminar '{cliente.CLINOME}'?",
+                    "Eliminar", "Cancelar");
 
-        if (confirm && BindingContext is ClientsPageModel vm &&
-            vm.DeleteCommand?.CanExecute(cliente) == true)
-        {
-            vm.DeleteCommand.Execute(cliente);
-            await GlobalToast.ShowAsync("Cliente eliminado com sucesso.", ToastTipo.Sucesso, 2000);
+                if (confirm && BindingContext is ClientsPageModel vm &&
+                    vm.DeleteCommand?.CanExecute(cliente) == true)
+                {
+                    vm.DeleteCommand.Execute(cliente);
+                    await GlobalToast.ShowAsync("Cliente eliminado com sucesso.", ToastTipo.Sucesso, 2000);
+                }
+            }
+            catch (Exception ex)
+            {
+                GlobalErro.TratarErro(ex, mostrarAlerta: true);
+            }
         }
-    }
-    catch (Exception ex)
-    {
-        GlobalErro.TratarErro(ex, mostrarAlerta: true);
-    }
-}
 
 private void CloseSwipe(object sender)
 {
@@ -366,24 +369,26 @@ private void CloseSwipe(object sender)
         {
             try
             {
+                System.Diagnostics.Debug.WriteLine($"[ELIMINAR FORM] Tap detectado!");
+                
                 if (BindingContext is not ClientsPageModel vm || vm.Editing is null)
+                {
+                    await DisplayAlert("Erro", "Não foi possível identificar o cliente.", "OK");
                     return;
+                }
+
+                var cliente = vm.Editing;
 
                 var confirm = await DisplayAlert(
                     "Eliminar Cliente",
-                    $"Tem a certeza que deseja eliminar '{vm.Editing.CLINOME}'?",
-                    "Eliminar",
-                    "Cancelar"
-                );
+                    $"Tem a certeza que deseja eliminar '{cliente.CLINOME}'?",
+                    "Eliminar", "Cancelar");
 
-                if (confirm)
+                if (confirm && vm.DeleteCommand?.CanExecute(cliente) == true)
                 {
-                    if (vm.DeleteCommand?.CanExecute(vm.Editing) == true)
-                    {
-                        vm.DeleteCommand.Execute(vm.Editing);
-                        await GlobalToast.ShowAsync("Cliente eliminado com sucesso.", ToastTipo.Sucesso, 2000);
-                        ShowListView();
-                    }
+                    vm.DeleteCommand.Execute(cliente);
+                    await GlobalToast.ShowAsync("Cliente eliminado com sucesso.", ToastTipo.Sucesso, 2000);
+                    ShowListView();
                 }
             }
             catch (Exception ex)
