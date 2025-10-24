@@ -44,19 +44,19 @@
                                     <Grid BackgroundColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}" 
                                           WidthRequest="80"
                                           Padding="10">
-                                        <Border WidthRequest="50"
-                                                HeightRequest="50"
-                                                BackgroundColor="White"
+                                        <Border WidthRequest="56"
+                                                HeightRequest="56"
+                                                BackgroundColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"
                                                 StrokeThickness="0"
                                                 HorizontalOptions="Center"
                                                 VerticalOptions="Center">
                                             <Border.StrokeShape>
-                                                <RoundRectangle CornerRadius="25"/>
+                                                <Ellipse/>
                                             </Border.StrokeShape>
                                             <Label FontFamily="FA7Solid"
                                                    Text="&#xF07C;"
                                                    FontSize="24"
-                                                   TextColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"
+                                                   TextColor="White"
                                                    HorizontalOptions="Center"
                                                    VerticalOptions="Center"/>
                                         </Border>
@@ -71,19 +71,19 @@
                                     <Grid BackgroundColor="#FF9500" 
                                           WidthRequest="80"
                                           Padding="10">
-                                        <Border WidthRequest="50"
-                                                HeightRequest="50"
-                                                BackgroundColor="White"
+                                        <Border WidthRequest="56"
+                                                HeightRequest="56"
+                                                BackgroundColor="#FF9500"
                                                 StrokeThickness="0"
                                                 HorizontalOptions="Center"
                                                 VerticalOptions="Center">
                                             <Border.StrokeShape>
-                                                <RoundRectangle CornerRadius="25"/>
+                                                <Ellipse/>
                                             </Border.StrokeShape>
                                             <Label FontFamily="FA7Solid"
                                                    Text="&#xF044;"
                                                    FontSize="24"
-                                                   TextColor="#FF9500"
+                                                   TextColor="White"
                                                    HorizontalOptions="Center"
                                                    VerticalOptions="Center"/>
                                         </Border>
@@ -98,19 +98,19 @@
                                     <Grid BackgroundColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}" 
                                           WidthRequest="80"
                                           Padding="10">
-                                        <Border WidthRequest="50"
-                                                HeightRequest="50"
-                                                BackgroundColor="White"
+                                        <Border WidthRequest="56"
+                                                HeightRequest="56"
+                                                BackgroundColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}"
                                                 StrokeThickness="0"
                                                 HorizontalOptions="Center"
                                                 VerticalOptions="Center">
                                             <Border.StrokeShape>
-                                                <RoundRectangle CornerRadius="25"/>
+                                                <Ellipse/>
                                             </Border.StrokeShape>
                                             <Label FontFamily="FA7Solid"
                                                    Text="&#xF1F8;"
                                                    FontSize="24"
-                                                   TextColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}"
+                                                   TextColor="White"
                                                    HorizontalOptions="Center"
                                                    VerticalOptions="Center"/>
                                         </Border>
