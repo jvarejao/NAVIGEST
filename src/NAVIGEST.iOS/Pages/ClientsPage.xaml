@@ -39,84 +39,81 @@
                         <!-- Swipe Actions (deslizar para esquerda) -->
                         <SwipeView.RightItems>
                             <SwipeItems Mode="Reveal">
-                                <!-- Botão Pastas (azul) -->
+                                <!-- Botão Pastas (azul neon) -->
                                 <SwipeItemView>
-                                    <Grid BackgroundColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}" 
+                                    <Grid BackgroundColor="Transparent" 
                                           WidthRequest="80"
-                                          Padding="10">
-                                        <Border WidthRequest="56"
-                                                HeightRequest="56"
-                                                BackgroundColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"
-                                                StrokeThickness="0"
-                                                HorizontalOptions="Center"
-                                                VerticalOptions="Center">
-                                            <Border.StrokeShape>
-                                                <Ellipse/>
-                                            </Border.StrokeShape>
+                                          Padding="15,12">
+                                        <Grid WidthRequest="56"
+                                              HeightRequest="56"
+                                              HorizontalOptions="Center"
+                                              VerticalOptions="Center">
+                                            <BoxView Color="#00D9FF"
+                                                     CornerRadius="28"
+                                                     WidthRequest="56"
+                                                     HeightRequest="56"/>
                                             <Label FontFamily="FA7Solid"
                                                    Text="&#xF07C;"
                                                    FontSize="24"
                                                    TextColor="White"
                                                    HorizontalOptions="Center"
                                                    VerticalOptions="Center"/>
-                                        </Border>
-                                        <Grid.GestureRecognizers>
-                                            <TapGestureRecognizer Tapped="OnPastasClientTapped"/>
-                                        </Grid.GestureRecognizers>
+                                            <Grid.GestureRecognizers>
+                                                <TapGestureRecognizer Tapped="OnPastasClientTapped"/>
+                                            </Grid.GestureRecognizers>
+                                        </Grid>
                                     </Grid>
                                 </SwipeItemView>
                                 
-                                <!-- Botão Editar (laranja) -->
+                                <!-- Botão Editar (amarelo neon) -->
                                 <SwipeItemView>
-                                    <Grid BackgroundColor="#FF9500" 
+                                    <Grid BackgroundColor="Transparent" 
                                           WidthRequest="80"
-                                          Padding="10">
-                                        <Border WidthRequest="56"
-                                                HeightRequest="56"
-                                                BackgroundColor="#FF9500"
-                                                StrokeThickness="0"
-                                                HorizontalOptions="Center"
-                                                VerticalOptions="Center">
-                                            <Border.StrokeShape>
-                                                <Ellipse/>
-                                            </Border.StrokeShape>
+                                          Padding="15,12">
+                                        <Grid WidthRequest="56"
+                                              HeightRequest="56"
+                                              HorizontalOptions="Center"
+                                              VerticalOptions="Center">
+                                            <BoxView Color="#FFE400"
+                                                     CornerRadius="28"
+                                                     WidthRequest="56"
+                                                     HeightRequest="56"/>
                                             <Label FontFamily="FA7Solid"
                                                    Text="&#xF044;"
                                                    FontSize="24"
-                                                   TextColor="White"
+                                                   TextColor="#333333"
                                                    HorizontalOptions="Center"
                                                    VerticalOptions="Center"/>
-                                        </Border>
-                                        <Grid.GestureRecognizers>
-                                            <TapGestureRecognizer Tapped="OnEditClientTapped"/>
-                                        </Grid.GestureRecognizers>
+                                            <Grid.GestureRecognizers>
+                                                <TapGestureRecognizer Tapped="OnEditClientTapped"/>
+                                            </Grid.GestureRecognizers>
+                                        </Grid>
                                     </Grid>
                                 </SwipeItemView>
                                 
-                                <!-- Botão Eliminar (vermelho) -->
+                                <!-- Botão Eliminar (vermelho neon) -->
                                 <SwipeItemView>
-                                    <Grid BackgroundColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}" 
+                                    <Grid BackgroundColor="Transparent" 
                                           WidthRequest="80"
-                                          Padding="10">
-                                        <Border WidthRequest="56"
-                                                HeightRequest="56"
-                                                BackgroundColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}"
-                                                StrokeThickness="0"
-                                                HorizontalOptions="Center"
-                                                VerticalOptions="Center">
-                                            <Border.StrokeShape>
-                                                <Ellipse/>
-                                            </Border.StrokeShape>
+                                          Padding="15,12">
+                                        <Grid WidthRequest="56"
+                                              HeightRequest="56"
+                                              HorizontalOptions="Center"
+                                              VerticalOptions="Center">
+                                            <BoxView Color="#FF006E"
+                                                     CornerRadius="28"
+                                                     WidthRequest="56"
+                                                     HeightRequest="56"/>
                                             <Label FontFamily="FA7Solid"
                                                    Text="&#xF1F8;"
                                                    FontSize="24"
                                                    TextColor="White"
                                                    HorizontalOptions="Center"
                                                    VerticalOptions="Center"/>
-                                        </Border>
-                                        <Grid.GestureRecognizers>
-                                            <TapGestureRecognizer Tapped="OnDeleteClientTapped"/>
-                                        </Grid.GestureRecognizers>
+                                            <Grid.GestureRecognizers>
+                                                <TapGestureRecognizer Tapped="OnDeleteClientTapped"/>
+                                            </Grid.GestureRecognizers>
+                                        </Grid>
                                     </Grid>
                                 </SwipeItemView>
                             </SwipeItems>
