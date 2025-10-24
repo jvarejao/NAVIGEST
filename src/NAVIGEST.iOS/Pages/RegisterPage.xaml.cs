@@ -528,6 +528,67 @@ namespace NAVIGEST.iOS.Pages
             }
         }
 
+        // ==========================
+        // PICKER MODAL METHODS (iOS Style)
+        // ==========================
+        private void OnOpenUserPicker(object sender, EventArgs e)
+        {
+            if (this.FindByName<Grid>("UserPickerOverlay") is Grid overlay)
+            {
+                if (this.FindByName<CollectionView>("UsersPickerView") is CollectionView picker)
+                {
+                    picker.ItemsSource = _users;
+                }
+                overlay.IsVisible = true;
+            }
+        }
+
+        private async void OnUserPickerSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.CurrentSelection.FirstOrDefault() is Registration user)
+            {
+                await OnUserSelectedAsync(user);
+                
+                // Close picker
+                if (this.FindByName<Grid>("UserPickerOverlay") is Grid overlay)
+                {
+                    overlay.IsVisible = false;
+                }
+                
+                // Clear selection
+                if (sender is CollectionView cv)
+                {
+                    cv.SelectedItem = null;
+                }
+                
+                // Scroll to top
+                await MainScrollView.ScrollToAsync(0, 0, true);
+            }
+        }
+
+        private void OnCloseUserPicker(object sender, EventArgs e)
+        {
+            if (this.FindByName<Grid>("UserPickerOverlay") is Grid overlay)
+            {
+                overlay.IsVisible = false;
+            }
+        }
+
+        private async Task OnUserSelectedAsync(Registration user)
+        {
+            SetEntryText("entryUsername", user.Username ?? "");
+            SetEntryText("entryPassword", ""); // Não preenche password por segurança
+            SetEntryText("entryName", user.Name ?? "");
+            SetEntryText("entryContact", user.ContactNo ?? "");
+            SetEntryText("entryEmail", user.Email ?? "");
+            SetEntryText("entryCategoria1", user.Categoria1 ?? "");
+            SetEntryText("entryCategoria2", user.Categoria2 ?? "");
+            SetEntryText("entryTipo", user.TipoUtilizador ?? "");
+
+            _imagemBytes = user.ProfilePicture;
+            AtualizarAvatar();
+        }
+
 #if WINDOWS
         // Código Windows específico (exemplo: animações, navegação, layouts)
 #endif
