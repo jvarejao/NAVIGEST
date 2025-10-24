@@ -52,10 +52,10 @@
         {
             get
             {
-                if (ANULADO) return "&#xF057;"; // circle-xmark (anulado)
-                if (EXTERNO) return "&#xF362;"; // arrow-up-right-from-square (externo)
-                if (PastasSincronizadas) return "&#xF00C;"; // check (sincronizado)
-                return "&#xF054;"; // chevron-right (normal)
+                if (ANULADO) return "\uf057"; // circle-xmark (anulado)
+                if (EXTERNO) return "\uf362"; // arrow-up-right-from-square (externo)
+                if (PastasSincronizadas) return "\uf00c"; // check (sincronizado)
+                return "\uf054"; // chevron-right (normal)
             }
         }
 

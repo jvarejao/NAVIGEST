@@ -85,6 +85,35 @@ namespace NAVIGEST.iOS.Pages
             }
         }
 
+        // Swipe Action: Pastas do Cliente
+        private async void OnPastasClientTapped(object sender, EventArgs e)
+        {
+            try
+            {
+                if (sender is Grid grid && grid.BindingContext is Cliente cliente)
+                {
+                    if (BindingContext is ClientsPageModel vm)
+                    {
+                        // Selecionar o cliente primeiro
+                        if (vm.SelectCommand?.CanExecute(cliente) == true)
+                        {
+                            vm.SelectCommand.Execute(cliente);
+                        }
+                        
+                        // Executar comando Pastas
+                        if (vm.PastasCommand?.CanExecute(null) == true)
+                        {
+                            vm.PastasCommand.Execute(null);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                GlobalErro.TratarErro(ex, mostrarAlerta: true);
+            }
+        }
+
         // Swipe Action: Eliminar
         private async void OnDeleteClientTapped(object sender, EventArgs e)
         {

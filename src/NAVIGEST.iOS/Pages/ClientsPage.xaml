@@ -31,13 +31,38 @@
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:Cliente">
                     <SwipeView>
-                        <!-- Swipe Actions (esquerda para direita) -->
+                        <!-- Swipe Actions (deslizar para esquerda) -->
                         <SwipeView.RightItems>
                             <SwipeItems Mode="Reveal">
+                                <!-- Botão Pastas (azul) -->
+                                <SwipeItemView>
+                                    <Grid BackgroundColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}" 
+                                          WidthRequest="75"
+                                          Padding="0">
+                                        <VerticalStackLayout VerticalOptions="Center" 
+                                                           HorizontalOptions="Center"
+                                                           Spacing="4">
+                                            <Label FontFamily="FA7Solid" 
+                                                   Text="&#xF07C;" 
+                                                   FontSize="20"
+                                                   TextColor="White"
+                                                   HorizontalOptions="Center"/>
+                                            <Label Text="Pastas" 
+                                                   FontSize="11"
+                                                   TextColor="White"
+                                                   HorizontalOptions="Center"/>
+                                        </VerticalStackLayout>
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnPastasClientTapped" 
+                                                                CommandParameter="{Binding .}"/>
+                                        </Grid.GestureRecognizers>
+                                    </Grid>
+                                </SwipeItemView>
+                                
                                 <!-- Botão Editar (laranja) -->
                                 <SwipeItemView>
                                     <Grid BackgroundColor="#FF9500" 
-                                          WidthRequest="80"
+                                          WidthRequest="75"
                                           Padding="0">
                                         <VerticalStackLayout VerticalOptions="Center" 
                                                            HorizontalOptions="Center"
@@ -48,7 +73,7 @@
                                                    TextColor="White"
                                                    HorizontalOptions="Center"/>
                                             <Label Text="Editar" 
-                                                   FontSize="12"
+                                                   FontSize="11"
                                                    TextColor="White"
                                                    HorizontalOptions="Center"/>
                                         </VerticalStackLayout>
@@ -62,7 +87,7 @@
                                 <!-- Botão Eliminar (vermelho) -->
                                 <SwipeItemView>
                                     <Grid BackgroundColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}" 
-                                          WidthRequest="80"
+                                          WidthRequest="75"
                                           Padding="0">
                                         <VerticalStackLayout VerticalOptions="Center" 
                                                            HorizontalOptions="Center"
@@ -73,7 +98,7 @@
                                                    TextColor="White"
                                                    HorizontalOptions="Center"/>
                                             <Label Text="Eliminar" 
-                                                   FontSize="12"
+                                                   FontSize="11"
                                                    TextColor="White"
                                                    HorizontalOptions="Center"/>
                                         </VerticalStackLayout>
