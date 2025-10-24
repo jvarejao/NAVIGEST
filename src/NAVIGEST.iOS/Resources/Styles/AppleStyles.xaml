@@ -117,7 +117,7 @@
          ============================================================ -->
     <Style x:Key="AppleFilledButton" TargetType="Button">
         <Setter Property="BackgroundColor" 
-                Value="{AppThemeBinding Light={StaticResource iOSBlueLight}, Dark={StaticResource iOSBlueDark}}" />
+                Value="{AppThemeBinding Light={StaticResource iOSBlue}, Dark={StaticResource iOSBlueDark}}" />
         <Setter Property="TextColor" Value="White" />
         <Setter Property="FontSize" Value="17" />
         <Setter Property="FontFamily" Value="OpenSansSemiBold" />
