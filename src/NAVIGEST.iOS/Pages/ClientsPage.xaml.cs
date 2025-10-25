@@ -253,11 +253,16 @@ namespace NAVIGEST.iOS.Pages
                     $"Tem a certeza que deseja eliminar '{cliente.CLINOME}'?",
                     "Eliminar", "Cancelar");
 
-                if (confirm && BindingContext is ClientsPageModel vm &&
-                    vm.DeleteCommand?.CanExecute(cliente) == true)
+                if (confirm && BindingContext is ClientsPageModel vm)
                 {
-                    vm.DeleteCommand.Execute(cliente);
-                    await GlobalToast.ShowAsync("Cliente eliminado com sucesso.", ToastTipo.Sucesso, 2000);
+                    // IMPORTANTE: O DeleteCommand usa SelectedCliente, então temos de o definir primeiro!
+                    vm.SelectedCliente = cliente;
+                    
+                    if (vm.DeleteCommand?.CanExecute(null) == true)
+                    {
+                        vm.DeleteCommand.Execute(null);
+                        await GlobalToast.ShowAsync("Cliente eliminado com sucesso.", ToastTipo.Sucesso, 2000);
+                    }
                 }
             }
             catch (Exception ex)
@@ -384,11 +389,17 @@ private void CloseSwipe(object sender)
                     $"Tem a certeza que deseja eliminar '{cliente.CLINOME}'?",
                     "Eliminar", "Cancelar");
 
-                if (confirm && vm.DeleteCommand?.CanExecute(cliente) == true)
+                if (confirm)
                 {
-                    vm.DeleteCommand.Execute(cliente);
-                    await GlobalToast.ShowAsync("Cliente eliminado com sucesso.", ToastTipo.Sucesso, 2000);
-                    ShowListView();
+                    // IMPORTANTE: O DeleteCommand usa SelectedCliente, então temos de o definir primeiro!
+                    vm.SelectedCliente = cliente;
+                    
+                    if (vm.DeleteCommand?.CanExecute(null) == true)
+                    {
+                        vm.DeleteCommand.Execute(null);
+                        await GlobalToast.ShowAsync("Cliente eliminado com sucesso.", ToastTipo.Sucesso, 2000);
+                        ShowListView();
+                    }
                 }
             }
             catch (Exception ex)
