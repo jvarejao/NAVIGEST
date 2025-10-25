@@ -330,10 +330,21 @@ namespace NAVIGEST.iOS.Pages
 
                 bool isNew = string.IsNullOrWhiteSpace(vm.Editing.CLICODIGO);
 
+                // Chamar o SaveCommand
+                if (vm.SaveCommand?.CanExecute(null) == true)
+                {
+                    await vm.OnSaveAsync();
+                }
+
                 if (isNew)
                     await GlobalToast.ShowAsync("Cliente adicionado com sucesso! (Pasta a criar)", ToastTipo.Sucesso, 2000);
                 else
+                {
                     await GlobalToast.ShowAsync("Cliente atualizado com sucesso!", ToastTipo.Sucesso, 2000);
+                    
+                    // Se estamos editando (não é novo), abrir a pasta do cliente
+                    await HandlePastasAsync(vm.Editing);
+                }
 
                 ShowListView();
             }
@@ -349,15 +360,25 @@ namespace NAVIGEST.iOS.Pages
         {
             try
             {
-                if (BindingContext is not ClientsPageModel vm || vm.Editing is null) return;
+                await DisplayAlert("[DEBUG] Pastas", "Handler chamado", "OK");
+                
+                if (BindingContext is not ClientsPageModel vm || vm.Editing is null)
+                {
+                    await DisplayAlert("[DEBUG] Pastas", "VM ou Editing é null", "OK");
+                    return;
+                }
 
+                await DisplayAlert("[DEBUG] Pastas", "Antes de OnPastasAsync", "OK");
+                
                 // Chamar diretamente o OnPastasAsync
                 vm.SelectedCliente = vm.Editing;
                 await vm.OnPastasAsync();
+                
+                await DisplayAlert("[DEBUG] Pastas", "Depois de OnPastasAsync", "OK");
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Erro", $"Erro ao abrir pastas: {ex.Message}", "OK");
+                await DisplayAlert("Erro", $"Erro ao abrir pastas: {ex.Message}\n\n{ex.StackTrace}", "OK");
                 GlobalErro.TratarErro(ex, mostrarAlerta: false);
             }
         }
@@ -367,7 +388,13 @@ namespace NAVIGEST.iOS.Pages
         {
             try
             {
-                if (BindingContext is not ClientsPageModel vm || vm.Editing is null) return;
+                await DisplayAlert("[DEBUG] Delete", "Handler chamado", "OK");
+                
+                if (BindingContext is not ClientsPageModel vm || vm.Editing is null)
+                {
+                    await DisplayAlert("[DEBUG] Delete", "VM ou Editing é null", "OK");
+                    return;
+                }
 
                 var confirm = await DisplayAlert("Eliminar Cliente",
                     $"Tem a certeza que deseja eliminar '{vm.Editing.CLINOME}'?",
@@ -375,16 +402,20 @@ namespace NAVIGEST.iOS.Pages
 
                 if (!confirm) return;
 
+                await DisplayAlert("[DEBUG] Delete", "Antes de OnDeleteAsync", "OK");
+                
                 // Chamar diretamente o OnDeleteAsync (que já está no ViewModel)
                 vm.SelectedCliente = vm.Editing;
                 await vm.OnDeleteAsync();
+                
+                await DisplayAlert("[DEBUG] Delete", "Depois de OnDeleteAsync", "OK");
                 
                 ShowListView();
                 await GlobalToast.ShowAsync("Cliente eliminado com sucesso!", ToastTipo.Sucesso, 2000);
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Erro", $"Erro ao eliminar: {ex.Message}", "OK");
+                await DisplayAlert("Erro", $"Erro ao eliminar: {ex.Message}\n\n{ex.StackTrace}", "OK");
                 GlobalErro.TratarErro(ex, mostrarAlerta: false);
             }
         }

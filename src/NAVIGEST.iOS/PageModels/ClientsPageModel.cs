@@ -259,7 +259,7 @@ public class ClientsPageModel : INotifyPropertyChanged
         }
     }
 
-    private async Task OnSaveAsync()
+    public async Task OnSaveAsync()
     {
         if (EditModel is null) return;
 
