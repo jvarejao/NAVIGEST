@@ -1,243 +1,300 @@
-using Microsoft.Maui.Controls;
-using NAVIGEST.iOS.PageModels;
-using NAVIGEST.iOS.Models;
-using Microsoft.Extensions.DependencyInjection;
+// File: NAVIGEST.iOS/Pages/ProductsPage.xaml.cs
+#nullable enable
 using System;
 using System.Threading.Tasks;
-using System.Linq;
-using NAVIGEST.iOS; // GlobalToast / GlobalErro
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.ApplicationModel;
+using NAVIGEST.iOS.PageModels;
+using NAVIGEST.iOS.Models;
+using NAVIGEST.iOS;
 
-namespace NAVIGEST.iOS.Pages;
-
-public partial class ProductsPage : ContentPage
+namespace NAVIGEST.iOS.Pages
 {
-    private bool _initialLoaded;
-
-    public ProductsPage(ProductsPageModel vm)
+    public partial class ProductsPage : ContentPage
     {
-        InitializeComponent();
-        BindingContext = vm;
-        Loaded += async (_, _) => await EnsureLoadAsync();
-    }
+        private bool _loadedOnce;
+        private bool _isEditMode;
 
-    public ProductsPage() : this(ResolveViewModel()) { }
+        public ProductsPage() : this(new ProductsPageModel()) { }
 
-    protected override async void OnAppearing()
-    {
-        base.OnAppearing();
-        await EnsureLoadAsync();
-    }
-
-    public async Task InitializeForHostAsync() => await EnsureLoadAsync();
-
-    private async Task EnsureLoadAsync()
-    {
-        if (BindingContext is not ProductsPageModel vm) return;
-        if (_initialLoaded && vm.Products.Count > 0) return;
-        if (vm.IsBusy) return;
-
-        try
+        public ProductsPage(ProductsPageModel vm)
         {
-            await vm.LoadAsync(force: false);
-            _initialLoaded = true;
+            BindingContext = vm;
+            InitializeComponent();
+
+            #if IOS
+            ConfigureKeyboardToolbar();
+            #endif
+
+            Dispatcher.Dispatch(async () => await EnsureLoadedAsync());
         }
-        catch (Exception ex)
-        {
-            GlobalErro.TratarErro(ex, mostrarAlerta: false);
-            await GlobalToast.ShowAsync("Falha ao carregar produtos.", ToastTipo.Erro, 2500);
-        }
-    }
 
-    private static ProductsPageModel ResolveViewModel()
-    {
-        try
+        #if IOS
+        private void ConfigureKeyboardToolbar()
         {
-            var services = Application.Current?.Handler?.MauiContext?.Services;
-            var vm = services?.GetService<ProductsPageModel>();
-            return vm ?? new ProductsPageModel();
-        }
-        catch (Exception ex)
-        {
-            GlobalErro.TratarErro(ex, mostrarAlerta: false);
-            return new ProductsPageModel();
-        }
-    }
-
-    private void OnProductSelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        try
-        {
-            if (BindingContext is ProductsPageModel vm && e.CurrentSelection?.FirstOrDefault() is object item)
+            var toolbar = new StackLayout
             {
-                if (vm.SelectCommand?.CanExecute(item) == true)
-                    vm.SelectCommand.Execute(item);
+                Orientation = StackOrientation.Horizontal,
+                HorizontalOptions = LayoutOptions.End,
+                Padding = new Thickness(0, 5, 10, 5),
+                BackgroundColor = Color.FromArgb("#F7F7F7")
+            };
+
+            var doneButton = new Button
+            {
+                Text = "Concluído",
+                FontSize = 16,
+                TextColor = Color.FromArgb("#007AFF"),
+                BackgroundColor = Colors.Transparent,
+                Padding = new Thickness(10, 5)
+            };
+
+            doneButton.Clicked += (s, e) => SearchBar.Unfocus();
+            toolbar.Children.Add(doneButton);
+        }
+        #endif
+
+        protected override async void OnAppearing()
+        {
+            base.OnAppearing();
+            await EnsureLoadedAsync();
+            if (_isEditMode) ShowListView();
+        }
+
+        private async Task EnsureLoadedAsync()
+        {
+            if (_loadedOnce) return;
+            if (BindingContext is ProductsPageModel vm)
+            {
+                try { await vm.LoadAsync(force: true); }
+                catch (Exception ex)
+                {
+                    GlobalErro.TratarErro(ex, mostrarAlerta: false);
+                    await GlobalToast.ShowAsync("Falha ao carregar clientes.", ToastTipo.Erro, 2500);
+                }
+                _loadedOnce = true;
             }
         }
-        catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
-    }
 
-    // Overlay picker (mobile/tablet)
-    private void OnOpenProductPicker(object sender, EventArgs e)
-    {
-        ProductPickerOverlay.IsVisible = true;
-    }
-
-    private void OnCloseProductPicker(object sender, EventArgs e)
-    {
-        ProductPickerOverlay.IsVisible = false;
-    }
-
-    private void OnProductPickerSelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        try
+        private void ShowListView()
         {
-            if (BindingContext is ProductsPageModel vm && e.CurrentSelection?.FirstOrDefault() is object item)
-            {
-                if (vm.SelectCommand?.CanExecute(item) == true)
-                    vm.SelectCommand.Execute(item);
-                ProductPickerOverlay.IsVisible = false;
-            }
-        }
-        catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
-    }
-
-    // ---------- Popup Adicionar Fam�lia ----------
-    private void OnAddFamilyClicked(object sender, EventArgs e)
-    {
-        AddFamilyErrorLabel.IsVisible = false;
-        NewFamilyCodeEntry.Text = string.Empty;
-        NewFamilyNameEntry.Text = string.Empty;
-        AddFamilyOverlay.IsVisible = true;
-        NewFamilyCodeEntry.Focus();
-    }
-
-    private void OnCancelAddFamily(object sender, EventArgs e)
-    {
-        AddFamilyOverlay.IsVisible = false;
-    }
-
-    private async void OnSaveAddFamily(object sender, EventArgs e)
-    {
-        if (BindingContext is not ProductsPageModel vm) return;
-
-        var code = NewFamilyCodeEntry.Text?.Trim() ?? "";
-        var name = NewFamilyNameEntry.Text?.Trim() ?? "";
-
-        if (string.IsNullOrWhiteSpace(code) || string.IsNullOrWhiteSpace(name))
-        {
-            ShowAddFamilyError("C�digo e descri��o obrigat�rios.");
-            return;
+            ListViewContainer.IsVisible = true;
+            FormViewContainer.IsVisible = false;
+            _isEditMode = false;
         }
 
-        BtnSaveAddFamily.IsEnabled = false;
-        try
+        private void ShowFormView(bool isNew)
         {
-            var (ok, msg, finalCode) = await vm.AddFamilyAsync(code, name);
-            if (!ok)
+            ListViewContainer.IsVisible = false;
+            FormViewContainer.IsVisible = true;
+            _isEditMode = true;
+
+            FormTitle.Text = isNew ? "Novo Product" : "Editar Product";
+            DeleteFormButton.IsVisible = !isNew;
+            SaveButton.Text = isNew ? "Adicionar" : "Atualizar";
+        }
+
+        // --- SWIPE BUTTONS ---
+
+        private async void OnEditButtonClicked(object sender, EventArgs e)
+        {
+            await CloseSwipeFrom(sender);
+
+            var cliente = (sender as Button)?.CommandParameter as Product
+                          ?? (sender as Element)?.BindingContext as Product;
+            if (cliente == null)
             {
-                ShowAddFamilyError(msg);
+                await DisplayAlert("Erro", "Product não identificado.", "OK");
                 return;
             }
 
-            AddFamilyOverlay.IsVisible = false;
-            FamilyPicker.SelectedItem = finalCode;
-            await GlobalToast.ShowAsync("Fam�lia adicionada.", ToastTipo.Sucesso, 1600);
-        }
-        catch (Exception ex)
-        {
-            ShowAddFamilyError("Erro ao guardar fam�lia.");
-            GlobalErro.TratarErro(ex, mostrarAlerta: false);
-            await GlobalToast.ShowAsync("Erro ao guardar fam�lia.", ToastTipo.Erro, 2500);
-        }
-        finally
-        {
-            BtnSaveAddFamily.IsEnabled = true;
-        }
-    }
-
-    private void ShowAddFamilyError(string msg)
-    {
-        AddFamilyErrorLabel.Text = msg;
-        AddFamilyErrorLabel.IsVisible = true;
-    }
-
-    private async void OnEditButtonClicked(object sender, EventArgs e)
-    {
-        var product = (sender as Button)?.CommandParameter as Product
-                      ?? (sender as Element)?.BindingContext as Product;
-        if (product == null)
-        {
-            await DisplayAlert("Erro", "Produto não identificado.", "OK");
-            return;
-        }
-
-        if (BindingContext is ProductsPageModel vm)
-        {
-            if (vm.SelectCommand?.CanExecute(product) == true)
+            if (BindingContext is ProductsPageModel vm &&
+                vm.SelectCommand?.CanExecute(cliente) == true)
             {
-                vm.SelectCommand.Execute(product);
+                vm.SelectCommand.Execute(cliente);
             }
 
-            // Scroll para o form
-            if (vm.SelectedProduct != product)
-                vm.SelectedProduct = product;
-        }
-    }
-
-    private async void OnDeleteButtonClicked(object sender, EventArgs e)
-    {
-        var product = (sender as Button)?.CommandParameter as Product
-                      ?? (sender as Element)?.BindingContext as Product;
-        if (product == null)
-        {
-            await DisplayAlert("Erro", "Produto não identificado.", "OK");
-            return;
+            ShowFormView(isNew: false);
         }
 
-        var confirm = await DisplayAlert("Eliminar Produto",
-            $"Tem a certeza que deseja eliminar '{product.PRODNOME}'?",
-            "Eliminar", "Cancelar");
-
-        if (!confirm) return;
-
-        await DisplayAlert("Eliminar", "Funcionalidade de delete ainda não disponível nesta página.", "OK");
-    }
-
-    // Tap na célula – abre edição
-    private void OnProductCellTapped(object sender, EventArgs e)
-    {
-        try
+        private async void OnDeleteButtonClicked(object sender, EventArgs e)
         {
-            if (sender is Grid grid && grid.BindingContext is Product product)
+            await DisplayAlert("[DBG]", "DELETE CLICKED", "OK"); // prova de clique
+            await CloseSwipeFrom(sender);
+
+            var cliente = (sender as Button)?.CommandParameter as Product
+                          ?? (sender as Element)?.BindingContext as Product;
+            if (cliente == null)
+            {
+                await DisplayAlert("Erro", "Product não identificado.", "OK");
+                return;
+            }
+
+            var confirm = await DisplayAlert("Eliminar Product",
+                $"Tem a certeza que deseja eliminar '{cliente.PRODNOME}'?",
+                "Eliminar", "Cancelar");
+
+            if (!confirm) return;
+
+            if (BindingContext is ProductsPageModel vm)
+            {
+                vm.SelectedProduct = cliente;
+
+                bool canParam = vm.DeleteCommand?.CanExecute(cliente) == true;
+                bool canNull  = vm.DeleteCommand?.CanExecute(null) == true;
+
+                await DisplayAlert("[DBG]", $"CanExec(param)={canParam} | CanExec(null)={canNull}", "OK");
+
+                if (canParam)
+                {
+                    vm.DeleteCommand!.Execute(cliente);
+                    await GlobalToast.ShowAsync("Product eliminado com sucesso.", ToastTipo.Sucesso, 2000);
+                }
+                else if (canNull)
+                {
+                    vm.DeleteCommand!.Execute(null);
+                    await GlobalToast.ShowAsync("Product eliminado com sucesso.", ToastTipo.Sucesso, 2000);
+                }
+                else
+                {
+                    await DisplayAlert("Aviso", "Não foi possível eliminar (command bloqueado).", "OK");
+                }
+            }
+        }
+
+        // Fecha o SwipeView pai antes de agir
+        private async Task CloseSwipeFrom(object sender)
+        {
+            if (sender is Element el)
+            {
+                Element? p = el;
+                while (p != null && p is not SwipeView) p = p.Parent;
+                (p as SwipeView)?.Close();
+            }
+            await Task.Delay(75); // dá tempo à animação para não tapar os alerts
+        }
+
+        // Tap na célula – abre edição
+        private void OnProductCellTapped(object sender, EventArgs e)
+        {
+            try
+            {
+                if (sender is Grid grid && grid.BindingContext is Product cliente)
+                {
+                    if (BindingContext is ProductsPageModel vm &&
+                        vm.SelectCommand?.CanExecute(cliente) == true)
+                    {
+                        vm.SelectCommand.Execute(cliente);
+                    }
+                    ShowFormView(isNew: false);
+                }
+            }
+            catch (Exception ex)
+            {
+                GlobalErro.TratarErro(ex, mostrarAlerta: true);
+            }
+        }
+
+        // SearchBar
+        private void OnSearchBarSearchButtonPressed(object sender, EventArgs e) => SearchBar.Unfocus();
+        private void OnSearchBarTextChanged(object sender, TextChangedEventArgs e) { }
+        private void OnCollectionViewScrolled(object sender, ItemsViewScrolledEventArgs e) => SearchBar.Unfocus();
+
+        // FAB
+        private void OnAddProductTapped(object sender, EventArgs e)
+        {
+            try
             {
                 if (BindingContext is ProductsPageModel vm &&
-                    vm.SelectCommand?.CanExecute(product) == true)
+                    vm.NewCommand?.CanExecute(null) == true)
                 {
-                    vm.SelectCommand.Execute(product);
+                    vm.NewCommand.Execute(null);
                 }
-
-                if (BindingContext is ProductsPageModel vm2)
-                    vm2.SelectedProduct = product;
+                ShowFormView(isNew: true);
+            }
+            catch (Exception ex)
+            {
+                GlobalErro.TratarErro(ex, mostrarAlerta: true);
             }
         }
-        catch (Exception ex)
+
+        // Cancelar
+        private void OnCancelEditTapped(object sender, EventArgs e)
         {
-            GlobalErro.TratarErro(ex, mostrarAlerta: false);
+            if (BindingContext is ProductsPageModel vm &&
+                vm.ClearCommand?.CanExecute(null) == true)
+            {
+                vm.ClearCommand.Execute(null);
+            }
+            ShowListView();
+        }
+
+        // Guardar
+        private async void OnSaveProductTapped(object sender, EventArgs e)
+        {
+            try
+            {
+                if (BindingContext is not ProductsPageModel vm || vm.Editing is null) return;
+
+                if (string.IsNullOrWhiteSpace(vm.Editing.PRODNOME))
+                {
+                    await DisplayAlert("Aviso", "O nome do cliente é obrigatório.", "OK");
+                    return;
+                }
+
+                bool isNew = string.IsNullOrWhiteSpace(vm.Editing.PRODCODIGO);
+
+                if (isNew)
+                    await GlobalToast.ShowAsync("Product adicionado com sucesso! (Pasta a criar)", ToastTipo.Sucesso, 2000);
+                else
+                    await GlobalToast.ShowAsync("Product atualizado com sucesso!", ToastTipo.Sucesso, 2000);
+
+                ShowListView();
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Erro", $"Erro ao guardar: {ex.Message}", "OK");
+                GlobalErro.TratarErro(ex, mostrarAlerta: false);
+            }
+        }
+
+        // Eliminar no Form
+        private async void OnDeleteFromFormTapped(object sender, EventArgs e)
+        {
+            try
+            {
+                if (BindingContext is not ProductsPageModel vm || vm.Editing is null)
+                {
+                    await DisplayAlert("Erro", "Não foi possível identificar o cliente.", "OK");
+                    return;
+                }
+
+                var cliente = vm.Editing;
+                var confirm = await DisplayAlert(
+                    "Eliminar Product",
+                    $"Tem a certeza que deseja eliminar '{cliente.PRODNOME}'?",
+                    "Eliminar", "Cancelar");
+
+                if (confirm)
+                {
+                    vm.SelectedProduct = cliente;
+                    if (vm.DeleteCommand?.CanExecute(null) == true)
+                    {
+                        vm.DeleteCommand.Execute(null);
+                        await GlobalToast.ShowAsync("Product eliminado com sucesso.", ToastTipo.Sucesso, 2000);
+                        ShowListView();
+                    }
+                    else
+                    {
+                        await DisplayAlert("Aviso", "DeleteCommand não executável (form).", "OK");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Erro", $"Erro ao eliminar: {ex.Message}", "OK");
+                GlobalErro.TratarErro(ex, mostrarAlerta: false);
+            }
         }
     }
-
-    private void OnCollectionViewScrolled(object sender, ItemsViewScrolledEventArgs e)
-    {
-        // Placeholder para scroll events se necessário
-    }
-
-#if WINDOWS
-    // Código Windows específico (exemplo: animações, navegação, layouts)
-#endif
-#if ANDROID
-    // Código Android específico (exemplo: animações, navegação, layouts)
-#endif
-#if IOS
-    // Código iOS específico (exemplo: animações, navegação, layouts)
-#endif
 }
