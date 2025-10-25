@@ -1,11 +1,10 @@
 // File: NAVIGEST.iOS/Pages/ClientsPage.xaml.cs
 #nullable enable
 using System;
-using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Storage;
-using Microsoft.Maui.ApplicationModel; // Launcher.OpenAsync, MainThread
+using Microsoft.Maui.ApplicationModel;
 using NAVIGEST.iOS.PageModels;
 using NAVIGEST.iOS.Models;
 using NAVIGEST.iOS;
@@ -17,11 +16,22 @@ namespace NAVIGEST.iOS.Pages
         private bool _loadedOnce;
         private bool _isEditMode;
 
+        // Commands expostos à XAML (SwipeItem)
+        public ICommand OpenPastasCommand { get; }
+        public ICommand EditClientCommand  { get; }
+        public ICommand DeleteClientCommand{ get; }
+
         public ClientsPage() : this(new ClientsPageModel()) { }
 
         public ClientsPage(ClientsPageModel vm)
         {
             BindingContext = vm;
+
+            // Inicializa commands (sem gestures nem Invoked)
+            OpenPastasCommand = new Command<Cliente>(async c => await DoPastasAsync(c));
+            EditClientCommand  = new Command<Cliente>(DoEdit);
+            DeleteClientCommand = new Command<Cliente>(async c => await DoDeleteAsync(c));
+
             InitializeComponent();
 
             #if IOS
@@ -78,7 +88,6 @@ namespace NAVIGEST.iOS.Pages
             }
         }
 
-        // Lista vs Form
         private void ShowListView()
         {
             ListViewContainer.IsVisible = true;
@@ -97,7 +106,6 @@ namespace NAVIGEST.iOS.Pages
             SaveButton.Text = isNew ? "Adicionar" : "Atualizar";
         }
 
-        // Tap na célula
         private void OnClientCellTapped(object sender, EventArgs e)
         {
             try
@@ -117,53 +125,14 @@ namespace NAVIGEST.iOS.Pages
             }
         }
 
-        // SearchBar
         private void OnSearchBarSearchButtonPressed(object sender, EventArgs e) => SearchBar.Unfocus();
         private void OnSearchBarTextChanged(object sender, TextChangedEventArgs e) { }
         private void OnCollectionViewScrolled(object sender, ItemsViewScrolledEventArgs e) => SearchBar.Unfocus();
 
-        // ===== Swipe instrumentation (logs) =====
-        private void OnSwipeStarted(object sender, SwipeStartedEventArgs e)
-            => System.Diagnostics.Debug.WriteLine($"[SWIPE] Started Direction={e.SwipeDirection}");
+        // ===== AÇÕES =====
 
-        private void OnSwipeEnded(object sender, SwipeEndedEventArgs e)
-            => System.Diagnostics.Debug.WriteLine($"[SWIPE] Ended IsOpen={e.IsOpen}");
-
-        // Fecha swipe e aguarda animação
-        private async Task CloseSwipeThenYieldAsync(object sender)
+        private async Task DoPastasAsync(Cliente? cliente)
         {
-            if (sender is Element el)
-            {
-                Element? p = el;
-                while (p != null && p is not SwipeView) p = p.Parent;
-                (p as SwipeView)?.Close();
-            }
-            await Task.Delay(120);
-        }
-
-        // ========== PASTAS ==========
-        private async void OnPastasSwipeInvoked(object sender, EventArgs e)
-        {
-            await CloseSwipeThenYieldAsync(sender);
-            await DisplayAlert("[DBG] Pastas", "Invoked", "OK");
-
-            var cliente = (sender as Element)?.BindingContext as Cliente;
-            await DoPastasAsync(cliente, sender);
-        }
-
-        private async void OnPastasTapFallback(object sender, TappedEventArgs e)
-        {
-            await CloseSwipeThenYieldAsync(sender);
-            await DisplayAlert("[DBG] Pastas", "Tap Fallback", "OK");
-
-            var cliente = e.Parameter as Cliente;
-            await DoPastasAsync(cliente, sender);
-        }
-
-        private async Task DoPastasAsync(Cliente? cliente, object? origin = null)
-        {
-            await DisplayAlert("[DBG] Pastas", "Entrou DoPastasAsync", "OK");
-
             if (cliente == null)
             {
                 await DisplayAlert("Erro", "Cliente não identificado.", "OK");
@@ -177,64 +146,29 @@ namespace NAVIGEST.iOS.Pages
             }
 
             var qfile = new Uri($"qfile://open?path=/mnt/remote/CLIENTES/{cliente.CLICODIGO}");
-            bool triedQfile = false, opened = false;
 
             try
             {
                 var can = await Launcher.CanOpenAsync(qfile);
-                await DisplayAlert("[DBG] Pastas", $"CanOpen qfile={can}", "OK");
                 if (can)
                 {
-                    triedQfile = true;
                     await Launcher.OpenAsync(qfile);
-                    opened = true;
-                    await DisplayAlert("[DBG] Pastas", "Launcher.OpenAsync(qfile) OK", "OK");
+                }
+                else
+                {
+                    // Fallback visual para confirmar ação
+                    await DisplayAlert("Qfile",
+                        $"A abrir pasta do cliente {cliente.CLINOME}...\nCaminho: CLIENTES/{cliente.CLICODIGO}",
+                        "OK");
                 }
             }
             catch (Exception ex)
             {
-                await DisplayAlert("[DBG] Pastas", $"Qfile exception: {ex.Message}", "OK");
-            }
-
-            if (!opened)
-            {
-                // Fallback VISÍVEL: abre um http qualquer (para confirmar que o Launcher funciona)
-                var http = new Uri($"https://example.com/CLIENTES/{Uri.EscapeDataString(cliente.CLICODIGO)}");
-                await DisplayAlert("[DBG] Pastas", $"Fallback HTTP: {http}", "OK");
-                try
-                {
-                    await Launcher.OpenAsync(http);
-                    await DisplayAlert("[DBG] Pastas", "Launcher.OpenAsync(http) OK", "OK");
-                }
-                catch (Exception ex2)
-                {
-                    await DisplayAlert("Qfile",
-                        $"A abrir pasta do cliente {cliente.CLINOME}...\nCaminho: CLIENTES/{cliente.CLICODIGO}\n(Launcher falhou: {ex2.Message})",
-                        "OK");
-                }
+                await DisplayAlert("Erro", $"Falhou abrir Qfile: {ex.Message}", "OK");
             }
         }
 
-        // ========== EDITAR (mantido) ==========
-        private async void OnEditSwipeInvoked(object sender, EventArgs e)
-        {
-            await CloseSwipeThenYieldAsync(sender);
-            await DisplayAlert("[DBG] Editar", "Invoked", "OK");
-
-            var cliente = (sender as Element)?.BindingContext as Cliente;
-            DoEdit(cliente, sender);
-        }
-
-        private async void OnEditTapFallback(object sender, TappedEventArgs e)
-        {
-            await CloseSwipeThenYieldAsync(sender);
-            await DisplayAlert("[DBG] Editar", "Tap Fallback", "OK");
-
-            var cliente = e.Parameter as Cliente;
-            DoEdit(cliente, sender);
-        }
-
-        private void DoEdit(Cliente? cliente, object? origin = null)
+        private void DoEdit(Cliente? cliente)
         {
             if (cliente == null)
             {
@@ -247,32 +181,12 @@ namespace NAVIGEST.iOS.Pages
             {
                 vm.SelectCommand.Execute(cliente);
             }
+
             ShowFormView(isNew: false);
         }
 
-        // ========== ELIMINAR ==========
-        private async void OnDeleteSwipeInvoked(object sender, EventArgs e)
+        private async Task DoDeleteAsync(Cliente? cliente)
         {
-            await CloseSwipeThenYieldAsync(sender);
-            await DisplayAlert("[DBG] Eliminar", "Invoked", "OK");
-
-            var cliente = (sender as Element)?.BindingContext as Cliente;
-            await DoDeleteAsync(cliente, sender);
-        }
-
-        private async void OnDeleteTapFallback(object sender, TappedEventArgs e)
-        {
-            await CloseSwipeThenYieldAsync(sender);
-            await DisplayAlert("[DBG] Eliminar", "Tap Fallback", "OK");
-
-            var cliente = e.Parameter as Cliente;
-            await DoDeleteAsync(cliente, sender);
-        }
-
-        private async Task DoDeleteAsync(Cliente? cliente, object? origin = null)
-        {
-            await DisplayAlert("[DBG] Eliminar", "Entrou DoDeleteAsync", "OK");
-
             if (cliente == null)
             {
                 await DisplayAlert("Erro", "Cliente não identificado.", "OK");
@@ -283,33 +197,25 @@ namespace NAVIGEST.iOS.Pages
                 $"Tem a certeza que deseja eliminar '{cliente.CLINOME}'?",
                 "Eliminar", "Cancelar");
 
-            await DisplayAlert("[DBG] Eliminar", $"confirm={confirm}", "OK");
             if (!confirm) return;
 
             if (BindingContext is ClientsPageModel vm)
             {
                 vm.SelectedCliente = cliente;
 
-                bool canParam = vm.DeleteCommand?.CanExecute(cliente) == true;
-                bool canNull  = vm.DeleteCommand?.CanExecute(null) == true;
-
-                await DisplayAlert("[DBG] Eliminar", $"CanExec(param)={canParam} | CanExec(null)={canNull}", "OK");
-
-                if (canParam)
+                if (vm.DeleteCommand != null && vm.DeleteCommand.CanExecute(cliente))
                 {
-                    vm.DeleteCommand!.Execute(cliente);
-                    await DisplayAlert("[DBG] Eliminar", "Execute(param) OK", "OK");
+                    vm.DeleteCommand.Execute(cliente);
                     await GlobalToast.ShowAsync("Cliente eliminado com sucesso.", ToastTipo.Sucesso, 2000);
                 }
-                else if (canNull)
+                else if (vm.DeleteCommand != null && vm.DeleteCommand.CanExecute(null))
                 {
-                    vm.DeleteCommand!.Execute(null);
-                    await DisplayAlert("[DBG] Eliminar", "Execute(null) OK", "OK");
+                    vm.DeleteCommand.Execute(null);
                     await GlobalToast.ShowAsync("Cliente eliminado com sucesso.", ToastTipo.Sucesso, 2000);
                 }
                 else
                 {
-                    await DisplayAlert("Aviso", "DeleteCommand não está executável.", "OK");
+                    await DisplayAlert("Aviso", "Não foi possível eliminar (command bloqueado).", "OK");
                 }
             }
         }
@@ -332,7 +238,6 @@ namespace NAVIGEST.iOS.Pages
             }
         }
 
-        // Cancelar
         private void OnCancelEditTapped(object sender, EventArgs e)
         {
             if (BindingContext is ClientsPageModel vm &&
@@ -343,7 +248,6 @@ namespace NAVIGEST.iOS.Pages
             ShowListView();
         }
 
-        // Guardar
         private async void OnSaveClientTapped(object sender, EventArgs e)
         {
             try
@@ -394,7 +298,7 @@ namespace NAVIGEST.iOS.Pages
                 if (confirm)
                 {
                     vm.SelectedCliente = cliente;
-                    
+
                     if (vm.DeleteCommand?.CanExecute(null) == true)
                     {
                         vm.DeleteCommand.Execute(null);
@@ -415,13 +319,3 @@ namespace NAVIGEST.iOS.Pages
         }
     }
 }
-
-#if WINDOWS
-// Código Windows específico (se necessário)
-#endif
-#if ANDROID
-// Código Android específico (se necessário)
-#endif
-#if IOS
-// Código iOS específico (se necessário)
-#endif
