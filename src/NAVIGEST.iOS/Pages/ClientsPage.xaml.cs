@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Storage;
+using Microsoft.Maui.ApplicationModel; // <- Launcher.OpenAsync
 using NAVIGEST.iOS.PageModels;
 using NAVIGEST.iOS.Models;
 using NAVIGEST.iOS;
@@ -13,8 +14,8 @@ namespace NAVIGEST.iOS.Pages
 {
     public partial class ClientsPage : ContentPage
     {
-    private bool _loadedOnce;
-    private bool _isEditMode;
+        private bool _loadedOnce;
+        private bool _isEditMode;
 
         public ClientsPage() : this(new ClientsPageModel()) { }
 
@@ -139,8 +140,7 @@ namespace NAVIGEST.iOS.Pages
         // SearchBar: permitir scroll da lista enquanto pesquisa
         private void OnSearchBarTextChanged(object sender, TextChangedEventArgs e)
         {
-            // Não fazer nada especial aqui, apenas permitir o binding funcionar
-            // O filtro é feito automaticamente pelo binding {Binding Filter}
+            // O filtro é feito pelo binding {Binding Filter}
         }
 
         // CollectionView: fechar teclado ao fazer scroll
@@ -149,7 +149,7 @@ namespace NAVIGEST.iOS.Pages
             SearchBar.Unfocus();
         }
 
-        // PASTAS (Swipe)
+        // ------------- SWIPE: PASTAS -------------
         private async void OnPastasSwipeInvoked(object sender, EventArgs e)
         {
             try
@@ -157,7 +157,7 @@ namespace NAVIGEST.iOS.Pages
                 System.Diagnostics.Debug.WriteLine($"[PASTAS] Swipe Invoked! Sender: {sender?.GetType().Name}");
 
                 // Obter o Cliente do BindingContext do SwipeItemView
-                Cliente? cliente = (sender as Element)?.BindingContext as Cliente;
+                var cliente = (sender as Element)?.BindingContext as Cliente;
 
                 if (cliente == null)
                 {
@@ -165,7 +165,7 @@ namespace NAVIGEST.iOS.Pages
                     return;
                 }
                 
-                CloseSwipe(sender);
+                CloseSwipe(sender); // redundante (SwipeBehaviorOnInvoked=Close), mas seguro
 
                 if (string.IsNullOrWhiteSpace(cliente.CLICODIGO))
                 {
@@ -191,18 +191,17 @@ namespace NAVIGEST.iOS.Pages
             }
         }
 
-        // EDITAR (Swipe)
+        // ------------- SWIPE: EDITAR -------------
         private void OnEditSwipeInvoked(object sender, EventArgs e)
         {
             try
             {
                 System.Diagnostics.Debug.WriteLine($"[EDITAR] Swipe Invoked! Sender: {sender?.GetType().Name}");
 
-                Cliente? cliente = (sender as Element)?.BindingContext as Cliente;
-
+                var cliente = (sender as Element)?.BindingContext as Cliente;
                 if (cliente == null) return;
                 
-                CloseSwipe(sender);
+                CloseSwipe(sender); // redundante mas ok
 
                 if (BindingContext is ClientsPageModel vm &&
                     vm.SelectCommand?.CanExecute(cliente) == true)
@@ -218,14 +217,14 @@ namespace NAVIGEST.iOS.Pages
             }
         }
 
-        // ELIMINAR (Swipe)
+        // ------------- SWIPE: ELIMINAR -------------
         private async void OnDeleteSwipeInvoked(object sender, EventArgs e)
         {
             try
             {
                 System.Diagnostics.Debug.WriteLine($"[ELIMINAR] Swipe Invoked! Sender: {sender?.GetType().Name}");
 
-                Cliente? cliente = (sender as Element)?.BindingContext as Cliente;
+                var cliente = (sender as Element)?.BindingContext as Cliente;
 
                 if (cliente == null) 
                 {
@@ -233,7 +232,7 @@ namespace NAVIGEST.iOS.Pages
                     return;
                 }
 
-                CloseSwipe(sender);
+                CloseSwipe(sender); // redundante mas ok
 
                 var confirm = await DisplayAlert(
                     "Eliminar Cliente",
@@ -242,7 +241,7 @@ namespace NAVIGEST.iOS.Pages
 
                 if (confirm && BindingContext is ClientsPageModel vm)
                 {
-                    // IMPORTANTE: O DeleteCommand usa SelectedCliente, então temos de o definir primeiro!
+                    // Se o DeleteCommand usa SelectedCliente, define-o antes
                     vm.SelectedCliente = cliente;
                     
                     if (vm.DeleteCommand?.CanExecute(null) == true)
@@ -258,18 +257,17 @@ namespace NAVIGEST.iOS.Pages
             }
         }
 
-private void CloseSwipe(object sender)
-{
-    if (sender is Element el)
-    {
-        var p = el.Parent;
-        while (p != null && p is not SwipeView) p = (p as Element)?.Parent;
-        (p as SwipeView)?.Close();
-    }
-}
+        private void CloseSwipe(object sender)
+        {
+            if (sender is Element el)
+            {
+                var p = el.Parent;
+                while (p != null && p is not SwipeView) p = (p as Element)?.Parent;
+                (p as SwipeView)?.Close();
+            }
+        }
 
-
-        // Helper: Encontrar o SwipeView pai
+        // Helper (não usado, mas deixo caso precises)
         private SwipeView? FindParentSwipeView(Element element)
         {
             var parent = element.Parent;
@@ -332,14 +330,9 @@ private void CloseSwipe(object sender)
 
                 bool isNew = string.IsNullOrWhiteSpace(vm.Editing.CLICODIGO);
 
-                // Guardar
-                // TODO: Verificar se SaveCommand existe no ViewModel
-                // Por enquanto vamos tentar usar o que existe
-                
+                // TODO: Invocar SaveCommand se existir no VM; placeholder de feedback:
                 if (isNew)
                 {
-                    // Criar pasta do cliente
-                    // TODO: Implementar criação de pasta via API Tailscale/Qfile
                     await GlobalToast.ShowAsync("Cliente adicionado com sucesso! (Pasta a criar)", ToastTipo.Sucesso, 2000);
                 }
                 else
@@ -378,7 +371,6 @@ private void CloseSwipe(object sender)
 
                 if (confirm)
                 {
-                    // IMPORTANTE: O DeleteCommand usa SelectedCliente, então temos de o definir primeiro!
                     vm.SelectedCliente = cliente;
                     
                     if (vm.DeleteCommand?.CanExecute(null) == true)
@@ -400,11 +392,11 @@ private void CloseSwipe(object sender)
 }
 
 #if WINDOWS
-// C�digo Windows espec�fico (exemplo: anima��es, navega��o, layouts)
+// Código Windows específico
 #endif
 #if ANDROID
-// C�digo Android espec�fico (exemplo: anima��es, navega��o, layouts)
+// Código Android específico
 #endif
 #if IOS
-// C�digo iOS espec�fico (exemplo: anima��es, navega��o, layouts)
+// Código iOS específico
 #endif
