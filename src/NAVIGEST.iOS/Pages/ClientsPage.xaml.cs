@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Storage;
-using Microsoft.Maui.ApplicationModel; // <- Launcher.OpenAsync
+using Microsoft.Maui.ApplicationModel; // Launcher.OpenAsync
 using NAVIGEST.iOS.PageModels;
 using NAVIGEST.iOS.Models;
 using NAVIGEST.iOS;
@@ -17,6 +17,9 @@ namespace NAVIGEST.iOS.Pages
         private bool _loadedOnce;
         private bool _isEditMode;
 
+        // toggle para debug de taps/swipes
+        private const bool DEBUG_TAPS = true;
+
         public ClientsPage() : this(new ClientsPageModel()) { }
 
         public ClientsPage(ClientsPageModel vm)
@@ -24,19 +27,17 @@ namespace NAVIGEST.iOS.Pages
             BindingContext = vm;
 
             InitializeComponent();
-            
-            // Configurar toolbar do teclado no iOS
+
             #if IOS
             ConfigureKeyboardToolbar();
             #endif
-            
+
             Dispatcher.Dispatch(async () => await EnsureLoadedAsync());
         }
 
         #if IOS
         private void ConfigureKeyboardToolbar()
         {
-            // Adicionar botão "Concluído" na toolbar do teclado
             var toolbar = new StackLayout
             {
                 Orientation = StackOrientation.Horizontal,
@@ -63,12 +64,7 @@ namespace NAVIGEST.iOS.Pages
         {
             base.OnAppearing();
             await EnsureLoadedAsync();
-            
-            // Se voltar de outra página, mostrar lista
-            if (_isEditMode)
-            {
-                ShowListView();
-            }
+            if (_isEditMode) ShowListView();
         }
 
         private async Task EnsureLoadedAsync()
@@ -86,7 +82,6 @@ namespace NAVIGEST.iOS.Pages
             }
         }
 
-        // Alternar entre Lista e Formulário
         private void ShowListView()
         {
             ListViewContainer.IsVisible = true;
@@ -99,229 +94,234 @@ namespace NAVIGEST.iOS.Pages
             ListViewContainer.IsVisible = false;
             FormViewContainer.IsVisible = true;
             _isEditMode = true;
-            
+
             FormTitle.Text = isNew ? "Novo Cliente" : "Editar Cliente";
             DeleteFormButton.IsVisible = !isNew;
             SaveButton.Text = isNew ? "Adicionar" : "Atualizar";
         }
 
-        // Seleção na lista principal (toque na célula)
         private void OnClientCellTapped(object sender, EventArgs e)
         {
             try
             {
                 if (sender is Grid grid && grid.BindingContext is Cliente cliente)
                 {
-                    if (BindingContext is ClientsPageModel vm)
-                    {
-                        if (vm.SelectCommand?.CanExecute(cliente) == true)
-                        {
-                            vm.SelectCommand.Execute(cliente);
-                        }
-                    }
+                    if (BindingContext is ClientsPageModel vm &&
+                        vm.SelectCommand?.CanExecute(cliente) == true)
+                        vm.SelectCommand.Execute(cliente);
+
                     ShowFormView(isNew: false);
                 }
             }
-            catch (Exception ex) 
-            { 
-                GlobalErro.TratarErro(ex, mostrarAlerta: true); 
-            }
+            catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: true); }
         }
 
-        // SearchBar: esconder teclado quando pressiona botão de pesquisa
-        private void OnSearchBarSearchButtonPressed(object sender, EventArgs e)
+        private void OnSearchBarSearchButtonPressed(object sender, EventArgs e) => SearchBar.Unfocus();
+        private void OnSearchBarTextChanged(object sender, TextChangedEventArgs e) { }
+        private void OnCollectionViewScrolled(object sender, ItemsViewScrolledEventArgs e) => SearchBar.Unfocus();
+
+        // ==================== INSTRUMENTAÇÃO SWIPE ====================
+
+        private void OnSwipeStarted(object sender, SwipeStartedEventArgs e)
         {
-            if (sender is SearchBar searchBar)
+            if (!DEBUG_TAPS) return;
+            System.Diagnostics.Debug.WriteLine($"[SWIPE] Started Direction={e.SwipeDirection}");
+        }
+
+        private void OnSwipeEnded(object sender, SwipeEndedEventArgs e)
+        {
+            if (!DEBUG_TAPS) return;
+            System.Diagnostics.Debug.WriteLine($"[SWIPE] Ended IsOpen={e.IsOpen}");
+        }
+
+        private void LogTap(string tag, Element? el, object? param = null)
+        {
+            if (!DEBUG_TAPS) return;
+            var bc = el?.BindingContext?.GetType().Name ?? "null";
+            var pt = param?.GetType().Name ?? "null";
+            System.Diagnostics.Debug.WriteLine($"[{tag}] sender={el?.GetType().Name}, BC={bc}, Param={pt}");
+            // feedback visual curto sem bloquear
+            _ = GlobalToast.ShowAsync($"{tag}", ToastTipo.Info, 800);
+        }
+
+        private void CloseSwipeFrom(object sender)
+        {
+            if (sender is not Element el) return;
+            Element? p = el;
+            while (p != null && p is not SwipeView) p = p.Parent;
+            (p as SwipeView)?.Close();
+        }
+
+        // ==================== AÇÕES (Métodos base) ====================
+
+        private async Task DoPastasAsync(Cliente cliente, object? origin = null)
+        {
+            LogTap("PASTAS:Do", origin as Element, cliente);
+
+            if (string.IsNullOrWhiteSpace(cliente.CLICODIGO))
             {
-                searchBar.Unfocus();
+                await DisplayAlert("Aviso", "Cliente sem código definido.", "OK");
+                return;
+            }
+
+            var uri = new Uri($"qfile://open?path=/mnt/remote/CLIENTES/{cliente.CLICODIGO}");
+            try { await Launcher.OpenAsync(uri); }
+            catch
+            {
+                await DisplayAlert("Qfile",
+                    $"A abrir pasta do cliente {cliente.CLINOME}...\n\nCaminho: CLIENTES/{cliente.CLICODIGO}",
+                    "OK");
             }
         }
 
-        // SearchBar: permitir scroll da lista enquanto pesquisa
-        private void OnSearchBarTextChanged(object sender, TextChangedEventArgs e)
+        private void DoEdit(Cliente cliente, object? origin = null)
         {
-            // O filtro é feito pelo binding {Binding Filter}
+            LogTap("EDITAR:Do", origin as Element, cliente);
+
+            if (BindingContext is ClientsPageModel vm &&
+                vm.SelectCommand?.CanExecute(cliente) == true)
+            {
+                vm.SelectCommand.Execute(cliente);
+            }
+            ShowFormView(isNew: false);
         }
 
-        // CollectionView: fechar teclado ao fazer scroll
-        private void OnCollectionViewScrolled(object sender, ItemsViewScrolledEventArgs e)
+        private async Task DoDeleteAsync(Cliente cliente, object? origin = null)
         {
-            SearchBar.Unfocus();
+            LogTap("ELIMINAR:Do", origin as Element, cliente);
+
+            var confirm = await DisplayAlert("Eliminar Cliente",
+                $"Tem a certeza que deseja eliminar '{cliente.CLINOME}'?",
+                "Eliminar", "Cancelar");
+
+            if (confirm && BindingContext is ClientsPageModel vm)
+            {
+                // se o Delete usa SelectedCliente:
+                vm.SelectedCliente = cliente;
+
+                if (vm.DeleteCommand?.CanExecute(null) == true)
+                {
+                    vm.DeleteCommand.Execute(null);
+                    await GlobalToast.ShowAsync("Cliente eliminado com sucesso.", ToastTipo.Sucesso, 2000);
+                }
+            }
         }
 
-        // ------------- SWIPE: PASTAS -------------
+        // ==================== Invoked (oficial do Swipe) ====================
+
         private async void OnPastasSwipeInvoked(object sender, EventArgs e)
         {
+            LogTap("PASTAS:Invoked", sender as Element);
             try
             {
-                System.Diagnostics.Debug.WriteLine($"[PASTAS] Swipe Invoked! Sender: {sender?.GetType().Name}");
-
-                // Obter o Cliente do BindingContext do SwipeItemView
                 var cliente = (sender as Element)?.BindingContext as Cliente;
+                if (cliente == null) { await DisplayAlert("Erro", "Cliente não identificado.", "OK"); return; }
 
-                if (cliente == null)
-                {
-                    await DisplayAlert("Erro", "Não foi possível identificar o cliente.", "OK");
-                    return;
-                }
-                
-                CloseSwipe(sender); // redundante (SwipeBehaviorOnInvoked=Close), mas seguro
-
-                if (string.IsNullOrWhiteSpace(cliente.CLICODIGO))
-                {
-                    await DisplayAlert("Aviso", "Cliente sem código definido.", "OK");
-                    return;
-                }
-
-                var uri = new Uri($"qfile://open?path=/mnt/remote/CLIENTES/{cliente.CLICODIGO}");
-                try 
-                { 
-                    await Launcher.OpenAsync(uri); 
-                }
-                catch
-                {
-                    await DisplayAlert("Qfile",
-                        $"A abrir pasta do cliente {cliente.CLINOME}...\n\nCaminho: CLIENTES/{cliente.CLICODIGO}",
-                        "OK");
-                }
+                await DoPastasAsync(cliente, sender);
             }
-            catch (Exception ex)
-            {
-                GlobalErro.TratarErro(ex, mostrarAlerta: true);
-            }
+            catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: true); }
+            finally { CloseSwipeFrom(sender); }
         }
 
-        // ------------- SWIPE: EDITAR -------------
         private void OnEditSwipeInvoked(object sender, EventArgs e)
         {
+            LogTap("EDITAR:Invoked", sender as Element);
             try
             {
-                System.Diagnostics.Debug.WriteLine($"[EDITAR] Swipe Invoked! Sender: {sender?.GetType().Name}");
-
                 var cliente = (sender as Element)?.BindingContext as Cliente;
                 if (cliente == null) return;
-                
-                CloseSwipe(sender); // redundante mas ok
 
-                if (BindingContext is ClientsPageModel vm &&
-                    vm.SelectCommand?.CanExecute(cliente) == true)
-                {
-                    vm.SelectCommand.Execute(cliente);
-                }
-
-                ShowFormView(isNew: false);
+                DoEdit(cliente, sender);
             }
-            catch (Exception ex)
-            {
-                GlobalErro.TratarErro(ex, mostrarAlerta: true);
-            }
+            catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: true); }
+            finally { CloseSwipeFrom(sender); }
         }
 
-        // ------------- SWIPE: ELIMINAR -------------
         private async void OnDeleteSwipeInvoked(object sender, EventArgs e)
         {
+            LogTap("ELIMINAR:Invoked", sender as Element);
             try
             {
-                System.Diagnostics.Debug.WriteLine($"[ELIMINAR] Swipe Invoked! Sender: {sender?.GetType().Name}");
-
                 var cliente = (sender as Element)?.BindingContext as Cliente;
-
-                if (cliente == null) 
+                if (cliente == null)
                 {
-                    await DisplayAlert("Erro", "Não foi possível identificar o cliente.", "OK");
+                    await DisplayAlert("Erro", "Cliente não identificado.", "OK");
                     return;
                 }
 
-                CloseSwipe(sender); // redundante mas ok
-
-                var confirm = await DisplayAlert(
-                    "Eliminar Cliente",
-                    $"Tem a certeza que deseja eliminar '{cliente.CLINOME}'?",
-                    "Eliminar", "Cancelar");
-
-                if (confirm && BindingContext is ClientsPageModel vm)
-                {
-                    // Se o DeleteCommand usa SelectedCliente, define-o antes
-                    vm.SelectedCliente = cliente;
-                    
-                    if (vm.DeleteCommand?.CanExecute(null) == true)
-                    {
-                        vm.DeleteCommand.Execute(null);
-                        await GlobalToast.ShowAsync("Cliente eliminado com sucesso.", ToastTipo.Sucesso, 2000);
-                    }
-                }
+                await DoDeleteAsync(cliente, sender);
             }
-            catch (Exception ex)
-            {
-                GlobalErro.TratarErro(ex, mostrarAlerta: true);
-            }
+            catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: true); }
+            finally { CloseSwipeFrom(sender); }
         }
 
-        private void CloseSwipe(object sender)
+        // ==================== Tap Fallback (instrumentação + execução) ====================
+
+        private async void OnPastasTapFallback(object sender, TappedEventArgs e)
         {
-            if (sender is Element el)
+            LogTap("PASTAS:Tap", sender as Element, e.Parameter);
+            try
             {
-                var p = el.Parent;
-                while (p != null && p is not SwipeView) p = (p as Element)?.Parent;
-                (p as SwipeView)?.Close();
+                if (e.Parameter is Cliente c) await DoPastasAsync(c, sender);
             }
+            catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: true); }
+            finally { CloseSwipeFrom(sender); }
         }
 
-        // Helper (não usado, mas deixo caso precises)
-        private SwipeView? FindParentSwipeView(Element element)
+        private void OnEditTapFallback(object sender, TappedEventArgs e)
         {
-            var parent = element.Parent;
-            while (parent != null)
+            LogTap("EDITAR:Tap", sender as Element, e.Parameter);
+            try
             {
-                if (parent is SwipeView swipeView)
-                    return swipeView;
-                parent = parent.Parent;
+                if (e.Parameter is Cliente c) DoEdit(c, sender);
             }
-            return null;
+            catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: true); }
+            finally { CloseSwipeFrom(sender); }
         }
 
-        // Floating Action Button: Adicionar novo cliente
+        private async void OnDeleteTapFallback(object sender, TappedEventArgs e)
+        {
+            LogTap("ELIMINAR:Tap", sender as Element, e.Parameter);
+            try
+            {
+                if (e.Parameter is Cliente c) await DoDeleteAsync(c, sender);
+            }
+            catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: true); }
+            finally { CloseSwipeFrom(sender); }
+        }
+
+        // ===============================================================
+
         private void OnAddClientTapped(object sender, EventArgs e)
         {
             try
             {
-                if (BindingContext is ClientsPageModel vm)
+                if (BindingContext is ClientsPageModel vm &&
+                    vm.NewCommand?.CanExecute(null) == true)
                 {
-                    if (vm.NewCommand?.CanExecute(null) == true)
-                    {
-                        vm.NewCommand.Execute(null);
-                    }
+                    vm.NewCommand.Execute(null);
                 }
                 ShowFormView(isNew: true);
             }
-            catch (Exception ex)
-            {
-                GlobalErro.TratarErro(ex, mostrarAlerta: true);
-            }
+            catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: true); }
         }
 
-        // Formulário: Cancelar
         private void OnCancelEditTapped(object sender, EventArgs e)
         {
-            if (BindingContext is ClientsPageModel vm)
+            if (BindingContext is ClientsPageModel vm &&
+                vm.ClearCommand?.CanExecute(null) == true)
             {
-                if (vm.ClearCommand?.CanExecute(null) == true)
-                {
-                    vm.ClearCommand.Execute(null);
-                }
+                vm.ClearCommand.Execute(null);
             }
             ShowListView();
         }
 
-        // Formulário: Guardar/Atualizar
         private async void OnSaveClientTapped(object sender, EventArgs e)
         {
             try
             {
-                if (BindingContext is not ClientsPageModel vm || vm.Editing is null)
-                    return;
+                if (BindingContext is not ClientsPageModel vm || vm.Editing is null) return;
 
-                // Validar
                 if (string.IsNullOrWhiteSpace(vm.Editing.CLINOME))
                 {
                     await DisplayAlert("Aviso", "O nome do cliente é obrigatório.", "OK");
@@ -330,15 +330,10 @@ namespace NAVIGEST.iOS.Pages
 
                 bool isNew = string.IsNullOrWhiteSpace(vm.Editing.CLICODIGO);
 
-                // TODO: Invocar SaveCommand se existir no VM; placeholder de feedback:
                 if (isNew)
-                {
                     await GlobalToast.ShowAsync("Cliente adicionado com sucesso! (Pasta a criar)", ToastTipo.Sucesso, 2000);
-                }
                 else
-                {
                     await GlobalToast.ShowAsync("Cliente atualizado com sucesso!", ToastTipo.Sucesso, 2000);
-                }
 
                 ShowListView();
             }
@@ -349,13 +344,10 @@ namespace NAVIGEST.iOS.Pages
             }
         }
 
-        // Formulário: Eliminar
         private async void OnDeleteFromFormTapped(object sender, EventArgs e)
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"[ELIMINAR FORM] Tap detectado!");
-                
                 if (BindingContext is not ClientsPageModel vm || vm.Editing is null)
                 {
                     await DisplayAlert("Erro", "Não foi possível identificar o cliente.", "OK");
@@ -372,7 +364,6 @@ namespace NAVIGEST.iOS.Pages
                 if (confirm)
                 {
                     vm.SelectedCliente = cliente;
-                    
                     if (vm.DeleteCommand?.CanExecute(null) == true)
                     {
                         vm.DeleteCommand.Execute(null);
@@ -387,16 +378,5 @@ namespace NAVIGEST.iOS.Pages
                 GlobalErro.TratarErro(ex, mostrarAlerta: false);
             }
         }
-
     }
 }
-
-#if WINDOWS
-// Código Windows específico
-#endif
-#if ANDROID
-// Código Android específico
-#endif
-#if IOS
-// Código iOS específico
-#endif

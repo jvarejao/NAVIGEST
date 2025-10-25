@@ -3,9 +3,7 @@
              x:Name="ClientsPageRoot"
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:local="clr-namespace:NAVIGEST.iOS.Pages"
              xmlns:models="clr-namespace:NAVIGEST.iOS.Models"
-             xmlns:behaviors="clr-namespace:NAVIGEST.iOS.Behaviors"
              BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}"
              Title="Clientes">
 
@@ -36,10 +34,11 @@
                 
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="models:Cliente">
-                        <SwipeView x:Name="ClientSwipeView">
-                            <!-- Swipe Actions (deslizar para esquerda) -->
+                        <SwipeView x:Name="ClientSwipeView"
+                                   SwipeStarted="OnSwipeStarted"
+                                   SwipeEnded="OnSwipeEnded">
+                            <!-- Ações à direita -->
                             <SwipeView.RightItems>
-                                <!-- Fecha SEMPRE quando uma ação é invocada -->
                                 <SwipeItems Mode="Reveal" SwipeBehaviorOnInvoked="Close">
 
                                     <!-- PASTAS -->
@@ -54,6 +53,12 @@
                                                        TextColor="White" 
                                                        HorizontalOptions="Center"
                                                        VerticalOptions="Center"/>
+                                                <!-- Fallback TAP para instrumentação/execução -->
+                                                <Grid.GestureRecognizers>
+                                                    <TapGestureRecognizer
+                                                        Tapped="OnPastasTapFallback"
+                                                        CommandParameter="{Binding .}" />
+                                                </Grid.GestureRecognizers>
                                             </Grid>
                                         </Grid>
                                     </SwipeItemView>
@@ -70,6 +75,11 @@
                                                        TextColor="White" 
                                                        HorizontalOptions="Center"
                                                        VerticalOptions="Center"/>
+                                                <Grid.GestureRecognizers>
+                                                    <TapGestureRecognizer
+                                                        Tapped="OnDeleteTapFallback"
+                                                        CommandParameter="{Binding .}" />
+                                                </Grid.GestureRecognizers>
                                             </Grid>
                                         </Grid>
                                     </SwipeItemView>
@@ -86,6 +96,11 @@
                                                        TextColor="#333333" 
                                                        HorizontalOptions="Center"
                                                        VerticalOptions="Center"/>
+                                                <Grid.GestureRecognizers>
+                                                    <TapGestureRecognizer
+                                                        Tapped="OnEditTapFallback"
+                                                        CommandParameter="{Binding .}" />
+                                                </Grid.GestureRecognizers>
                                             </Grid>
                                         </Grid>
                                     </SwipeItemView>
@@ -100,7 +115,7 @@
                                   ColumnSpacing="12"
                                   RowSpacing="4">
                                 
-                                <!-- TapGestureRecognizer para abrir formulário de edição -->
+                                <!-- Tap para abrir formulário -->
                                 <Grid.GestureRecognizers>
                                     <TapGestureRecognizer Tapped="OnClientCellTapped"/>
                                 </Grid.GestureRecognizers>
@@ -164,7 +179,7 @@
                 </CollectionView.ItemTemplate>
             </CollectionView>
 
-            <!-- Floating Action Button (adicionar cliente) -->
+            <!-- FAB -->
             <Border Grid.Row="1"
                     WidthRequest="56"
                     HeightRequest="56"
@@ -190,7 +205,7 @@
                 </Border.GestureRecognizers>
             </Border>
 
-            <!-- Busy Indicator (lista) -->
+            <!-- Busy -->
             <Grid Grid.RowSpan="2"
                   IsVisible="{Binding IsBusy}" 
                   BackgroundColor="#66000000">
@@ -201,7 +216,7 @@
             </Grid>
         </Grid>
 
-        <!-- VIEW 2: Formulário de Edição/Criação -->
+        <!-- VIEW 2: Form -->
         <Grid x:Name="FormViewContainer" IsVisible="False" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}">
             <ScrollView>
                 <VerticalStackLayout Spacing="20" Padding="16">
@@ -229,7 +244,7 @@
                             Padding="0">
                         <VerticalStackLayout Spacing="0">
                             
-                            <!-- Código (readonly) -->
+                            <!-- Código -->
                             <Grid Padding="16,12" ColumnDefinitions="100,*">
                                 <Label Text="Código"
                                        TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
