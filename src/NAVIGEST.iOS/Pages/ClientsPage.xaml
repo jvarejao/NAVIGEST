@@ -34,40 +34,52 @@
 
         <CollectionView.ItemTemplate>
           <DataTemplate x:DataType="models:Cliente">
-            <!-- SwipeView com items -->
+            <!-- SwipeView com Buttons circulares -->
             <SwipeView>
               <SwipeView.RightItems>
                 <SwipeItems Mode="Reveal" SwipeBehaviorOnInvoked="Close">
 
-                  <!-- PASTAS -->
-                  <SwipeItem x:Name="SwipePastas"
-                             BackgroundColor="#00A3FF"
-                             Text="Pastas"
-                             Invoked="OnSwipeItemInvoked">
-                    <SwipeItem.IconImageSource>
-                      <FontImageSource Glyph="&#xF07C;" FontFamily="FA7Solid" Size="18" Color="White"/>
-                    </SwipeItem.IconImageSource>
-                  </SwipeItem>
+                  <!-- PASTAS - Circular Button -->
+                  <SwipeItemView>
+                    <Border WidthRequest="60" HeightRequest="60" Padding="0" BackgroundColor="#00A3FF" StrokeThickness="0" StrokeShape="RoundRectangle 999">
+                      <Button Text="&#xF07C;" 
+                              FontFamily="FA7Solid" 
+                              FontSize="24" 
+                              TextColor="White"
+                              BackgroundColor="Transparent"
+                              Padding="0"
+                              Clicked="OnPastasButtonClicked"
+                              CommandParameter="{Binding .}"/>
+                    </Border>
+                  </SwipeItemView>
 
-                  <!-- EDITAR -->
-                  <SwipeItem x:Name="SwipeEditar"
-                             BackgroundColor="#FFE400"
-                             Text="Editar"
-                             Invoked="OnSwipeItemInvoked">
-                    <SwipeItem.IconImageSource>
-                      <FontImageSource Glyph="&#xF044;" FontFamily="FA7Solid" Size="18" Color="#333333"/>
-                    </SwipeItem.IconImageSource>
-                  </SwipeItem>
+                  <!-- EDITAR - Circular Button -->
+                  <SwipeItemView>
+                    <Border WidthRequest="60" HeightRequest="60" Padding="0" BackgroundColor="#FFE400" StrokeThickness="0" StrokeShape="RoundRectangle 999">
+                      <Button Text="&#xF044;" 
+                              FontFamily="FA7Solid" 
+                              FontSize="24" 
+                              TextColor="#333333"
+                              BackgroundColor="Transparent"
+                              Padding="0"
+                              Clicked="OnEditButtonClicked"
+                              CommandParameter="{Binding .}"/>
+                    </Border>
+                  </SwipeItemView>
 
-                  <!-- ELIMINAR -->
-                  <SwipeItem x:Name="SwipeEliminar"
-                             BackgroundColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}"
-                             Text="Eliminar"
-                             Invoked="OnSwipeItemInvoked">
-                    <SwipeItem.IconImageSource>
-                      <FontImageSource Glyph="&#xF1F8;" FontFamily="FA7Solid" Size="18" Color="White"/>
-                    </SwipeItem.IconImageSource>
-                  </SwipeItem>
+                  <!-- ELIMINAR - Circular Button -->
+                  <SwipeItemView>
+                    <Border WidthRequest="60" HeightRequest="60" Padding="0" BackgroundColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}" StrokeThickness="0" StrokeShape="RoundRectangle 999">
+                      <Button Text="&#xF1F8;" 
+                              FontFamily="FA7Solid" 
+                              FontSize="24" 
+                              TextColor="White"
+                              BackgroundColor="Transparent"
+                              Padding="0"
+                              Clicked="OnDeleteButtonClicked"
+                              CommandParameter="{Binding .}"/>
+                    </Border>
+                  </SwipeItemView>
 
                 </SwipeItems>
               </SwipeView.RightItems>

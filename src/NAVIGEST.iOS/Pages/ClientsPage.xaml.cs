@@ -119,49 +119,50 @@ namespace NAVIGEST.iOS.Pages
         private void OnCollectionViewScrolled(object sender, ItemsViewScrolledEventArgs e) => SearchBar.Unfocus();
 
         // ===========================
-        // SWIPE ITEM INVOKED (ÚNICO PONTO DE ENTRADA)
+        // BUTTON HANDLERS (diretos dos buttons)
         // ===========================
-        private async void OnSwipeItemInvoked(object sender, EventArgs e)
+        private void OnPastasButtonClicked(object sender, EventArgs e)
         {
             try
             {
-                // SwipeItem que disparou o evento
-                if (sender is not SwipeItem swipeItem)
+                if (sender is Button btn && btn.CommandParameter is Cliente cliente)
                 {
-                    await DisplayAlert("Erro", "Sender não é SwipeItem.", "OK");
-                    return;
-                }
-
-                // Cliente do item - tentar obter do BindingContext do SwipeView pai
-                var swipeView = swipeItem.Parent as SwipeView;
-                var cliente = swipeView?.BindingContext as Cliente;
-                
-                if (cliente == null)
-                {
-                    await DisplayAlert("Erro", "Cliente não identificado.", "OK");
-                    return;
-                }
-
-                // Roteamento por texto do SwipeItem
-                switch (swipeItem.Text)
-                {
-                    case "Editar":
-                        HandleEditar(cliente);
-                        break;
-                    case "Eliminar":
-                        await HandleEliminarAsync(cliente);
-                        break;
-                    case "Pastas":
-                        await HandlePastasAsync(cliente);
-                        break;
-                    default:
-                        await DisplayAlert("Info", $"Ação desconhecida: {swipeItem.Text}", "OK");
-                        break;
+                    _ = HandlePastasAsync(cliente);
                 }
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Erro", $"Exceção: {ex.Message}", "OK");
+                _ = DisplayAlert("Erro", $"Erro ao abrir pastas: {ex.Message}", "OK");
+            }
+        }
+
+        private void OnEditButtonClicked(object sender, EventArgs e)
+        {
+            try
+            {
+                if (sender is Button btn && btn.CommandParameter is Cliente cliente)
+                {
+                    HandleEditar(cliente);
+                }
+            }
+            catch (Exception ex)
+            {
+                _ = DisplayAlert("Erro", $"Erro ao editar: {ex.Message}", "OK");
+            }
+        }
+
+        private void OnDeleteButtonClicked(object sender, EventArgs e)
+        {
+            try
+            {
+                if (sender is Button btn && btn.CommandParameter is Cliente cliente)
+                {
+                    _ = HandleEliminarAsync(cliente);
+                }
+            }
+            catch (Exception ex)
+            {
+                _ = DisplayAlert("Erro", $"Erro ao eliminar: {ex.Message}", "OK");
             }
         }
 
