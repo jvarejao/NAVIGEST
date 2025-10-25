@@ -351,11 +351,9 @@ namespace NAVIGEST.iOS.Pages
             {
                 if (BindingContext is not ClientsPageModel vm || vm.Editing is null) return;
 
-                if (vm.PastasCommand?.CanExecute(vm.Editing) == true)
-                {
-                    vm.PastasCommand.Execute(vm.Editing);
-                    // OnPastasAsync mostra um toast automaticamente
-                }
+                // Chamar diretamente o OnPastasAsync
+                vm.SelectedCliente = vm.Editing;
+                await vm.OnPastasAsync();
             }
             catch (Exception ex)
             {
@@ -377,12 +375,12 @@ namespace NAVIGEST.iOS.Pages
 
                 if (!confirm) return;
 
-                if (vm.DeleteCommand?.CanExecute(vm.Editing) == true)
-                {
-                    vm.DeleteCommand.Execute(vm.Editing);
-                    ShowListView();
-                    await GlobalToast.ShowAsync("Cliente eliminado com sucesso!", ToastTipo.Sucesso, 2000);
-                }
+                // Chamar diretamente o OnDeleteAsync (que já está no ViewModel)
+                vm.SelectedCliente = vm.Editing;
+                await vm.OnDeleteAsync();
+                
+                ShowListView();
+                await GlobalToast.ShowAsync("Cliente eliminado com sucesso!", ToastTipo.Sucesso, 2000);
             }
             catch (Exception ex)
             {

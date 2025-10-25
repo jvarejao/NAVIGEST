@@ -376,7 +376,7 @@ public class ClientsPageModel : INotifyPropertyChanged
 #endif
     }
 
-    private async Task OnDeleteAsync()
+    public async Task OnDeleteAsync()
     {
         if (SelectedCliente is null) return;
 
@@ -412,7 +412,7 @@ public class ClientsPageModel : INotifyPropertyChanged
         }
     }
 
-    private async Task OnPastasAsync() => await OnCreateFoldersAsync();
+    public async Task OnPastasAsync() => await OnCreateFoldersAsync();
 
     private async Task OnCreateFoldersAsync()
     {
@@ -428,7 +428,7 @@ public class ClientsPageModel : INotifyPropertyChanged
             }
         }
 
-#if ANDROID || IOS
+#if ANDROID
         await AppShell.DisplayToastAsync("Criação de pastas só disponível em Desktop.");
         return;
 #endif
@@ -445,6 +445,7 @@ public class ClientsPageModel : INotifyPropertyChanged
             if (ok)
             {
                 SetPastasSincronizadas(true);
+                await AppShell.DisplayToastAsync("Pastas criadas com sucesso!");
             }
             else
             {
