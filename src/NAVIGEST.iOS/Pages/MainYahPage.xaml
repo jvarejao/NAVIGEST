@@ -193,16 +193,6 @@
                                 <TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="horas" />
                             </Border.GestureRecognizers>
                         </Border>
-                        <!-- SWIPE PROOF (teste) -->
-                        <Border Style="{StaticResource MenuItemBorder}">
-                            <Grid ColumnDefinitions="40,*">
-                                <Label Text="&#xF0A5;" Style="{StaticResource SidebarIconLabel}" />
-                                <Label Grid.Column="1" Text="Swipe" Style="{StaticResource SidebarTextLabel}" IsVisible="{Binding IsSidebarExpanded}" />
-                            </Grid>
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="swipe" />
-                            </Border.GestureRecognizers>
-                        </Border>
                         <!-- SERVIÇOS -->
                         <Border Style="{StaticResource MenuItemBorder}">
                             <Grid ColumnDefinitions="40,*">
@@ -328,6 +318,14 @@
                             <Label Grid.Column="1" Text="Produtos" Style="{StaticResource SidebarTextLabel}" IsVisible="{Binding IsSidebarExpanded}" />
                         </Grid>
                         <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="produtos" /></Border.GestureRecognizers>
+                    </Border>
+                    <!-- SWIPE PROOF (teste) -->
+                    <Border Style="{StaticResource MenuItemBorder}">
+                        <Grid ColumnDefinitions="40,*">
+                            <Label Text="&#xF0A5;" Style="{StaticResource SidebarIconLabel}" />
+                            <Label Grid.Column="1" Text="Swipe" Style="{StaticResource SidebarTextLabel}" />
+                        </Grid>
+                        <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="swipe" /></Border.GestureRecognizers>
                     </Border>
                     <!-- SERVIÇOS -->
                     <Border Style="{StaticResource MenuItemBorder}">
