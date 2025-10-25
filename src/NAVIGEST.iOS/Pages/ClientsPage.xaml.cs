@@ -2,7 +2,6 @@
 #nullable enable
 using System;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.ApplicationModel;
 using NAVIGEST.iOS.PageModels;
@@ -16,22 +15,11 @@ namespace NAVIGEST.iOS.Pages
         private bool _loadedOnce;
         private bool _isEditMode;
 
-        // Commands expostos à XAML (SwipeItem)
-        public ICommand OpenPastasCommand { get; }
-        public ICommand EditClientCommand  { get; }
-        public ICommand DeleteClientCommand{ get; }
-
         public ClientsPage() : this(new ClientsPageModel()) { }
 
         public ClientsPage(ClientsPageModel vm)
         {
             BindingContext = vm;
-
-            // Inicializa commands (sem gestures nem Invoked)
-            OpenPastasCommand = new Command<Cliente>(async c => await DoPastasAsync(c));
-            EditClientCommand  = new Command<Cliente>(DoEdit);
-            DeleteClientCommand = new Command<Cliente>(async c => await DoDeleteAsync(c));
-
             InitializeComponent();
 
             #if IOS
@@ -106,33 +94,15 @@ namespace NAVIGEST.iOS.Pages
             SaveButton.Text = isNew ? "Adicionar" : "Atualizar";
         }
 
-        private void OnClientCellTapped(object sender, EventArgs e)
+        // --- Eventos dos botões do SWIPE (Button.Clicked) ---
+
+        private async void OnPastasButtonClicked(object sender, EventArgs e)
         {
-            try
-            {
-                if (sender is Grid grid && grid.BindingContext is Cliente cliente)
-                {
-                    if (BindingContext is ClientsPageModel vm &&
-                        vm.SelectCommand?.CanExecute(cliente) == true)
-                        vm.SelectCommand.Execute(cliente);
+            await CloseSwipeFrom(sender);
 
-                    ShowFormView(isNew: false);
-                }
-            }
-            catch (Exception ex)
-            {
-                GlobalErro.TratarErro(ex, mostrarAlerta: true);
-            }
-        }
+            var cliente = (sender as Button)?.CommandParameter as Cliente
+                          ?? (sender as Element)?.BindingContext as Cliente;
 
-        private void OnSearchBarSearchButtonPressed(object sender, EventArgs e) => SearchBar.Unfocus();
-        private void OnSearchBarTextChanged(object sender, TextChangedEventArgs e) { }
-        private void OnCollectionViewScrolled(object sender, ItemsViewScrolledEventArgs e) => SearchBar.Unfocus();
-
-        // ===== AÇÕES =====
-
-        private async Task DoPastasAsync(Cliente? cliente)
-        {
             if (cliente == null)
             {
                 await DisplayAlert("Erro", "Cliente não identificado.", "OK");
@@ -145,20 +115,19 @@ namespace NAVIGEST.iOS.Pages
                 return;
             }
 
-            var qfile = new Uri($"qfile://open?path=/mnt/remote/CLIENTES/{cliente.CLICODIGO}");
+            var uri = new Uri($"qfile://open?path=/mnt/remote/CLIENTES/{cliente.CLICODIGO}");
 
             try
             {
-                var can = await Launcher.CanOpenAsync(qfile);
+                var can = await Launcher.CanOpenAsync(uri);
                 if (can)
                 {
-                    await Launcher.OpenAsync(qfile);
+                    await Launcher.OpenAsync(uri);
                 }
                 else
                 {
-                    // Fallback visual para confirmar ação
                     await DisplayAlert("Qfile",
-                        $"A abrir pasta do cliente {cliente.CLINOME}...\nCaminho: CLIENTES/{cliente.CLICODIGO}",
+                        $"A abrir pasta do cliente {cliente.CLINOME}...\n\nCaminho: CLIENTES/{cliente.CLICODIGO}",
                         "OK");
                 }
             }
@@ -168,11 +137,15 @@ namespace NAVIGEST.iOS.Pages
             }
         }
 
-        private void DoEdit(Cliente? cliente)
+        private async void OnEditButtonClicked(object sender, EventArgs e)
         {
+            await CloseSwipeFrom(sender);
+
+            var cliente = (sender as Button)?.CommandParameter as Cliente
+                          ?? (sender as Element)?.BindingContext as Cliente;
             if (cliente == null)
             {
-                DisplayAlert("Erro", "Cliente não identificado.", "OK");
+                await DisplayAlert("Erro", "Cliente não identificado.", "OK");
                 return;
             }
 
@@ -185,15 +158,19 @@ namespace NAVIGEST.iOS.Pages
             ShowFormView(isNew: false);
         }
 
-        private async Task DoDeleteAsync(Cliente? cliente)
+        private async void OnDeleteButtonClicked(object sender, EventArgs e)
         {
+            await CloseSwipeFrom(sender);
+
+            var cliente = (sender as Button)?.CommandParameter as Cliente
+                          ?? (sender as Element)?.BindingContext as Cliente;
             if (cliente == null)
             {
                 await DisplayAlert("Erro", "Cliente não identificado.", "OK");
                 return;
             }
 
-            bool confirm = await DisplayAlert("Eliminar Cliente",
+            var confirm = await DisplayAlert("Eliminar Cliente",
                 $"Tem a certeza que deseja eliminar '{cliente.CLINOME}'?",
                 "Eliminar", "Cancelar");
 
@@ -220,6 +197,44 @@ namespace NAVIGEST.iOS.Pages
             }
         }
 
+        // Fecha o SwipeView pai antes de agir (evita overlay a bloquear UI)
+        private async Task CloseSwipeFrom(object sender)
+        {
+            if (sender is Element el)
+            {
+                Element? p = el;
+                while (p != null && p is not SwipeView) p = p.Parent;
+                (p as SwipeView)?.Close();
+            }
+            await Task.Delay(75);
+        }
+
+        // Tap na célula – abre edição
+        private void OnClientCellTapped(object sender, EventArgs e)
+        {
+            try
+            {
+                if (sender is Grid grid && grid.BindingContext is Cliente cliente)
+                {
+                    if (BindingContext is ClientsPageModel vm &&
+                        vm.SelectCommand?.CanExecute(cliente) == true)
+                    {
+                        vm.SelectCommand.Execute(cliente);
+                    }
+                    ShowFormView(isNew: false);
+                }
+            }
+            catch (Exception ex)
+            {
+                GlobalErro.TratarErro(ex, mostrarAlerta: true);
+            }
+        }
+
+        // SearchBar
+        private void OnSearchBarSearchButtonPressed(object sender, EventArgs e) => SearchBar.Unfocus();
+        private void OnSearchBarTextChanged(object sender, TextChangedEventArgs e) { }
+        private void OnCollectionViewScrolled(object sender, ItemsViewScrolledEventArgs e) => SearchBar.Unfocus();
+
         // FAB
         private void OnAddClientTapped(object sender, EventArgs e)
         {
@@ -238,6 +253,7 @@ namespace NAVIGEST.iOS.Pages
             }
         }
 
+        // Cancelar
         private void OnCancelEditTapped(object sender, EventArgs e)
         {
             if (BindingContext is ClientsPageModel vm &&
@@ -248,12 +264,12 @@ namespace NAVIGEST.iOS.Pages
             ShowListView();
         }
 
+        // Guardar
         private async void OnSaveClientTapped(object sender, EventArgs e)
         {
             try
             {
-                if (BindingContext is not ClientsPageModel vm || vm.Editing is null)
-                    return;
+                if (BindingContext is not ClientsPageModel vm || vm.Editing is null) return;
 
                 if (string.IsNullOrWhiteSpace(vm.Editing.CLINOME))
                 {
@@ -289,7 +305,6 @@ namespace NAVIGEST.iOS.Pages
                 }
 
                 var cliente = vm.Editing;
-
                 var confirm = await DisplayAlert(
                     "Eliminar Cliente",
                     $"Tem a certeza que deseja eliminar '{cliente.CLINOME}'?",
@@ -298,7 +313,6 @@ namespace NAVIGEST.iOS.Pages
                 if (confirm)
                 {
                     vm.SelectedCliente = cliente;
-
                     if (vm.DeleteCommand?.CanExecute(null) == true)
                     {
                         vm.DeleteCommand.Execute(null);

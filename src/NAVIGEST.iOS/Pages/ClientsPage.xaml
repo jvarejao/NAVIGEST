@@ -10,6 +10,7 @@
     <Grid>
         <!-- VIEW 1: Lista -->
         <Grid x:Name="ListViewContainer" RowDefinitions="Auto,*" IsVisible="True">
+
             <!-- Header -->
             <Grid Padding="16,16,16,12" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}">
                 <SearchBar x:Name="SearchBar"
@@ -34,33 +35,65 @@
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="models:Cliente">
                         <SwipeView x:Name="ClientSwipeView">
-                            <!-- Ações: usar SwipeItem (estável) -->
                             <SwipeView.RightItems>
                                 <SwipeItems Mode="Reveal" SwipeBehaviorOnInvoked="Close">
 
-                                    <!-- PASTAS -->
-                                    <SwipeItem
-                                        BackgroundColor="#00D9FF"
-                                        Text=""
-                                        IconImageSource="{FontImageSource Glyph=&#xF07C;, FontFamily=FA7Solid, Size=18, Color=White}"
-                                        Command="{Binding Source={x:Reference ClientsPageRoot}, Path=OpenPastasCommand}"
-                                        CommandParameter="{Binding .}" />
+                                    <!-- PASTAS (Button dentro do SwipeItemView) -->
+                                    <SwipeItemView BindingContext="{Binding .}">
+                                        <Grid WidthRequest="80" Padding="12" BackgroundColor="Transparent">
+                                            <Button Clicked="OnPastasButtonClicked"
+                                                    CommandParameter="{Binding .}"
+                                                    BackgroundColor="#00D9FF"
+                                                    TextColor="White"
+                                                    FontFamily="FA7Solid"
+                                                    Text="&#xF07C;"
+                                                    CornerRadius="28"
+                                                    WidthRequest="56"
+                                                    HeightRequest="56"
+                                                    HorizontalOptions="Center"
+                                                    VerticalOptions="Center"
+                                                    Padding="0"
+                                                    />
+                                        </Grid>
+                                    </SwipeItemView>
 
                                     <!-- EDITAR -->
-                                    <SwipeItem
-                                        BackgroundColor="#FFE400"
-                                        Text=""
-                                        IconImageSource="{FontImageSource Glyph=&#xF044;, FontFamily=FA7Solid, Size=18, Color=#333333}"
-                                        Command="{Binding Source={x:Reference ClientsPageRoot}, Path=EditClientCommand}"
-                                        CommandParameter="{Binding .}" />
+                                    <SwipeItemView BindingContext="{Binding .}">
+                                        <Grid WidthRequest="80" Padding="12" BackgroundColor="Transparent">
+                                            <Button Clicked="OnEditButtonClicked"
+                                                    CommandParameter="{Binding .}"
+                                                    BackgroundColor="#FFE400"
+                                                    TextColor="#333333"
+                                                    FontFamily="FA7Solid"
+                                                    Text="&#xF044;"
+                                                    CornerRadius="28"
+                                                    WidthRequest="56"
+                                                    HeightRequest="56"
+                                                    HorizontalOptions="Center"
+                                                    VerticalOptions="Center"
+                                                    Padding="0"
+                                                    />
+                                        </Grid>
+                                    </SwipeItemView>
 
                                     <!-- ELIMINAR -->
-                                    <SwipeItem
-                                        BackgroundColor="#FF006E"
-                                        Text=""
-                                        IconImageSource="{FontImageSource Glyph=&#xF1F8;, FontFamily=FA7Solid, Size=18, Color=White}"
-                                        Command="{Binding Source={x:Reference ClientsPageRoot}, Path=DeleteClientCommand}"
-                                        CommandParameter="{Binding .}" />
+                                    <SwipeItemView BindingContext="{Binding .}">
+                                        <Grid WidthRequest="80" Padding="12" BackgroundColor="Transparent">
+                                            <Button Clicked="OnDeleteButtonClicked"
+                                                    CommandParameter="{Binding .}"
+                                                    BackgroundColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}"
+                                                    TextColor="White"
+                                                    FontFamily="FA7Solid"
+                                                    Text="&#xF1F8;"
+                                                    CornerRadius="28"
+                                                    WidthRequest="56"
+                                                    HeightRequest="56"
+                                                    HorizontalOptions="Center"
+                                                    VerticalOptions="Center"
+                                                    Padding="0"
+                                                    />
+                                        </Grid>
+                                    </SwipeItemView>
 
                                 </SwipeItems>
                             </SwipeView.RightItems>
@@ -71,23 +104,24 @@
                                   ColumnDefinitions="50,*,Auto"
                                   ColumnSpacing="12"
                                   RowSpacing="4">
-
                                 <Grid.GestureRecognizers>
                                     <TapGestureRecognizer Tapped="OnClientCellTapped"/>
                                 </Grid.GestureRecognizers>
 
-                                <Border Grid.RowSpan="2"
-                                        WidthRequest="50" HeightRequest="50"
-                                        StrokeThickness="0"
-                                        BackgroundColor="{Binding AvatarColor}"
+                                <!-- Avatar -->
+                                <Border Grid.RowSpan="2" WidthRequest="50" HeightRequest="50"
+                                        StrokeThickness="0" BackgroundColor="{Binding AvatarColor}"
                                         VerticalOptions="Center">
                                     <Border.StrokeShape><RoundRectangle CornerRadius="25"/></Border.StrokeShape>
                                     <Label Text="{Binding Initials}"
-                                           FontSize="20" FontAttributes="Bold"
+                                           FontSize="20"
+                                           FontAttributes="Bold"
                                            TextColor="White"
-                                           HorizontalOptions="Center" VerticalOptions="Center"/>
+                                           HorizontalOptions="Center"
+                                           VerticalOptions="Center"/>
                                 </Border>
 
+                                <!-- Nome -->
                                 <Label Grid.Column="1"
                                        Text="{Binding CLINOME}"
                                        FontSize="17"
@@ -95,6 +129,7 @@
                                        LineBreakMode="TailTruncation"
                                        VerticalOptions="End"/>
 
+                                <!-- Telefone -->
                                 <Label Grid.Column="1" Grid.Row="1"
                                        Text="{Binding TELEFONE}"
                                        FontSize="14"
@@ -102,6 +137,7 @@
                                        LineBreakMode="TailTruncation"
                                        VerticalOptions="Start"/>
 
+                                <!-- Status -->
                                 <Label Grid.Column="2" Grid.RowSpan="2"
                                        FontFamily="FA7Solid"
                                        Text="{Binding StatusIcon}"
@@ -110,6 +146,7 @@
                                        VerticalOptions="Center"
                                        HorizontalOptions="End"/>
 
+                                <!-- Separador -->
                                 <BoxView Grid.ColumnSpan="3" Grid.Row="1" HeightRequest="0.5"
                                          Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}"
                                          VerticalOptions="End" Margin="62,0,0,0"/>
@@ -146,11 +183,10 @@
             </Grid>
         </Grid>
 
-        <!-- VIEW 2: Formulário -->
+        <!-- VIEW 2: Form -->
         <Grid x:Name="FormViewContainer" IsVisible="False" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}">
             <ScrollView>
                 <VerticalStackLayout Spacing="20" Padding="16">
-
                     <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,8,0,0">
                         <Button Grid.Column="0" Text="Cancelar"
                                 Style="{StaticResource AppleTextButton}"
