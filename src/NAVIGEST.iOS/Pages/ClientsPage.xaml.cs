@@ -28,6 +28,38 @@ namespace NAVIGEST.iOS.Pages
             Dispatcher.Dispatch(async () => await EnsureLoadedAsync());
         }
 
+        private static Page? GetRootPage()
+        {
+            if (Application.Current?.MainPage is Shell shell)
+            {
+                if (shell.CurrentPage is Page current)
+                    return current;
+                return shell;
+            }
+
+            return Application.Current?.MainPage;
+        }
+
+        private static Task ShowAlertAsync(string title, string message, string cancel = "OK") =>
+            MainThread.InvokeOnMainThreadAsync(async () =>
+            {
+                var root = GetRootPage();
+                if (root is null)
+                    return;
+
+                await root.DisplayAlert(title, message, cancel);
+            });
+
+        private static Task<bool> ShowConfirmAsync(string title, string message, string accept, string cancel) =>
+            MainThread.InvokeOnMainThreadAsync(async () =>
+            {
+                var root = GetRootPage();
+                if (root is null)
+                    return false;
+
+                return await root.DisplayAlert(title, message, accept, cancel);
+            });
+
         #if IOS
         private void ConfigureKeyboardToolbar()
         {
@@ -92,7 +124,8 @@ namespace NAVIGEST.iOS.Pages
             SaveButton.Text = isNew ? "Adicionar" : "Atualizar";
             
             // Mostrar grid de ações (Pastas + Eliminar) apenas em modo edição
-            if (FindByName("ActionButtonsGrid") is View actionGrid)
+            var actionGrid = FindByName("ActionButtonsGrid") as View;
+            if (actionGrid != null)
             {
                 actionGrid.IsVisible = !isNew;
             }
@@ -126,7 +159,7 @@ namespace NAVIGEST.iOS.Pages
         // ===========================
         // BUTTON HANDLERS (diretos dos buttons)
         // ===========================
-        private void OnPastasButtonClicked(object sender, EventArgs e)
+        private async void OnPastasButtonClicked(object sender, EventArgs e)
         {
             try
             {
@@ -137,11 +170,11 @@ namespace NAVIGEST.iOS.Pages
             }
             catch (Exception ex)
             {
-                _ = DisplayAlert("Erro", $"Erro ao abrir pastas: {ex.Message}", "OK");
+                await ShowAlertAsync("Erro", $"Erro ao abrir pastas: {ex.Message}");
             }
         }
 
-        private void OnEditButtonClicked(object sender, EventArgs e)
+        private async void OnEditButtonClicked(object sender, EventArgs e)
         {
             try
             {
@@ -152,11 +185,11 @@ namespace NAVIGEST.iOS.Pages
             }
             catch (Exception ex)
             {
-                _ = DisplayAlert("Erro", $"Erro ao editar: {ex.Message}", "OK");
+                await ShowAlertAsync("Erro", $"Erro ao editar: {ex.Message}");
             }
         }
 
-        private void OnDeleteButtonClicked(object sender, EventArgs e)
+        private async void OnDeleteButtonClicked(object sender, EventArgs e)
         {
             try
             {
@@ -167,13 +200,15 @@ namespace NAVIGEST.iOS.Pages
             }
             catch (Exception ex)
             {
-                _ = DisplayAlert("Erro", $"Erro ao eliminar: {ex.Message}", "OK");
+                await ShowAlertAsync("Erro", $"Erro ao eliminar: {ex.Message}");
             }
         }
 
         // SwipeItemView Invoked event handler
-        private void OnSwipeItemViewEditInvoked(object sender, EventArgs e)
+        private async void OnSwipeItemViewEditInvoked(object sender, EventArgs e)
         {
+            await ShowAlertAsync("SWIPE", "Edit invoked!");
+
             try
             {
                 if (sender is SwipeItemView siv && siv.CommandParameter is Cliente cliente)
@@ -182,17 +217,13 @@ namespace NAVIGEST.iOS.Pages
                     {
                         // Garantir que SelectedCliente foi setado
                         vm.SelectedCliente = cliente;
-                        
-                        MainThread.BeginInvokeOnMainThread(() =>
-                        {
-                            ShowFormView(isNew: false);
-                        });
+                        ShowFormView(isNew: false);
                     }
                 }
             }
             catch (Exception ex)
             {
-                _ = DisplayAlert("Erro", $"Erro ao abrir edição: {ex.Message}", "OK");
+                await ShowAlertAsync("Erro", $"Erro ao abrir edição: {ex.Message}");
             }
         }
 
@@ -217,7 +248,7 @@ namespace NAVIGEST.iOS.Pages
         {
             try
             {
-                var confirm = await DisplayAlert("Eliminar Cliente",
+                var confirm = await ShowConfirmAsync("Eliminar Cliente",
                     $"Tem a certeza que deseja eliminar '{cliente.CLINOME}'?",
                     "Eliminar", "Cancelar");
 
@@ -230,7 +261,7 @@ namespace NAVIGEST.iOS.Pages
                     bool canParam = vm.DeleteCommand?.CanExecute(cliente) == true;
                     bool canNull  = vm.DeleteCommand?.CanExecute(null) == true;
 
-                    await DisplayAlert("[DBG]", $"CanExec(param)={canParam} | CanExec(null)={canNull}", "OK");
+                    await ShowAlertAsync("[DBG]", $"CanExec(param)={canParam} | CanExec(null)={canNull}");
 
                     if (canParam)
                     {
@@ -244,7 +275,7 @@ namespace NAVIGEST.iOS.Pages
                     }
                     else
                     {
-                        await DisplayAlert("Aviso", "Não foi possível eliminar (command bloqueado).", "OK");
+                        await ShowAlertAsync("Aviso", "Não foi possível eliminar (command bloqueado).");
                     }
                 }
             }
@@ -260,29 +291,28 @@ namespace NAVIGEST.iOS.Pages
             {
                 if (string.IsNullOrWhiteSpace(cliente.CLICODIGO))
                 {
-                    await DisplayAlert("Aviso", "Cliente sem código definido.", "OK");
+                    await ShowAlertAsync("Aviso", "Cliente sem código definido.");
                     return;
                 }
 
                 var uri = new Uri($"qfile://open?path=/mnt/remote/CLIENTES/{cliente.CLICODIGO}");
                 var can = await Launcher.CanOpenAsync(uri);
-                await DisplayAlert("[DBG]", $"CanOpen qfile = {can}", "OK");
+                await ShowAlertAsync("[DBG]", $"CanOpen qfile = {can}");
 
                 if (can)
                 {
                     await Launcher.OpenAsync(uri);
-                    await DisplayAlert("[DBG]", "OpenAsync(qfile) OK", "OK");
+                    await ShowAlertAsync("[DBG]", "OpenAsync(qfile) OK");
                 }
                 else
                 {
-                    await DisplayAlert("Qfile",
-                        $"A abrir pasta do cliente {cliente.CLINOME}...\n\nCaminho: CLIENTES/{cliente.CLICODIGO}",
-                        "OK");
+                    await ShowAlertAsync("Qfile",
+                        $"A abrir pasta do cliente {cliente.CLINOME}...\n\nCaminho: CLIENTES/{cliente.CLICODIGO}");
                 }
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Erro", $"Falhou abrir Qfile: {ex.Message}", "OK");
+                await ShowAlertAsync("Erro", $"Falhou abrir Qfile: {ex.Message}");
             }
         }
 
@@ -318,13 +348,15 @@ namespace NAVIGEST.iOS.Pages
         // Guardar
         private async void OnSaveClientTapped(object sender, EventArgs e)
         {
+            await ShowAlertAsync("SAVE BUTTON", "Botão Save foi clicado!");
+            
             try
             {
                 if (BindingContext is not ClientsPageModel vm || vm.Editing is null) return;
 
                 if (string.IsNullOrWhiteSpace(vm.Editing.CLINOME))
                 {
-                    await DisplayAlert("Aviso", "O nome do cliente é obrigatório.", "OK");
+                    await ShowAlertAsync("Aviso", "O nome do cliente é obrigatório.");
                     return;
                 }
 
@@ -350,7 +382,7 @@ namespace NAVIGEST.iOS.Pages
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Erro", $"Erro ao guardar: {ex.Message}", "OK");
+                await ShowAlertAsync("Erro", $"Erro ao guardar: {ex.Message}");
                 GlobalErro.TratarErro(ex, mostrarAlerta: false);
             }
         }
@@ -358,27 +390,27 @@ namespace NAVIGEST.iOS.Pages
         // Pastas do formulário
         private async void OnPastasFormTapped(object sender, EventArgs e)
         {
+            await ShowAlertAsync("PASTAS BUTTON", "Botão Pastas foi clicado!");
+            
             try
             {
-                await DisplayAlert("[DEBUG] Pastas", "Handler chamado", "OK");
-                
                 if (BindingContext is not ClientsPageModel vm || vm.Editing is null)
                 {
-                    await DisplayAlert("[DEBUG] Pastas", "VM ou Editing é null", "OK");
+                    await ShowAlertAsync("[DEBUG] Pastas", "VM ou Editing é null");
                     return;
                 }
 
-                await DisplayAlert("[DEBUG] Pastas", "Antes de OnPastasAsync", "OK");
+                await ShowAlertAsync("[DEBUG] Pastas", "Antes de OnPastasAsync");
                 
                 // Chamar diretamente o OnPastasAsync
                 vm.SelectedCliente = vm.Editing;
                 await vm.OnPastasAsync();
                 
-                await DisplayAlert("[DEBUG] Pastas", "Depois de OnPastasAsync", "OK");
+                await ShowAlertAsync("[DEBUG] Pastas", "Depois de OnPastasAsync");
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Erro", $"Erro ao abrir pastas: {ex.Message}\n\n{ex.StackTrace}", "OK");
+                await ShowAlertAsync("Erro", $"Erro ao abrir pastas: {ex.Message}\n\n{ex.StackTrace}");
                 GlobalErro.TratarErro(ex, mostrarAlerta: false);
             }
         }
@@ -386,36 +418,36 @@ namespace NAVIGEST.iOS.Pages
         // Eliminar do formulário
         private async void OnDeleteFromFormTapped(object sender, EventArgs e)
         {
+            await ShowAlertAsync("DELETE BUTTON", "Botão Delete foi clicado!");
+            
             try
             {
-                await DisplayAlert("[DEBUG] Delete", "Handler chamado", "OK");
-                
                 if (BindingContext is not ClientsPageModel vm || vm.Editing is null)
                 {
-                    await DisplayAlert("[DEBUG] Delete", "VM ou Editing é null", "OK");
+                    await ShowAlertAsync("[DEBUG] Delete", "VM ou Editing é null");
                     return;
                 }
 
-                var confirm = await DisplayAlert("Eliminar Cliente",
+                var confirm = await ShowConfirmAsync("Eliminar Cliente",
                     $"Tem a certeza que deseja eliminar '{vm.Editing.CLINOME}'?",
                     "Eliminar", "Cancelar");
 
                 if (!confirm) return;
 
-                await DisplayAlert("[DEBUG] Delete", "Antes de OnDeleteAsync", "OK");
+                await ShowAlertAsync("[DEBUG] Delete", "Antes de OnDeleteAsync");
                 
                 // Chamar diretamente o OnDeleteAsync (que já está no ViewModel)
                 vm.SelectedCliente = vm.Editing;
                 await vm.OnDeleteAsync();
                 
-                await DisplayAlert("[DEBUG] Delete", "Depois de OnDeleteAsync", "OK");
+                await ShowAlertAsync("[DEBUG] Delete", "Depois de OnDeleteAsync");
                 
                 ShowListView();
                 await GlobalToast.ShowAsync("Cliente eliminado com sucesso!", ToastTipo.Sucesso, 2000);
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Erro", $"Erro ao eliminar: {ex.Message}\n\n{ex.StackTrace}", "OK");
+                await ShowAlertAsync("Erro", $"Erro ao eliminar: {ex.Message}\n\n{ex.StackTrace}");
                 GlobalErro.TratarErro(ex, mostrarAlerta: false);
             }
         }
