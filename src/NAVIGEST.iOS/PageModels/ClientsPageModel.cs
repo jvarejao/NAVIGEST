@@ -138,10 +138,24 @@ public class ClientsPageModel : INotifyPropertyChanged
         NewCommand = new Command(async () => await OnNewAsync());
         ClearCommand = new Command(OnClear);
         SaveCommand = new Command(async () => await OnSaveAsync());
-        DeleteCommand = new Command<Cliente>(c => { if (c != null) SelectedCliente = c; });
+        DeleteCommand = new Command<Cliente>(async (c) => 
+        { 
+            if (c != null) 
+            { 
+                SelectedCliente = c;
+                await OnDeleteAsync();
+            }
+        });
         SearchCommand = new Command(ApplyFilterImmediate);
         RefreshCommand = new Command(async () => await LoadAsync(force: true));
-        PastasCommand = new Command<Cliente>(c => { if (c != null) SelectedCliente = c; });
+        PastasCommand = new Command<Cliente>(async (c) => 
+        { 
+            if (c != null) 
+            { 
+                SelectedCliente = c;
+                await OnPastasAsync();
+            }
+        });
         SelectCommand = new Command<Cliente>(c => { if (c != null) SelectedCliente = c; });
     }
 

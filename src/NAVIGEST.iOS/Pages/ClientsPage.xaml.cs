@@ -167,22 +167,38 @@ namespace NAVIGEST.iOS.Pages
         }
 
         // SwipeItemView Invoked event handlers
+        // Nota: O Command do XAML já foi executado quando Invoked dispara
         private void OnSwipeItemViewPastasInvoked(object sender, EventArgs e)
         {
-            // O command já foi executado (set SelectedCliente), agora abre o form
-            ShowFormView(isNew: false);
+            // O PastasCommand já executou via XAML binding e setou SelectedCliente
+            // Nada adicional a fazer aqui
         }
 
         private void OnSwipeItemViewEditInvoked(object sender, EventArgs e)
         {
-            // O command já foi executado, apenas abre o form
-            ShowFormView(isNew: false);
+            // O SelectCommand já executou via XAML binding e setou SelectedCliente
+            // Abre o form para editar
+            try
+            {
+                var vm = BindingContext as ClientsPageModel;
+                var selectedCliente = vm?.SelectedCliente;
+                var editModel = vm?.EditModel;
+                
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    ShowFormView(isNew: false);
+                });
+            }
+            catch (Exception ex)
+            {
+                _ = DisplayAlert("Debug EditInvoked", $"Erro: {ex.Message}", "OK");
+            }
         }
 
         private void OnSwipeItemViewDeleteInvoked(object sender, EventArgs e)
         {
-            // O command já foi executado (set SelectedCliente), agora abre o form para eliminar
-            ShowFormView(isNew: false);
+            // O DeleteCommand já executou via XAML binding
+            // Nada adicional a fazer aqui (o delete já foi executado pelo command)
         }
 
         private void HandleEditar(Cliente cliente)
