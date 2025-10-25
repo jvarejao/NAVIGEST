@@ -4,6 +4,7 @@
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:models="clr-namespace:NAVIGEST.iOS.Models"
+             xmlns:local="clr-namespace:NAVIGEST.iOS.Pages"
              BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}"
              Title="Clientes">
 
@@ -40,7 +41,8 @@
                 <SwipeItems Mode="Reveal" SwipeBehaviorOnInvoked="Close">
 
                   <!-- PASTAS - Circular Button -->
-                  <SwipeItemView>
+                  <SwipeItemView Command="{Binding Source={RelativeSource AncestorType={x:Type local:ClientsPage}}, Path=BindingContext.PastasCommand}"
+                                CommandParameter="{Binding .}">
                     <Button Text="&#xF07C;" 
                             FontFamily="FA7Solid" 
                             FontSize="24" 
@@ -50,12 +52,13 @@
                             Padding="0"
                             BackgroundColor="#00A3FF"
                             CornerRadius="30"
-                            Clicked="OnPastasButtonClicked"
-                            CommandParameter="{Binding .}"/>
+                            IsEnabled="False"/>
                   </SwipeItemView>
 
                   <!-- EDITAR - Circular Button -->
-                  <SwipeItemView>
+                  <SwipeItemView Command="{Binding Source={RelativeSource AncestorType={x:Type local:ClientsPage}}, Path=BindingContext.SelectCommand}"
+                                CommandParameter="{Binding .}"
+                                Invoked="OnSwipeItemViewEditInvoked">
                     <Button Text="&#xF044;" 
                             FontFamily="FA7Solid" 
                             FontSize="24" 
@@ -65,12 +68,12 @@
                             Padding="0"
                             BackgroundColor="#FFE400"
                             CornerRadius="30"
-                            Clicked="OnEditButtonClicked"
-                            CommandParameter="{Binding .}"/>
+                            IsEnabled="False"/>
                   </SwipeItemView>
 
                   <!-- ELIMINAR - Circular Button -->
-                  <SwipeItemView>
+                  <SwipeItemView Command="{Binding Source={RelativeSource AncestorType={x:Type local:ClientsPage}}, Path=BindingContext.DeleteCommand}"
+                                CommandParameter="{Binding .}">
                     <Button Text="&#xF1F8;" 
                             FontFamily="FA7Solid" 
                             FontSize="24" 
@@ -80,8 +83,7 @@
                             Padding="0"
                             BackgroundColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}"
                             CornerRadius="30"
-                            Clicked="OnDeleteButtonClicked"
-                            CommandParameter="{Binding .}"/>
+                            IsEnabled="False"/>
                   </SwipeItemView>
 
                 </SwipeItems>

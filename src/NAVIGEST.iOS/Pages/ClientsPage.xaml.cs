@@ -166,6 +166,13 @@ namespace NAVIGEST.iOS.Pages
             }
         }
 
+        // SwipeItemView Invoked event handler
+        private void OnSwipeItemViewEditInvoked(object sender, EventArgs e)
+        {
+            // O command já foi executado, apenas abre o form
+            ShowFormView(isNew: false);
+        }
+
         private void HandleEditar(Cliente cliente)
         {
             try
