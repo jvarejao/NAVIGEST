@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Storage;
-using Microsoft.Maui.ApplicationModel; // Launcher.OpenAsync
+using Microsoft.Maui.ApplicationModel; // Launcher.OpenAsync, MainThread
 using NAVIGEST.iOS.PageModels;
 using NAVIGEST.iOS.Models;
 using NAVIGEST.iOS;
@@ -17,9 +17,6 @@ namespace NAVIGEST.iOS.Pages
         private bool _loadedOnce;
         private bool _isEditMode;
 
-        // toggle para debug de taps/swipes
-        private const bool DEBUG_TAPS = true;
-
         public ClientsPage() : this(new ClientsPageModel()) { }
 
         public ClientsPage(ClientsPageModel vm)
@@ -27,11 +24,11 @@ namespace NAVIGEST.iOS.Pages
             BindingContext = vm;
 
             InitializeComponent();
-
+            
             #if IOS
             ConfigureKeyboardToolbar();
             #endif
-
+            
             Dispatcher.Dispatch(async () => await EnsureLoadedAsync());
         }
 
@@ -82,6 +79,7 @@ namespace NAVIGEST.iOS.Pages
             }
         }
 
+        // Alternar entre Lista e Formulário
         private void ShowListView()
         {
             ListViewContainer.IsVisible = true;
@@ -94,233 +92,275 @@ namespace NAVIGEST.iOS.Pages
             ListViewContainer.IsVisible = false;
             FormViewContainer.IsVisible = true;
             _isEditMode = true;
-
+            
             FormTitle.Text = isNew ? "Novo Cliente" : "Editar Cliente";
             DeleteFormButton.IsVisible = !isNew;
             SaveButton.Text = isNew ? "Adicionar" : "Atualizar";
         }
 
+        // Seleção na lista principal (toque na célula)
         private void OnClientCellTapped(object sender, EventArgs e)
         {
             try
             {
                 if (sender is Grid grid && grid.BindingContext is Cliente cliente)
                 {
-                    if (BindingContext is ClientsPageModel vm &&
-                        vm.SelectCommand?.CanExecute(cliente) == true)
-                        vm.SelectCommand.Execute(cliente);
-
+                    if (BindingContext is ClientsPageModel vm)
+                    {
+                        if (vm.SelectCommand?.CanExecute(cliente) == true)
+                        {
+                            vm.SelectCommand.Execute(cliente);
+                        }
+                    }
                     ShowFormView(isNew: false);
                 }
             }
-            catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: true); }
+            catch (Exception ex) 
+            { 
+                GlobalErro.TratarErro(ex, mostrarAlerta: true); 
+            }
         }
 
+        // SearchBar
         private void OnSearchBarSearchButtonPressed(object sender, EventArgs e) => SearchBar.Unfocus();
         private void OnSearchBarTextChanged(object sender, TextChangedEventArgs e) { }
         private void OnCollectionViewScrolled(object sender, ItemsViewScrolledEventArgs e) => SearchBar.Unfocus();
 
-        // ==================== INSTRUMENTAÇÃO SWIPE ====================
-
+        // ---------- Swipe instrumentation (opcional) ----------
         private void OnSwipeStarted(object sender, SwipeStartedEventArgs e)
-        {
-            if (!DEBUG_TAPS) return;
-            System.Diagnostics.Debug.WriteLine($"[SWIPE] Started Direction={e.SwipeDirection}");
-        }
+            => System.Diagnostics.Debug.WriteLine($"[SWIPE] Started Direction={e.SwipeDirection}");
 
         private void OnSwipeEnded(object sender, SwipeEndedEventArgs e)
+            => System.Diagnostics.Debug.WriteLine($"[SWIPE] Ended IsOpen={e.IsOpen}");
+
+        // Fecha o swipe e dá 75ms para acabar a animação (evita UI “presa” atrás do swipe)
+        private async Task CloseSwipeThenYieldAsync(object sender)
         {
-            if (!DEBUG_TAPS) return;
-            System.Diagnostics.Debug.WriteLine($"[SWIPE] Ended IsOpen={e.IsOpen}");
+            if (sender is Element el)
+            {
+                Element? p = el;
+                while (p != null && p is not SwipeView) p = p.Parent;
+                (p as SwipeView)?.Close();
+            }
+            await Task.Delay(75);
         }
 
-        private void LogTap(string tag, Element? el, object? param = null)
+        // ---------- PASTAS ----------
+        private async void OnPastasSwipeInvoked(object sender, EventArgs e)
         {
-            if (!DEBUG_TAPS) return;
-            var bc = el?.BindingContext?.GetType().Name ?? "null";
-            var pt = param?.GetType().Name ?? "null";
-            System.Diagnostics.Debug.WriteLine($"[{tag}] sender={el?.GetType().Name}, BC={bc}, Param={pt}");
-            // feedback visual curto sem bloquear
-            _ = GlobalToast.ShowAsync($"{tag}", ToastTipo.Info, 800);
+            System.Diagnostics.Debug.WriteLine("[PASTAS] Invoked");
+            await CloseSwipeThenYieldAsync(sender);
+
+            var cliente = (sender as Element)?.BindingContext as Cliente;
+            await DoPastasAsync(cliente, sender);
         }
 
-        private void CloseSwipeFrom(object sender)
+        private async void OnPastasTapFallback(object sender, TappedEventArgs e)
         {
-            if (sender is not Element el) return;
-            Element? p = el;
-            while (p != null && p is not SwipeView) p = p.Parent;
-            (p as SwipeView)?.Close();
+            System.Diagnostics.Debug.WriteLine($"[PASTAS] Tap Fallback param={e.Parameter?.GetType().Name}");
+            await CloseSwipeThenYieldAsync(sender);
+
+            var cliente = e.Parameter as Cliente;
+            await DoPastasAsync(cliente, sender);
         }
 
-        // ==================== AÇÕES (Métodos base) ====================
-
-        private async Task DoPastasAsync(Cliente cliente, object? origin = null)
+        private async Task DoPastasAsync(Cliente? cliente, object? origin = null)
         {
-            LogTap("PASTAS:Do", origin as Element, cliente);
+            if (cliente == null)
+            {
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                    DisplayAlert("Erro", "Cliente não identificado.", "OK"));
+                System.Diagnostics.Debug.WriteLine("[PASTAS] cliente=null");
+                return;
+            }
+
+            System.Diagnostics.Debug.WriteLine($"[PASTAS] CLICODIGO={cliente.CLICODIGO}");
 
             if (string.IsNullOrWhiteSpace(cliente.CLICODIGO))
             {
-                await DisplayAlert("Aviso", "Cliente sem código definido.", "OK");
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                    DisplayAlert("Aviso", "Cliente sem código definido.", "OK"));
                 return;
             }
 
             var uri = new Uri($"qfile://open?path=/mnt/remote/CLIENTES/{cliente.CLICODIGO}");
-            try { await Launcher.OpenAsync(uri); }
-            catch
+
+            try
             {
-                await DisplayAlert("Qfile",
-                    $"A abrir pasta do cliente {cliente.CLINOME}...\n\nCaminho: CLIENTES/{cliente.CLICODIGO}",
-                    "OK");
+                var can = await Launcher.CanOpenAsync(uri);
+                System.Diagnostics.Debug.WriteLine($"[PASTAS] CanOpen={can}");
+                if (can)
+                {
+                    await Launcher.OpenAsync(uri);
+                    System.Diagnostics.Debug.WriteLine("[PASTAS] Launcher.OpenAsync OK");
+                }
+                else
+                {
+                    await MainThread.InvokeOnMainThreadAsync(() =>
+                        DisplayAlert("Qfile",
+                            $"A abrir pasta do cliente {cliente.CLINOME}...\n\nCaminho: CLIENTES/{cliente.CLICODIGO}",
+                            "OK"));
+                    System.Diagnostics.Debug.WriteLine("[PASTAS] CanOpen=false -> Alert fallback");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[PASTAS][ERR] {ex}");
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                    DisplayAlert("Erro", $"Falhou abrir Qfile: {ex.Message}", "OK"));
             }
         }
 
-        private void DoEdit(Cliente cliente, object? origin = null)
+        // ---------- EDITAR (mantido; já funcionava) ----------
+        private async void OnEditSwipeInvoked(object sender, EventArgs e)
         {
-            LogTap("EDITAR:Do", origin as Element, cliente);
+            System.Diagnostics.Debug.WriteLine("[EDITAR] Invoked");
+            await CloseSwipeThenYieldAsync(sender);
+
+            var cliente = (sender as Element)?.BindingContext as Cliente;
+            DoEdit(cliente, sender);
+        }
+
+        private async void OnEditTapFallback(object sender, TappedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"[EDITAR] Tap Fallback param={e.Parameter?.GetType().Name}");
+            await CloseSwipeThenYieldAsync(sender);
+
+            var cliente = e.Parameter as Cliente;
+            DoEdit(cliente, sender);
+        }
+
+        private void DoEdit(Cliente? cliente, object? origin = null)
+        {
+            if (cliente == null)
+            {
+                MainThread.BeginInvokeOnMainThread(() =>
+                    DisplayAlert("Erro", "Cliente não identificado.", "OK"));
+                System.Diagnostics.Debug.WriteLine("[EDITAR] cliente=null");
+                return;
+            }
 
             if (BindingContext is ClientsPageModel vm &&
                 vm.SelectCommand?.CanExecute(cliente) == true)
             {
                 vm.SelectCommand.Execute(cliente);
+                System.Diagnostics.Debug.WriteLine("[EDITAR] SelectCommand executed");
             }
-            ShowFormView(isNew: false);
+            MainThread.BeginInvokeOnMainThread(() => ShowFormView(isNew: false));
         }
 
-        private async Task DoDeleteAsync(Cliente cliente, object? origin = null)
-        {
-            LogTap("ELIMINAR:Do", origin as Element, cliente);
-
-            var confirm = await DisplayAlert("Eliminar Cliente",
-                $"Tem a certeza que deseja eliminar '{cliente.CLINOME}'?",
-                "Eliminar", "Cancelar");
-
-            if (confirm && BindingContext is ClientsPageModel vm)
-            {
-                // se o Delete usa SelectedCliente:
-                vm.SelectedCliente = cliente;
-
-                if (vm.DeleteCommand?.CanExecute(null) == true)
-                {
-                    vm.DeleteCommand.Execute(null);
-                    await GlobalToast.ShowAsync("Cliente eliminado com sucesso.", ToastTipo.Sucesso, 2000);
-                }
-            }
-        }
-
-        // ==================== Invoked (oficial do Swipe) ====================
-
-        private async void OnPastasSwipeInvoked(object sender, EventArgs e)
-        {
-            LogTap("PASTAS:Invoked", sender as Element);
-            try
-            {
-                var cliente = (sender as Element)?.BindingContext as Cliente;
-                if (cliente == null) { await DisplayAlert("Erro", "Cliente não identificado.", "OK"); return; }
-
-                await DoPastasAsync(cliente, sender);
-            }
-            catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: true); }
-            finally { CloseSwipeFrom(sender); }
-        }
-
-        private void OnEditSwipeInvoked(object sender, EventArgs e)
-        {
-            LogTap("EDITAR:Invoked", sender as Element);
-            try
-            {
-                var cliente = (sender as Element)?.BindingContext as Cliente;
-                if (cliente == null) return;
-
-                DoEdit(cliente, sender);
-            }
-            catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: true); }
-            finally { CloseSwipeFrom(sender); }
-        }
-
+        // ---------- ELIMINAR ----------
         private async void OnDeleteSwipeInvoked(object sender, EventArgs e)
         {
-            LogTap("ELIMINAR:Invoked", sender as Element);
-            try
-            {
-                var cliente = (sender as Element)?.BindingContext as Cliente;
-                if (cliente == null)
-                {
-                    await DisplayAlert("Erro", "Cliente não identificado.", "OK");
-                    return;
-                }
+            System.Diagnostics.Debug.WriteLine("[ELIMINAR] Invoked");
+            await CloseSwipeThenYieldAsync(sender);
 
-                await DoDeleteAsync(cliente, sender);
-            }
-            catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: true); }
-            finally { CloseSwipeFrom(sender); }
-        }
-
-        // ==================== Tap Fallback (instrumentação + execução) ====================
-
-        private async void OnPastasTapFallback(object sender, TappedEventArgs e)
-        {
-            LogTap("PASTAS:Tap", sender as Element, e.Parameter);
-            try
-            {
-                if (e.Parameter is Cliente c) await DoPastasAsync(c, sender);
-            }
-            catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: true); }
-            finally { CloseSwipeFrom(sender); }
-        }
-
-        private void OnEditTapFallback(object sender, TappedEventArgs e)
-        {
-            LogTap("EDITAR:Tap", sender as Element, e.Parameter);
-            try
-            {
-                if (e.Parameter is Cliente c) DoEdit(c, sender);
-            }
-            catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: true); }
-            finally { CloseSwipeFrom(sender); }
+            var cliente = (sender as Element)?.BindingContext as Cliente;
+            await DoDeleteAsync(cliente, sender);
         }
 
         private async void OnDeleteTapFallback(object sender, TappedEventArgs e)
         {
-            LogTap("ELIMINAR:Tap", sender as Element, e.Parameter);
-            try
-            {
-                if (e.Parameter is Cliente c) await DoDeleteAsync(c, sender);
-            }
-            catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: true); }
-            finally { CloseSwipeFrom(sender); }
+            System.Diagnostics.Debug.WriteLine($"[ELIMINAR] Tap Fallback param={e.Parameter?.GetType().Name}");
+            await CloseSwipeThenYieldAsync(sender);
+
+            var cliente = e.Parameter as Cliente;
+            await DoDeleteAsync(cliente, sender);
         }
 
-        // ===============================================================
+        private async Task DoDeleteAsync(Cliente? cliente, object? origin = null)
+        {
+            if (cliente == null)
+            {
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                    DisplayAlert("Erro", "Cliente não identificado.", "OK"));
+            }
 
+            bool confirm = await MainThread.InvokeOnMainThreadAsync(async () =>
+                await DisplayAlert("Eliminar Cliente",
+                    $"Tem a certeza que deseja eliminar '{cliente?.CLINOME}'?",
+                    "Eliminar", "Cancelar"));
+
+            System.Diagnostics.Debug.WriteLine($"[ELIMINAR] confirm={confirm}");
+            if (!confirm || cliente == null) return;
+
+            if (BindingContext is ClientsPageModel vm)
+            {
+                // Alguns VMs usam SelectedCliente; outros esperam parâmetro no Command.
+                vm.SelectedCliente = cliente;
+
+                bool didExec = false;
+
+                if (vm.DeleteCommand != null && vm.DeleteCommand.CanExecute(cliente))
+                {
+                    vm.DeleteCommand.Execute(cliente);
+                    didExec = true;
+                    System.Diagnostics.Debug.WriteLine("[ELIMINAR] DeleteCommand(cliente) executed");
+                }
+                else if (vm.DeleteCommand != null && vm.DeleteCommand.CanExecute(null))
+                {
+                    vm.DeleteCommand.Execute(null);
+                    didExec = true;
+                    System.Diagnostics.Debug.WriteLine("[ELIMINAR] DeleteCommand(null) executed");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("[ELIMINAR] DeleteCommand not executable");
+                }
+
+                if (didExec)
+                {
+                    await MainThread.InvokeOnMainThreadAsync(() =>
+                        GlobalToast.ShowAsync("Cliente eliminado com sucesso.", ToastTipo.Sucesso, 2000));
+                }
+                else
+                {
+                    await MainThread.InvokeOnMainThreadAsync(() =>
+                        DisplayAlert("Aviso", "A eliminação não foi executada (command bloqueado).", "OK"));
+                }
+            }
+        }
+
+        // Floating Action Button: Adicionar novo cliente
         private void OnAddClientTapped(object sender, EventArgs e)
         {
             try
             {
-                if (BindingContext is ClientsPageModel vm &&
-                    vm.NewCommand?.CanExecute(null) == true)
+                if (BindingContext is ClientsPageModel vm)
                 {
-                    vm.NewCommand.Execute(null);
+                    if (vm.NewCommand?.CanExecute(null) == true)
+                    {
+                        vm.NewCommand.Execute(null);
+                    }
                 }
                 ShowFormView(isNew: true);
             }
-            catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: true); }
+            catch (Exception ex)
+            {
+                GlobalErro.TratarErro(ex, mostrarAlerta: true);
+            }
         }
 
+        // Formulário: Cancelar
         private void OnCancelEditTapped(object sender, EventArgs e)
         {
-            if (BindingContext is ClientsPageModel vm &&
-                vm.ClearCommand?.CanExecute(null) == true)
+            if (BindingContext is ClientsPageModel vm)
             {
-                vm.ClearCommand.Execute(null);
+                if (vm.ClearCommand?.CanExecute(null) == true)
+                {
+                    vm.ClearCommand.Execute(null);
+                }
             }
             ShowListView();
         }
 
+        // Formulário: Guardar/Atualizar
         private async void OnSaveClientTapped(object sender, EventArgs e)
         {
             try
             {
-                if (BindingContext is not ClientsPageModel vm || vm.Editing is null) return;
+                if (BindingContext is not ClientsPageModel vm || vm.Editing is null)
+                    return;
 
                 if (string.IsNullOrWhiteSpace(vm.Editing.CLINOME))
                 {
@@ -344,10 +384,13 @@ namespace NAVIGEST.iOS.Pages
             }
         }
 
+        // Formulário: Eliminar
         private async void OnDeleteFromFormTapped(object sender, EventArgs e)
         {
             try
             {
+                System.Diagnostics.Debug.WriteLine($"[ELIMINAR FORM] Tap detectado!");
+                
                 if (BindingContext is not ClientsPageModel vm || vm.Editing is null)
                 {
                     await DisplayAlert("Erro", "Não foi possível identificar o cliente.", "OK");
@@ -364,6 +407,7 @@ namespace NAVIGEST.iOS.Pages
                 if (confirm)
                 {
                     vm.SelectedCliente = cliente;
+                    
                     if (vm.DeleteCommand?.CanExecute(null) == true)
                     {
                         vm.DeleteCommand.Execute(null);
@@ -380,3 +424,13 @@ namespace NAVIGEST.iOS.Pages
         }
     }
 }
+
+#if WINDOWS
+// Código Windows específico (se necessário)
+#endif
+#if ANDROID
+// Código Android específico (se necessário)
+#endif
+#if IOS
+// Código iOS específico (se necessário)
+#endif

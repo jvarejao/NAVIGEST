@@ -39,6 +39,7 @@
                                    SwipeEnded="OnSwipeEnded">
                             <!-- Ações à direita -->
                             <SwipeView.RightItems>
+                                <!-- Fecha SEMPRE quando uma ação é invocada -->
                                 <SwipeItems Mode="Reveal" SwipeBehaviorOnInvoked="Close">
 
                                     <!-- PASTAS -->
@@ -84,7 +85,7 @@
                                         </Grid>
                                     </SwipeItemView>
 
-                                    <!-- EDITAR -->
+                                    <!-- EDITAR (já funcionava; mantido) -->
                                     <SwipeItemView BindingContext="{Binding .}"
                                                    Invoked="OnEditSwipeInvoked">
                                         <Grid BackgroundColor="Transparent" WidthRequest="80" Padding="15,12">
