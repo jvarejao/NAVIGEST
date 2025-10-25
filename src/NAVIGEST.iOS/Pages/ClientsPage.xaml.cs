@@ -3,6 +3,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Storage;
 using NAVIGEST.iOS.PageModels;
@@ -16,11 +17,22 @@ namespace NAVIGEST.iOS.Pages
         private bool _loadedOnce;
         private bool _isEditMode;
 
+        // Commands para os botões do swipe
+        public ICommand PastasClientCommand { get; }
+        public ICommand EditClientCommand { get; }
+        public ICommand DeleteClientCommand { get; }
+
         public ClientsPage() : this(new ClientsPageModel()) { }
 
         public ClientsPage(ClientsPageModel vm)
         {
             BindingContext = vm;
+            
+            // Inicializar os Commands
+            PastasClientCommand = new Command<Cliente>(async (c) => await OnPastasClient(c));
+            EditClientCommand = new Command<Cliente>(OnEditClient);
+            DeleteClientCommand = new Command<Cliente>(async (c) => await OnDeleteClient(c));
+            
             InitializeComponent();
             
             // Configurar toolbar do teclado no iOS
@@ -406,6 +418,107 @@ private void CloseSwipe(object sender)
             {
                 await DisplayAlert("Erro", $"Erro ao eliminar: {ex.Message}", "OK");
                 GlobalErro.TratarErro(ex, mostrarAlerta: false);
+            }
+        }
+
+        // ============================================
+        // MÉTODOS DOS COMMANDS (SwipeItemView)
+        // ============================================
+
+        private async Task OnPastasClient(Cliente? cliente)
+        {
+            if (cliente == null) return;
+            
+            try
+            {
+                CloseAllSwipes();
+                
+                if (string.IsNullOrWhiteSpace(cliente.CLICODIGO))
+                {
+                    await DisplayAlert("Aviso", "Cliente sem código definido.", "OK");
+                    return;
+                }
+
+                var uri = new Uri($"qfile://open?path=/mnt/remote/CLIENTES/{cliente.CLICODIGO}");
+                try 
+                { 
+                    await Launcher.OpenAsync(uri); 
+                }
+                catch
+                {
+                    await DisplayAlert("Qfile",
+                        $"A abrir pasta do cliente {cliente.CLINOME}...\n\nCaminho: CLIENTES/{cliente.CLICODIGO}",
+                        "OK");
+                }
+            }
+            catch (Exception ex)
+            {
+                GlobalErro.TratarErro(ex, mostrarAlerta: true);
+            }
+        }
+
+        private void OnEditClient(Cliente? cliente)
+        {
+            if (cliente == null) return;
+            
+            try
+            {
+                CloseAllSwipes();
+                
+                if (BindingContext is ClientsPageModel vm &&
+                    vm.SelectCommand?.CanExecute(cliente) == true)
+                {
+                    vm.SelectCommand.Execute(cliente);
+                }
+
+                ShowFormView(isNew: false);
+            }
+            catch (Exception ex)
+            {
+                GlobalErro.TratarErro(ex, mostrarAlerta: true);
+            }
+        }
+
+        private async Task OnDeleteClient(Cliente? cliente)
+        {
+            if (cliente == null) return;
+            
+            try
+            {
+                CloseAllSwipes();
+                
+                var confirm = await DisplayAlert(
+                    "Eliminar Cliente",
+                    $"Tem a certeza que deseja eliminar '{cliente.CLINOME}'?",
+                    "Eliminar", "Cancelar");
+
+                if (confirm && BindingContext is ClientsPageModel vm)
+                {
+                    // IMPORTANTE: O DeleteCommand usa SelectedCliente!
+                    vm.SelectedCliente = cliente;
+                    
+                    if (vm.DeleteCommand?.CanExecute(null) == true)
+                    {
+                        vm.DeleteCommand.Execute(null);
+                        await GlobalToast.ShowAsync("Cliente eliminado com sucesso.", ToastTipo.Sucesso, 2000);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                GlobalErro.TratarErro(ex, mostrarAlerta: true);
+            }
+        }
+
+        private void CloseAllSwipes()
+        {
+            // Fechar todos os swipes abertos na CollectionView
+            if (ClientsCollectionView?.ItemsSource != null)
+            {
+                foreach (var item in ClientsCollectionView.ItemsSource)
+                {
+                    // O SwipeView fecha automaticamente quando outro é aberto
+                }
             }
         }
     }

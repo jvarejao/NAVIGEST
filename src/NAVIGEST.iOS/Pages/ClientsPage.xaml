@@ -3,6 +3,7 @@
              x:Name="ClientsPageRoot"
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:NAVIGEST.iOS.Pages"
              xmlns:models="clr-namespace:NAVIGEST.iOS.Models"
              xmlns:behaviors="clr-namespace:NAVIGEST.iOS.Behaviors"
              BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}"
@@ -39,65 +40,50 @@
                         <!-- Swipe Actions (deslizar para esquerda) -->
                         <SwipeView.RightItems>
                             <SwipeItems Mode="Reveal">
-           <!-- PASTAS -->
-<SwipeItemView>
-  <Grid BackgroundColor="Transparent" WidthRequest="80" Padding="15,12">
-    <Grid WidthRequest="56" HeightRequest="56"
-          HorizontalOptions="Center" VerticalOptions="Center"
-          BindingContext="{Binding .}">
-      <BoxView Color="#00D9FF" CornerRadius="28" WidthRequest="56" HeightRequest="56"
-               InputTransparent="True"/>
-      <Label FontFamily="FA7Solid" Text="&#xF07C;" FontSize="24"
-             TextColor="White" HorizontalOptions="Center" VerticalOptions="Center"
-             InputTransparent="True"/>
-      <Grid.GestureRecognizers>
-        <TapGestureRecognizer
-          NumberOfTapsRequired="1"
-          Tapped="OnPastasClientTapped" />
-      </Grid.GestureRecognizers>
-    </Grid>
-  </Grid>
-</SwipeItemView>
+                                <!-- PASTAS -->
+                                <SwipeItemView Command="{Binding Source={RelativeSource AncestorType={x:Type local:ClientsPage}}, Path=PastasClientCommand}"
+                                               CommandParameter="{Binding .}">
+                                    <Grid BackgroundColor="Transparent" WidthRequest="80" Padding="15,12">
+                                        <Grid WidthRequest="56" HeightRequest="56"
+                                              HorizontalOptions="Center" VerticalOptions="Center">
+                                            <BoxView Color="#00D9FF" CornerRadius="28" 
+                                                     WidthRequest="56" HeightRequest="56"/>
+                                            <Label FontFamily="FA7Solid" Text="&#xF07C;" FontSize="24"
+                                                   TextColor="White" 
+                                                   HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        </Grid>
+                                    </Grid>
+                                </SwipeItemView>
 
-<!-- EDITAR -->
-<SwipeItemView>
-  <Grid BackgroundColor="Transparent" WidthRequest="80" Padding="15,12">
-    <Grid WidthRequest="56" HeightRequest="56"
-          HorizontalOptions="Center" VerticalOptions="Center"
-          BindingContext="{Binding .}">
-      <BoxView Color="#FFE400" CornerRadius="28" WidthRequest="56" HeightRequest="56"
-               InputTransparent="True"/>
-      <Label FontFamily="FA7Solid" Text="&#xF044;" FontSize="24"
-             TextColor="#333333" HorizontalOptions="Center" VerticalOptions="Center"
-             InputTransparent="True"/>
-      <Grid.GestureRecognizers>
-        <TapGestureRecognizer
-          NumberOfTapsRequired="1"
-          Tapped="OnEditClientTapped" />
-      </Grid.GestureRecognizers>
-    </Grid>
-  </Grid>
-</SwipeItemView>
+                                <!-- EDITAR -->
+                                <SwipeItemView Command="{Binding Source={RelativeSource AncestorType={x:Type local:ClientsPage}}, Path=EditClientCommand}"
+                                               CommandParameter="{Binding .}">
+                                    <Grid BackgroundColor="Transparent" WidthRequest="80" Padding="15,12">
+                                        <Grid WidthRequest="56" HeightRequest="56"
+                                              HorizontalOptions="Center" VerticalOptions="Center">
+                                            <BoxView Color="#FFE400" CornerRadius="28" 
+                                                     WidthRequest="56" HeightRequest="56"/>
+                                            <Label FontFamily="FA7Solid" Text="&#xF044;" FontSize="24"
+                                                   TextColor="#333333" 
+                                                   HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        </Grid>
+                                    </Grid>
+                                </SwipeItemView>
 
-<!-- ELIMINAR -->
-<SwipeItemView>
-  <Grid BackgroundColor="Transparent" WidthRequest="80" Padding="15,12">
-    <Grid WidthRequest="56" HeightRequest="56"
-          HorizontalOptions="Center" VerticalOptions="Center"
-          BindingContext="{Binding .}">
-      <BoxView Color="#FF006E" CornerRadius="28" WidthRequest="56" HeightRequest="56"
-               InputTransparent="True"/>
-      <Label FontFamily="FA7Solid" Text="&#xF1F8;" FontSize="24"
-             TextColor="White" HorizontalOptions="Center" VerticalOptions="Center"
-             InputTransparent="True"/>
-      <Grid.GestureRecognizers>
-        <TapGestureRecognizer
-          NumberOfTapsRequired="1"
-          Tapped="OnDeleteClientTapped" />
-      </Grid.GestureRecognizers>
-    </Grid>
-  </Grid>
-</SwipeItemView>
+                                <!-- ELIMINAR -->
+                                <SwipeItemView Command="{Binding Source={RelativeSource AncestorType={x:Type local:ClientsPage}}, Path=DeleteClientCommand}"
+                                               CommandParameter="{Binding .}">
+                                    <Grid BackgroundColor="Transparent" WidthRequest="80" Padding="15,12">
+                                        <Grid WidthRequest="56" HeightRequest="56"
+                                              HorizontalOptions="Center" VerticalOptions="Center">
+                                            <BoxView Color="#FF006E" CornerRadius="28" 
+                                                     WidthRequest="56" HeightRequest="56"/>
+                                            <Label FontFamily="FA7Solid" Text="&#xF1F8;" FontSize="24"
+                                                   TextColor="White" 
+                                                   HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        </Grid>
+                                    </Grid>
+                                </SwipeItemView>
 
                             </SwipeItems>
                         </SwipeView.RightItems>
