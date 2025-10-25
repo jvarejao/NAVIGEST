@@ -121,48 +121,48 @@ namespace NAVIGEST.iOS.Pages
         // ===========================
         // SWIPE ITEM INVOKED (ÚNICO PONTO DE ENTRADA)
         // ===========================
-        private async void OnSwipeItemInvoked(object sender, SwipeItemInvokedEventArgs e)
+        private async void OnSwipeItemInvoked(object sender, EventArgs e)
         {
-            // Prova de que o evento foi apanhado
-            await DisplayAlert("[DBG]", $"SwipeItemInvoked: {(e.SwipeItem as SwipeItem)?.Text}", "OK");
-
-            // Cliente do item
-            var cliente = (sender as Element)?.BindingContext as Cliente;
-            if (cliente == null)
+            try
             {
-                await DisplayAlert("Erro", "Cliente não identificado.", "OK");
-                return;
-            }
+                // SwipeItem que disparou o evento
+                if (sender is not SwipeItem swipeItem)
+                {
+                    await DisplayAlert("Erro", "Sender não é SwipeItem.", "OK");
+                    return;
+                }
 
-            // Roteamento por SwipeItem
-            if (e.SwipeItem == null)
+                // Cliente do item - tentar obter do BindingContext do SwipeView pai
+                var swipeView = swipeItem.Parent as SwipeView;
+                var cliente = swipeView?.BindingContext as Cliente;
+                
+                if (cliente == null)
+                {
+                    await DisplayAlert("Erro", "Cliente não identificado.", "OK");
+                    return;
+                }
+
+                // Roteamento por texto do SwipeItem
+                switch (swipeItem.Text)
+                {
+                    case "Editar":
+                        HandleEditar(cliente);
+                        break;
+                    case "Eliminar":
+                        await HandleEliminarAsync(cliente);
+                        break;
+                    case "Pastas":
+                        await HandlePastasAsync(cliente);
+                        break;
+                    default:
+                        await DisplayAlert("Info", $"Ação desconhecida: {swipeItem.Text}", "OK");
+                        break;
+                }
+            }
+            catch (Exception ex)
             {
-                await DisplayAlert("Erro", "SwipeItem inválido.", "OK");
-                return;
+                await DisplayAlert("Erro", $"Exceção: {ex.Message}", "OK");
             }
-
-            var swipeItem = (SwipeItem)e.SwipeItem;
-
-            if (swipeItem.Text == "Editar")
-            {
-                HandleEditar(cliente);
-                return;
-            }
-
-            if (swipeItem.Text == "Eliminar")
-            {
-                await HandleEliminarAsync(cliente);
-                return;
-            }
-
-            if (swipeItem.Text == "Pastas")
-            {
-                await HandlePastasAsync(cliente);
-                return;
-            }
-
-            // Fallback
-            await DisplayAlert("[DBG]", $"SwipeItem desconhecido: {swipeItem.Text}", "OK");
         }
 
         private void HandleEditar(Cliente cliente)
@@ -309,6 +309,33 @@ namespace NAVIGEST.iOS.Pages
             catch (Exception ex)
             {
                 await DisplayAlert("Erro", $"Erro ao guardar: {ex.Message}", "OK");
+                GlobalErro.TratarErro(ex, mostrarAlerta: false);
+            }
+        }
+
+        // Eliminar do formulário
+        private async void OnDeleteFromFormTapped(object sender, EventArgs e)
+        {
+            try
+            {
+                if (BindingContext is not ClientsPageModel vm || vm.Editing is null) return;
+
+                var confirm = await DisplayAlert("Eliminar Cliente",
+                    $"Tem a certeza que deseja eliminar '{vm.Editing.CLINOME}'?",
+                    "Eliminar", "Cancelar");
+
+                if (!confirm) return;
+
+                if (vm.DeleteCommand?.CanExecute(vm.Editing) == true)
+                {
+                    vm.DeleteCommand.Execute(vm.Editing);
+                    ShowListView();
+                    await GlobalToast.ShowAsync("Cliente eliminado com sucesso!", ToastTipo.Sucesso, 2000);
+                }
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Erro", $"Erro ao eliminar: {ex.Message}", "OK");
                 GlobalErro.TratarErro(ex, mostrarAlerta: false);
             }
         }
