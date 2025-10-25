@@ -17,6 +17,12 @@
         Title="Horas"
         Route="hours-entry"
         ContentTemplate="{DataTemplate pages:HoursEntryPage}" />
+
+    <!-- NOVO: Página de Teste SwipeView -->
+    <ShellContent
+        Title="Swipe Proof"
+        Route="swipe-proof"
+        ContentTemplate="{DataTemplate pages:SwipeProofPage}" />
 </Shell>
 
 

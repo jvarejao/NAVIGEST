@@ -501,6 +501,24 @@ namespace NAVIGEST.iOS.Pages
                                 CloseSidebarMobileIfNeeded();
                                 break;
                             }
+                        case "swipe":
+                            {
+                                try
+                                {
+                                    var page = new SwipeProofPage();
+                                    var pageContent = page.Content;
+                                    if (BindingContext is MainYahPageViewModel vm8) vm8.IsConfigExpanded = false;
+                                    if (pageContent is not null)
+                                    {
+                                        pageContent.BindingContext = page.BindingContext ?? pageContent.BindingContext;
+                                        ShowContent(pageContent);
+                                    }
+                                    else await DisplayToastAsync("SwipeProofPage sem conteúdo.");
+                                }
+                                catch (Exception ex) { TratarErro(ex); }
+                                CloseSidebarMobileIfNeeded();
+                                break;
+                            }
 
                     }
                 }

@@ -37,6 +37,12 @@
 		<!-- Face ID permission text (OBRIGATÓRIO p/ mostrar o prompt) -->
 		<key>NSFaceIDUsageDescription</key>
 		<string>Usamos Face ID para iniciar sessão de forma segura.</string>
+
+		<!-- Query schemes para abrir apps externos -->
+		<key>LSApplicationQueriesSchemes</key>
+		<array>
+			<string>qfile</string>
+		</array>
 	</dict>
 </plist>
 
