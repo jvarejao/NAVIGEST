@@ -45,9 +45,9 @@
                                     <!-- PASTAS -->
                                     <SwipeItemView BindingContext="{Binding .}"
                                                    Invoked="OnPastasSwipeInvoked">
-                                        <Grid BackgroundColor="Transparent" WidthRequest="80" Padding="15,12">
+                                        <Grid BackgroundColor="Transparent" WidthRequest="80" Padding="15,12" InputTransparent="True">
                                             <Grid WidthRequest="56" HeightRequest="56"
-                                                  HorizontalOptions="Center" VerticalOptions="Center">
+                                                  HorizontalOptions="Center" VerticalOptions="Center" InputTransparent="True">
                                                 <BoxView Color="#00D9FF" CornerRadius="28" 
                                                          WidthRequest="56" HeightRequest="56"/>
                                                 <Label FontFamily="FA7Solid" Text="&#xF07C;" FontSize="24"
@@ -67,9 +67,9 @@
                                     <!-- ELIMINAR -->
                                     <SwipeItemView BindingContext="{Binding .}"
                                                    Invoked="OnDeleteSwipeInvoked">
-                                        <Grid BackgroundColor="Transparent" WidthRequest="80" Padding="15,12">
+                                        <Grid BackgroundColor="Transparent" WidthRequest="80" Padding="15,12" InputTransparent="True">
                                             <Grid WidthRequest="56" HeightRequest="56"
-                                                  HorizontalOptions="Center" VerticalOptions="Center">
+                                                  HorizontalOptions="Center" VerticalOptions="Center" InputTransparent="True">
                                                 <BoxView Color="#FF006E" CornerRadius="28" 
                                                          WidthRequest="56" HeightRequest="56"/>
                                                 <Label FontFamily="FA7Solid" Text="&#xF1F8;" FontSize="24"
@@ -88,9 +88,9 @@
                                     <!-- EDITAR (já funcionava; mantido) -->
                                     <SwipeItemView BindingContext="{Binding .}"
                                                    Invoked="OnEditSwipeInvoked">
-                                        <Grid BackgroundColor="Transparent" WidthRequest="80" Padding="15,12">
+                                        <Grid BackgroundColor="Transparent" WidthRequest="80" Padding="15,12" InputTransparent="True">
                                             <Grid WidthRequest="56" HeightRequest="56"
-                                                  HorizontalOptions="Center" VerticalOptions="Center">
+                                                  HorizontalOptions="Center" VerticalOptions="Center" InputTransparent="True">
                                                 <BoxView Color="#FFE400" CornerRadius="28" 
                                                          WidthRequest="56" HeightRequest="56"/>
                                                 <Label FontFamily="FA7Solid" Text="&#xF044;" FontSize="24"
