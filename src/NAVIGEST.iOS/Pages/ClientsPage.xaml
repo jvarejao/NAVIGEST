@@ -41,44 +41,47 @@
 
                   <!-- PASTAS - Circular Button -->
                   <SwipeItemView>
-                    <Border WidthRequest="60" HeightRequest="60" Padding="0" BackgroundColor="#00A3FF" StrokeThickness="0" StrokeShape="RoundRectangle 999">
-                      <Button Text="&#xF07C;" 
-                              FontFamily="FA7Solid" 
-                              FontSize="24" 
-                              TextColor="White"
-                              BackgroundColor="Transparent"
-                              Padding="0"
-                              Clicked="OnPastasButtonClicked"
-                              CommandParameter="{Binding .}"/>
-                    </Border>
+                    <Button Text="&#xF07C;" 
+                            FontFamily="FA7Solid" 
+                            FontSize="24" 
+                            TextColor="White"
+                            WidthRequest="60"
+                            HeightRequest="60"
+                            Padding="0"
+                            BackgroundColor="#00A3FF"
+                            CornerRadius="30"
+                            Clicked="OnPastasButtonClicked"
+                            CommandParameter="{Binding .}"/>
                   </SwipeItemView>
 
                   <!-- EDITAR - Circular Button -->
                   <SwipeItemView>
-                    <Border WidthRequest="60" HeightRequest="60" Padding="0" BackgroundColor="#FFE400" StrokeThickness="0" StrokeShape="RoundRectangle 999">
-                      <Button Text="&#xF044;" 
-                              FontFamily="FA7Solid" 
-                              FontSize="24" 
-                              TextColor="#333333"
-                              BackgroundColor="Transparent"
-                              Padding="0"
-                              Clicked="OnEditButtonClicked"
-                              CommandParameter="{Binding .}"/>
-                    </Border>
+                    <Button Text="&#xF044;" 
+                            FontFamily="FA7Solid" 
+                            FontSize="24" 
+                            TextColor="#333333"
+                            WidthRequest="60"
+                            HeightRequest="60"
+                            Padding="0"
+                            BackgroundColor="#FFE400"
+                            CornerRadius="30"
+                            Clicked="OnEditButtonClicked"
+                            CommandParameter="{Binding .}"/>
                   </SwipeItemView>
 
                   <!-- ELIMINAR - Circular Button -->
                   <SwipeItemView>
-                    <Border WidthRequest="60" HeightRequest="60" Padding="0" BackgroundColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}" StrokeThickness="0" StrokeShape="RoundRectangle 999">
-                      <Button Text="&#xF1F8;" 
-                              FontFamily="FA7Solid" 
-                              FontSize="24" 
-                              TextColor="White"
-                              BackgroundColor="Transparent"
-                              Padding="0"
-                              Clicked="OnDeleteButtonClicked"
-                              CommandParameter="{Binding .}"/>
-                    </Border>
+                    <Button Text="&#xF1F8;" 
+                            FontFamily="FA7Solid" 
+                            FontSize="24" 
+                            TextColor="White"
+                            WidthRequest="60"
+                            HeightRequest="60"
+                            Padding="0"
+                            BackgroundColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}"
+                            CornerRadius="30"
+                            Clicked="OnDeleteButtonClicked"
+                            CommandParameter="{Binding .}"/>
                   </SwipeItemView>
 
                 </SwipeItems>
