@@ -94,10 +94,11 @@ namespace NAVIGEST.iOS.Pages
             SaveButton.Text = isNew ? "Adicionar" : "Atualizar";
         }
 
-        // --- Eventos dos botões do SWIPE (Button.Clicked) ---
+        // --- SWIPE BUTTONS ---
 
         private async void OnPastasButtonClicked(object sender, EventArgs e)
         {
+            await DisplayAlert("[DBG]", "PASTAS CLICKED", "OK"); // prova de clique
             await CloseSwipeFrom(sender);
 
             var cliente = (sender as Button)?.CommandParameter as Cliente
@@ -120,12 +121,16 @@ namespace NAVIGEST.iOS.Pages
             try
             {
                 var can = await Launcher.CanOpenAsync(uri);
+                await DisplayAlert("[DBG]", $"CanOpen qfile = {can}", "OK");
+
                 if (can)
                 {
                     await Launcher.OpenAsync(uri);
+                    await DisplayAlert("[DBG]", "OpenAsync(qfile) OK", "OK");
                 }
                 else
                 {
+                    // Fallback visível: pelo menos vemos UI
                     await DisplayAlert("Qfile",
                         $"A abrir pasta do cliente {cliente.CLINOME}...\n\nCaminho: CLIENTES/{cliente.CLICODIGO}",
                         "OK");
@@ -160,6 +165,7 @@ namespace NAVIGEST.iOS.Pages
 
         private async void OnDeleteButtonClicked(object sender, EventArgs e)
         {
+            await DisplayAlert("[DBG]", "DELETE CLICKED", "OK"); // prova de clique
             await CloseSwipeFrom(sender);
 
             var cliente = (sender as Button)?.CommandParameter as Cliente
@@ -180,14 +186,19 @@ namespace NAVIGEST.iOS.Pages
             {
                 vm.SelectedCliente = cliente;
 
-                if (vm.DeleteCommand != null && vm.DeleteCommand.CanExecute(cliente))
+                bool canParam = vm.DeleteCommand?.CanExecute(cliente) == true;
+                bool canNull  = vm.DeleteCommand?.CanExecute(null) == true;
+
+                await DisplayAlert("[DBG]", $"CanExec(param)={canParam} | CanExec(null)={canNull}", "OK");
+
+                if (canParam)
                 {
-                    vm.DeleteCommand.Execute(cliente);
+                    vm.DeleteCommand!.Execute(cliente);
                     await GlobalToast.ShowAsync("Cliente eliminado com sucesso.", ToastTipo.Sucesso, 2000);
                 }
-                else if (vm.DeleteCommand != null && vm.DeleteCommand.CanExecute(null))
+                else if (canNull)
                 {
-                    vm.DeleteCommand.Execute(null);
+                    vm.DeleteCommand!.Execute(null);
                     await GlobalToast.ShowAsync("Cliente eliminado com sucesso.", ToastTipo.Sucesso, 2000);
                 }
                 else
@@ -197,7 +208,7 @@ namespace NAVIGEST.iOS.Pages
             }
         }
 
-        // Fecha o SwipeView pai antes de agir (evita overlay a bloquear UI)
+        // Fecha o SwipeView pai antes de agir
         private async Task CloseSwipeFrom(object sender)
         {
             if (sender is Element el)
@@ -206,7 +217,7 @@ namespace NAVIGEST.iOS.Pages
                 while (p != null && p is not SwipeView) p = p.Parent;
                 (p as SwipeView)?.Close();
             }
-            await Task.Delay(75);
+            await Task.Delay(75); // dá tempo à animação para não tapar os alerts
         }
 
         // Tap na célula – abre edição

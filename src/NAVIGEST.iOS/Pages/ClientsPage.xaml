@@ -36,9 +36,10 @@
                     <DataTemplate x:DataType="models:Cliente">
                         <SwipeView x:Name="ClientSwipeView">
                             <SwipeView.RightItems>
+                                <!-- Fechar ao invocar; ainda fechamos manualmente no handler -->
                                 <SwipeItems Mode="Reveal" SwipeBehaviorOnInvoked="Close">
 
-                                    <!-- PASTAS (Button dentro do SwipeItemView) -->
+                                    <!-- PASTAS -->
                                     <SwipeItemView BindingContext="{Binding .}">
                                         <Grid WidthRequest="80" Padding="12" BackgroundColor="Transparent">
                                             <Button Clicked="OnPastasButtonClicked"
@@ -52,8 +53,7 @@
                                                     HeightRequest="56"
                                                     HorizontalOptions="Center"
                                                     VerticalOptions="Center"
-                                                    Padding="0"
-                                                    />
+                                                    Padding="0"/>
                                         </Grid>
                                     </SwipeItemView>
 
@@ -71,8 +71,7 @@
                                                     HeightRequest="56"
                                                     HorizontalOptions="Center"
                                                     VerticalOptions="Center"
-                                                    Padding="0"
-                                                    />
+                                                    Padding="0"/>
                                         </Grid>
                                     </SwipeItemView>
 
@@ -90,8 +89,7 @@
                                                     HeightRequest="56"
                                                     HorizontalOptions="Center"
                                                     VerticalOptions="Center"
-                                                    Padding="0"
-                                                    />
+                                                    Padding="0"/>
                                         </Grid>
                                     </SwipeItemView>
 
@@ -104,6 +102,7 @@
                                   ColumnDefinitions="50,*,Auto"
                                   ColumnSpacing="12"
                                   RowSpacing="4">
+
                                 <Grid.GestureRecognizers>
                                     <TapGestureRecognizer Tapped="OnClientCellTapped"/>
                                 </Grid.GestureRecognizers>
@@ -187,6 +186,7 @@
         <Grid x:Name="FormViewContainer" IsVisible="False" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}">
             <ScrollView>
                 <VerticalStackLayout Spacing="20" Padding="16">
+
                     <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,8,0,0">
                         <Button Grid.Column="0" Text="Cancelar"
                                 Style="{StaticResource AppleTextButton}"
