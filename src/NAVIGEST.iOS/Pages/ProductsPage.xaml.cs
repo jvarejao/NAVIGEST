@@ -1,5 +1,6 @@
 using Microsoft.Maui.Controls;
 using NAVIGEST.iOS.PageModels;
+using NAVIGEST.iOS.Models;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
@@ -100,7 +101,7 @@ public partial class ProductsPage : ContentPage
         catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
     }
 
-    // ---------- Popup Adicionar Família ----------
+    // ---------- Popup Adicionar Famï¿½lia ----------
     private void OnAddFamilyClicked(object sender, EventArgs e)
     {
         AddFamilyErrorLabel.IsVisible = false;
@@ -124,7 +125,7 @@ public partial class ProductsPage : ContentPage
 
         if (string.IsNullOrWhiteSpace(code) || string.IsNullOrWhiteSpace(name))
         {
-            ShowAddFamilyError("Código e descrição obrigatórios.");
+            ShowAddFamilyError("Cï¿½digo e descriï¿½ï¿½o obrigatï¿½rios.");
             return;
         }
 
@@ -140,13 +141,13 @@ public partial class ProductsPage : ContentPage
 
             AddFamilyOverlay.IsVisible = false;
             FamilyPicker.SelectedItem = finalCode;
-            await GlobalToast.ShowAsync("Família adicionada.", ToastTipo.Sucesso, 1600);
+            await GlobalToast.ShowAsync("Famï¿½lia adicionada.", ToastTipo.Sucesso, 1600);
         }
         catch (Exception ex)
         {
-            ShowAddFamilyError("Erro ao guardar família.");
+            ShowAddFamilyError("Erro ao guardar famï¿½lia.");
             GlobalErro.TratarErro(ex, mostrarAlerta: false);
-            await GlobalToast.ShowAsync("Erro ao guardar família.", ToastTipo.Erro, 2500);
+            await GlobalToast.ShowAsync("Erro ao guardar famï¿½lia.", ToastTipo.Erro, 2500);
         }
         finally
         {
@@ -160,13 +161,83 @@ public partial class ProductsPage : ContentPage
         AddFamilyErrorLabel.IsVisible = true;
     }
 
+    private async void OnEditButtonClicked(object sender, EventArgs e)
+    {
+        var product = (sender as Button)?.CommandParameter as Product
+                      ?? (sender as Element)?.BindingContext as Product;
+        if (product == null)
+        {
+            await DisplayAlert("Erro", "Produto nÃ£o identificado.", "OK");
+            return;
+        }
+
+        if (BindingContext is ProductsPageModel vm)
+        {
+            if (vm.SelectCommand?.CanExecute(product) == true)
+            {
+                vm.SelectCommand.Execute(product);
+            }
+
+            // Scroll para o form
+            if (vm.SelectedProduct != product)
+                vm.SelectedProduct = product;
+        }
+    }
+
+    private async void OnDeleteButtonClicked(object sender, EventArgs e)
+    {
+        var product = (sender as Button)?.CommandParameter as Product
+                      ?? (sender as Element)?.BindingContext as Product;
+        if (product == null)
+        {
+            await DisplayAlert("Erro", "Produto nÃ£o identificado.", "OK");
+            return;
+        }
+
+        var confirm = await DisplayAlert("Eliminar Produto",
+            $"Tem a certeza que deseja eliminar '{product.PRODNOME}'?",
+            "Eliminar", "Cancelar");
+
+        if (!confirm) return;
+
+        await DisplayAlert("Eliminar", "Funcionalidade de delete ainda nÃ£o disponÃ­vel nesta pÃ¡gina.", "OK");
+    }
+
+    // Tap na cÃ©lula â€“ abre ediÃ§Ã£o
+    private void OnProductCellTapped(object sender, EventArgs e)
+    {
+        try
+        {
+            if (sender is Grid grid && grid.BindingContext is Product product)
+            {
+                if (BindingContext is ProductsPageModel vm &&
+                    vm.SelectCommand?.CanExecute(product) == true)
+                {
+                    vm.SelectCommand.Execute(product);
+                }
+
+                if (BindingContext is ProductsPageModel vm2)
+                    vm2.SelectedProduct = product;
+            }
+        }
+        catch (Exception ex)
+        {
+            GlobalErro.TratarErro(ex, mostrarAlerta: false);
+        }
+    }
+
+    private void OnCollectionViewScrolled(object sender, ItemsViewScrolledEventArgs e)
+    {
+        // Placeholder para scroll events se necessÃ¡rio
+    }
+
 #if WINDOWS
-    // Código Windows específico (exemplo: animações, navegação, layouts)
+    // CÃ³digo Windows especÃ­fico (exemplo: animaÃ§Ãµes, navegaÃ§Ã£o, layouts)
 #endif
 #if ANDROID
-    // Código Android específico (exemplo: animações, navegação, layouts)
+    // CÃ³digo Android especÃ­fico (exemplo: animaÃ§Ãµes, navegaÃ§Ã£o, layouts)
 #endif
 #if IOS
-    // Código iOS específico (exemplo: animações, navegação, layouts)
+    // CÃ³digo iOS especÃ­fico (exemplo: animaÃ§Ãµes, navegaÃ§Ã£o, layouts)
 #endif
 }

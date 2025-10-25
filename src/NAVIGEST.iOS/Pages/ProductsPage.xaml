@@ -149,6 +149,79 @@
                         </CollectionView>
                     </VerticalStackLayout>
                 </Border>
+
+                <!-- LISTA Mobile/Tablet com SwipeView -->
+                <Border StrokeShape="RoundRectangle 18" StrokeThickness="1" Stroke="{DynamicResource DividerColor}" Background="{DynamicResource CardBackgroundColor}" Padding="0" IsVisible="{OnIdiom Desktop=false, Phone=true, Tablet=true}">
+                    <CollectionView ItemsSource="{Binding Filtered}"
+                            SelectionMode="None"
+                            BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#000000}"
+                            Scrolled="OnCollectionViewScrolled">
+
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:Product">
+                                <SwipeView x:Name="ProductSwipeView">
+                                    <SwipeView.RightItems>
+                                        <SwipeItems Mode="Reveal" SwipeBehaviorOnInvoked="Close">
+
+                                            <!-- EDITAR -->
+                                            <SwipeItemView BindingContext="{Binding .}">
+                                                <Button Clicked="OnEditButtonClicked"
+                                                        CommandParameter="{Binding .}"
+                                                        BackgroundColor="#FFE400"
+                                                        TextColor="#333333"
+                                                        FontFamily="FA7Solid"
+                                                        Text="&#xF044;"
+                                                        CornerRadius="28"
+                                                        WidthRequest="80"
+                                                        HeightRequest="56"
+                                                        HorizontalOptions="Center"
+                                                        VerticalOptions="Center"
+                                                        Padding="12"
+                                                        />
+                                            </SwipeItemView>
+
+                                            <!-- ELIMINAR -->
+                                            <SwipeItemView BindingContext="{Binding .}">
+                                                <Button Clicked="OnDeleteButtonClicked"
+                                                        CommandParameter="{Binding .}"
+                                                        BackgroundColor="#FF3B30"
+                                                        TextColor="White"
+                                                        FontFamily="FA7Solid"
+                                                        Text="&#xF1F8;"
+                                                        CornerRadius="28"
+                                                        WidthRequest="80"
+                                                        HeightRequest="56"
+                                                        HorizontalOptions="Center"
+                                                        VerticalOptions="Center"
+                                                        Padding="12"
+                                                        />
+                                            </SwipeItemView>
+
+                                        </SwipeItems>
+                                    </SwipeView.RightItems>
+
+                                    <!-- Conteúdo do item -->
+                                    <Grid Padding="16,12"
+                                          BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
+                                          ColumnDefinitions="*,Auto"
+                                          ColumnSpacing="12">
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnProductCellTapped"/>
+                                        </Grid.GestureRecognizers>
+
+                                        <VerticalStackLayout Spacing="4">
+                                            <Label Text="{Binding PRODNOME}" FontSize="16" FontAttributes="Bold" LineBreakMode="TailTruncation"/>
+                                            <Label Text="{Binding PRODCODIGO, StringFormat='Código: {0}'}" FontSize="12" TextColor="{DynamicResource PlaceholderColor}" LineBreakMode="TailTruncation"/>
+                                            <Label Text="{Binding FAMILIA, StringFormat='Família: {0}'}" FontSize="12" TextColor="{DynamicResource PlaceholderColor}" LineBreakMode="TailTruncation"/>
+                                        </VerticalStackLayout>
+
+                                        <Label Grid.Column="1" Text="{Binding COLABORADOR}" FontSize="12" TextColor="{DynamicResource PlaceholderColor}" VerticalOptions="Center"/>
+                                    </Grid>
+                                </SwipeView>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
             </VerticalStackLayout>
         </ScrollView>
 
