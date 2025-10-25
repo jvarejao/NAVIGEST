@@ -166,10 +166,22 @@ namespace NAVIGEST.iOS.Pages
             }
         }
 
-        // SwipeItemView Invoked event handler
+        // SwipeItemView Invoked event handlers
+        private void OnSwipeItemViewPastasInvoked(object sender, EventArgs e)
+        {
+            // O command já foi executado (set SelectedCliente), agora abre o form
+            ShowFormView(isNew: false);
+        }
+
         private void OnSwipeItemViewEditInvoked(object sender, EventArgs e)
         {
             // O command já foi executado, apenas abre o form
+            ShowFormView(isNew: false);
+        }
+
+        private void OnSwipeItemViewDeleteInvoked(object sender, EventArgs e)
+        {
+            // O command já foi executado (set SelectedCliente), agora abre o form para eliminar
             ShowFormView(isNew: false);
         }
 

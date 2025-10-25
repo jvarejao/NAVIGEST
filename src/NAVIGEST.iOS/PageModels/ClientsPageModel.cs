@@ -111,10 +111,10 @@ public class ClientsPageModel : INotifyPropertyChanged
     public Command NewCommand { get; }
     public Command ClearCommand { get; }
     public Command SaveCommand { get; }
-    public Command DeleteCommand { get; }
+    public Command<Cliente> DeleteCommand { get; }
     public Command SearchCommand { get; }
     public Command RefreshCommand { get; }
-    public Command PastasCommand { get; }
+    public Command<Cliente> PastasCommand { get; }
     public Command<Cliente> SelectCommand { get; }
 
     public string PastasButtonText =>
@@ -138,10 +138,10 @@ public class ClientsPageModel : INotifyPropertyChanged
         NewCommand = new Command(async () => await OnNewAsync());
         ClearCommand = new Command(OnClear);
         SaveCommand = new Command(async () => await OnSaveAsync());
-        DeleteCommand = new Command(async () => await OnDeleteAsync());
+        DeleteCommand = new Command<Cliente>(c => { if (c != null) SelectedCliente = c; });
         SearchCommand = new Command(ApplyFilterImmediate);
         RefreshCommand = new Command(async () => await LoadAsync(force: true));
-        PastasCommand = new Command(async () => await OnPastasAsync());
+        PastasCommand = new Command<Cliente>(c => { if (c != null) SelectedCliente = c; });
         SelectCommand = new Command<Cliente>(c => { if (c != null) SelectedCliente = c; });
     }
 

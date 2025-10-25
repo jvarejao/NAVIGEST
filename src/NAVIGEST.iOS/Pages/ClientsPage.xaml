@@ -42,7 +42,8 @@
 
                   <!-- PASTAS - Circular Button -->
                   <SwipeItemView Command="{Binding Source={RelativeSource AncestorType={x:Type local:ClientsPage}}, Path=BindingContext.PastasCommand}"
-                                CommandParameter="{Binding .}">
+                                CommandParameter="{Binding .}"
+                                Invoked="OnSwipeItemViewPastasInvoked">
                     <Button Text="&#xF07C;" 
                             FontFamily="FA7Solid" 
                             FontSize="24" 
@@ -73,7 +74,8 @@
 
                   <!-- ELIMINAR - Circular Button -->
                   <SwipeItemView Command="{Binding Source={RelativeSource AncestorType={x:Type local:ClientsPage}}, Path=BindingContext.DeleteCommand}"
-                                CommandParameter="{Binding .}">
+                                CommandParameter="{Binding .}"
+                                Invoked="OnSwipeItemViewDeleteInvoked">
                     <Button Text="&#xF1F8;" 
                             FontFamily="FA7Solid" 
                             FontSize="24" 
