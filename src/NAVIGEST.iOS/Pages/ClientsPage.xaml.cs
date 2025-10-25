@@ -89,8 +89,13 @@ namespace NAVIGEST.iOS.Pages
             _isEditMode = true;
 
             FormTitle.Text = isNew ? "Novo Cliente" : "Editar Cliente";
-            DeleteFormButton.IsVisible = !isNew;
             SaveButton.Text = isNew ? "Adicionar" : "Atualizar";
+            
+            // Mostrar grid de ações (Pastas + Eliminar) apenas em modo edição
+            if (FindByName("ActionButtonsGrid") is View actionGrid)
+            {
+                actionGrid.IsVisible = !isNew;
+            }
         }
 
         // Tap na célula – abre edição
@@ -166,39 +171,29 @@ namespace NAVIGEST.iOS.Pages
             }
         }
 
-        // SwipeItemView Invoked event handlers
-        // Nota: O Command do XAML já foi executado quando Invoked dispara
-        private void OnSwipeItemViewPastasInvoked(object sender, EventArgs e)
-        {
-            // O PastasCommand já executou via XAML binding e setou SelectedCliente
-            // Nada adicional a fazer aqui
-        }
-
+        // SwipeItemView Invoked event handler
         private void OnSwipeItemViewEditInvoked(object sender, EventArgs e)
         {
-            // O SelectCommand já executou via XAML binding e setou SelectedCliente
-            // Abre o form para editar
             try
             {
-                var vm = BindingContext as ClientsPageModel;
-                var selectedCliente = vm?.SelectedCliente;
-                var editModel = vm?.EditModel;
-                
-                MainThread.BeginInvokeOnMainThread(() =>
+                if (sender is SwipeItemView siv && siv.CommandParameter is Cliente cliente)
                 {
-                    ShowFormView(isNew: false);
-                });
+                    if (BindingContext is ClientsPageModel vm)
+                    {
+                        // Garantir que SelectedCliente foi setado
+                        vm.SelectedCliente = cliente;
+                        
+                        MainThread.BeginInvokeOnMainThread(() =>
+                        {
+                            ShowFormView(isNew: false);
+                        });
+                    }
+                }
             }
             catch (Exception ex)
             {
-                _ = DisplayAlert("Debug EditInvoked", $"Erro: {ex.Message}", "OK");
+                _ = DisplayAlert("Erro", $"Erro ao abrir edição: {ex.Message}", "OK");
             }
-        }
-
-        private void OnSwipeItemViewDeleteInvoked(object sender, EventArgs e)
-        {
-            // O DeleteCommand já executou via XAML binding
-            // Nada adicional a fazer aqui (o delete já foi executado pelo command)
         }
 
         private void HandleEditar(Cliente cliente)
@@ -345,6 +340,26 @@ namespace NAVIGEST.iOS.Pages
             catch (Exception ex)
             {
                 await DisplayAlert("Erro", $"Erro ao guardar: {ex.Message}", "OK");
+                GlobalErro.TratarErro(ex, mostrarAlerta: false);
+            }
+        }
+
+        // Pastas do formulário
+        private async void OnPastasFormTapped(object sender, EventArgs e)
+        {
+            try
+            {
+                if (BindingContext is not ClientsPageModel vm || vm.Editing is null) return;
+
+                if (vm.PastasCommand?.CanExecute(vm.Editing) == true)
+                {
+                    vm.PastasCommand.Execute(vm.Editing);
+                    // OnPastasAsync mostra um toast automaticamente
+                }
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Erro", $"Erro ao abrir pastas: {ex.Message}", "OK");
                 GlobalErro.TratarErro(ex, mostrarAlerta: false);
             }
         }

@@ -40,22 +40,6 @@
               <SwipeView.RightItems>
                 <SwipeItems Mode="Reveal" SwipeBehaviorOnInvoked="Close">
 
-                  <!-- PASTAS - Circular Button -->
-                  <SwipeItemView Command="{Binding Source={RelativeSource AncestorType={x:Type local:ClientsPage}}, Path=BindingContext.PastasCommand}"
-                                CommandParameter="{Binding .}"
-                                Invoked="OnSwipeItemViewPastasInvoked">
-                    <Button Text="&#xF07C;" 
-                            FontFamily="FA7Solid" 
-                            FontSize="24" 
-                            TextColor="White"
-                            WidthRequest="60"
-                            HeightRequest="60"
-                            Padding="0"
-                            BackgroundColor="#00A3FF"
-                            CornerRadius="30"
-                            IsEnabled="False"/>
-                  </SwipeItemView>
-
                   <!-- EDITAR - Circular Button -->
                   <SwipeItemView Command="{Binding Source={RelativeSource AncestorType={x:Type local:ClientsPage}}, Path=BindingContext.SelectCommand}"
                                 CommandParameter="{Binding .}"
@@ -63,27 +47,11 @@
                     <Button Text="&#xF044;" 
                             FontFamily="FA7Solid" 
                             FontSize="24" 
-                            TextColor="#333333"
-                            WidthRequest="60"
-                            HeightRequest="60"
-                            Padding="0"
-                            BackgroundColor="#FFE400"
-                            CornerRadius="30"
-                            IsEnabled="False"/>
-                  </SwipeItemView>
-
-                  <!-- ELIMINAR - Circular Button -->
-                  <SwipeItemView Command="{Binding Source={RelativeSource AncestorType={x:Type local:ClientsPage}}, Path=BindingContext.DeleteCommand}"
-                                CommandParameter="{Binding .}"
-                                Invoked="OnSwipeItemViewDeleteInvoked">
-                    <Button Text="&#xF1F8;" 
-                            FontFamily="FA7Solid" 
-                            FontSize="24" 
                             TextColor="White"
                             WidthRequest="60"
                             HeightRequest="60"
                             Padding="0"
-                            BackgroundColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}"
+                            BackgroundColor="#5AC8FA"
                             CornerRadius="30"
                             IsEnabled="False"/>
                   </SwipeItemView>
@@ -258,14 +226,24 @@
               </Button.ImageSource>
             </Button>
 
-            <Button x:Name="DeleteFormButton" Text="Eliminar Cliente" Style="{StaticResource AppleTintedButton}"
-                    TextColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}" IsVisible="False"
-                    Clicked="OnDeleteFromFormTapped">
-              <Button.ImageSource>
-                <FontImageSource Glyph="&#xF1F8;" FontFamily="FA7Solid" Size="16"
-                                 Color="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}"/>
-              </Button.ImageSource>
-            </Button>
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8" IsVisible="False" x:Name="ActionButtonsGrid">
+              <Button Grid.Column="0" x:Name="PastasFormButton" Text="Pastas" Style="{StaticResource AppleTintedButton}"
+                      TextColor="#5AC8FA"
+                      Clicked="OnPastasFormTapped">
+                <Button.ImageSource>
+                  <FontImageSource Glyph="&#xF07C;" FontFamily="FA7Solid" Size="16" Color="#5AC8FA"/>
+                </Button.ImageSource>
+              </Button>
+
+              <Button Grid.Column="1" x:Name="DeleteFormButton" Text="Eliminar" Style="{StaticResource AppleTintedButton}"
+                      TextColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}"
+                      Clicked="OnDeleteFromFormTapped">
+                <Button.ImageSource>
+                  <FontImageSource Glyph="&#xF1F8;" FontFamily="FA7Solid" Size="16"
+                                   Color="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}"/>
+                </Button.ImageSource>
+              </Button>
+            </Grid>
           </VerticalStackLayout>
 
         </VerticalStackLayout>
