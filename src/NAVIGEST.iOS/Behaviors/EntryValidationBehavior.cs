@@ -98,9 +98,9 @@ public class EntryValidationBehavior : Behavior<Entry>
 
     private void OnFocused(object? sender, FocusEventArgs e)
     {
-    if (_entry == null) return;
-    EntryValidation.SetState(_entry, ValidationState.Focused);
-    SetVisual(FocusColor, GetPlaceholderColor());
+        if (_entry == null) return;
+        EntryValidation.SetState(_entry, ValidationState.Focused);
+        SetVisual(FocusColor, GetPlaceholderColor());
     }
 
     private void OnUnfocused(object? sender, FocusEventArgs e) => ApplyState();
@@ -184,8 +184,9 @@ public class EntryValidationBehavior : Behavior<Entry>
     {
         if (_entry == null) return;
 
-        // Texto s� fica vermelho em erro; caso contr�rio neutro
-        _entry.TextColor = GetNeutralTextColor();
+        var neutral = underlineColor == UnderlineNeutral;
+        var textColor = neutral ? GetNeutralTextColor() : underlineColor;
+        _entry.TextColor = textColor;
 
         _entry.PlaceholderColor = placeholder.WithAlpha(0.8f);
         UpdatePlatformUnderline(underlineColor);

@@ -117,6 +117,7 @@ namespace NAVIGEST.iOS.Pages
 
         private void ShowListView()
         {
+            UnfocusFormFields();
             HideDialCodePicker();
             ListViewContainer.IsVisible = true;
             FormViewContainer.IsVisible = false;
@@ -167,23 +168,7 @@ namespace NAVIGEST.iOS.Pages
         private void OnSearchBarTextChanged(object sender, TextChangedEventArgs e) { }
         private void OnCollectionViewScrolled(object sender, ItemsViewScrolledEventArgs e) => SearchBar.Unfocus();
 
-        private void OnFormBackgroundTapped(object sender, TappedEventArgs e)
-        {
-            try
-            {
-                NomeEntry?.Unfocus();
-                TelefoneEntry?.Unfocus();
-                EmailEntry?.Unfocus();
-                VendedorEntry?.Unfocus();
-                ValorCreditoEntry?.Unfocus();
-                ExternoSwitch?.Unfocus();
-                AnuladoSwitch?.Unfocus();
-            }
-            catch (Exception ex)
-            {
-                GlobalErro.TratarErro(ex, mostrarAlerta: false);
-            }
-        }
+        private void OnFormBackgroundTapped(object sender, TappedEventArgs e) => UnfocusFormFields();
 
         // ===========================
         // BUTTON HANDLERS (diretos dos buttons)
@@ -367,6 +352,7 @@ namespace NAVIGEST.iOS.Pages
         private void OnCancelEditTapped(object sender, EventArgs e)
         {
             HideDialCodePicker();
+            UnfocusFormFields();
             if (BindingContext is ClientsPageModel vm &&
                 vm.ClearCommand?.CanExecute(null) == true)
             {
@@ -387,8 +373,15 @@ namespace NAVIGEST.iOS.Pages
                     {
                         DialCodePicker.Unfocus();
 #if IOS
-                        if (DialCodePicker.Handler?.PlatformView is UIView view && view.IsFirstResponder)
-                            view.ResignFirstResponder();
+                        DismissIosFirstResponder();
+                        if (DialCodePicker.Handler?.PlatformView is UIView view)
+                        {
+                            view.EndEditing(true);
+                            if (view.IsFirstResponder)
+                                view.ResignFirstResponder();
+                            view.Superview?.EndEditing(true);
+                            view.Window?.EndEditing(true);
+                        }
 #endif
                     }
                     catch (Exception ex)
@@ -402,6 +395,58 @@ namespace NAVIGEST.iOS.Pages
                 GlobalErro.TratarErro(ex, mostrarAlerta: false);
             }
         }
+
+        private void UnfocusFormFields()
+        {
+            try
+            {
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    try
+                    {
+                        NomeEntry?.Unfocus();
+                        TelefoneEntry?.Unfocus();
+                        EmailEntry?.Unfocus();
+                        VendedorEntry?.Unfocus();
+                        ValorCreditoEntry?.Unfocus();
+                        ExternoSwitch?.Unfocus();
+                        AnuladoSwitch?.Unfocus();
+                        DialCodePicker?.Unfocus();
+                    }
+                    catch (Exception inner)
+                    {
+                        GlobalErro.TratarErro(inner, mostrarAlerta: false);
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                GlobalErro.TratarErro(ex, mostrarAlerta: false);
+            }
+        }
+
+#if IOS
+        private static void DismissIosFirstResponder()
+        {
+            try
+            {
+                var scenes = UIApplication.SharedApplication?.ConnectedScenes;
+                if (scenes == null) return;
+
+                foreach (var windowScene in scenes.OfType<UIWindowScene>())
+                {
+                    foreach (var window in windowScene.Windows ?? Array.Empty<UIWindow>())
+                    {
+                        window?.EndEditing(true);
+                    }
+                }
+            }
+            catch
+            {
+                // Ignorar – apenas best effort para fechar o picker.
+            }
+        }
+#endif
 
         // Guardar
         private async void OnSaveClientTapped(object sender, EventArgs e)
