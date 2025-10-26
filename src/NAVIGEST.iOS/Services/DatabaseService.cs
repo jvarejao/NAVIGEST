@@ -7,6 +7,7 @@ using MySqlConnector;
 using NAVIGEST.iOS.Models;
 using System.IO;
 using System.Linq;
+using System.Globalization;
 
 namespace NAVIGEST.iOS.Services
 {
@@ -499,16 +500,82 @@ namespace NAVIGEST.iOS.Services
                 {
                     if (rd.IsDBNull(rd.GetOrdinal(col))) return false;
                     object val = rd[col];
+
+                    static bool HasNonZero(ReadOnlySpan<byte> span)
+                    {
+                        foreach (var b in span)
+                        {
+                            if (b != 0) return true;
+                        }
+                        return false;
+                    }
+
+                    static bool FromConvertible(object value)
+                    {
+                        if (value is IConvertible convertible && convertible.GetTypeCode() != TypeCode.String)
+                        {
+                            try
+                            {
+                                return Math.Abs(convertible.ToDouble(CultureInfo.InvariantCulture)) > double.Epsilon;
+                            }
+                            catch
+                            {
+                                return false;
+                            }
+                        }
+                        return false;
+                    }
+
+                    static bool FromString(string str)
+                    {
+                        var trimmed = str.Trim();
+                        if (trimmed.Length == 0) return false;
+
+                        switch (trimmed.ToLowerInvariant())
+                        {
+                            case "1":
+                            case "s":
+                            case "sim":
+                            case "y":
+                            case "yes":
+                            case "t":
+                            case "true":
+                            case "on":
+                                return true;
+                            case "0":
+                            case "n":
+                            case "nao":
+                            case "não":
+                            case "f":
+                            case "false":
+                            case "off":
+                                return false;
+                        }
+
+                        if (double.TryParse(trimmed.Replace(',', '.'), NumberStyles.Any, CultureInfo.InvariantCulture, out var dbl))
+                            return Math.Abs(dbl) > double.Epsilon;
+
+                        return false;
+                    }
+
                     return val switch
                     {
                         bool b => b,
                         sbyte sb => sb != 0,
                         byte bt => bt != 0,
                         short sh => sh != 0,
+                        ushort us => us != 0,
                         int i => i != 0,
+                        uint ui => ui != 0,
                         long l => l != 0,
-                        string str => str == "1" || str.Equals("true", StringComparison.OrdinalIgnoreCase),
-                        _ => false
+                        ulong ul => ul != 0,
+                        float f => Math.Abs(f) > float.Epsilon,
+                        double d => Math.Abs(d) > double.Epsilon,
+                        decimal dec => dec != 0,
+                        ReadOnlyMemory<byte> rom => HasNonZero(rom.Span),
+                        byte[] bytes => HasNonZero(bytes),
+                        string str => FromString(str),
+                        _ => FromConvertible(val)
                     };
                 }
 

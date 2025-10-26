@@ -129,6 +129,8 @@ namespace NAVIGEST.iOS.Pages
             {
                 actionGrid.IsVisible = !isNew;
             }
+
+            System.Diagnostics.Debug.WriteLine($"[FORM] isNew={isNew} externo={ (BindingContext as ClientsPageModel)?.Editing?.EXTERNO } anulado={(BindingContext as ClientsPageModel)?.Editing?.ANULADO }");
         }
 
         // Tap na célula – abre edição
@@ -155,6 +157,24 @@ namespace NAVIGEST.iOS.Pages
         private void OnSearchBarSearchButtonPressed(object sender, EventArgs e) => SearchBar.Unfocus();
         private void OnSearchBarTextChanged(object sender, TextChangedEventArgs e) { }
         private void OnCollectionViewScrolled(object sender, ItemsViewScrolledEventArgs e) => SearchBar.Unfocus();
+
+        private void OnFormBackgroundTapped(object sender, TappedEventArgs e)
+        {
+            try
+            {
+                NomeEntry?.Unfocus();
+                TelefoneEntry?.Unfocus();
+                EmailEntry?.Unfocus();
+                VendedorEntry?.Unfocus();
+                ValorCreditoEntry?.Unfocus();
+                ExternoSwitch?.Unfocus();
+                AnuladoSwitch?.Unfocus();
+            }
+            catch (Exception ex)
+            {
+                GlobalErro.TratarErro(ex, mostrarAlerta: false);
+            }
+        }
 
         // ===========================
         // BUTTON HANDLERS (diretos dos buttons)

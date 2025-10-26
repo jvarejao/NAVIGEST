@@ -173,6 +173,9 @@
     <Grid x:Name="FormViewContainer" IsVisible="False"
           BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}">
       <ScrollView>
+        <ScrollView.GestureRecognizers>
+          <TapGestureRecognizer Tapped="OnFormBackgroundTapped" NumberOfTapsRequired="1"/>
+        </ScrollView.GestureRecognizers>
         <VerticalStackLayout Spacing="20" Padding="16">
 
           <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,8,0,0">
