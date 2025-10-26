@@ -105,36 +105,52 @@ public class EntryValidationBehavior : Behavior<Entry>
 
     private void OnUnfocused(object? sender, FocusEventArgs e) => ApplyState();
 
-    private void OnTextChanged(object? sender, TextChangedEventArgs e)
+    private void OnTextChanged(object? sender, TextChangedEventArgs e) => ApplyState();
+
+    private ValidationState DetermineState()
     {
-    if (_entry?.IsFocused == true) return; // evita flicker durante digita��o
-        ApplyState();
+        if (_entry == null) return ValidationState.Neutral;
+
+        var text = _entry.Text ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(text))
+            return ValidationState.Neutral;
+
+        var vk = ResolveKind();
+        if (vk == ValidationKind.None)
+            return ValidationState.Neutral;
+
+        return Validate(vk, text) ? ValidationState.Valid : ValidationState.Invalid;
     }
 
     private void ApplyState()
     {
         if (_entry == null) return;
-        var text = _entry.Text ?? string.Empty;
-        bool empty = string.IsNullOrWhiteSpace(text);
+        var state = DetermineState();
 
-        if (empty)
+        if (_entry.IsFocused && state == ValidationState.Neutral)
         {
-            EntryValidation.SetState(_entry, ValidationState.Neutral);
-            SetVisual(UnderlineNeutral, GetPlaceholderColor());
+            EntryValidation.SetState(_entry, ValidationState.Focused);
+            SetVisual(FocusColor, GetPlaceholderColor());
             return;
         }
 
-        var vk = ResolveKind();
-        if (vk == ValidationKind.None)
-        {
-            EntryValidation.SetState(_entry, ValidationState.Neutral);
-            SetVisual(UnderlineNeutral, GetPlaceholderColor());
-            return;
-        }
+        EntryValidation.SetState(_entry, state);
 
-        bool ok = Validate(vk, text);
-        EntryValidation.SetState(_entry, ok ? ValidationState.Valid : ValidationState.Invalid);
-        SetVisual(ok ? ValidColor : InvalidColor, GetPlaceholderColor());
+        switch (state)
+        {
+            case ValidationState.Valid:
+                SetVisual(ValidColor, GetPlaceholderColor());
+                break;
+            case ValidationState.Invalid:
+                SetVisual(InvalidColor, GetPlaceholderColor());
+                break;
+            case ValidationState.Focused:
+                SetVisual(FocusColor, GetPlaceholderColor());
+                break;
+            default:
+                SetVisual(UnderlineNeutral, GetPlaceholderColor());
+                break;
+        }
     }
 
     private ValidationKind ResolveKind()

@@ -249,7 +249,7 @@ namespace NAVIGEST.iOS
                 ToastTipo.Aviso   => (AvisoHue == WarningHue.Yellow ? Color.FromArgb("#FACC15") : Color.FromArgb("#F59E0B")),
                 _                 => Color.FromArgb("#2563EB"),
             };
-            float alpha = (theme == AppTheme.Dark) ? 0.45f : 0.55f;
+            float alpha = (theme == AppTheme.Dark) ? 0.8f : 0.9f;
             Color bg = border.WithAlpha(alpha);
             Color text = (theme == AppTheme.Dark) ? Colors.White : Colors.Black;
             string icon = tipo switch

@@ -1,11 +1,16 @@
 #nullable enable
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using NAVIGEST.iOS.Models;
 using NAVIGEST.iOS.PageModels;
 using NAVIGEST.iOS;
+#if IOS
+using Microsoft.Maui.Platform;
+using UIKit;
+#endif
 
 namespace NAVIGEST.iOS.Pages
 {
@@ -30,14 +35,17 @@ namespace NAVIGEST.iOS.Pages
 
         private static Page? GetRootPage()
         {
-            if (Application.Current?.MainPage is Shell shell)
-            {
-                if (shell.CurrentPage is Page current)
-                    return current;
-                return shell;
-            }
+            var app = Application.Current;
+            var window = app?.Windows?.FirstOrDefault();
+            var root = window?.Page;
 
-            return Application.Current?.MainPage;
+            return root switch
+            {
+                Shell shell when shell.CurrentPage is Page current => current,
+                Shell shell                                            => shell,
+                NavigationPage nav when nav.CurrentPage is not null   => nav.CurrentPage,
+                _                                                     => root
+            };
         }
 
         private static Task ShowAlertAsync(string title, string message, string cancel = "OK") =>
@@ -109,6 +117,7 @@ namespace NAVIGEST.iOS.Pages
 
         private void ShowListView()
         {
+            HideDialCodePicker();
             ListViewContainer.IsVisible = true;
             FormViewContainer.IsVisible = false;
             _isEditMode = false;
@@ -357,12 +366,41 @@ namespace NAVIGEST.iOS.Pages
         // Cancelar
         private void OnCancelEditTapped(object sender, EventArgs e)
         {
+            HideDialCodePicker();
             if (BindingContext is ClientsPageModel vm &&
                 vm.ClearCommand?.CanExecute(null) == true)
             {
                 vm.ClearCommand.Execute(null);
             }
             ShowListView();
+        }
+
+        private void HideDialCodePicker()
+        {
+            if (DialCodePicker is null) return;
+
+            try
+            {
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    try
+                    {
+                        DialCodePicker.Unfocus();
+#if IOS
+                        if (DialCodePicker.Handler?.PlatformView is UIView view && view.IsFirstResponder)
+                            view.ResignFirstResponder();
+#endif
+                    }
+                    catch (Exception ex)
+                    {
+                        GlobalErro.TratarErro(ex, mostrarAlerta: false);
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                GlobalErro.TratarErro(ex, mostrarAlerta: false);
+            }
         }
 
         // Guardar

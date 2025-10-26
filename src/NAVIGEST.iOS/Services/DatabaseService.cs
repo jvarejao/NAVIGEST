@@ -431,56 +431,25 @@ namespace NAVIGEST.iOS.Services
 
         private static async Task EnsureClienteIndicativoColumnAsync(MySqlConnection conn, CancellationToken ct)
         {
-            const string checkNew = @"
+            const string check = @"
                 SELECT COUNT(*)
                 FROM information_schema.COLUMNS
                 WHERE TABLE_SCHEMA = DATABASE()
                   AND TABLE_NAME = 'CLIENTES'
                   AND COLUMN_NAME = 'INDICATIVO';";
-            using var cmdCheckNew = new MySqlCommand(checkNew, conn);
-            var existsNew = Convert.ToInt32(await cmdCheckNew.ExecuteScalarAsync(ct)) > 0;
-            if (existsNew) return;
-
-            const string checkOld = @"
-                SELECT COUNT(*)
-                FROM information_schema.COLUMNS
-                WHERE TABLE_SCHEMA = DATABASE()
-                  AND TABLE_NAME = 'CLIENTES'
-                  AND COLUMN_NAME = 'IONDICATIVO';";
-            using var cmdCheckOld = new MySqlCommand(checkOld, conn);
-            var existsOld = Convert.ToInt32(await cmdCheckOld.ExecuteScalarAsync(ct)) > 0;
-
-            if (existsOld)
-            {
-                try
-                {
-                    const string rename = "ALTER TABLE CLIENTES CHANGE COLUMN IONDICATIVO INDICATIVO VARCHAR(12) NULL AFTER TELEFONE;";
-                    using var cmdRename = new MySqlCommand(rename, conn);
-                    await cmdRename.ExecuteNonQueryAsync(ct);
-                    return;
-                }
-                catch (Exception exRename)
-                {
-                    System.Diagnostics.Debug.WriteLine("[Coluna INDICATIVO] Falha ao renomear IONDICATIVO: " + exRename.Message);
-                }
-            }
+            using var cmdCheck = new MySqlCommand(check, conn);
+            var exists = Convert.ToInt32(await cmdCheck.ExecuteScalarAsync(ct)) > 0;
+            if (exists) return;
 
             try
             {
                 const string alter = "ALTER TABLE CLIENTES ADD COLUMN INDICATIVO VARCHAR(12) NULL AFTER TELEFONE;";
                 using var cmdAlter = new MySqlCommand(alter, conn);
                 await cmdAlter.ExecuteNonQueryAsync(ct);
-
-                if (existsOld)
-                {
-                    const string copy = "UPDATE CLIENTES SET INDICATIVO = IONDICATIVO WHERE INDICATIVO IS NULL AND IONDICATIVO IS NOT NULL;";
-                    using var cmdCopy = new MySqlCommand(copy, conn);
-                    await cmdCopy.ExecuteNonQueryAsync(ct);
-                }
             }
-            catch (Exception exAdd)
+            catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine("[Coluna INDICATIVO] Falhou ao criar/copiar: " + exAdd.Message);
+                System.Diagnostics.Debug.WriteLine("[Coluna INDICATIVO] Falhou ao criar: " + ex.Message);
             }
         }
 
@@ -927,7 +896,7 @@ namespace NAVIGEST.iOS.Services
 
 #if ANDROID || IOS
             return (false, null);
-#endif
+#else
             try
             {
                 var invalid = Path.GetInvalidFileNameChars();
@@ -961,6 +930,7 @@ namespace NAVIGEST.iOS.Services
                 try { await UpdatePastasFlagAsync(conn, c.CLICODIGO!, false, ct); } catch { }
                 return (false, basePath);
             }
+#endif
         }
 
         // ===== RESET PASSWORD (EXPOSTO – usado em LoginPage) =====
