@@ -40,6 +40,36 @@
               <SwipeView.RightItems>
                 <SwipeItems Mode="Reveal" SwipeBehaviorOnInvoked="Close">
 
+                  <!-- PASTAS -->
+                  <SwipeItemView>
+                    <Button Text="&#xF07C;"
+                            FontFamily="FA7Solid"
+                            FontSize="22"
+                            TextColor="White"
+                            WidthRequest="60"
+                            HeightRequest="60"
+                            Padding="0"
+                            BackgroundColor="#34C759"
+                            CornerRadius="30"
+                            CommandParameter="{Binding .}"
+                            Clicked="OnPastasButtonClicked"/>
+                  </SwipeItemView>
+
+                  <!-- ELIMINAR -->
+                  <SwipeItemView>
+                    <Button Text="&#xF1F8;"
+                            FontFamily="FA7Solid"
+                            FontSize="22"
+                            TextColor="White"
+                            WidthRequest="60"
+                            HeightRequest="60"
+                            Padding="0"
+                            BackgroundColor="#FF3B30"
+                            CornerRadius="30"
+                            CommandParameter="{Binding .}"
+                            Clicked="OnDeleteButtonClicked"/>
+                  </SwipeItemView>
+
                   <!-- EDITAR - Circular Button -->
                   <SwipeItemView Command="{Binding Source={RelativeSource AncestorType={x:Type local:ClientsPage}}, Path=BindingContext.SelectCommand}"
                                 CommandParameter="{Binding .}"
@@ -52,8 +82,7 @@
                             HeightRequest="60"
                             Padding="0"
                             BackgroundColor="#5AC8FA"
-                            CornerRadius="30"
-                            IsEnabled="False"/>
+                            CornerRadius="30"/>
                   </SwipeItemView>
 
                 </SwipeItems>
