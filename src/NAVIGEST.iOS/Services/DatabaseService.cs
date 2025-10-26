@@ -429,6 +429,61 @@ namespace NAVIGEST.iOS.Services
             }
         }
 
+        private static async Task EnsureClienteIndicativoColumnAsync(MySqlConnection conn, CancellationToken ct)
+        {
+            const string checkNew = @"
+                SELECT COUNT(*)
+                FROM information_schema.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE()
+                  AND TABLE_NAME = 'CLIENTES'
+                  AND COLUMN_NAME = 'INDICATIVO';";
+            using var cmdCheckNew = new MySqlCommand(checkNew, conn);
+            var existsNew = Convert.ToInt32(await cmdCheckNew.ExecuteScalarAsync(ct)) > 0;
+            if (existsNew) return;
+
+            const string checkOld = @"
+                SELECT COUNT(*)
+                FROM information_schema.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE()
+                  AND TABLE_NAME = 'CLIENTES'
+                  AND COLUMN_NAME = 'IONDICATIVO';";
+            using var cmdCheckOld = new MySqlCommand(checkOld, conn);
+            var existsOld = Convert.ToInt32(await cmdCheckOld.ExecuteScalarAsync(ct)) > 0;
+
+            if (existsOld)
+            {
+                try
+                {
+                    const string rename = "ALTER TABLE CLIENTES CHANGE COLUMN IONDICATIVO INDICATIVO VARCHAR(12) NULL AFTER TELEFONE;";
+                    using var cmdRename = new MySqlCommand(rename, conn);
+                    await cmdRename.ExecuteNonQueryAsync(ct);
+                    return;
+                }
+                catch (Exception exRename)
+                {
+                    System.Diagnostics.Debug.WriteLine("[Coluna INDICATIVO] Falha ao renomear IONDICATIVO: " + exRename.Message);
+                }
+            }
+
+            try
+            {
+                const string alter = "ALTER TABLE CLIENTES ADD COLUMN INDICATIVO VARCHAR(12) NULL AFTER TELEFONE;";
+                using var cmdAlter = new MySqlCommand(alter, conn);
+                await cmdAlter.ExecuteNonQueryAsync(ct);
+
+                if (existsOld)
+                {
+                    const string copy = "UPDATE CLIENTES SET INDICATIVO = IONDICATIVO WHERE INDICATIVO IS NULL AND IONDICATIVO IS NOT NULL;";
+                    using var cmdCopy = new MySqlCommand(copy, conn);
+                    await cmdCopy.ExecuteNonQueryAsync(ct);
+                }
+            }
+            catch (Exception exAdd)
+            {
+                System.Diagnostics.Debug.WriteLine("[Coluna INDICATIVO] Falhou ao criar/copiar: " + exAdd.Message);
+            }
+        }
+
         /// <summary>
         /// Gera próximo código único (thread-safe via AUTO_INCREMENT).
         /// </summary>
@@ -439,6 +494,7 @@ namespace NAVIGEST.iOS.Services
 
             await EnsureClienteSeqTableAsync(conn, ct);
             await EnsureClienteCodigoUniqueIndexAsync(conn, ct);
+            await EnsureClienteIndicativoColumnAsync(conn, ct);
 
             long id;
             // Inserção atómica gera novo Id
@@ -481,9 +537,11 @@ namespace NAVIGEST.iOS.Services
             using var conn = new MySqlConnection(GetConnectionString());
             await conn.OpenAsync(ct);
 
-            string sql = @"
-                SELECT CLINOME, CLICODIGO, TELEFONE, EMAIL, EXTERNO, ANULADO,
-                       VENDEDOR, VALORCREDITO, PastasSincronizadas
+            await EnsureClienteIndicativoColumnAsync(conn, ct);
+
+         string sql = @"
+          SELECT CLINOME, CLICODIGO, TELEFONE, INDICATIVO, EMAIL, EXTERNO, ANULADO,
+              VENDEDOR, VALORCREDITO, PastasSincronizadas
                 FROM CLIENTES";
             if (!string.IsNullOrWhiteSpace(filtro))
                 sql += " WHERE (LOWER(CLINOME) LIKE @f OR LOWER(CLICODIGO) LIKE @f OR LOWER(EMAIL) LIKE @f)";
@@ -584,6 +642,7 @@ namespace NAVIGEST.iOS.Services
                     CLINOME = rd.IsDBNull(rd.GetOrdinal("CLINOME")) ? null : rd.GetString("CLINOME"),
                     CLICODIGO = rd.IsDBNull(rd.GetOrdinal("CLICODIGO")) ? null : rd.GetString("CLICODIGO"),
                     TELEFONE = rd.IsDBNull(rd.GetOrdinal("TELEFONE")) ? null : rd.GetString("TELEFONE"),
+                    INDICATIVO = rd.IsDBNull(rd.GetOrdinal("INDICATIVO")) ? null : rd.GetString("INDICATIVO"),
                     EMAIL = rd.IsDBNull(rd.GetOrdinal("EMAIL")) ? null : rd.GetString("EMAIL"),
                     EXTERNO = GetBool("EXTERNO"),
                     ANULADO = GetBool("ANULADO"),
@@ -603,6 +662,8 @@ namespace NAVIGEST.iOS.Services
             using var conn = new MySqlConnection(GetConnectionString());
             await conn.OpenAsync(ct);
 
+            await EnsureClienteIndicativoColumnAsync(conn, ct);
+
             const string existsSql = "SELECT 1 FROM CLIENTES WHERE CLICODIGO = @cod LIMIT 1;";
             bool exists;
             using (var check = new MySqlCommand(existsSql, conn))
@@ -613,18 +674,19 @@ namespace NAVIGEST.iOS.Services
 
             string sql = exists
                 ? @"UPDATE CLIENTES SET
-                        CLINOME=@nome, TELEFONE=@tel, EMAIL=@mail,
+                        CLINOME=@nome, TELEFONE=@tel, INDICATIVO=@indic, EMAIL=@mail,
                         EXTERNO=@ext, ANULADO=@anu, VENDEDOR=@vend,
                         VALORCREDITO=@cred, PastasSincronizadas=@past
                     WHERE CLICODIGO=@cod LIMIT 1;"
                 : @"INSERT INTO CLIENTES
-                    (CLICODIGO, CLINOME, TELEFONE, EMAIL, EXTERNO, ANULADO, VENDEDOR, VALORCREDITO, PastasSincronizadas)
-                    VALUES (@cod,@nome,@tel,@mail,@ext,@anu,@vend,@cred,@past);";
+                    (CLICODIGO, CLINOME, TELEFONE, INDICATIVO, EMAIL, EXTERNO, ANULADO, VENDEDOR, VALORCREDITO, PastasSincronizadas)
+                    VALUES (@cod,@nome,@tel,@indic,@mail,@ext,@anu,@vend,@cred,@past);";
 
             using var cmd = new MySqlCommand(sql, conn);
             cmd.Parameters.Add("@cod", MySqlDbType.VarChar, 30).Value = c.CLICODIGO ?? "";
             cmd.Parameters.Add("@nome", MySqlDbType.VarChar, 150).Value = c.CLINOME ?? "";
             cmd.Parameters.Add("@tel", MySqlDbType.VarChar, 40).Value = c.TELEFONE ?? "";
+            cmd.Parameters.Add("@indic", MySqlDbType.VarChar, 12).Value = c.INDICATIVO ?? "";
             cmd.Parameters.Add("@mail", MySqlDbType.VarChar, 150).Value = c.EMAIL ?? "";
             cmd.Parameters.Add("@ext", MySqlDbType.Bit).Value = c.EXTERNO ? 1 : 0;
             cmd.Parameters.Add("@anu", MySqlDbType.Bit).Value = c.ANULADO ? 1 : 0;
@@ -642,6 +704,8 @@ namespace NAVIGEST.iOS.Services
 
             using var conn = new MySqlConnection(GetConnectionString());
             await conn.OpenAsync(ct);
+
+            await EnsureClienteIndicativoColumnAsync(conn, ct);
 
             const string depSql = "SELECT COUNT(*) FROM orderinfo WHERE CustomerNO=@cod;";
             using (var dep = new MySqlCommand(depSql, conn))

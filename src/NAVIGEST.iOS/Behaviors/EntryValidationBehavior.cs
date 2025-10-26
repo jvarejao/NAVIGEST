@@ -23,12 +23,32 @@ public enum ValidationKind
     Password
 }
 
+public enum ValidationState
+{
+    Neutral,
+    Focused,
+    Valid,
+    Invalid
+}
+
+public static class EntryValidation
+{
+    public static readonly BindableProperty StateProperty = BindableProperty.CreateAttached(
+        "State",
+        typeof(ValidationState),
+        typeof(EntryValidation),
+        ValidationState.Neutral);
+
+    public static void SetState(BindableObject target, ValidationState value) => target.SetValue(StateProperty, value);
+    public static ValidationState GetState(BindableObject target) => (ValidationState)target.GetValue(StateProperty);
+}
+
 /// <summary>
-/// Behavior para Entries: altera cor do underline conforme foco e validação.
+/// Behavior para Entries: altera cor do underline conforme foco e validaï¿½ï¿½o.
 /// Android: usa BackgroundTintList.
 /// Windows: simula underline via BorderBrush + BorderThickness (0,0,0,2) no TextBox nativo.
-/// Outras plataformas: ajusta apenas TextColor (não há underline nativo).
-/// Estados: Foco -> Azul (#2563EB), Válido -> Verde (#22C55E), Inválido -> Vermelho (#EF4444), Neutro -> Placeholder cinza.
+/// Outras plataformas: ajusta apenas TextColor (nï¿½o hï¿½ underline nativo).
+/// Estados: Foco -> Azul (#2563EB), Vï¿½lido -> Verde (#22C55E), Invï¿½lido -> Vermelho (#EF4444), Neutro -> Placeholder cinza.
 /// </summary>
 public class EntryValidationBehavior : Behavior<Entry>
 {
@@ -78,15 +98,16 @@ public class EntryValidationBehavior : Behavior<Entry>
 
     private void OnFocused(object? sender, FocusEventArgs e)
     {
-        if (_entry == null) return;
-        SetVisual(FocusColor, GetPlaceholderColor());
+    if (_entry == null) return;
+    EntryValidation.SetState(_entry, ValidationState.Focused);
+    SetVisual(FocusColor, GetPlaceholderColor());
     }
 
     private void OnUnfocused(object? sender, FocusEventArgs e) => ApplyState();
 
     private void OnTextChanged(object? sender, TextChangedEventArgs e)
     {
-        if (_entry?.IsFocused == true) return; // evita flicker durante digitação
+    if (_entry?.IsFocused == true) return; // evita flicker durante digitaï¿½ï¿½o
         ApplyState();
     }
 
@@ -98,6 +119,7 @@ public class EntryValidationBehavior : Behavior<Entry>
 
         if (empty)
         {
+            EntryValidation.SetState(_entry, ValidationState.Neutral);
             SetVisual(UnderlineNeutral, GetPlaceholderColor());
             return;
         }
@@ -105,11 +127,13 @@ public class EntryValidationBehavior : Behavior<Entry>
         var vk = ResolveKind();
         if (vk == ValidationKind.None)
         {
+            EntryValidation.SetState(_entry, ValidationState.Neutral);
             SetVisual(UnderlineNeutral, GetPlaceholderColor());
             return;
         }
 
         bool ok = Validate(vk, text);
+        EntryValidation.SetState(_entry, ok ? ValidationState.Valid : ValidationState.Invalid);
         SetVisual(ok ? ValidColor : InvalidColor, GetPlaceholderColor());
     }
 
@@ -144,11 +168,8 @@ public class EntryValidationBehavior : Behavior<Entry>
     {
         if (_entry == null) return;
 
-        // Texto só fica vermelho em erro; caso contrário neutro
-        if (underlineColor == InvalidColor)
-            _entry.TextColor = underlineColor;
-        else
-            _entry.TextColor = GetNeutralTextColor();
+        // Texto sï¿½ fica vermelho em erro; caso contrï¿½rio neutro
+        _entry.TextColor = GetNeutralTextColor();
 
         _entry.PlaceholderColor = placeholder.WithAlpha(0.8f);
         UpdatePlatformUnderline(underlineColor);

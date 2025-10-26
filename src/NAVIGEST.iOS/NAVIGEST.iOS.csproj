@@ -136,4 +136,8 @@
   </ItemGroup>
 
 
+  <ItemGroup>
+    <ProjectReference Include="../NAVIGEST.Shared/NAVIGEST.Shared.csproj" />
+  </ItemGroup>
+
 </Project>

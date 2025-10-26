@@ -5,8 +5,16 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:models="clr-namespace:NAVIGEST.iOS.Models"
              xmlns:local="clr-namespace:NAVIGEST.iOS.Pages"
+             xmlns:behaviors="clr-namespace:NAVIGEST.iOS.Behaviors"
+             xmlns:converters="clr-namespace:NAVIGEST.iOS.Converters"
              BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}"
              Title="Clientes">
+
+  <ContentPage.Resources>
+    <ResourceDictionary>
+      <converters:ValidationStateToColorConverter x:Key="ValidationStateToColorConverter" />
+    </ResourceDictionary>
+  </ContentPage.Resources>
 
   <Grid>
     <!-- VIEW 1: Lista -->
@@ -116,8 +124,8 @@
                        VerticalOptions="End"/>
 
                 <!-- Telefone -->
-                <Label Grid.Column="1" Grid.Row="1"
-                       Text="{Binding TELEFONE}"
+      <Label Grid.Column="1" Grid.Row="1"
+        Text="{Binding TelefoneDisplay}"
                        FontSize="14"
                        TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
                        LineBreakMode="TailTruncation"
@@ -207,15 +215,45 @@
 
               <Grid Padding="16,12" ColumnDefinitions="100,*">
                 <Label Text="Telefone" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
-                <Entry Grid.Column="1" x:Name="TelefoneEntry" Text="{Binding Editing.TELEFONE}" Keyboard="Telephone"
-                       BackgroundColor="Transparent" HorizontalTextAlignment="End" Placeholder="916 000 000"/>
+                <Grid Grid.Column="1" RowDefinitions="Auto,2" ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                  <Picker x:Name="DialCodePicker"
+                          ItemsSource="{Binding DialCodes}"
+                          SelectedItem="{Binding SelectedDialCodeItem}"
+                          ItemDisplayBinding="{Binding PickerDisplay}"
+                          HorizontalOptions="Start"
+                          VerticalOptions="Center"
+                          WidthRequest="110"
+                          BackgroundColor="Transparent"
+                          TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
+                          Title="Indicativo"/>
+                  <Entry Grid.Column="1" x:Name="TelefoneEntry" Text="{Binding PhoneBody}" Keyboard="Telephone"
+                         BackgroundColor="Transparent" HorizontalTextAlignment="Start" Placeholder="916 000 000">
+                    <Entry.Behaviors>
+                      <behaviors:EntryValidationBehavior ValidationKind="Phone" />
+                    </Entry.Behaviors>
+                  </Entry>
+                  <BoxView Grid.Row="1" Grid.ColumnSpan="2" HeightRequest="2"
+                           Color="{Binding Source={x:Reference TelefoneEntry}, Path=(behaviors:EntryValidation.State), Converter={StaticResource ValidationStateToColorConverter}}"
+                           HorizontalOptions="Fill"
+                           VerticalOptions="End" />
+                </Grid>
               </Grid>
               <BoxView HeightRequest="0.5" Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}" Margin="16,0,0,0"/>
 
               <Grid Padding="16,12" ColumnDefinitions="100,*">
                 <Label Text="Email" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
-                <Entry Grid.Column="1" x:Name="EmailEntry" Text="{Binding Editing.EMAIL}" Keyboard="Email"
-                       BackgroundColor="Transparent" HorizontalTextAlignment="End" Placeholder="email@exemplo.com"/>
+                <Grid Grid.Column="1" RowDefinitions="Auto,2">
+                  <Entry x:Name="EmailEntry" Text="{Binding Editing.EMAIL}" Keyboard="Email"
+                         BackgroundColor="Transparent" HorizontalTextAlignment="End" Placeholder="email@exemplo.com">
+                    <Entry.Behaviors>
+                      <behaviors:EntryValidationBehavior ValidationKind="Email" />
+                    </Entry.Behaviors>
+                  </Entry>
+                  <BoxView Grid.Row="1" HeightRequest="2"
+                           Color="{Binding Source={x:Reference EmailEntry}, Path=(behaviors:EntryValidation.State), Converter={StaticResource ValidationStateToColorConverter}}"
+                           HorizontalOptions="Fill"
+                           VerticalOptions="End" />
+                </Grid>
               </Grid>
               <BoxView HeightRequest="0.5" Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}" Margin="16,0,0,0"/>
 

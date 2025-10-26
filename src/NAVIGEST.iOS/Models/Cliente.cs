@@ -5,12 +5,25 @@
         public string? CLINOME { get; set; }
         public string? CLICODIGO { get; set; }
         public string? TELEFONE { get; set; }
+        public string? INDICATIVO { get; set; }
         public string? EMAIL { get; set; }
         public bool EXTERNO { get; set; }
         public bool ANULADO { get; set; }
         public string? VENDEDOR { get; set; }
         public string? VALORCREDITO { get; set; }
         public bool PastasSincronizadas { get; set; }
+
+        public string TelefoneDisplay
+        {
+            get
+            {
+                var prefix = (INDICATIVO ?? string.Empty).Trim();
+                var telefone = (TELEFONE ?? string.Empty).Trim();
+                if (string.IsNullOrWhiteSpace(prefix)) return telefone;
+                if (string.IsNullOrWhiteSpace(telefone)) return prefix;
+                return $"{prefix} {telefone}";
+            }
+        }
 
         // Propriedades computadas para UI estilo iOS Contacts
         public string Initials
@@ -75,6 +88,7 @@
             CLINOME = CLINOME,
             CLICODIGO = CLICODIGO,
             TELEFONE = TELEFONE,
+            INDICATIVO = INDICATIVO,
             EMAIL = EMAIL,
             EXTERNO = EXTERNO,
             ANULADO = ANULADO,

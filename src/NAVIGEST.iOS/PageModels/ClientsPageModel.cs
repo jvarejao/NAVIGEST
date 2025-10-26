@@ -1,4 +1,5 @@
 ﻿#nullable enable
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -12,6 +13,7 @@ using System;
 using System.Linq;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using NAVIGEST.Shared.Helpers;
 
 namespace NAVIGEST.iOS.PageModels;
 
@@ -20,11 +22,81 @@ public class ClientsPageModel : INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
 
     private static readonly CultureInfo PtCulture = CultureInfo.GetCultureInfo("pt-PT");
+    private const int TelefoneBodyMaxLength = 20;
+
+    public sealed class DialCodeItem
+    {
+        private DialCodeItem(string shortCode, string country, string prefix, string flagEmoji)
+        {
+            ShortCode = (shortCode ?? string.Empty).ToUpperInvariant();
+            Country = country ?? string.Empty;
+            FlagEmoji = flagEmoji ?? string.Empty;
+            NormalizedPrefix = NormalizePrefix(prefix);
+        }
+
+        public string ShortCode { get; }
+        public string Country { get; }
+        public string FlagEmoji { get; }
+        public string NormalizedPrefix { get; }
+
+        public string PickerDisplay
+        {
+            get
+            {
+                var prefix = NormalizedPrefix;
+                var code = ShortCode;
+
+                string baseDisplay = string.IsNullOrWhiteSpace(code)
+                    ? (string.IsNullOrWhiteSpace(prefix) ? Country : prefix)
+                    : string.IsNullOrWhiteSpace(prefix) ? code : $"{code} {prefix}";
+
+                if (string.IsNullOrWhiteSpace(baseDisplay))
+                    baseDisplay = Country;
+
+                return string.IsNullOrEmpty(FlagEmoji) ? baseDisplay : $"{FlagEmoji} {baseDisplay}";
+            }
+        }
+
+        public static DialCodeItem Create(string iso2, string country, string prefix) =>
+            new(iso2, country, prefix, BuildFlagEmoji(iso2));
+
+        public static DialCodeItem CreateNoPrefix() => new(string.Empty, "Sem indicativo", string.Empty, "🌐");
+
+        public static DialCodeItem CreateCustom(string prefix) =>
+            new(string.Empty, $"Indicativo {NormalizePrefix(prefix)}", prefix, string.Empty);
+
+        public static string NormalizePrefix(string? prefix)
+        {
+            if (string.IsNullOrWhiteSpace(prefix))
+                return string.Empty;
+
+            var trimmed = prefix.Trim();
+            if (trimmed.StartsWith("00"))
+                trimmed = trimmed[2..];
+
+            trimmed = trimmed.TrimStart('+');
+            var digits = new string(trimmed.Where(char.IsDigit).ToArray());
+            return digits.Length == 0 ? string.Empty : "+" + digits;
+        }
+
+        private static string BuildFlagEmoji(string iso2)
+        {
+            if (string.IsNullOrWhiteSpace(iso2) || iso2.Length != 2)
+                return string.Empty;
+
+            var upper = iso2.ToUpperInvariant();
+            const int baseCodePoint = 0x1F1E6;
+            return string.Concat(
+                char.ConvertFromUtf32(baseCodePoint + (upper[0] - 'A')),
+                char.ConvertFromUtf32(baseCodePoint + (upper[1] - 'A')));
+        }
+    }
 
     private readonly List<Cliente> _all = new();
     public ObservableCollection<Cliente> Clientes { get; } = new();
     public ObservableCollection<Cliente> Filtered => Clientes;
     public ObservableCollection<string> Vendedores { get; } = new();
+    public ObservableCollection<DialCodeItem> DialCodes { get; } = new();
 
     private Cliente? _selectedCliente;
     public Cliente? SelectedCliente
@@ -40,6 +112,7 @@ public class ClientsPageModel : INotifyPropertyChanged
             EditModel = _selectedCliente?.Clone() ?? NewClienteTemplate();
             if (EditModel != null)
                 EditModel.VALORCREDITO = FormatValorCredito(EditModel.VALORCREDITO);
+            SyncPhoneFieldsFromModel();
             OnPropertyChanged(nameof(Editing));
         }
     }
@@ -123,6 +196,36 @@ public class ClientsPageModel : INotifyPropertyChanged
     private CancellationTokenSource? _searchCts;
     private CancellationTokenSource? _loadCts;
 
+    private bool _suppressPhoneSync;
+    private DialCodeItem? _selectedDialCodeItem;
+    public DialCodeItem? SelectedDialCodeItem
+    {
+        get => _selectedDialCodeItem;
+        set
+        {
+            if (Equals(_selectedDialCodeItem, value)) return;
+            _selectedDialCodeItem = value;
+            OnPropertyChanged();
+            UpdateEditingTelefone();
+        }
+    }
+
+    private string _phoneBody = string.Empty;
+    public string PhoneBody
+    {
+        get => _phoneBody;
+        set
+        {
+            var prefix = SelectedDialCodeItem?.NormalizedPrefix ?? string.Empty;
+            var sanitized = StripKnownPrefix(value ?? string.Empty, prefix);
+            var normalized = NormalizePhoneBody(sanitized);
+            if (_phoneBody == normalized) return;
+            _phoneBody = normalized;
+            OnPropertyChanged();
+            UpdateEditingTelefone();
+        }
+    }
+
     private bool _isBusy;
     public bool IsBusy
     {
@@ -157,6 +260,9 @@ public class ClientsPageModel : INotifyPropertyChanged
             }
         });
         SelectCommand = new Command<Cliente>(c => { if (c != null) SelectedCliente = c; });
+
+        InitializeDialCodes();
+        SetPhoneFieldsWithoutSync(GetDefaultDialCode(), string.Empty);
     }
 
     public async Task LoadAsync(bool force = false)
@@ -211,6 +317,7 @@ public class ClientsPageModel : INotifyPropertyChanged
         SelectedCliente = null;
         EditModel = NewClienteTemplate();
         _codigoPreview = false;
+        SetPhoneFieldsWithoutSync(GetDefaultDialCode(), string.Empty);
 
         try
         {
@@ -233,6 +340,7 @@ public class ClientsPageModel : INotifyPropertyChanged
         SelectedCliente = null;
         EditModel = NewClienteTemplate();
         _codigoPreview = false;
+        SetPhoneFieldsWithoutSync(GetDefaultDialCode(), string.Empty);
         OnPropertyChanged(nameof(Editing));
     }
 
@@ -278,6 +386,8 @@ public class ClientsPageModel : INotifyPropertyChanged
             await AppShell.DisplayToastAsync(msg, ToastTipo.Erro, 2500);
             return;
         }
+
+        UpdateEditingTelefone(force: true);
 
         bool existedBefore = _all.Any(c => c.CLICODIGO == EditModel.CLICODIGO);
 
@@ -509,6 +619,7 @@ public class ClientsPageModel : INotifyPropertyChanged
         dst.CLICODIGO = src.CLICODIGO;
         dst.CLINOME = src.CLINOME;
         dst.TELEFONE = src.TELEFONE;
+        dst.INDICATIVO = src.INDICATIVO;
         dst.EMAIL = src.EMAIL;
         dst.EXTERNO = src.EXTERNO;
         dst.ANULADO = src.ANULADO;
@@ -524,9 +635,13 @@ public class ClientsPageModel : INotifyPropertyChanged
         if (string.IsNullOrWhiteSpace(c.EMAIL)) { msg = "Email obrigatório."; return false; }
         if (string.IsNullOrWhiteSpace(c.VENDEDOR)) { msg = "Vendedor obrigatório."; return false; }
 
-        var digits = new string((c.TELEFONE ?? string.Empty).Where(char.IsDigit).ToArray());
-        if (digits.Length == 9)
-            c.TELEFONE = $"{digits.Substring(0, 3)} {digits.Substring(3, 3)} {digits.Substring(6, 3)}";
+        c.TELEFONE = NormalizePhoneBody(c.TELEFONE ?? string.Empty);
+        if (string.IsNullOrWhiteSpace(c.TELEFONE)) { msg = "Telefone obrigatório."; return false; }
+        if (c.TELEFONE.Length > TelefoneBodyMaxLength)
+        {
+            msg = $"Telefone demasiado longo (máx {TelefoneBodyMaxLength} caracteres sem indicativo).";
+            return false;
+        }
 
         c.VALORCREDITO = FormatValorCredito(c.VALORCREDITO);
         msg = string.Empty;
@@ -538,6 +653,7 @@ public class ClientsPageModel : INotifyPropertyChanged
         CLICODIGO = string.Empty,
         CLINOME = string.Empty,
         TELEFONE = string.Empty,
+        INDICATIVO = string.Empty,
         EMAIL = string.Empty,
         EXTERNO = false,
         ANULADO = false,
@@ -556,10 +672,206 @@ public class ClientsPageModel : INotifyPropertyChanged
         }
         c.CLICODIGO = Clean(c.CLICODIGO, compress: false);
         c.CLINOME = Clean(c.CLINOME);
-        c.TELEFONE = Clean(c.TELEFONE, compress: false);
+    var telefoneClean = Clean(c.TELEFONE, compress: false);
+    c.TELEFONE = NormalizePhoneBody(telefoneClean ?? string.Empty);
+    c.INDICATIVO = DialCodeItem.NormalizePrefix(c.INDICATIVO);
         c.EMAIL = Clean(c.EMAIL, compress: false);
         c.VENDEDOR = Clean(c.VENDEDOR);
         c.VALORCREDITO = Clean(c.VALORCREDITO, compress: false);
+    }
+
+    private void InitializeDialCodes()
+    {
+        if (DialCodes.Count > 0) return;
+
+        DialCodes.Add(DialCodeItem.CreateNoPrefix());
+        foreach (var dial in CountryDialCodeData.All
+                     .OrderBy(d => d.Iso2, StringComparer.OrdinalIgnoreCase)
+                     .ThenBy(d => d.Name, StringComparer.CurrentCultureIgnoreCase))
+        {
+            DialCodes.Add(DialCodeItem.Create(dial.Iso2, dial.Name, dial.Prefix));
+        }
+    }
+
+    private DialCodeItem GetDefaultDialCode()
+        => DialCodes.FirstOrDefault(dc => dc.ShortCode == "PT") ?? DialCodes.First();
+
+    private void SyncPhoneFieldsFromModel()
+    {
+        if (EditModel is null)
+        {
+            SetPhoneFieldsWithoutSync(GetDefaultDialCode(), string.Empty);
+            return;
+        }
+
+        var telefoneRaw = EditModel.TELEFONE?.Trim() ?? string.Empty;
+    var prefixFromModel = DialCodeItem.NormalizePrefix(EditModel.INDICATIVO);
+
+        string prefix = prefixFromModel;
+        string body = telefoneRaw;
+
+        if (!string.IsNullOrEmpty(prefix))
+        {
+            if (!string.IsNullOrEmpty(body))
+            {
+                if (body.StartsWith(prefix, StringComparison.Ordinal))
+                {
+                    body = body[prefix.Length..].TrimStart();
+                }
+                else if (prefix.StartsWith("+", StringComparison.Ordinal))
+                {
+                    var alt = "00" + prefix[1..];
+                    if (body.StartsWith(alt, StringComparison.Ordinal))
+                        body = body[alt.Length..].TrimStart();
+                }
+            }
+        }
+        else
+        {
+            var split = SplitPhoneNumber(telefoneRaw);
+            prefix = split.Prefix;
+            body = split.Body;
+        }
+
+        var dialItem = EnsureDialCodeForPrefix(prefix);
+        SetPhoneFieldsWithoutSync(dialItem, body);
+
+        var normalized = dialItem.NormalizedPrefix;
+        if (!string.Equals(EditModel.INDICATIVO ?? string.Empty, normalized, StringComparison.Ordinal))
+            EditModel.INDICATIVO = normalized;
+    }
+
+    private DialCodeItem EnsureDialCodeForPrefix(string prefix)
+    {
+        var normalized = DialCodeItem.NormalizePrefix(prefix);
+        if (string.IsNullOrEmpty(normalized))
+            return DialCodes.First();
+
+        var existing = DialCodes.FirstOrDefault(dc => dc.NormalizedPrefix == normalized);
+        if (existing != null)
+            return existing;
+
+        var custom = DialCodeItem.CreateCustom(normalized);
+        DialCodes.Add(custom);
+        return custom;
+    }
+
+    private void SetPhoneFieldsWithoutSync(DialCodeItem dial, string body)
+    {
+        _suppressPhoneSync = true;
+        _selectedDialCodeItem = dial;
+        _phoneBody = NormalizePhoneBody(StripKnownPrefix(body ?? string.Empty, dial.NormalizedPrefix));
+        OnPropertyChanged(nameof(SelectedDialCodeItem));
+        OnPropertyChanged(nameof(PhoneBody));
+        _suppressPhoneSync = false;
+    }
+
+    private void UpdateEditingTelefone(bool force = false)
+    {
+        if (_suppressPhoneSync || EditModel is null) return;
+
+        var rawPrefix = SelectedDialCodeItem?.NormalizedPrefix ?? string.Empty;
+        var normalizedPrefix = DialCodeItem.NormalizePrefix(rawPrefix);
+        var bodyInput = StripKnownPrefix(PhoneBody?.Trim() ?? string.Empty, normalizedPrefix);
+        var normalizedBody = NormalizePhoneBody(bodyInput);
+
+        var currentTelefone = EditModel.TELEFONE ?? string.Empty;
+    var currentIndicativo = EditModel.INDICATIVO ?? string.Empty;
+
+        bool changed = force;
+
+        if (!string.Equals(_phoneBody, normalizedBody, StringComparison.Ordinal))
+        {
+            _suppressPhoneSync = true;
+            _phoneBody = normalizedBody;
+            OnPropertyChanged(nameof(PhoneBody));
+            _suppressPhoneSync = false;
+        }
+
+        if (force || !string.Equals(currentTelefone, normalizedBody, StringComparison.Ordinal))
+        {
+            EditModel.TELEFONE = normalizedBody;
+            changed = true;
+        }
+
+        if (!string.Equals(currentIndicativo, normalizedPrefix, StringComparison.Ordinal))
+        {
+            EditModel.INDICATIVO = normalizedPrefix;
+            changed = true;
+        }
+
+        if (changed)
+            OnPropertyChanged(nameof(Editing));
+    }
+
+    private static string StripKnownPrefix(string input, string normalizedPrefix)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return string.Empty;
+
+        var trimmed = System.Text.RegularExpressions.Regex.Replace(input.Trim(), "\\s{2,}", " ");
+
+        if (!string.IsNullOrEmpty(normalizedPrefix))
+        {
+            if (trimmed.StartsWith(normalizedPrefix, StringComparison.Ordinal))
+                return trimmed[normalizedPrefix.Length..].TrimStart();
+
+            if (normalizedPrefix.StartsWith("+", StringComparison.Ordinal))
+            {
+                var alt = "00" + normalizedPrefix[1..];
+                if (trimmed.StartsWith(alt, StringComparison.Ordinal))
+                    return trimmed[alt.Length..].TrimStart();
+            }
+        }
+
+        return trimmed;
+    }
+
+    private static string NormalizePhoneBody(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return string.Empty;
+
+        var trimmed = Regex.Replace(input.Trim(), "\\s{2,}", " ");
+        var digits = new string(trimmed.Where(char.IsDigit).ToArray());
+
+        if (digits.Length == 9)
+            trimmed = $"{digits.Substring(0, 3)} {digits.Substring(3, 3)} {digits.Substring(6, 3)}";
+
+        if (trimmed.Length > TelefoneBodyMaxLength)
+            trimmed = trimmed.Substring(0, TelefoneBodyMaxLength).TrimEnd();
+
+        return trimmed;
+    }
+
+    private static (string Prefix, string Body) SplitPhoneNumber(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+            return (string.Empty, string.Empty);
+
+        var trimmed = Regex.Replace(raw.Trim(), "\\s{2,}", " ");
+
+        if (trimmed.StartsWith("00"))
+        {
+            var withoutLeading = trimmed[2..];
+            var match00 = Regex.Match(withoutLeading, @"^(?<code>\d{1,4})");
+            if (match00.Success)
+            {
+                var code = "+" + match00.Groups["code"].Value;
+                var rest = withoutLeading[match00.Length..].TrimStart();
+                return (DialCodeItem.NormalizePrefix(code), rest);
+            }
+        }
+
+        var match = Regex.Match(trimmed, @"^\+(?<code>\d{1,4})");
+        if (match.Success)
+        {
+            var code = "+" + match.Groups["code"].Value;
+            var rest = trimmed[match.Length..].TrimStart();
+            return (DialCodeItem.NormalizePrefix(code), rest);
+        }
+
+        return (string.Empty, trimmed);
     }
 
     private static string FormatValorCredito(string? raw)
