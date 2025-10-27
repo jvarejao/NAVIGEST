@@ -1,11 +1,14 @@
 #nullable enable
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
+using CommunityToolkit.Maui.Views;
 using NAVIGEST.iOS.Models;
 using NAVIGEST.iOS.PageModels;
+using NAVIGEST.iOS.Popups;
 using NAVIGEST.iOS;
 #if IOS
 using Microsoft.Maui.Platform;
@@ -26,12 +29,18 @@ namespace NAVIGEST.iOS.Pages
             BindingContext = vm;
             InitializeComponent();
 
+            SearchBar.HandlerChanged += OnSearchBarHandlerChanged;
+            SearchBar.Loaded += OnSearchBarLoaded;
+
             #if IOS
             ConfigureKeyboardToolbar();
             #endif
 
             Dispatcher.Dispatch(async () => await EnsureLoadedAsync());
         }
+
+        private void OnSearchBarHandlerChanged(object? sender, EventArgs e) => ConfigureSearchBarClearButton();
+        private void OnSearchBarLoaded(object? sender, EventArgs e) => ConfigureSearchBarClearButton();
 
         private static Page? GetRootPage()
         {
@@ -348,6 +357,27 @@ namespace NAVIGEST.iOS.Pages
             }
         }
 
+        private async void OnAddVendedorTapped(object sender, EventArgs e)
+        {
+            try
+            {
+                if (BindingContext is not ClientsPageModel vm)
+                    return;
+
+                var popup = new AddVendedorPopup();
+                var result = await this.ShowPopupAsync(popup);
+                if (result is Vendedor vendedor)
+                {
+                    vm.UpsertVendedor(vendedor);
+                    await GlobalToast.ShowAsync("Vendedor criado.", ToastTipo.Sucesso, 2000);
+                }
+            }
+            catch (Exception ex)
+            {
+                GlobalErro.TratarErro(ex, mostrarAlerta: true);
+            }
+        }
+
         // Cancelar
         private void OnCancelEditTapped(object sender, EventArgs e)
         {
@@ -407,7 +437,7 @@ namespace NAVIGEST.iOS.Pages
                         NomeEntry?.Unfocus();
                         TelefoneEntry?.Unfocus();
                         EmailEntry?.Unfocus();
-                        VendedorEntry?.Unfocus();
+                        VendedorPicker?.Unfocus();
                         ValorCreditoEntry?.Unfocus();
                         ExternoSwitch?.Unfocus();
                         AnuladoSwitch?.Unfocus();
@@ -446,6 +476,67 @@ namespace NAVIGEST.iOS.Pages
                 // Ignorar – apenas best effort para fechar o picker.
             }
         }
+#endif
+
+        private void OnValorCreditoFocused(object sender, FocusEventArgs e)
+        {
+            if (sender is not Entry entry) return;
+            var text = entry.Text ?? string.Empty;
+            entry.CursorPosition = 0;
+            entry.SelectionLength = text.Length;
+        }
+
+        private void OnValorCreditoUnfocused(object sender, FocusEventArgs e)
+        {
+            if (sender is not Entry entry) return;
+
+            var text = entry.Text;
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                entry.Text = string.Empty;
+                return;
+            }
+
+            var culture = CultureInfo.GetCultureInfo("pt-PT");
+
+            var sanitized = text.Replace("€", string.Empty, StringComparison.OrdinalIgnoreCase).Trim();
+
+            sanitized = sanitized.Replace(((char)0x00A0).ToString(), string.Empty, StringComparison.Ordinal);
+            sanitized = sanitized.Replace(" ", string.Empty, StringComparison.Ordinal);
+            sanitized = sanitized.Trim();
+
+            if (sanitized.Contains('.', StringComparison.Ordinal) &&
+                !sanitized.Contains(',', StringComparison.Ordinal))
+            {
+                sanitized = sanitized.Replace('.', ',');
+            }
+
+            if (!decimal.TryParse(sanitized, NumberStyles.Any, culture, out var value) &&
+                !decimal.TryParse(sanitized, NumberStyles.Any, CultureInfo.InvariantCulture, out value))
+            {
+                return;
+            }
+
+            entry.Text = value.ToString("C", culture);
+        }
+
+#if IOS
+        private void ConfigureSearchBarClearButton()
+        {
+            try
+            {
+                if (SearchBar.Handler?.PlatformView is UISearchBar nativeSearch)
+                {
+                    nativeSearch.SearchTextField.ClearButtonMode = UITextFieldViewMode.Never;
+                }
+            }
+            catch (Exception ex)
+            {
+                GlobalErro.TratarErro(ex, mostrarAlerta: false);
+            }
+        }
+#else
+        private void ConfigureSearchBarClearButton() { }
 #endif
 
         // Guardar

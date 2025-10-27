@@ -87,7 +87,7 @@ namespace NAVIGEST.iOS
                     Text = iconCode,
                     FontFamily = "FA7Solid",
                     FontSize = 24, // ligeiro aumento para destaque centrado
-                    TextColor = borderColor,
+                    TextColor = textColor,
                     HorizontalOptions = LayoutOptions.Center,
                     VerticalOptions = LayoutOptions.Center,
                     Margin = new Thickness(0, 0, 0, 4)
@@ -125,7 +125,7 @@ namespace NAVIGEST.iOS
                     HorizontalOptions = LayoutOptions.Center,
                     InputTransparent = true,
                     AutomationId = "__toast_item",
-                    Shadow = new Shadow { Radius = 12, Opacity = (theme == AppTheme.Dark ? 0.5f : 0.25f) }
+                    Shadow = new Shadow { Radius = 12, Opacity = (theme == AppTheme.Dark ? 0.5f : 0.3f) }
                 };
 
                 double availableWidth = rootGrid.Width > 0 ? rootGrid.Width :
@@ -244,14 +244,14 @@ namespace NAVIGEST.iOS
         {
             Color border = tipo switch
             {
-                ToastTipo.Erro    => Color.FromArgb("#EF4444"),
-                ToastTipo.Sucesso => Color.FromArgb("#22C55E"),
-                ToastTipo.Aviso   => (AvisoHue == WarningHue.Yellow ? Color.FromArgb("#FACC15") : Color.FromArgb("#F59E0B")),
-                _                 => Color.FromArgb("#2563EB"),
+                ToastTipo.Erro    => Color.FromArgb("#FF3B6B"),
+                ToastTipo.Sucesso => Color.FromArgb("#39FF14"),
+                ToastTipo.Aviso   => (AvisoHue == WarningHue.Yellow ? Color.FromArgb("#FFE500") : Color.FromArgb("#FF8C2B")),
+                _                 => Color.FromArgb("#00E5FF"),
             };
-            float alpha = (theme == AppTheme.Dark) ? 0.8f : 0.9f;
-            Color bg = border.WithAlpha(alpha);
-            Color text = (theme == AppTheme.Dark) ? Colors.White : Colors.Black;
+
+            Color bg = Color.FromRgba(border.Red, border.Green, border.Blue, theme == AppTheme.Dark ? 0.94f : 0.9f);
+            Color text = Colors.White;
             string icon = tipo switch
             {
                 ToastTipo.Erro    => "\uf057",

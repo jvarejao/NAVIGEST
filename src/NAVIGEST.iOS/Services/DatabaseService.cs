@@ -692,23 +692,65 @@ namespace NAVIGEST.iOS.Services
             return rows > 0;
         }
 
-        public static async Task<List<string>> GetVendedoresAsync(CancellationToken ct = default)
+        public static async Task<List<Vendedor>> GetVendedoresAsync(CancellationToken ct = default)
         {
-            var list = new List<string>();
+            var list = new List<Vendedor>();
             using var conn = new MySqlConnection(GetConnectionString());
             await conn.OpenAsync(ct);
 
             const string sql = @"
-                SELECT RTRIM(Name) AS Name
-                FROM REGISTRATION
-                WHERE RTRIM(TipoUtilizador)='VENDEDOR'
-                ORDER BY Name;";
+                SELECT IDVEND, RTRIM(NOMEVEND) AS Nome
+                FROM VENDEDORES
+                ORDER BY Nome;";
 
             using var cmd = new MySqlCommand(sql, conn);
             using var rd = await cmd.ExecuteReaderAsync(ct);
+            var idOrdinal = rd.GetOrdinal("IDVEND");
+            var nomeOrdinal = rd.GetOrdinal("Nome");
+
             while (await rd.ReadAsync(ct))
-                list.Add(rd.GetString("Name"));
+            {
+                var nome = rd.IsDBNull(nomeOrdinal) ? string.Empty : rd.GetString(nomeOrdinal);
+                list.Add(new Vendedor
+                {
+                    Id = rd.IsDBNull(idOrdinal) ? 0 : rd.GetInt32(idOrdinal),
+                    Nome = nome
+                });
+            }
             return list;
+        }
+
+        public static async Task<int> PeekNextVendedorIdAsync(CancellationToken ct = default)
+        {
+            using var conn = new MySqlConnection(GetConnectionString());
+            await conn.OpenAsync(ct);
+
+            const string sql = @"
+                SELECT COALESCE(AUTO_INCREMENT, 1) AS NextId
+                FROM information_schema.TABLES
+                WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'VENDEDORES';";
+
+            using var cmd = new MySqlCommand(sql, conn);
+            var result = await cmd.ExecuteScalarAsync(ct);
+            return Convert.ToInt32(result ?? 1);
+        }
+
+        public static async Task<Vendedor> InsertVendedorAsync(string nome, CancellationToken ct = default)
+        {
+            if (string.IsNullOrWhiteSpace(nome))
+                throw new ArgumentException("Nome de vendedor inválido.", nameof(nome));
+
+            using var conn = new MySqlConnection(GetConnectionString());
+            await conn.OpenAsync(ct);
+
+            const string sql = "INSERT INTO VENDEDORES (NOMEVEND) VALUES (@nome);";
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.Add("@nome", MySqlDbType.VarChar, 120).Value = nome.Trim();
+            await cmd.ExecuteNonQueryAsync(ct);
+
+            var insertedId = cmd.LastInsertedId;
+            var id = insertedId > int.MaxValue ? int.MaxValue : (int)insertedId;
+            return new Vendedor { Id = id, Nome = nome.Trim() };
         }
 
         // ================= PRODUTOS =================

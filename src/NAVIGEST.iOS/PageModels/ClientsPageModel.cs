@@ -95,7 +95,7 @@ public class ClientsPageModel : INotifyPropertyChanged
     private readonly List<Cliente> _all = new();
     public ObservableCollection<Cliente> Clientes { get; } = new();
     public ObservableCollection<Cliente> Filtered => Clientes;
-    public ObservableCollection<string> Vendedores { get; } = new();
+    public ObservableCollection<Vendedor> Vendedores { get; } = new();
     public ObservableCollection<DialCodeItem> DialCodes { get; } = new();
 
     private Cliente? _selectedCliente;
@@ -113,6 +113,7 @@ public class ClientsPageModel : INotifyPropertyChanged
             if (EditModel != null)
                 EditModel.VALORCREDITO = FormatValorCredito(EditModel.VALORCREDITO);
             SyncPhoneFieldsFromModel();
+            SyncSelectedVendedorFromModel();
             OnPropertyChanged(nameof(Editing));
         }
     }
@@ -166,18 +167,59 @@ public class ClientsPageModel : INotifyPropertyChanged
         }
     }
 
-    private string? _selectedVendedor;
-    public string? SelectedVendedor
+    private Vendedor? _selectedVendedor;
+    public Vendedor? SelectedVendedor
     {
         get => _selectedVendedor;
-        set
+        set => SetSelectedVendedor(value, updateModel: true);
+    }
+
+    private void SetSelectedVendedor(Vendedor? value, bool updateModel)
+    {
+        if (ReferenceEquals(_selectedVendedor, value)) return;
+        _selectedVendedor = value;
+        if (updateModel && EditModel != null)
+            EditModel.VENDEDOR = value?.Nome ?? string.Empty;
+        OnPropertyChanged(nameof(SelectedVendedor));
+        if (updateModel)
+            OnPropertyChanged(nameof(Editing));
+    }
+
+    private void SyncSelectedVendedorFromModel()
+    {
+        var vendedorValue = EditModel?.VENDEDOR;
+        if (string.IsNullOrWhiteSpace(vendedorValue))
         {
-            if (_selectedVendedor == value) return;
-            _selectedVendedor = value;
-            if (EditModel != null)
-                EditModel.VENDEDOR = _selectedVendedor;
-            OnPropertyChanged();
+            SetSelectedVendedor(null, updateModel: false);
+            return;
         }
+
+        var match = Vendedores.FirstOrDefault(v =>
+            string.Equals(v.Nome?.Trim(), vendedorValue.Trim(), StringComparison.OrdinalIgnoreCase));
+        SetSelectedVendedor(match, updateModel: false);
+    }
+
+    public void UpsertVendedor(Vendedor? vendedor)
+    {
+        if (vendedor is null)
+            return;
+
+        var existing = Vendedores.FirstOrDefault(v => v.Id == vendedor.Id);
+        if (existing != null)
+        {
+            SetSelectedVendedor(existing, updateModel: true);
+            return;
+        }
+
+        var insertIndex = 0;
+        while (insertIndex < Vendedores.Count &&
+               string.Compare(Vendedores[insertIndex].Nome, vendedor.Nome, StringComparison.OrdinalIgnoreCase) < 0)
+        {
+            insertIndex++;
+        }
+
+        Vendedores.Insert(insertIndex, vendedor);
+        SetSelectedVendedor(vendedor, updateModel: true);
     }
 
     // Comandos
@@ -207,6 +249,7 @@ public class ClientsPageModel : INotifyPropertyChanged
             _selectedDialCodeItem = value;
             OnPropertyChanged();
             UpdateEditingTelefone();
+            ApplyExternalFlagForDialCode(value);
         }
     }
 
@@ -233,6 +276,18 @@ public class ClientsPageModel : INotifyPropertyChanged
         set { if (_isBusy != value) { _isBusy = value; OnPropertyChanged(); } }
     }
 
+    private bool _isRefreshing;
+    public bool IsRefreshing
+    {
+        get => _isRefreshing;
+        set
+        {
+            if (_isRefreshing == value) return;
+            _isRefreshing = value;
+            OnPropertyChanged();
+        }
+    }
+
     // Flag para saber se o código mostrado é apenas pré-visualização
     private bool _codigoPreview;
 
@@ -250,7 +305,7 @@ public class ClientsPageModel : INotifyPropertyChanged
             }
         });
         SearchCommand = new Command(ApplyFilterImmediate);
-        RefreshCommand = new Command(async () => await LoadAsync(force: true));
+    RefreshCommand = new Command(async () => await OnRefreshAsync());
         PastasCommand = new Command<Cliente>(async (c) => 
         { 
             if (c != null) 
@@ -292,7 +347,8 @@ public class ClientsPageModel : INotifyPropertyChanged
                 var vend = await DatabaseService.GetVendedoresAsync(ct);
                 Vendedores.Clear();
                 foreach (var v in vend)
-                    Vendedores.Add(v?.Trim() ?? "");
+                    Vendedores.Add(v);
+                SyncSelectedVendedorFromModel();
             }
 
             Repopulate(_all);
@@ -309,6 +365,26 @@ public class ClientsPageModel : INotifyPropertyChanged
         finally
         {
             IsBusy = false;
+            IsRefreshing = false;
+        }
+    }
+
+    private async Task OnRefreshAsync()
+    {
+        if (IsBusy)
+        {
+            IsRefreshing = false;
+            return;
+        }
+
+        IsRefreshing = true;
+        try
+        {
+            await LoadAsync(force: true);
+        }
+        finally
+        {
+            IsRefreshing = false;
         }
     }
 
@@ -316,6 +392,7 @@ public class ClientsPageModel : INotifyPropertyChanged
     {
         SelectedCliente = null;
         EditModel = NewClienteTemplate();
+        SelectedVendedor = null;
         _codigoPreview = false;
         SetPhoneFieldsWithoutSync(GetDefaultDialCode(), string.Empty);
 
@@ -339,6 +416,7 @@ public class ClientsPageModel : INotifyPropertyChanged
     {
         SelectedCliente = null;
         EditModel = NewClienteTemplate();
+        SelectedVendedor = null;
         _codigoPreview = false;
         SetPhoneFieldsWithoutSync(GetDefaultDialCode(), string.Empty);
         OnPropertyChanged(nameof(Editing));
@@ -764,6 +842,7 @@ public class ClientsPageModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(SelectedDialCodeItem));
         OnPropertyChanged(nameof(PhoneBody));
         _suppressPhoneSync = false;
+        ApplyExternalFlagForDialCode(dial);
     }
 
     private void UpdateEditingTelefone(bool force = false)
@@ -802,6 +881,36 @@ public class ClientsPageModel : INotifyPropertyChanged
 
         if (changed)
             OnPropertyChanged(nameof(Editing));
+
+        ApplyExternalFlagForDialCode(_selectedDialCodeItem);
+    }
+
+    private void ApplyExternalFlagForDialCode(DialCodeItem? dialCode)
+    {
+        if (EditModel is null) return;
+
+        var defaultDial = GetDefaultDialCode();
+        var selected = dialCode ?? _selectedDialCodeItem;
+
+        bool isDefault = true;
+
+        if (selected != null)
+        {
+            bool samePrefix = !string.IsNullOrEmpty(selected.NormalizedPrefix) &&
+                              string.Equals(selected.NormalizedPrefix, defaultDial.NormalizedPrefix, StringComparison.Ordinal);
+            bool sameCode = !string.IsNullOrEmpty(selected.ShortCode) &&
+                            string.Equals(selected.ShortCode, defaultDial.ShortCode, StringComparison.OrdinalIgnoreCase);
+            bool hasPrefix = !string.IsNullOrEmpty(selected.NormalizedPrefix);
+
+            isDefault = samePrefix || sameCode || !hasPrefix;
+        }
+
+        bool shouldBeExternal = !isDefault;
+        if (EditModel.EXTERNO != shouldBeExternal)
+        {
+            EditModel.EXTERNO = shouldBeExternal;
+            OnPropertyChanged(nameof(Editing));
+        }
     }
 
     private static string StripKnownPrefix(string input, string normalizedPrefix)

@@ -33,13 +33,15 @@
                    CancelButtonColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"/>
       </Grid>
 
-      <!-- Lista -->
-      <CollectionView Grid.Row="1"
-                      x:Name="ClientsCollectionView"
-                      ItemsSource="{Binding Filtered}"
-                      SelectionMode="None"
-                      BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}"
-                      Scrolled="OnCollectionViewScrolled">
+  <!-- Lista -->
+  <RefreshView Grid.Row="1"
+       Command="{Binding RefreshCommand}"
+       IsRefreshing="{Binding IsRefreshing}">
+    <CollectionView x:Name="ClientsCollectionView"
+        ItemsSource="{Binding Filtered}"
+        SelectionMode="None"
+        BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}"
+        Scrolled="OnCollectionViewScrolled">
 
         <CollectionView.ItemTemplate>
           <DataTemplate x:DataType="models:Cliente">
@@ -148,7 +150,8 @@
             </SwipeView>
           </DataTemplate>
         </CollectionView.ItemTemplate>
-      </CollectionView>
+        </CollectionView>
+      </RefreshView>
 
       <!-- FAB -->
       <Border Grid.Row="1"
@@ -259,15 +262,38 @@
 
               <Grid Padding="16,12" ColumnDefinitions="100,*">
                 <Label Text="Vendedor" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
-                <Entry Grid.Column="1" x:Name="VendedorEntry" Text="{Binding Editing.VENDEDOR}"
-                       BackgroundColor="Transparent" HorizontalTextAlignment="End" Placeholder="Nome vendedor"/>
+                <Grid Grid.Column="1" ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                  <Button x:Name="AddVendedorButton"
+                          WidthRequest="40"
+                          HeightRequest="40"
+                          Padding="0"
+                          BackgroundColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"
+                          CornerRadius="20"
+                          Clicked="OnAddVendedorTapped">
+                    <Button.Shadow>
+                      <Shadow Brush="Black" Opacity="0.25" Radius="6" Offset="0,2"/>
+                    </Button.Shadow>
+                    <Button.ImageSource>
+                      <FontImageSource Glyph="&#xF067;" FontFamily="FA7Solid" Size="18" Color="White"/>
+                    </Button.ImageSource>
+                  </Button>
+                  <Picker Grid.Column="1"
+                          x:Name="VendedorPicker"
+                          ItemsSource="{Binding Vendedores}"
+                          SelectedItem="{Binding SelectedVendedor}"
+                          ItemDisplayBinding="{Binding Nome}"
+                          Title="Selecionar vendedor"
+                          BackgroundColor="Transparent"
+                          TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+                </Grid>
               </Grid>
               <BoxView HeightRequest="0.5" Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}" Margin="16,0,0,0"/>
 
               <Grid Padding="16,12" ColumnDefinitions="100,*">
                 <Label Text="Valor Crédito" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
-                <Entry Grid.Column="1" x:Name="ValorCreditoEntry" Text="{Binding Editing.VALORCREDITO}" Keyboard="Numeric"
-                       BackgroundColor="Transparent" HorizontalTextAlignment="End" Placeholder="0,00"/>
+      <Entry Grid.Column="1" x:Name="ValorCreditoEntry" Text="{Binding Editing.VALORCREDITO}" Keyboard="Numeric"
+        BackgroundColor="Transparent" HorizontalTextAlignment="End" Placeholder="0,00"
+        Focused="OnValorCreditoFocused" Unfocused="OnValorCreditoUnfocused"/>
               </Grid>
             </VerticalStackLayout>
           </Border>
