@@ -1,11 +1,13 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using CommunityToolkit.Maui.Views;
+using Microsoft.Maui.Graphics;
 using NAVIGEST.iOS.Models;
 using NAVIGEST.iOS.PageModels;
 using NAVIGEST.iOS.Popups;
@@ -21,6 +23,7 @@ namespace NAVIGEST.iOS.Pages
     {
         private bool _loadedOnce;
         private bool _isEditMode;
+    private SwipeView? _activeSwipe;
 
         public ClientsPage() : this(new ClientsPageModel()) { }
 
@@ -159,6 +162,8 @@ namespace NAVIGEST.iOS.Pages
             {
                 if (sender is Grid grid && grid.BindingContext is Cliente cliente)
                 {
+                    CloseParentSwipe(grid);
+
                     if (BindingContext is ClientsPageModel vm &&
                         vm.SelectCommand?.CanExecute(cliente) == true)
                     {
@@ -180,69 +185,43 @@ namespace NAVIGEST.iOS.Pages
         private void OnFormBackgroundTapped(object sender, TappedEventArgs e) => UnfocusFormFields();
 
         // ===========================
-        // BUTTON HANDLERS (diretos dos buttons)
+        // SWIPE HANDLERS
         // ===========================
-        private async void OnPastasButtonClicked(object sender, EventArgs e)
+        private void OnSwipeEnded(object sender, SwipeEndedEventArgs e)
         {
             try
             {
-                if (sender is Button btn && btn.CommandParameter is Cliente cliente)
-                {
-                    _ = HandlePastasAsync(cliente);
-                }
-            }
-            catch (Exception ex)
-            {
-                await ShowAlertAsync("Erro", $"Erro ao abrir pastas: {ex.Message}");
-            }
-        }
+                if (sender is not SwipeView swipe)
+                    return;
 
-        private async void OnEditButtonClicked(object sender, EventArgs e)
-        {
-            try
-            {
-                if (sender is Button btn && btn.CommandParameter is Cliente cliente)
+                if (e.IsOpen)
                 {
-                    HandleEditar(cliente);
-                }
-            }
-            catch (Exception ex)
-            {
-                await ShowAlertAsync("Erro", $"Erro ao editar: {ex.Message}");
-            }
-        }
-
-        private async void OnDeleteButtonClicked(object sender, EventArgs e)
-        {
-            try
-            {
-                if (sender is Button btn && btn.CommandParameter is Cliente cliente)
-                {
-                    _ = HandleEliminarAsync(cliente);
-                }
-            }
-            catch (Exception ex)
-            {
-                await ShowAlertAsync("Erro", $"Erro ao eliminar: {ex.Message}");
-            }
-        }
-
-        // SwipeItemView Invoked event handler
-        private async void OnSwipeItemViewEditInvoked(object sender, EventArgs e)
-        {
-            await ShowAlertAsync("SWIPE", "Edit invoked!");
-
-            try
-            {
-                if (sender is SwipeItemView siv && siv.CommandParameter is Cliente cliente)
-                {
-                    if (BindingContext is ClientsPageModel vm)
+                    if (_activeSwipe is not null && _activeSwipe != swipe)
                     {
-                        // Garantir que SelectedCliente foi setado
-                        vm.SelectedCliente = cliente;
-                        ShowFormView(isNew: false);
+                        _activeSwipe.Close();
                     }
+                    _activeSwipe = swipe;
                 }
+                else if (_activeSwipe == swipe)
+                {
+                    _activeSwipe = null;
+                }
+            }
+            catch (Exception ex)
+            {
+                GlobalErro.TratarErro(ex, mostrarAlerta: true);
+            }
+        }
+
+        private async void OnEditSwipeInvoked(object sender, EventArgs e)
+        {
+            try
+            {
+                if (sender is not SwipeItemView swipeItem || swipeItem.BindingContext is not Cliente cliente)
+                    return;
+
+                CloseParentSwipe(swipeItem);
+                HandleEditar(cliente);
             }
             catch (Exception ex)
             {
@@ -250,6 +229,80 @@ namespace NAVIGEST.iOS.Pages
             }
         }
 
+        private async void OnDeleteSwipeInvoked(object sender, EventArgs e)
+        {
+            try
+            {
+                if (sender is not SwipeItemView swipeItem || swipeItem.BindingContext is not Cliente cliente)
+                    return;
+
+                CloseParentSwipe(swipeItem);
+                await HandleEliminarAsync(cliente);
+            }
+            catch (Exception ex)
+            {
+                await ShowAlertAsync("Erro", $"Erro ao eliminar: {ex.Message}");
+            }
+        }
+
+        private async void OnPastasSwipeInvoked(object sender, EventArgs e)
+        {
+            try
+            {
+                if (sender is not SwipeItemView swipeItem || swipeItem.BindingContext is not Cliente cliente)
+                    return;
+
+                CloseParentSwipe(swipeItem);
+                await HandlePastasAsync(cliente);
+            }
+            catch (Exception ex)
+            {
+                await ShowAlertAsync("Erro", $"Erro ao abrir pastas: {ex.Message}");
+            }
+        }
+
+        private async void OnServicesSwipeInvoked(object sender, EventArgs e)
+        {
+            try
+            {
+                if (sender is not SwipeItemView swipeItem || swipeItem.BindingContext is not Cliente cliente)
+                    return;
+
+                CloseParentSwipe(swipeItem);
+                await HandleServicesAsync(cliente);
+            }
+            catch (Exception ex)
+            {
+                GlobalErro.TratarErro(ex, mostrarAlerta: true);
+            }
+        }
+
+        private static void CloseParentSwipe(Element element)
+        {
+            FindParentSwipeView(element)?.Close();
+        }
+
+        private static SwipeView? FindParentSwipeView(Element? element)
+        {
+            while (element is not null)
+            {
+                if (element is SwipeView swipeView)
+                    return swipeView;
+
+                element = element.Parent;
+            }
+
+            return null;
+        }
+
+        private static async Task HandleServicesAsync(Cliente cliente)
+        {
+            var nome = string.IsNullOrWhiteSpace(cliente.CLINOME)
+                ? (cliente.CLICODIGO ?? "Cliente")
+                : cliente.CLINOME;
+
+            await AppShell.DisplayToastAsync($"{nome}: {cliente.ServicosCountDisplay}.");
+        }
         private void HandleEditar(Cliente cliente)
         {
             try

@@ -12,6 +12,13 @@
         public string? VENDEDOR { get; set; }
         public string? VALORCREDITO { get; set; }
         public bool PastasSincronizadas { get; set; }
+    public int ServicosCount { get; set; }
+        public string ServicosCountDisplay => ServicosCount switch
+        {
+            0 => "Sem serviços",
+            1 => "1 serviço",
+            _ => $"{ServicosCount} serviços"
+        };
 
         public string TelefoneDisplay
         {
@@ -94,7 +101,8 @@
             ANULADO = ANULADO,
             VENDEDOR = VENDEDOR,
             VALORCREDITO = VALORCREDITO,
-            PastasSincronizadas = PastasSincronizadas
+            PastasSincronizadas = PastasSincronizadas,
+            ServicosCount = ServicosCount
         };
     }
 }

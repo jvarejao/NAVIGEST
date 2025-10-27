@@ -704,6 +704,7 @@ public class ClientsPageModel : INotifyPropertyChanged
         dst.VENDEDOR = src.VENDEDOR;
         dst.VALORCREDITO = src.VALORCREDITO;
         dst.PastasSincronizadas = src.PastasSincronizadas;
+        dst.ServicosCount = src.ServicosCount;
     }
 
     private bool Validate(Cliente c, out string msg)
@@ -737,7 +738,8 @@ public class ClientsPageModel : INotifyPropertyChanged
         ANULADO = false,
         VENDEDOR = string.Empty,
         VALORCREDITO = "0,00€",
-        PastasSincronizadas = false
+        PastasSincronizadas = false,
+        ServicosCount = 0
     };
 
     private static void Normalize(Cliente c)

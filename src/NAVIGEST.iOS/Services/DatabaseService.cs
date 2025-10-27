@@ -508,10 +508,10 @@ namespace NAVIGEST.iOS.Services
 
             await EnsureClienteIndicativoColumnAsync(conn, ct);
 
-         string sql = @"
-          SELECT CLINOME, CLICODIGO, TELEFONE, INDICATIVO, EMAIL, EXTERNO, ANULADO,
-              VENDEDOR, VALORCREDITO, PastasSincronizadas
-                FROM CLIENTES";
+                        string sql = @"
+                                SELECT CLINOME, CLICODIGO, TELEFONE, INDICATIVO, EMAIL, EXTERNO, ANULADO,
+                                             VENDEDOR, VALORCREDITO, PastasSincronizadas
+                                    FROM CLIENTES";
             if (!string.IsNullOrWhiteSpace(filtro))
                 sql += " WHERE (LOWER(CLINOME) LIKE @f OR LOWER(CLICODIGO) LIKE @f OR LOWER(EMAIL) LIKE @f)";
             sql += " ORDER BY CLINOME;";
@@ -520,106 +520,172 @@ namespace NAVIGEST.iOS.Services
             if (!string.IsNullOrWhiteSpace(filtro))
                 cmd.Parameters.Add("@f", MySqlDbType.VarChar, 120).Value = "%" + filtro.ToLowerInvariant() + "%";
 
-            using var rd = await cmd.ExecuteReaderAsync(ct);
-            while (await rd.ReadAsync(ct))
+            using (var rd = await cmd.ExecuteReaderAsync(ct))
             {
-                bool GetBool(string col)
+                while (await rd.ReadAsync(ct))
                 {
-                    if (rd.IsDBNull(rd.GetOrdinal(col))) return false;
-                    object val = rd[col];
-
-                    static bool HasNonZero(ReadOnlySpan<byte> span)
+                    bool GetBool(string col)
                     {
-                        foreach (var b in span)
-                        {
-                            if (b != 0) return true;
-                        }
-                        return false;
-                    }
+                        if (rd.IsDBNull(rd.GetOrdinal(col))) return false;
+                        object val = rd[col];
 
-                    static bool FromConvertible(object value)
-                    {
-                        if (value is IConvertible convertible && convertible.GetTypeCode() != TypeCode.String)
+                        static bool HasNonZero(ReadOnlySpan<byte> span)
                         {
-                            try
+                            foreach (var b in span)
                             {
-                                return Math.Abs(convertible.ToDouble(CultureInfo.InvariantCulture)) > double.Epsilon;
+                                if (b != 0) return true;
                             }
-                            catch
-                            {
-                                return false;
-                            }
+                            return false;
                         }
-                        return false;
-                    }
 
-                    static bool FromString(string str)
-                    {
-                        var trimmed = str.Trim();
-                        if (trimmed.Length == 0) return false;
-
-                        switch (trimmed.ToLowerInvariant())
+                        static bool FromConvertible(object value)
                         {
-                            case "1":
-                            case "s":
-                            case "sim":
-                            case "y":
-                            case "yes":
-                            case "t":
-                            case "true":
-                            case "on":
-                                return true;
-                            case "0":
-                            case "n":
-                            case "nao":
-                            case "não":
-                            case "f":
-                            case "false":
-                            case "off":
-                                return false;
+                            if (value is IConvertible convertible && convertible.GetTypeCode() != TypeCode.String)
+                            {
+                                try
+                                {
+                                    return Math.Abs(convertible.ToDouble(CultureInfo.InvariantCulture)) > double.Epsilon;
+                                }
+                                catch
+                                {
+                                    return false;
+                                }
+                            }
+                            return false;
                         }
 
-                        if (double.TryParse(trimmed.Replace(',', '.'), NumberStyles.Any, CultureInfo.InvariantCulture, out var dbl))
-                            return Math.Abs(dbl) > double.Epsilon;
+                        static bool FromString(string str)
+                        {
+                            var trimmed = str.Trim();
+                            if (trimmed.Length == 0) return false;
 
-                        return false;
+                            switch (trimmed.ToLowerInvariant())
+                            {
+                                case "1":
+                                case "s":
+                                case "sim":
+                                case "y":
+                                case "yes":
+                                case "t":
+                                case "true":
+                                case "on":
+                                    return true;
+                                case "0":
+                                case "n":
+                                case "nao":
+                                case "não":
+                                case "f":
+                                case "false":
+                                case "off":
+                                    return false;
+                            }
+
+                            if (double.TryParse(trimmed.Replace(',', '.'), NumberStyles.Any, CultureInfo.InvariantCulture, out var dbl))
+                                return Math.Abs(dbl) > double.Epsilon;
+
+                            return false;
+                        }
+
+                        return val switch
+                        {
+                            bool b => b,
+                            sbyte sb => sb != 0,
+                            byte bt => bt != 0,
+                            short sh => sh != 0,
+                            ushort us => us != 0,
+                            int i => i != 0,
+                            uint ui => ui != 0,
+                            long l => l != 0,
+                            ulong ul => ul != 0,
+                            float f => Math.Abs(f) > float.Epsilon,
+                            double d => Math.Abs(d) > double.Epsilon,
+                            decimal dec => dec != 0,
+                            ReadOnlyMemory<byte> rom => HasNonZero(rom.Span),
+                            byte[] bytes => HasNonZero(bytes),
+                            string str => FromString(str),
+                            _ => FromConvertible(val)
+                        };
                     }
 
-                    return val switch
+                    list.Add(new Cliente
                     {
-                        bool b => b,
-                        sbyte sb => sb != 0,
-                        byte bt => bt != 0,
-                        short sh => sh != 0,
-                        ushort us => us != 0,
-                        int i => i != 0,
-                        uint ui => ui != 0,
-                        long l => l != 0,
-                        ulong ul => ul != 0,
-                        float f => Math.Abs(f) > float.Epsilon,
-                        double d => Math.Abs(d) > double.Epsilon,
-                        decimal dec => dec != 0,
-                        ReadOnlyMemory<byte> rom => HasNonZero(rom.Span),
-                        byte[] bytes => HasNonZero(bytes),
-                        string str => FromString(str),
-                        _ => FromConvertible(val)
-                    };
+                        CLINOME = rd.IsDBNull(rd.GetOrdinal("CLINOME")) ? null : rd.GetString("CLINOME"),
+                        CLICODIGO = rd.IsDBNull(rd.GetOrdinal("CLICODIGO")) ? null : rd.GetString("CLICODIGO"),
+                        TELEFONE = rd.IsDBNull(rd.GetOrdinal("TELEFONE")) ? null : rd.GetString("TELEFONE"),
+                        INDICATIVO = rd.IsDBNull(rd.GetOrdinal("INDICATIVO")) ? null : rd.GetString("INDICATIVO"),
+                        EMAIL = rd.IsDBNull(rd.GetOrdinal("EMAIL")) ? null : rd.GetString("EMAIL"),
+                        EXTERNO = GetBool("EXTERNO"),
+                        ANULADO = GetBool("ANULADO"),
+                        VENDEDOR = rd.IsDBNull(rd.GetOrdinal("VENDEDOR")) ? null : rd.GetString("VENDEDOR"),
+                        VALORCREDITO = rd.IsDBNull(rd.GetOrdinal("VALORCREDITO")) ? null : rd.GetString("VALORCREDITO"),
+                        PastasSincronizadas = GetBool("PastasSincronizadas"),
+                        ServicosCount = 0
+                    });
+                }
+            }
+
+            var countsByCodigo = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            const string countByCodigoSql = @"
+                SELECT CustomerNo, COUNT(*) AS TotalServicos
+                  FROM OrderInfo
+                 WHERE CustomerNo IS NOT NULL AND CustomerNo <> ''
+                 GROUP BY CustomerNo;";
+
+            using (var countCmd = new MySqlCommand(countByCodigoSql, conn))
+            using (var countReader = await countCmd.ExecuteReaderAsync(ct))
+            {
+                while (await countReader.ReadAsync(ct))
+                {
+                    if (countReader.IsDBNull(countReader.GetOrdinal("CustomerNo")))
+                        continue;
+
+                    var key = countReader.GetString("CustomerNo").Trim();
+                    if (string.IsNullOrWhiteSpace(key))
+                        continue;
+
+                    var total = countReader.IsDBNull(countReader.GetOrdinal("TotalServicos")) ? 0 : countReader.GetInt32("TotalServicos");
+                    countsByCodigo[key] = total;
+                }
+            }
+
+            var countsByNome = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            const string countByNomeSql = @"
+                SELECT CustomerName, COUNT(*) AS TotalServicos
+                  FROM OrderInfo
+                 WHERE CustomerName IS NOT NULL AND CustomerName <> ''
+                 GROUP BY CustomerName;";
+
+            using (var countNomeCmd = new MySqlCommand(countByNomeSql, conn))
+            using (var countNomeReader = await countNomeCmd.ExecuteReaderAsync(ct))
+            {
+                while (await countNomeReader.ReadAsync(ct))
+                {
+                    if (countNomeReader.IsDBNull(countNomeReader.GetOrdinal("CustomerName")))
+                        continue;
+
+                    var key = countNomeReader.GetString("CustomerName").Trim();
+                    if (string.IsNullOrWhiteSpace(key))
+                        continue;
+
+                    var total = countNomeReader.IsDBNull(countNomeReader.GetOrdinal("TotalServicos")) ? 0 : countNomeReader.GetInt32("TotalServicos");
+                    countsByNome[key] = total;
+                }
+            }
+
+            foreach (var cliente in list)
+            {
+                var codigo = cliente.CLICODIGO?.Trim();
+                if (!string.IsNullOrWhiteSpace(codigo) && countsByCodigo.TryGetValue(codigo, out var byCodigo))
+                {
+                    cliente.ServicosCount = byCodigo;
+                    continue;
                 }
 
-                list.Add(new Cliente
-                {
-                    CLINOME = rd.IsDBNull(rd.GetOrdinal("CLINOME")) ? null : rd.GetString("CLINOME"),
-                    CLICODIGO = rd.IsDBNull(rd.GetOrdinal("CLICODIGO")) ? null : rd.GetString("CLICODIGO"),
-                    TELEFONE = rd.IsDBNull(rd.GetOrdinal("TELEFONE")) ? null : rd.GetString("TELEFONE"),
-                    INDICATIVO = rd.IsDBNull(rd.GetOrdinal("INDICATIVO")) ? null : rd.GetString("INDICATIVO"),
-                    EMAIL = rd.IsDBNull(rd.GetOrdinal("EMAIL")) ? null : rd.GetString("EMAIL"),
-                    EXTERNO = GetBool("EXTERNO"),
-                    ANULADO = GetBool("ANULADO"),
-                    VENDEDOR = rd.IsDBNull(rd.GetOrdinal("VENDEDOR")) ? null : rd.GetString("VENDEDOR"),
-                    VALORCREDITO = rd.IsDBNull(rd.GetOrdinal("VALORCREDITO")) ? null : rd.GetString("VALORCREDITO"),
-                    PastasSincronizadas = GetBool("PastasSincronizadas")
-                });
+                var nome = cliente.CLINOME?.Trim();
+                if (!string.IsNullOrWhiteSpace(nome) && countsByNome.TryGetValue(nome, out var byNome))
+                    cliente.ServicosCount = byNome;
             }
+
             return list;
         }
 

@@ -45,61 +45,85 @@
 
         <CollectionView.ItemTemplate>
           <DataTemplate x:DataType="models:Cliente">
-            <!-- SwipeView com Buttons circulares -->
-            <SwipeView>
+            <SwipeView HeightRequest="76"
+                       BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
+                       SwipeEnded="OnSwipeEnded">
               <SwipeView.RightItems>
                 <SwipeItems Mode="Reveal" SwipeBehaviorOnInvoked="Close">
-
-                  <!-- PASTAS -->
-                  <SwipeItemView>
-                    <Button Text="&#xF07C;"
-                            FontFamily="FA7Solid"
-                            FontSize="22"
-                            TextColor="White"
-                            WidthRequest="60"
-                            HeightRequest="60"
-                            Padding="0"
-                            BackgroundColor="#34C759"
-                            CornerRadius="30"
-                            CommandParameter="{Binding .}"
-                            Clicked="OnPastasButtonClicked"/>
+                  <SwipeItemView BindingContext="{Binding .}" Invoked="OnEditSwipeInvoked">
+                    <Grid WidthRequest="80" Padding="0" BackgroundColor="Transparent" HorizontalOptions="Center" VerticalOptions="Fill">
+                      <Border WidthRequest="56" HeightRequest="56" HorizontalOptions="Center" VerticalOptions="Center"
+                              BackgroundColor="#3C82F6" StrokeThickness="0">
+                        <Border.StrokeShape>
+                          <RoundRectangle CornerRadius="20"/>
+                        </Border.StrokeShape>
+                        <Label FontFamily="FA7Solid" Text="&#xF044;" FontSize="22" TextColor="White"
+                               HorizontalOptions="Center" VerticalOptions="Center"/>
+                      </Border>
+                    </Grid>
                   </SwipeItemView>
-
-                  <!-- ELIMINAR -->
-                  <SwipeItemView>
-                    <Button Text="&#xF1F8;"
-                            FontFamily="FA7Solid"
-                            FontSize="22"
-                            TextColor="White"
-                            WidthRequest="60"
-                            HeightRequest="60"
-                            Padding="0"
-                            BackgroundColor="#FF3B30"
-                            CornerRadius="30"
-                            CommandParameter="{Binding .}"
-                            Clicked="OnDeleteButtonClicked"/>
+                  <SwipeItemView BindingContext="{Binding .}" Invoked="OnDeleteSwipeInvoked">
+                    <Grid WidthRequest="80" Padding="0" BackgroundColor="Transparent" HorizontalOptions="Center" VerticalOptions="Fill">
+                      <Border WidthRequest="56" HeightRequest="56" HorizontalOptions="Center" VerticalOptions="Center"
+                              BackgroundColor="#EA4335" StrokeThickness="0">
+                        <Border.StrokeShape>
+                          <RoundRectangle CornerRadius="20"/>
+                        </Border.StrokeShape>
+                        <Label FontFamily="FA7Solid" Text="&#xF1F8;" FontSize="22" TextColor="White"
+                               HorizontalOptions="Center" VerticalOptions="Center"/>
+                      </Border>
+                    </Grid>
                   </SwipeItemView>
-
-                  <!-- EDITAR - Circular Button -->
-                  <SwipeItemView Command="{Binding Source={RelativeSource AncestorType={x:Type local:ClientsPage}}, Path=BindingContext.SelectCommand}"
-                                CommandParameter="{Binding .}"
-                                Invoked="OnSwipeItemViewEditInvoked">
-                    <Button Text="&#xF044;" 
-                            FontFamily="FA7Solid" 
-                            FontSize="24" 
-                            TextColor="White"
-                            WidthRequest="60"
-                            HeightRequest="60"
-                            Padding="0"
-                            BackgroundColor="#5AC8FA"
-                            CornerRadius="30"/>
+                  <SwipeItemView BindingContext="{Binding .}" Invoked="OnPastasSwipeInvoked">
+                    <Grid WidthRequest="80" Padding="0" BackgroundColor="Transparent" HorizontalOptions="Center" VerticalOptions="Fill">
+                      <Border WidthRequest="56" HeightRequest="56" HorizontalOptions="Center" VerticalOptions="Center"
+                              BackgroundColor="#FAA307" StrokeThickness="0">
+                        <Border.StrokeShape>
+                          <RoundRectangle CornerRadius="20"/>
+                        </Border.StrokeShape>
+                        <Label FontFamily="FA7Solid" Text="&#xF07C;" FontSize="22" TextColor="White"
+                               HorizontalOptions="Center" VerticalOptions="Center"/>
+                      </Border>
+                    </Grid>
                   </SwipeItemView>
-
+                  <SwipeItemView BindingContext="{Binding .}" Invoked="OnServicesSwipeInvoked">
+                    <Grid WidthRequest="80" Padding="0" BackgroundColor="Transparent" HorizontalOptions="Center" VerticalOptions="Fill">
+                      <Border WidthRequest="56" HeightRequest="56" HorizontalOptions="Center" VerticalOptions="Center"
+                              BackgroundColor="#5F63FB" StrokeThickness="0">
+                        <Border.StrokeShape>
+                          <RoundRectangle CornerRadius="20"/>
+                        </Border.StrokeShape>
+                        <Grid>
+                          <Label FontFamily="FA7Solid" Text="&#xF0AE;" FontSize="22" TextColor="White"
+                                 HorizontalOptions="Center" VerticalOptions="Center"/>
+                          <Border WidthRequest="24" HeightRequest="24"
+                                  StrokeThickness="0"
+                                  BackgroundColor="#5F63FB"
+                                  HorizontalOptions="End"
+                                  VerticalOptions="Start"
+                                  Margin="-4,-4,0,0"
+                                  InputTransparent="True">
+                            <Border.StrokeShape>
+                              <RoundRectangle CornerRadius="12"/>
+                            </Border.StrokeShape>
+                            <Border.Triggers>
+                              <DataTrigger TargetType="Border"
+                                           Binding="{Binding ServicosCount}"
+                                           Value="0">
+                                <Setter Property="IsVisible" Value="False"/>
+                              </DataTrigger>
+                            </Border.Triggers>
+                            <Label Text="{Binding ServicosCount}" FontSize="11" FontAttributes="Bold" TextColor="White"
+                                   HorizontalOptions="Center" VerticalOptions="Center"/>
+                          </Border>
+                        </Grid>
+                      </Border>
+                    </Grid>
+                  </SwipeItemView>
                 </SwipeItems>
               </SwipeView.RightItems>
 
-              <!-- Conteúdo do item -->
-              <Grid Padding="16,12"
+              <Grid HeightRequest="76" MinimumHeightRequest="76" Padding="16,10"
                     BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
                     ColumnDefinitions="50,*,Auto"
                     ColumnSpacing="12"
@@ -126,8 +150,8 @@
                        VerticalOptions="End"/>
 
                 <!-- Telefone -->
-      <Label Grid.Column="1" Grid.Row="1"
-        Text="{Binding TelefoneDisplay}"
+                <Label Grid.Column="1" Grid.Row="1"
+                       Text="{Binding TelefoneDisplay}"
                        FontSize="14"
                        TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
                        LineBreakMode="TailTruncation"
