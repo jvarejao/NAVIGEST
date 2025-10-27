@@ -718,6 +718,7 @@ namespace NAVIGEST.iOS.Services
                     VALUES (@cod,@nome,@tel,@indic,@mail,@ext,@anu,@vend,@cred,@past);";
 
             using var cmd = new MySqlCommand(sql, conn);
+            var valorCredito = ParseValorCreditoToDecimal(c.VALORCREDITO);
             cmd.Parameters.Add("@cod", MySqlDbType.VarChar, 30).Value = c.CLICODIGO ?? "";
             cmd.Parameters.Add("@nome", MySqlDbType.VarChar, 150).Value = c.CLINOME ?? "";
             cmd.Parameters.Add("@tel", MySqlDbType.VarChar, 40).Value = c.TELEFONE ?? "";
@@ -726,10 +727,38 @@ namespace NAVIGEST.iOS.Services
             cmd.Parameters.Add("@ext", MySqlDbType.Bit).Value = c.EXTERNO ? 1 : 0;
             cmd.Parameters.Add("@anu", MySqlDbType.Bit).Value = c.ANULADO ? 1 : 0;
             cmd.Parameters.Add("@vend", MySqlDbType.VarChar, 80).Value = c.VENDEDOR ?? "";
-            cmd.Parameters.Add("@cred", MySqlDbType.VarChar, 40).Value = c.VALORCREDITO ?? "";
+            cmd.Parameters.Add("@cred", MySqlDbType.VarChar, 40).Value = valorCredito.ToString("0.00", CultureInfo.InvariantCulture);
             cmd.Parameters.Add("@past", MySqlDbType.Bit).Value = c.PastasSincronizadas ? 1 : 0;
             var rows = await cmd.ExecuteNonQueryAsync(ct);
             return rows > 0;
+        }
+
+        private static decimal ParseValorCreditoToDecimal(string? raw)
+        {
+            if (string.IsNullOrWhiteSpace(raw))
+                return 0m;
+
+            var cleaned = raw.Replace("€", string.Empty)
+                              .Replace("\u00A0", string.Empty)
+                              .Replace("\u202F", string.Empty)
+                              .Trim();
+
+            cleaned = cleaned.Replace(" ", string.Empty);
+
+            if (cleaned.Length == 0)
+                return 0m;
+
+            if (cleaned.Count(c => c == ',') == 0 && cleaned.Count(c => c == '.') > 1)
+                cleaned = cleaned.Replace(".", string.Empty);
+
+            if (!cleaned.Contains(',', StringComparison.Ordinal) && cleaned.Contains('.', StringComparison.Ordinal))
+                cleaned = cleaned.Replace('.', ',');
+
+            var parseCandidate = cleaned.Replace(".", string.Empty).Replace(',', '.');
+
+            return decimal.TryParse(parseCandidate, NumberStyles.Any, CultureInfo.InvariantCulture, out var value)
+                ? value
+                : 0m;
         }
 
         public static async Task<bool> DeleteClienteAsync(string? codigo, CancellationToken ct = default)
@@ -742,9 +771,10 @@ namespace NAVIGEST.iOS.Services
 
             await EnsureClienteIndicativoColumnAsync(conn, ct);
 
-            const string depSql = "SELECT COUNT(*) FROM orderinfo WHERE CustomerNO=@cod;";
-            using (var dep = new MySqlCommand(depSql, conn))
+            if (await TableExistsAsync(conn, "orderinfo", ct))
             {
+                const string depSql = "SELECT COUNT(*) FROM orderinfo WHERE CustomerNO=@cod;";
+                using var dep = new MySqlCommand(depSql, conn);
                 dep.Parameters.Add("@cod", MySqlDbType.VarChar, 30).Value = codigo;
                 var count = Convert.ToInt32(await dep.ExecuteScalarAsync(ct));
                 if (count > 0)
@@ -756,6 +786,21 @@ namespace NAVIGEST.iOS.Services
             cmd.Parameters.Add("@cod", MySqlDbType.VarChar, 30).Value = codigo;
             var rows = await cmd.ExecuteNonQueryAsync(ct);
             return rows > 0;
+        }
+
+        private static async Task<bool> TableExistsAsync(MySqlConnection conn, string tableName, CancellationToken ct)
+        {
+            const string sql = @"SELECT 1
+                                   FROM information_schema.TABLES
+                                  WHERE TABLE_SCHEMA = DATABASE()
+                                    AND TABLE_NAME = @table
+                                  LIMIT 1;";
+
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.Add("@table", MySqlDbType.VarChar, 128).Value = tableName;
+            using var reader = await cmd.ExecuteReaderAsync(ct);
+            var exists = await reader.ReadAsync(ct);
+            return exists;
         }
 
         public static async Task<List<Vendedor>> GetVendedoresAsync(CancellationToken ct = default)
