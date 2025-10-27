@@ -133,6 +133,9 @@
     <MauiXaml Update="Resources\Styles\Inputs.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>
+    <MauiXaml Update="Popups\AddVendedorPopup.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
   </ItemGroup>
 
 

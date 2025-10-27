@@ -365,7 +365,7 @@ namespace NAVIGEST.iOS.Pages
                     return;
 
                 var popup = new AddVendedorPopup();
-                var result = await this.ShowPopupAsync(popup);
+                var result = await AppShell.Current.ShowPopupAsync(popup);
                 if (result is Vendedor vendedor)
                 {
                     vm.UpsertVendedor(vendedor);
