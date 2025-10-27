@@ -23,7 +23,7 @@ namespace NAVIGEST.iOS.Pages
     {
         private bool _loadedOnce;
         private bool _isEditMode;
-    private SwipeView? _activeSwipe;
+        private SwipeView? _activeSwipe;
 
         public ClientsPage() : this(new ClientsPageModel()) { }
 
@@ -533,15 +533,27 @@ namespace NAVIGEST.iOS.Pages
 
         private void OnValorCreditoFocused(object sender, FocusEventArgs e)
         {
-            if (sender is not Entry entry) return;
-            var text = entry.Text ?? string.Empty;
-            entry.CursorPosition = 0;
-            entry.SelectionLength = text.Length;
+            if (sender is not Entry entry)
+                return;
+
+            if (TryParseValorCredito(entry.Text, out var value))
+            {
+                var culture = CultureInfo.GetCultureInfo("pt-PT");
+                entry.Text = value.ToString("0.00", culture);
+            }
+
+            entry.Dispatcher.Dispatch(() =>
+            {
+                var current = entry.Text ?? string.Empty;
+                entry.CursorPosition = 0;
+                entry.SelectionLength = current.Length;
+            });
         }
 
         private void OnValorCreditoUnfocused(object sender, FocusEventArgs e)
         {
-            if (sender is not Entry entry) return;
+            if (sender is not Entry entry)
+                return;
 
             var text = entry.Text;
             if (string.IsNullOrWhiteSpace(text))
@@ -550,13 +562,31 @@ namespace NAVIGEST.iOS.Pages
                 return;
             }
 
+            if (!TryParseValorCredito(text, out var value))
+                return;
+
+            var culture = CultureInfo.GetCultureInfo("pt-PT");
+            var formattedNumber = value.ToString("N2", culture)
+                                       .Replace('\u00A0', ' ')
+                                       .Replace('\u202F', ' ');
+
+            entry.Text = formattedNumber + " €";
+        }
+
+        private static bool TryParseValorCredito(string? text, out decimal value)
+        {
+            value = 0m;
+            if (string.IsNullOrWhiteSpace(text))
+                return false;
+
             var culture = CultureInfo.GetCultureInfo("pt-PT");
 
-            var sanitized = text.Replace("€", string.Empty, StringComparison.OrdinalIgnoreCase).Trim();
-
-            sanitized = sanitized.Replace(((char)0x00A0).ToString(), string.Empty, StringComparison.Ordinal);
-            sanitized = sanitized.Replace(" ", string.Empty, StringComparison.Ordinal);
+            var sanitized = text.Replace("€", string.Empty, StringComparison.OrdinalIgnoreCase);
+            sanitized = new string(sanitized.Where(ch => !(char.IsWhiteSpace(ch) || ch == '\u00A0' || ch == '\u202F')).ToArray());
             sanitized = sanitized.Trim();
+
+            if (sanitized.Length == 0)
+                return false;
 
             if (sanitized.Contains('.', StringComparison.Ordinal) &&
                 !sanitized.Contains(',', StringComparison.Ordinal))
@@ -564,13 +594,11 @@ namespace NAVIGEST.iOS.Pages
                 sanitized = sanitized.Replace('.', ',');
             }
 
-            if (!decimal.TryParse(sanitized, NumberStyles.Any, culture, out var value) &&
-                !decimal.TryParse(sanitized, NumberStyles.Any, CultureInfo.InvariantCulture, out value))
-            {
-                return;
-            }
+            if (decimal.TryParse(sanitized, NumberStyles.Any, culture, out value))
+                return true;
 
-            entry.Text = value.ToString("C", culture);
+            sanitized = sanitized.Replace(',', '.');
+            return decimal.TryParse(sanitized, NumberStyles.Any, CultureInfo.InvariantCulture, out value);
         }
 
 #if IOS
