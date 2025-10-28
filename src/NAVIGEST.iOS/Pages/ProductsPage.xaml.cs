@@ -2,9 +2,10 @@
 #nullable enable
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls;
 using NAVIGEST.iOS.PageModels;
 using NAVIGEST.iOS.Models;
 using NAVIGEST.iOS;
@@ -29,6 +30,41 @@ namespace NAVIGEST.iOS.Pages
 
             Dispatcher.Dispatch(async () => await EnsureLoadedAsync());
         }
+
+        private static Page? GetRootPage()
+        {
+            var app = Application.Current;
+            var window = app?.Windows?.FirstOrDefault();
+            var root = window?.Page;
+
+            return root switch
+            {
+                Shell shell when shell.CurrentPage is Page current => current,
+                Shell shell                                            => shell,
+                NavigationPage nav when nav.CurrentPage is not null   => nav.CurrentPage,
+                _                                                     => root
+            };
+        }
+
+        private static Task ShowAlertAsync(string title, string message, string cancel = "OK") =>
+            MainThread.InvokeOnMainThreadAsync(async () =>
+            {
+                var root = GetRootPage();
+                if (root is null)
+                    return;
+
+                await root.DisplayAlert(title, message, cancel);
+            });
+
+        private static Task<bool> ShowConfirmAsync(string title, string message, string accept, string cancel) =>
+            MainThread.InvokeOnMainThreadAsync(async () =>
+            {
+                var root = GetRootPage();
+                if (root is null)
+                    return false;
+
+                return await root.DisplayAlert(title, message, accept, cancel);
+            });
 
         #if IOS
         private void ConfigureKeyboardToolbar()
@@ -97,15 +133,14 @@ namespace NAVIGEST.iOS.Pages
 
         // --- SWIPE BUTTONS ---
 
-        private async void OnEditButtonClicked(object sender, EventArgs e)
+        private async void OnEditSwipeInvoked(object sender, EventArgs e)
         {
             await CloseSwipeFrom(sender);
 
-            var product = (sender as Button)?.CommandParameter as Product
-                          ?? (sender as Element)?.BindingContext as Product;
+            var product = ResolveProductFrom(sender);
             if (product == null)
             {
-                await DisplayAlert("Erro", "Produto não identificado.", "OK");
+                await ShowAlertAsync("Erro", "Produto não identificado.");
                 return;
             }
 
@@ -118,19 +153,18 @@ namespace NAVIGEST.iOS.Pages
             ShowFormView(isNew: false);
         }
 
-        private async void OnDeleteButtonClicked(object sender, EventArgs e)
+        private async void OnDeleteSwipeInvoked(object sender, EventArgs e)
         {
             await CloseSwipeFrom(sender);
 
-            var product = (sender as Button)?.CommandParameter as Product
-                          ?? (sender as Element)?.BindingContext as Product;
+            var product = ResolveProductFrom(sender);
             if (product == null)
             {
-                await DisplayAlert("Erro", "Produto não identificado.", "OK");
+                await ShowAlertAsync("Erro", "Produto não identificado.");
                 return;
             }
 
-            var confirm = await DisplayAlert("Eliminar produto",
+            var confirm = await ShowConfirmAsync("Eliminar produto",
                 $"Tem a certeza que deseja eliminar '{product.Descricao}'?",
                 "Eliminar", "Cancelar");
 
@@ -155,6 +189,26 @@ namespace NAVIGEST.iOS.Pages
                 (p as SwipeView)?.Close();
             }
             await Task.Delay(75); // dá tempo à animação para não tapar os alerts
+        }
+
+        private static Product? ResolveProductFrom(object sender)
+        {
+            if (sender is SwipeItemView siv)
+            {
+                if (siv.CommandParameter is Product productFromCommand)
+                    return productFromCommand;
+
+                if (siv.BindingContext is Product productFromBinding)
+                    return productFromBinding;
+            }
+
+            if (sender is Element el)
+            {
+                if (el.BindingContext is Product productFromElement)
+                    return productFromElement;
+            }
+
+            return null;
         }
 
         // Tap na célula – abre edição
@@ -226,7 +280,7 @@ namespace NAVIGEST.iOS.Pages
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Erro", $"Erro ao guardar: {ex.Message}", "OK");
+                await ShowAlertAsync("Erro", $"Erro ao guardar: {ex.Message}");
                 GlobalErro.TratarErro(ex, mostrarAlerta: false);
             }
         }
@@ -238,12 +292,12 @@ namespace NAVIGEST.iOS.Pages
             {
                 if (BindingContext is not ProductsPageModel vm || vm.Editing is null)
                 {
-                    await DisplayAlert("Erro", "Não foi possível identificar o produto.", "OK");
+                    await ShowAlertAsync("Erro", "Não foi possível identificar o produto.");
                     return;
                 }
 
                 var product = vm.Editing;
-                var confirm = await DisplayAlert(
+                var confirm = await ShowConfirmAsync(
                     "Eliminar produto",
                     $"Tem a certeza que deseja eliminar '{product.Descricao}'?",
                     "Eliminar", "Cancelar");
@@ -258,7 +312,7 @@ namespace NAVIGEST.iOS.Pages
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Erro", $"Erro ao eliminar: {ex.Message}", "OK");
+                await ShowAlertAsync("Erro", $"Erro ao eliminar: {ex.Message}");
                 GlobalErro.TratarErro(ex, mostrarAlerta: false);
             }
         }

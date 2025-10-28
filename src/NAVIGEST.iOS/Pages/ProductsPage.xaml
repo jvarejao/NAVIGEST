@@ -50,38 +50,36 @@
                             <SwipeView.RightItems>
                                 <SwipeItems Mode="Reveal" SwipeBehaviorOnInvoked="Close">
                                     <!-- EDITAR -->
-                                    <SwipeItemView BindingContext="{Binding .}">
+                                    <SwipeItemView CommandParameter="{Binding .}" Invoked="OnEditSwipeInvoked">
                                         <Grid WidthRequest="80" Padding="12" BackgroundColor="Transparent">
-                                            <Button Clicked="OnEditButtonClicked"
-                                                    CommandParameter="{Binding .}"
-                                                    BackgroundColor="#FFE400"
-                                                    TextColor="#333333"
-                                                    FontFamily="FA7Solid"
-                                                    Text="&#xF044;"
-                                                    CornerRadius="28"
-                                                    WidthRequest="56"
-                                                    HeightRequest="56"
-                                                    HorizontalOptions="Center"
-                                                    VerticalOptions="Center"
-                                                    Padding="0"/>
+                                            <Border BackgroundColor="#FFE400"
+                                                    WidthRequest="56" HeightRequest="56"
+                                                    HorizontalOptions="Center" VerticalOptions="Center"
+                                                    StrokeThickness="0">
+                                                <Border.StrokeShape>
+                                                    <RoundRectangle CornerRadius="28"/>
+                                                </Border.StrokeShape>
+                                                <Label Text="&#xF044;" FontFamily="FA7Solid" FontSize="22"
+                                                       TextColor="#333333" HorizontalOptions="Center"
+                                                       VerticalOptions="Center"/>
+                                            </Border>
                                         </Grid>
                                     </SwipeItemView>
 
                                     <!-- ELIMINAR -->
-                                    <SwipeItemView BindingContext="{Binding .}">
+                                    <SwipeItemView CommandParameter="{Binding .}" Invoked="OnDeleteSwipeInvoked">
                                         <Grid WidthRequest="80" Padding="12" BackgroundColor="Transparent">
-                                            <Button Clicked="OnDeleteButtonClicked"
-                                                    CommandParameter="{Binding .}"
-                                                    BackgroundColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}"
-                                                    TextColor="White"
-                                                    FontFamily="FA7Solid"
-                                                    Text="&#xF1F8;"
-                                                    CornerRadius="28"
-                                                    WidthRequest="56"
-                                                    HeightRequest="56"
-                                                    HorizontalOptions="Center"
-                                                    VerticalOptions="Center"
-                                                    Padding="0"/>
+                                            <Border BackgroundColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}"
+                                                    WidthRequest="56" HeightRequest="56"
+                                                    HorizontalOptions="Center" VerticalOptions="Center"
+                                                    StrokeThickness="0">
+                                                <Border.StrokeShape>
+                                                    <RoundRectangle CornerRadius="28"/>
+                                                </Border.StrokeShape>
+                                                <Label Text="&#xF1F8;" FontFamily="FA7Solid" FontSize="22"
+                                                       TextColor="White" HorizontalOptions="Center"
+                                                       VerticalOptions="Center"/>
+                                            </Border>
                                         </Grid>
                                     </SwipeItemView>
                                 </SwipeItems>
