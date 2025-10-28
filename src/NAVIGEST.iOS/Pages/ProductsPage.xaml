@@ -14,7 +14,7 @@
             <!-- Header -->
             <Grid Padding="16,16,16,12" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}">
                 <SearchBar x:Name="SearchBar"
-                           Placeholder="Pesquisar clientes..."
+                           Placeholder="Pesquisar produtos..."
                            PlaceholderColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
                            TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
                            BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
@@ -26,37 +26,29 @@
 
             <!-- Lista -->
             <CollectionView Grid.Row="1"
-                            x:Name="ClientsCollectionView"
-                            ItemsSource="{Binding Filtered}"
+                            x:Name="ProductsCollectionView"
+                            ItemsSource="{Binding GroupedProducts}"
+                            IsGrouped="True"
                             SelectionMode="None"
                             BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}"
                             Scrolled="OnCollectionViewScrolled">
 
+                <CollectionView.GroupHeaderTemplate>
+                    <DataTemplate>
+                        <Grid Padding="16,8,16,4" BackgroundColor="Transparent">
+                            <Label Text="{Binding Title}"
+                                   FontSize="14"
+                                   FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light=#8E8E93, Dark=#98989F}"/>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.GroupHeaderTemplate>
+
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="models:Product">
-                        <SwipeView x:Name="ClientSwipeView">
+                        <SwipeView>
                             <SwipeView.RightItems>
-                                <!-- Fechar ao invocar; ainda fechamos manualmente no handler -->
                                 <SwipeItems Mode="Reveal" SwipeBehaviorOnInvoked="Close">
-
-                                    <!-- PASTAS -->
-                                    <SwipeItemView BindingContext="{Binding .}">
-                                        <Grid WidthRequest="80" Padding="12" BackgroundColor="Transparent">
-                                            <Button Clicked="OnEditButtonClicked"
-                                                    CommandParameter="{Binding .}"
-                                                    BackgroundColor="#00D9FF"
-                                                    TextColor="White"
-                                                    FontFamily="FA7Solid"
-                                                    Text="&#xF07C;"
-                                                    CornerRadius="28"
-                                                    WidthRequest="56"
-                                                    HeightRequest="56"
-                                                    HorizontalOptions="Center"
-                                                    VerticalOptions="Center"
-                                                    Padding="0"/>
-                                        </Grid>
-                                    </SwipeItemView>
-
                                     <!-- EDITAR -->
                                     <SwipeItemView BindingContext="{Binding .}">
                                         <Grid WidthRequest="80" Padding="12" BackgroundColor="Transparent">
@@ -92,7 +84,6 @@
                                                     Padding="0"/>
                                         </Grid>
                                     </SwipeItemView>
-
                                 </SwipeItems>
                             </SwipeView.RightItems>
 
@@ -120,28 +111,28 @@
                                            VerticalOptions="Center"/>
                                 </Border>
 
-                                <!-- Nome -->
+                                <!-- Descrição -->
                                 <Label Grid.Column="1"
-                                       Text="{Binding PRODNOME}"
+                                       Text="{Binding Descricao}"
                                        FontSize="17"
                                        TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
                                        LineBreakMode="TailTruncation"
                                        VerticalOptions="End"/>
 
-                                <!-- Telefone -->
+                                <!-- Código -->
                                 <Label Grid.Column="1" Grid.Row="1"
-                                       Text="{Binding FAMILIA}"
+                                       Text="{Binding Codigo}"
                                        FontSize="14"
                                        TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
                                        LineBreakMode="TailTruncation"
                                        VerticalOptions="Start"/>
 
-                                <!-- Status -->
+                                <!-- Preço -->
                                 <Label Grid.Column="2" Grid.RowSpan="2"
-                                       FontFamily="FA7Solid"
-                                       Text="{Binding StatusIcon}"
-                                       FontSize="16"
-                                       TextColor="{Binding StatusColor}"
+                                       Text="{Binding ValorDisplay}"
+                                       FontSize="15"
+                                       FontAttributes="Bold"
+                                       TextColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"
                                        VerticalOptions="Center"
                                        HorizontalOptions="End"/>
 
@@ -183,16 +174,16 @@
         </Grid>
 
         <!-- VIEW 2: Form -->
-        <Grid x:Name="FormViewContainer" IsVisible="False" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}">
+        <Grid x:Name="FormViewContainer" IsVisible="False"
+              BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}">
             <ScrollView>
                 <VerticalStackLayout Spacing="20" Padding="16">
 
                     <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,8,0,0">
                         <Button Grid.Column="0" Text="Cancelar"
-                                Style="{StaticResource AppleTextButton}"
-                                Clicked="OnCancelEditTapped"/>
-                        <Label Grid.Column="1" x:Name="FormTitle"
-                               Text="Novo Product" FontSize="17" FontAttributes="Bold"
+                                Style="{StaticResource AppleTextButton}" Clicked="OnCancelEditTapped"/>
+                        <Label Grid.Column="1" x:Name="FormTitle" Text="Novo Produto"
+                               FontSize="17" FontAttributes="Bold"
                                HorizontalOptions="Center" VerticalOptions="Center"
                                TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
                     </Grid>
@@ -201,61 +192,43 @@
                             BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
                             Stroke="Transparent" Padding="0">
                         <VerticalStackLayout Spacing="0">
-                            <Grid Padding="16,12" ColumnDefinitions="100,*">
+                            <Grid Padding="16,12" ColumnDefinitions="110,*">
                                 <Label Text="Código" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
-                                <Entry Grid.Column="1" x:Name="CodigoEntry" Text="{Binding Editing.PRODCODIGO}" IsReadOnly="True"
+                                <Entry Grid.Column="1" x:Name="CodigoEntry" Text="{Binding Editing.Codigo}" IsReadOnly="True"
                                        BackgroundColor="Transparent" TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}" HorizontalTextAlignment="End"/>
                             </Grid>
                             <BoxView HeightRequest="0.5" Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}" Margin="16,0,0,0"/>
 
-                            <Grid Padding="16,12" ColumnDefinitions="100,*">
-                                <Label Text="Nome" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
-                                <Entry Grid.Column="1" x:Name="NomeEntry" Text="{Binding Editing.PRODNOME}"
-                                       BackgroundColor="Transparent" HorizontalTextAlignment="End" Placeholder="Nome completo"/>
+                            <Grid Padding="16,12" ColumnDefinitions="110,*">
+                                <Label Text="Descrição" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
+                                <Entry Grid.Column="1" x:Name="DescricaoEntry" Text="{Binding Editing.Descricao}"
+                                       BackgroundColor="Transparent" HorizontalTextAlignment="End" Placeholder="Nome do produto"/>
                             </Grid>
                             <BoxView HeightRequest="0.5" Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}" Margin="16,0,0,0"/>
 
-                            <Grid Padding="16,12" ColumnDefinitions="100,*">
-                                <Label Text="Telefone" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
-                                <Entry Grid.Column="1" x:Name="TelefoneEntry" Text="{Binding Editing.FAMILIA}" Keyboard="Telephone"
-                                       BackgroundColor="Transparent" HorizontalTextAlignment="End" Placeholder="916 000 000"/>
+                            <Grid Padding="16,12" ColumnDefinitions="110,*">
+                                <Label Text="Família" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
+                                <Picker Grid.Column="1" x:Name="FamiliaPicker"
+                                        ItemsSource="{Binding Families}"
+                                        SelectedItem="{Binding Editing.FamiliaSelecionada}"
+                                        Title="Selecionar família"
+                                        BackgroundColor="Transparent"
+                                        TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
                             </Grid>
                             <BoxView HeightRequest="0.5" Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}" Margin="16,0,0,0"/>
 
-                            <Grid Padding="16,12" ColumnDefinitions="100,*">
-                                <Label Text="Email" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
-                                <Entry Grid.Column="1" x:Name="EmailEntry" Text="{Binding Editing.EMAIL}" Keyboard="Email"
-                                       BackgroundColor="Transparent" HorizontalTextAlignment="End" Placeholder="email@exemplo.com"/>
+                            <Grid Padding="16,12" ColumnDefinitions="110,*">
+                                <Label Text="Colaborador" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
+                                <Entry Grid.Column="1" x:Name="ColaboradorEntry" Text="{Binding Editing.Colaborador}"
+                                       BackgroundColor="Transparent" HorizontalTextAlignment="End" Placeholder="Nome do colaborador"/>
                             </Grid>
                             <BoxView HeightRequest="0.5" Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}" Margin="16,0,0,0"/>
 
-                            <Grid Padding="16,12" ColumnDefinitions="100,*">
-                                <Label Text="Vendedor" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
-                                <Entry Grid.Column="1" x:Name="VendedorEntry" Text="{Binding Editing.COLABORADOR}"
-                                       BackgroundColor="Transparent" HorizontalTextAlignment="End" Placeholder="Nome vendedor"/>
-                            </Grid>
-                            <BoxView HeightRequest="0.5" Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}" Margin="16,0,0,0"/>
-
-                            <Grid Padding="16,12" ColumnDefinitions="100,*">
-                                <Label Text="Valor Crédito" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
-                                <Entry Grid.Column="1" x:Name="ValorCreditoEntry" Text="{Binding Editing.PROFFAMILY}" Keyboard="Numeric"
-                                       BackgroundColor="Transparent" HorizontalTextAlignment="End" Placeholder="0,00"/>
-                            </Grid>
-                        </VerticalStackLayout>
-                    </Border>
-
-                    <Border StrokeShape="RoundRectangle 10"
-                            BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
-                            Stroke="Transparent" Padding="0">
-                        <VerticalStackLayout Spacing="0">
-                            <Grid Padding="16,12" ColumnDefinitions="*,Auto">
-                                <Label Text="Product Externo" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
-                                <Switch Grid.Column="1" x:Name="ExternoSwitch" IsToggled="{Binding Editing.EXTERNO, Mode=TwoWay}"/>
-                            </Grid>
-                            <BoxView HeightRequest="0.5" Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}" Margin="16,0,0,0"/>
-                            <Grid Padding="16,12" ColumnDefinitions="*,Auto">
-                                <Label Text="Anulado" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
-                                <Switch Grid.Column="1" x:Name="AnuladoSwitch" IsToggled="{Binding Editing.ANULADO, Mode=TwoWay}"/>
+                            <Grid Padding="16,12" ColumnDefinitions="110,*">
+                                <Label Text="Preço de custo" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
+                                <Entry Grid.Column="1" x:Name="PrecoCustoEntry" Text="{Binding Editing.Valor}" Keyboard="Numeric"
+                                       BackgroundColor="Transparent" HorizontalTextAlignment="End" Placeholder="0,00"
+                                       Focused="OnPrecoCustoFocused" Unfocused="OnPrecoCustoUnfocused"/>
                             </Grid>
                         </VerticalStackLayout>
                     </Border>
@@ -267,8 +240,8 @@
                                 <FontImageSource Glyph="&#xF0C7;" FontFamily="FA7Solid" Size="16" Color="White"/>
                             </Button.ImageSource>
                         </Button>
-                        
-                        <Button x:Name="DeleteFormButton" Text="Eliminar Product" Style="{StaticResource AppleTintedButton}"
+
+                        <Button x:Name="DeleteFormButton" Text="Eliminar Produto" Style="{StaticResource AppleTintedButton}"
                                 TextColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}" IsVisible="False"
                                 Clicked="OnDeleteFromFormTapped">
                             <Button.ImageSource>

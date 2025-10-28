@@ -1,6 +1,7 @@
 // File: NAVIGEST.iOS/Pages/ProductsPage.xaml.cs
 #nullable enable
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.ApplicationModel;
@@ -70,7 +71,7 @@ namespace NAVIGEST.iOS.Pages
                 catch (Exception ex)
                 {
                     GlobalErro.TratarErro(ex, mostrarAlerta: false);
-                    await GlobalToast.ShowAsync("Falha ao carregar clientes.", ToastTipo.Erro, 2500);
+                    await GlobalToast.ShowAsync("Falha ao carregar produtos.", ToastTipo.Erro, 2500);
                 }
                 _loadedOnce = true;
             }
@@ -89,9 +90,9 @@ namespace NAVIGEST.iOS.Pages
             FormViewContainer.IsVisible = true;
             _isEditMode = true;
 
-            FormTitle.Text = isNew ? "Novo Product" : "Editar Product";
+            FormTitle.Text = isNew ? "Novo Produto" : "Editar Produto";
             DeleteFormButton.IsVisible = !isNew;
-            SaveButton.Text = isNew ? "Adicionar" : "Atualizar";
+            SaveButton.Text = "Guardar";
         }
 
         // --- SWIPE BUTTONS ---
@@ -100,18 +101,18 @@ namespace NAVIGEST.iOS.Pages
         {
             await CloseSwipeFrom(sender);
 
-            var cliente = (sender as Button)?.CommandParameter as Product
+            var product = (sender as Button)?.CommandParameter as Product
                           ?? (sender as Element)?.BindingContext as Product;
-            if (cliente == null)
+            if (product == null)
             {
-                await DisplayAlert("Erro", "Product não identificado.", "OK");
+                await DisplayAlert("Erro", "Produto não identificado.", "OK");
                 return;
             }
 
             if (BindingContext is ProductsPageModel vm &&
-                vm.SelectCommand?.CanExecute(cliente) == true)
+                vm.SelectCommand?.CanExecute(product) == true)
             {
-                vm.SelectCommand.Execute(cliente);
+                vm.SelectCommand.Execute(product);
             }
 
             ShowFormView(isNew: false);
@@ -119,46 +120,28 @@ namespace NAVIGEST.iOS.Pages
 
         private async void OnDeleteButtonClicked(object sender, EventArgs e)
         {
-            await DisplayAlert("[DBG]", "DELETE CLICKED", "OK"); // prova de clique
             await CloseSwipeFrom(sender);
 
-            var cliente = (sender as Button)?.CommandParameter as Product
+            var product = (sender as Button)?.CommandParameter as Product
                           ?? (sender as Element)?.BindingContext as Product;
-            if (cliente == null)
+            if (product == null)
             {
-                await DisplayAlert("Erro", "Product não identificado.", "OK");
+                await DisplayAlert("Erro", "Produto não identificado.", "OK");
                 return;
             }
 
-            var confirm = await DisplayAlert("Eliminar Product",
-                $"Tem a certeza que deseja eliminar '{cliente.PRODNOME}'?",
+            var confirm = await DisplayAlert("Eliminar produto",
+                $"Tem a certeza que deseja eliminar '{product.Descricao}'?",
                 "Eliminar", "Cancelar");
 
             if (!confirm) return;
 
             if (BindingContext is ProductsPageModel vm)
             {
-                vm.SelectedProduct = cliente;
-
-                bool canParam = vm.DeleteCommand?.CanExecute(cliente) == true;
-                bool canNull  = vm.DeleteCommand?.CanExecute(null) == true;
-
-                await DisplayAlert("[DBG]", $"CanExec(param)={canParam} | CanExec(null)={canNull}", "OK");
-
-                if (canParam)
-                {
-                    vm.DeleteCommand!.Execute(cliente);
-                    await GlobalToast.ShowAsync("Product eliminado com sucesso.", ToastTipo.Sucesso, 2000);
-                }
-                else if (canNull)
-                {
-                    vm.DeleteCommand!.Execute(null);
-                    await GlobalToast.ShowAsync("Product eliminado com sucesso.", ToastTipo.Sucesso, 2000);
-                }
-                else
-                {
-                    await DisplayAlert("Aviso", "Não foi possível eliminar (command bloqueado).", "OK");
-                }
+                vm.SelectedProduct = product;
+                var deleted = await vm.DeleteAsync(product);
+                if (deleted)
+                    ShowListView();
             }
         }
 
@@ -179,12 +162,12 @@ namespace NAVIGEST.iOS.Pages
         {
             try
             {
-                if (sender is Grid grid && grid.BindingContext is Product cliente)
+                if (sender is Grid grid && grid.BindingContext is Product product)
                 {
                     if (BindingContext is ProductsPageModel vm &&
-                        vm.SelectCommand?.CanExecute(cliente) == true)
+                        vm.SelectCommand?.CanExecute(product) == true)
                     {
-                        vm.SelectCommand.Execute(cliente);
+                        vm.SelectCommand.Execute(product);
                     }
                     ShowFormView(isNew: false);
                 }
@@ -234,22 +217,12 @@ namespace NAVIGEST.iOS.Pages
         {
             try
             {
-                if (BindingContext is not ProductsPageModel vm || vm.Editing is null) return;
-
-                if (string.IsNullOrWhiteSpace(vm.Editing.PRODNOME))
-                {
-                    await DisplayAlert("Aviso", "O nome do cliente é obrigatório.", "OK");
+                if (BindingContext is not ProductsPageModel vm)
                     return;
-                }
 
-                bool isNew = string.IsNullOrWhiteSpace(vm.Editing.PRODCODIGO);
-
-                if (isNew)
-                    await GlobalToast.ShowAsync("Product adicionado com sucesso! (Pasta a criar)", ToastTipo.Sucesso, 2000);
-                else
-                    await GlobalToast.ShowAsync("Product atualizado com sucesso!", ToastTipo.Sucesso, 2000);
-
-                ShowListView();
+                var saved = await vm.SaveAsync();
+                if (saved)
+                    ShowListView();
             }
             catch (Exception ex)
             {
@@ -265,36 +238,68 @@ namespace NAVIGEST.iOS.Pages
             {
                 if (BindingContext is not ProductsPageModel vm || vm.Editing is null)
                 {
-                    await DisplayAlert("Erro", "Não foi possível identificar o cliente.", "OK");
+                    await DisplayAlert("Erro", "Não foi possível identificar o produto.", "OK");
                     return;
                 }
 
-                var cliente = vm.Editing;
+                var product = vm.Editing;
                 var confirm = await DisplayAlert(
-                    "Eliminar Product",
-                    $"Tem a certeza que deseja eliminar '{cliente.PRODNOME}'?",
+                    "Eliminar produto",
+                    $"Tem a certeza que deseja eliminar '{product.Descricao}'?",
                     "Eliminar", "Cancelar");
 
-                if (confirm)
-                {
-                    vm.SelectedProduct = cliente;
-                    if (vm.DeleteCommand?.CanExecute(null) == true)
-                    {
-                        vm.DeleteCommand.Execute(null);
-                        await GlobalToast.ShowAsync("Product eliminado com sucesso.", ToastTipo.Sucesso, 2000);
-                        ShowListView();
-                    }
-                    else
-                    {
-                        await DisplayAlert("Aviso", "DeleteCommand não executável (form).", "OK");
-                    }
-                }
+                if (!confirm)
+                    return;
+
+                vm.SelectedProduct = product;
+                var deleted = await vm.DeleteAsync(product);
+                if (deleted)
+                    ShowListView();
             }
             catch (Exception ex)
             {
                 await DisplayAlert("Erro", $"Erro ao eliminar: {ex.Message}", "OK");
                 GlobalErro.TratarErro(ex, mostrarAlerta: false);
             }
+        }
+
+        private void OnPrecoCustoFocused(object sender, FocusEventArgs e)
+        {
+            if (sender is not Entry entry)
+                return;
+
+            var text = entry.Text ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                entry.Text = string.Empty;
+                return;
+            }
+
+            var sanitized = text.Replace("€", string.Empty, StringComparison.OrdinalIgnoreCase)
+                                 .Replace(" ", string.Empty, StringComparison.Ordinal);
+
+            sanitized = sanitized.Replace(".", string.Empty, StringComparison.Ordinal);
+            if (!sanitized.Contains(',', StringComparison.Ordinal) && sanitized.Contains('.', StringComparison.Ordinal))
+                sanitized = sanitized.Replace('.', ',');
+
+            if (!decimal.TryParse(sanitized.Replace(',', '.'), NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
+                return;
+
+            var culture = CultureInfo.GetCultureInfo("pt-PT");
+            entry.Text = value.ToString("0.00", culture);
+
+            entry.Dispatcher.Dispatch(() =>
+            {
+                var current = entry.Text ?? string.Empty;
+                entry.CursorPosition = 0;
+                entry.SelectionLength = current.Length;
+            });
+        }
+
+        private void OnPrecoCustoUnfocused(object sender, FocusEventArgs e)
+        {
+            if (BindingContext is ProductsPageModel vm)
+                vm.FormatValorOnBlur();
         }
     }
 }
