@@ -245,12 +245,12 @@ namespace NAVIGEST.iOS
             Color border = tipo switch
             {
                 ToastTipo.Erro    => Color.FromArgb("#FF3B6B"),
-                ToastTipo.Sucesso => Color.FromArgb("#39FF14"),
+                ToastTipo.Sucesso => Color.FromArgb("#0d770eff"),
                 ToastTipo.Aviso   => (AvisoHue == WarningHue.Yellow ? Color.FromArgb("#FFE500") : Color.FromArgb("#FF8C2B")),
-                _                 => Color.FromArgb("#00E5FF"),
+                _                 => Color.FromArgb("#005effff"),
             };
 
-            Color bg = Color.FromRgba(border.Red, border.Green, border.Blue, theme == AppTheme.Dark ? 0.94f : 0.9f);
+            Color bg = Color.FromRgba(border.Red, border.Green, border.Blue, theme == AppTheme.Dark ? 0.6f : 0.9f);
             Color text = Colors.White;
             string icon = tipo switch
             {

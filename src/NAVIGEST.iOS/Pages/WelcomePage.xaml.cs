@@ -55,7 +55,7 @@ public partial class WelcomePage : ContentPage
             catch (Exception ex)
             {
                 await ShowLoadingAsync(false);
-                await ShowToastAsync($"Ligação falhou: {ex.Message}", success: false, ms: 1800);
+                await ShowToastAsync($"Ligação falhou: {ex.Message}", success: false, ms: 1600);
                 await NavigateToConfigAsync();
                 return;
             }
@@ -64,7 +64,7 @@ public partial class WelcomePage : ContentPage
 
             if (!ok)
             {
-                await ShowToastAsync("Não foi possível ligar. A abrir configuração…", success: false, ms: 1400);
+                await ShowToastAsync("Não foi possível ligar. A abrir configuração…", success: false, ms: 1600);
                 await NavigateToConfigAsync();
                 return;
             }
@@ -100,7 +100,7 @@ public partial class WelcomePage : ContentPage
 
         if (_companies.Count == 0)
         {
-            await ShowToastAsync("Nenhuma empresa ativa encontrada.", success: false, ms: 2000);
+            await ShowToastAsync("Nenhuma empresa ativa encontrada.", success: false, ms: 1600);
             await NavigateToConfigAsync();
             return;
         }
@@ -332,12 +332,3 @@ public partial class WelcomePage : ContentPage
     }
 }
 
-#if WINDOWS
-// Código Windows específico (exemplo: animações, navegação, layouts)
-#endif
-#if ANDROID
-// Código Android específico (exemplo: animações, navegação, layouts)
-#endif
-#if IOS
-// Código iOS específico (exemplo: animações, navegação, layouts)
-#endif

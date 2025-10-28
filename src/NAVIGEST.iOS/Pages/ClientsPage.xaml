@@ -51,11 +51,16 @@
               <SwipeView.RightItems>
                 <SwipeItems Mode="Reveal" SwipeBehaviorOnInvoked="Close">
                   <SwipeItemView BindingContext="{Binding .}" Invoked="OnEditSwipeInvoked">
-                    <Grid WidthRequest="80" Padding="0" BackgroundColor="Transparent" HorizontalOptions="Center" VerticalOptions="Fill">
+        <Grid WidthRequest="80"
+          Padding="0"
+          BackgroundColor="Transparent"
+          HorizontalOptions="Center"
+          VerticalOptions="Fill"
+          IsClippedToBounds="False">
                       <Border WidthRequest="56" HeightRequest="56" HorizontalOptions="Center" VerticalOptions="Center"
                               BackgroundColor="#3C82F6" StrokeThickness="0">
                         <Border.StrokeShape>
-                          <RoundRectangle CornerRadius="20"/>
+                          <RoundRectangle CornerRadius="28"/>
                         </Border.StrokeShape>
                         <Label FontFamily="FA7Solid" Text="&#xF044;" FontSize="22" TextColor="White"
                                HorizontalOptions="Center" VerticalOptions="Center"/>
@@ -67,7 +72,7 @@
                       <Border WidthRequest="56" HeightRequest="56" HorizontalOptions="Center" VerticalOptions="Center"
                               BackgroundColor="#EA4335" StrokeThickness="0">
                         <Border.StrokeShape>
-                          <RoundRectangle CornerRadius="20"/>
+                          <RoundRectangle CornerRadius="28"/>
                         </Border.StrokeShape>
                         <Label FontFamily="FA7Solid" Text="&#xF1F8;" FontSize="22" TextColor="White"
                                HorizontalOptions="Center" VerticalOptions="Center"/>
@@ -79,7 +84,7 @@
                       <Border WidthRequest="56" HeightRequest="56" HorizontalOptions="Center" VerticalOptions="Center"
                               BackgroundColor="#FAA307" StrokeThickness="0">
                         <Border.StrokeShape>
-                          <RoundRectangle CornerRadius="20"/>
+                          <RoundRectangle CornerRadius="28"/>
                         </Border.StrokeShape>
                         <Label FontFamily="FA7Solid" Text="&#xF07C;" FontSize="22" TextColor="White"
                                HorizontalOptions="Center" VerticalOptions="Center"/>
@@ -87,36 +92,52 @@
                     </Grid>
                   </SwipeItemView>
                   <SwipeItemView BindingContext="{Binding .}" Invoked="OnServicesSwipeInvoked">
-                    <Grid WidthRequest="80" Padding="0" BackgroundColor="Transparent" HorizontalOptions="Center" VerticalOptions="Fill">
+                    <Grid WidthRequest="80"
+                          Padding="0"
+                          BackgroundColor="Transparent"
+                          HorizontalOptions="Center"
+                          VerticalOptions="Fill"
+                          IsClippedToBounds="False">
                       <Border WidthRequest="56" HeightRequest="56" HorizontalOptions="Center" VerticalOptions="Center"
                               BackgroundColor="#5F63FB" StrokeThickness="0">
                         <Border.StrokeShape>
-                          <RoundRectangle CornerRadius="20"/>
+                          <RoundRectangle CornerRadius="28"/>
                         </Border.StrokeShape>
-                        <Grid>
-                          <Label FontFamily="FA7Solid" Text="&#xF0AE;" FontSize="22" TextColor="White"
-                                 HorizontalOptions="Center" VerticalOptions="Center"/>
-                          <Border WidthRequest="24" HeightRequest="24"
-                                  StrokeThickness="0"
-                                  BackgroundColor="#5F63FB"
-                                  HorizontalOptions="End"
-                                  VerticalOptions="Start"
-                                  Margin="-4,-4,0,0"
-                                  InputTransparent="True">
-                            <Border.StrokeShape>
-                              <RoundRectangle CornerRadius="12"/>
-                            </Border.StrokeShape>
-                            <Border.Triggers>
-                              <DataTrigger TargetType="Border"
-                                           Binding="{Binding ServicosCount}"
-                                           Value="0">
-                                <Setter Property="IsVisible" Value="False"/>
-                              </DataTrigger>
-                            </Border.Triggers>
-                            <Label Text="{Binding ServicosCount}" FontSize="11" FontAttributes="Bold" TextColor="White"
-                                   HorizontalOptions="Center" VerticalOptions="Center"/>
-                          </Border>
-                        </Grid>
+                        <Label FontFamily="FA7Solid"
+                               Text="&#xF0AE;"
+                               FontSize="22"
+                               TextColor="White"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"/>
+                      </Border>
+
+          <Border WidthRequest="22"
+            HeightRequest="22"
+            StrokeThickness="0"
+            BackgroundColor="#FF3B30"
+            HorizontalOptions="End"
+            VerticalOptions="Start"
+            TranslationX="0"
+            TranslationY="6"
+            ZIndex="1"
+            InputTransparent="True">
+                        <Border.StrokeShape>
+                          <RoundRectangle CornerRadius="11"/>
+                        </Border.StrokeShape>
+                        <Border.Triggers>
+                          <DataTrigger TargetType="Border"
+                                       Binding="{Binding ServicosCount}"
+                                       Value="0">
+                            <Setter Property="IsVisible" Value="False"/>
+                          </DataTrigger>
+                        </Border.Triggers>
+
+                        <Label Text="{Binding ServicosCount}"
+                               FontSize="10"
+                               FontAttributes="Bold"
+                               TextColor="White"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"/>
                       </Border>
                     </Grid>
                   </SwipeItemView>

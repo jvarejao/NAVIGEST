@@ -141,7 +141,7 @@ namespace NAVIGEST.iOS.Pages
                 GifView.Source = new HtmlWebViewSource { Html = html };
 
                 // Aguarda o primeiro frame; se demorar, segue ap�s 4s para n�o ficar preso
-                await Task.WhenAny(tcs.Task, Task.Delay(4000));
+                await Task.WhenAny(tcs.Task, Task.Delay(3000));
 
                 // Suaviza a entrada para evitar "flash" inicial
                 await GifView.FadeTo(1, 180);
@@ -170,7 +170,7 @@ namespace NAVIGEST.iOS.Pages
                 GifView.Opacity = 0;
                 GifView.Source = new UrlWebViewSource { Url = url };
 
-                await Task.WhenAny(tcs.Task, Task.Delay(4000));
+                await Task.WhenAny(tcs.Task, Task.Delay(3000));
 
                 await GifView.FadeTo(1, 180);
             }
