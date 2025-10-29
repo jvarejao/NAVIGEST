@@ -424,6 +424,12 @@ namespace NAVIGEST.iOS.Pages
                     vm.UpsertVendedor(vendedor);
                     await GlobalToast.ShowAsync("Vendedor criado.", ToastTipo.Sucesso, 2000);
                 }
+
+                if (popup.VendedoresDirty)
+                {
+                    var preferred = result as Vendedor;
+                    await vm.ReloadVendedoresAsync(preferred);
+                }
             }
             catch (Exception ex)
             {

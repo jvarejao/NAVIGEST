@@ -616,7 +616,9 @@ namespace NAVIGEST.iOS.Services
                         EMAIL = rd.IsDBNull(rd.GetOrdinal("EMAIL")) ? null : rd.GetString("EMAIL"),
                         EXTERNO = GetBool("EXTERNO"),
                         ANULADO = GetBool("ANULADO"),
-                        VENDEDOR = rd.IsDBNull(rd.GetOrdinal("VENDEDOR")) ? null : rd.GetString("VENDEDOR"),
+                        VENDEDOR = rd.IsDBNull(rd.GetOrdinal("VENDEDOR"))
+                            ? null
+                            : rd.GetString("VENDEDOR")?.Trim().ToUpperInvariant(),
                         VALORCREDITO = rd.IsDBNull(rd.GetOrdinal("VALORCREDITO")) ? null : rd.GetString("VALORCREDITO"),
                         PastasSincronizadas = GetBool("PastasSincronizadas"),
                         ServicosCount = 0
@@ -726,7 +728,8 @@ namespace NAVIGEST.iOS.Services
             cmd.Parameters.Add("@mail", MySqlDbType.VarChar, 150).Value = c.EMAIL ?? "";
             cmd.Parameters.Add("@ext", MySqlDbType.Bit).Value = c.EXTERNO ? 1 : 0;
             cmd.Parameters.Add("@anu", MySqlDbType.Bit).Value = c.ANULADO ? 1 : 0;
-            cmd.Parameters.Add("@vend", MySqlDbType.VarChar, 80).Value = c.VENDEDOR ?? "";
+            var vendedorParam = (c.VENDEDOR ?? string.Empty).Trim().ToUpperInvariant();
+            cmd.Parameters.Add("@vend", MySqlDbType.VarChar, 80).Value = vendedorParam;
             cmd.Parameters.Add("@cred", MySqlDbType.VarChar, 40).Value = valorCredito.ToString("0.00", CultureInfo.InvariantCulture);
             cmd.Parameters.Add("@past", MySqlDbType.Bit).Value = c.PastasSincronizadas ? 1 : 0;
             var rows = await cmd.ExecuteNonQueryAsync(ct);
@@ -822,10 +825,11 @@ namespace NAVIGEST.iOS.Services
             while (await rd.ReadAsync(ct))
             {
                 var nome = rd.IsDBNull(nomeOrdinal) ? string.Empty : rd.GetString(nomeOrdinal);
+                var normalized = (nome ?? string.Empty).Trim().ToUpperInvariant();
                 list.Add(new Vendedor
                 {
                     Id = rd.IsDBNull(idOrdinal) ? 0 : rd.GetInt32(idOrdinal),
-                    Nome = nome
+                    Nome = normalized
                 });
             }
             return list;
@@ -851,17 +855,54 @@ namespace NAVIGEST.iOS.Services
             if (string.IsNullOrWhiteSpace(nome))
                 throw new ArgumentException("Nome de vendedor inválido.", nameof(nome));
 
+            nome = nome.Trim().ToUpperInvariant();
+
             using var conn = new MySqlConnection(GetConnectionString());
             await conn.OpenAsync(ct);
 
             const string sql = "INSERT INTO VENDEDORES (NOMEVEND) VALUES (@nome);";
             using var cmd = new MySqlCommand(sql, conn);
-            cmd.Parameters.Add("@nome", MySqlDbType.VarChar, 120).Value = nome.Trim();
+            cmd.Parameters.Add("@nome", MySqlDbType.VarChar, 120).Value = nome;
             await cmd.ExecuteNonQueryAsync(ct);
 
             var insertedId = cmd.LastInsertedId;
             var id = insertedId > int.MaxValue ? int.MaxValue : (int)insertedId;
-            return new Vendedor { Id = id, Nome = nome.Trim() };
+            return new Vendedor { Id = id, Nome = nome };
+        }
+
+        public static async Task<bool> UpdateVendedorAsync(int id, string nome, CancellationToken ct = default)
+        {
+            if (id <= 0)
+                throw new ArgumentOutOfRangeException(nameof(id));
+
+            nome = (nome ?? string.Empty).Trim().ToUpperInvariant();
+            if (string.IsNullOrWhiteSpace(nome))
+                throw new ArgumentException("Nome de vendedor inválido.", nameof(nome));
+
+            using var conn = new MySqlConnection(GetConnectionString());
+            await conn.OpenAsync(ct);
+
+            const string sql = @"UPDATE VENDEDORES SET NOMEVEND = @nome WHERE IDVEND = @id LIMIT 1;";
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.Add("@nome", MySqlDbType.VarChar, 120).Value = nome;
+            cmd.Parameters.Add("@id", MySqlDbType.Int32).Value = id;
+            var rows = await cmd.ExecuteNonQueryAsync(ct);
+            return rows > 0;
+        }
+
+        public static async Task<bool> DeleteVendedorAsync(int id, CancellationToken ct = default)
+        {
+            if (id <= 0)
+                return false;
+
+            using var conn = new MySqlConnection(GetConnectionString());
+            await conn.OpenAsync(ct);
+
+            const string sql = @"DELETE FROM VENDEDORES WHERE IDVEND = @id LIMIT 1;";
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.Add("@id", MySqlDbType.Int32).Value = id;
+            var rows = await cmd.ExecuteNonQueryAsync(ct);
+            return rows > 0;
         }
 
         // ================= PRODUTOS =================
@@ -912,18 +953,121 @@ namespace NAVIGEST.iOS.Services
             return list;
         }
 
-        public static async Task<List<string>> GetProductFamiliesAsync(CancellationToken ct = default)
+        public static async Task<List<ProductFamilyOption>> GetProductFamiliesAsync(CancellationToken ct = default)
         {
-            var families = new List<string>();
+            var families = new List<ProductFamilyOption>();
             using var conn = new MySqlConnection(GetConnectionString());
             await conn.OpenAsync(ct);
 
-            string sql = $"SELECT DISTINCT FAMILIA FROM {ProdutosTable} WHERE FAMILIA IS NOT NULL AND FAMILIA <> '' ORDER BY FAMILIA;";
+            const string sql = @"
+                SELECT codfamprod, nomefamprod
+                  FROM FAMPROD
+                 WHERE codfamprod IS NOT NULL AND codfamprod <> ''
+                 ORDER BY codfamprod;";
+
             using var cmd = new MySqlCommand(sql, conn);
-            using var rd = await cmd.ExecuteReaderAsync(ct);
-            while (await rd.ReadAsync(ct))
-                families.Add(rd.GetString("FAMILIA"));
+            try
+            {
+                using var rd = await cmd.ExecuteReaderAsync(ct);
+                while (await rd.ReadAsync(ct))
+                {
+                    var codigo = rd.IsDBNull(0) ? string.Empty : rd.GetString(0);
+                    if (string.IsNullOrWhiteSpace(codigo))
+                        continue;
+
+                    var nome = rd.IsDBNull(1) ? string.Empty : rd.GetString(1);
+                    families.Add(new ProductFamilyOption(codigo, nome));
+                }
+            }
+            catch (MySqlException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[FAMPROD] Falha ao carregar: {ex.Message}");
+            }
+
             return families;
+        }
+
+        public static async Task<string> PeekNextProductFamilyCodigoAsync(CancellationToken ct = default)
+        {
+            try
+            {
+                using var conn = new MySqlConnection(GetConnectionString());
+                await conn.OpenAsync(ct);
+
+                async Task<string?> TryFetchAsync(string sql)
+                {
+                    try
+                    {
+                        using var cmd = new MySqlCommand(sql, conn);
+                        var result = await cmd.ExecuteScalarAsync(ct);
+                        return result?.ToString();
+                    }
+                    catch (MySqlException)
+                    {
+                        return null;
+                    }
+                }
+
+                                const string primarySql = @"
+                                        SELECT codfamprod
+                                            FROM FAMPROD
+                                         WHERE codfamprod IS NOT NULL AND codfamprod <> ''
+                                         ORDER BY CASE
+                                                                WHEN codfamprod REGEXP '^[0-9]+$' THEN CAST(codfamprod AS UNSIGNED)
+                                                                ELSE NULL
+                                                            END DESC,
+                                                            codfamprod DESC
+                                         LIMIT 1;";
+                var last = await TryFetchAsync(primarySql);
+
+                if (string.IsNullOrWhiteSpace(last))
+                {
+                                        string fallbackSql = $@"
+                                                SELECT FAMILIA
+                                                    FROM {ProdutosTable}
+                                                 WHERE FAMILIA IS NOT NULL AND FAMILIA <> ''
+                                                 ORDER BY CASE
+                                                                        WHEN FAMILIA REGEXP '^[0-9]+$' THEN CAST(FAMILIA AS UNSIGNED)
+                                                                        ELSE NULL
+                                                                    END DESC,
+                                                                    FAMILIA DESC
+                                                 LIMIT 1;";
+                    last = await TryFetchAsync(fallbackSql);
+                }
+
+                if (string.IsNullOrWhiteSpace(last))
+                    return "001";
+
+                return ComputeNextSequentialCode(last.Trim());
+            }
+            catch
+            {
+                return "001";
+            }
+        }
+
+        private static string ComputeNextSequentialCode(string last)
+        {
+            if (string.IsNullOrWhiteSpace(last))
+                return "001";
+
+            if (int.TryParse(last, NumberStyles.Integer, CultureInfo.InvariantCulture, out var numeric))
+            {
+                var width = Math.Max(last.Length, 3);
+                var next = numeric + 1;
+                return next.ToString("D" + width, CultureInfo.InvariantCulture);
+            }
+
+            var digits = new string(last.Reverse().TakeWhile(char.IsDigit).Reverse().ToArray());
+            if (!string.IsNullOrEmpty(digits) && int.TryParse(digits, NumberStyles.Integer, CultureInfo.InvariantCulture, out var suffix))
+            {
+                var prefix = last.Substring(0, last.Length - digits.Length);
+                var width = digits.Length;
+                var next = suffix + 1;
+                return prefix + next.ToString("D" + width, CultureInfo.InvariantCulture);
+            }
+
+            return last + "-1";
         }
 
         public static async Task<bool> UpsertProductAsync(Product p, CancellationToken ct = default)
@@ -1107,26 +1251,74 @@ namespace NAVIGEST.iOS.Services
         // ===== PRODUTOFAMILIAS (simples) =====
         public static async Task<bool> UpsertProductFamilyAsync(string codigo, string descricao, CancellationToken ct = default)
         {
-            // Exemplo de implementação simples (ajuste conforme seu banco de dados)
             try
             {
+                codigo = (codigo ?? string.Empty).Trim().ToUpperInvariant();
+                descricao = (descricao ?? string.Empty).Trim().ToUpperInvariant();
+
+                if (string.IsNullOrWhiteSpace(codigo) || string.IsNullOrWhiteSpace(descricao))
+                    return false;
+
                 using var conn = new MySqlConnection(GetConnectionString());
                 await conn.OpenAsync(ct);
 
-                // Tenta inserir ou atualizar a família de produto
-                using var cmd = conn.CreateCommand();
-                cmd.CommandText = @"
-                    INSERT INTO PRODUTOFAMILIAS (CODIGO, DESCRICAO)
-                    VALUES (@codigo, @descricao)
-                    ON DUPLICATE KEY UPDATE DESCRICAO = @descricao;";
-                cmd.Parameters.AddWithValue("@codigo", codigo);
-                cmd.Parameters.AddWithValue("@descricao", descricao);
+                const string updateSql = @"
+                    UPDATE FAMPROD
+                       SET nomefamprod = @descricao
+                     WHERE codfamprod = @codigo
+                     LIMIT 1;";
 
-                var result = await cmd.ExecuteNonQueryAsync(ct);
-                return result > 0;
+                using (var update = new MySqlCommand(updateSql, conn))
+                {
+                    update.Parameters.Add("@descricao", MySqlDbType.VarChar, 120).Value = descricao;
+                    update.Parameters.Add("@codigo", MySqlDbType.VarChar, 30).Value = codigo;
+                    var affected = await update.ExecuteNonQueryAsync(ct);
+                    if (affected > 0)
+                        return true;
+                }
+
+                const string insertSql = @"
+                    INSERT INTO FAMPROD (codfamprod, nomefamprod)
+                    VALUES (@codigo, @descricao);";
+
+                using var insert = new MySqlCommand(insertSql, conn);
+                insert.Parameters.Add("@codigo", MySqlDbType.VarChar, 30).Value = codigo;
+                insert.Parameters.Add("@descricao", MySqlDbType.VarChar, 120).Value = descricao;
+                var inserted = await insert.ExecuteNonQueryAsync(ct);
+                return inserted > 0;
             }
-            catch
+            catch (MySqlException ex)
             {
+                System.Diagnostics.Debug.WriteLine($"[FAMPROD] Falha ao gravar: {ex.Message}");
+                return false;
+            }
+        }
+
+        public static async Task<bool> DeleteProductFamilyAsync(string codigo, CancellationToken ct = default)
+        {
+            if (string.IsNullOrWhiteSpace(codigo))
+                return false;
+
+            try
+            {
+                codigo = codigo.Trim().ToUpperInvariant();
+
+                using var conn = new MySqlConnection(GetConnectionString());
+                await conn.OpenAsync(ct);
+
+                const string sql = @"
+                    DELETE FROM FAMPROD
+                     WHERE codfamprod = @codigo
+                     LIMIT 1;";
+
+                using var cmd = new MySqlCommand(sql, conn);
+                cmd.Parameters.Add("@codigo", MySqlDbType.VarChar, 30).Value = codigo;
+                var affected = await cmd.ExecuteNonQueryAsync(ct);
+                return affected > 0;
+            }
+            catch (MySqlException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[FAMPROD] Falha ao eliminar: {ex.Message}");
                 return false;
             }
         }

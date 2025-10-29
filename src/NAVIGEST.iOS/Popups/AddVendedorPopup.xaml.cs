@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls;
 using NAVIGEST.iOS;
 using NAVIGEST.iOS.Models;
 using NAVIGEST.iOS.Services;
@@ -12,12 +13,13 @@ namespace NAVIGEST.iOS.Popups;
 public partial class AddVendedorPopup : Popup
 {
     private bool _isBusy;
+    internal bool VendedoresDirty { get; private set; }
 
     public AddVendedorPopup()
     {
         InitializeComponent();
         Opened += OnPopupOpened;
-        NomeEntry.TextChanged += (_, _) => HideError();
+        NomeEntry.TextChanged += OnNomeTextChanged;
     }
 
     private void OnPopupOpened(object? sender, PopupOpenedEventArgs e) => _ = InitializeAsync();
@@ -27,8 +29,11 @@ public partial class AddVendedorPopup : Popup
         try
         {
             SetBusy(true);
+            NomeEntry.Text = string.Empty;
+
             var nextId = await DatabaseService.PeekNextVendedorIdAsync();
             IdEntry.Text = nextId.ToString();
+
             MainThread.BeginInvokeOnMainThread(() => NomeEntry.Focus());
         }
         catch (Exception ex)
@@ -50,6 +55,8 @@ public partial class AddVendedorPopup : Popup
         BusyIndicator.IsRunning = value;
         SaveButton.IsEnabled = !value;
         CancelButton.IsEnabled = !value;
+        if (ListButton is not null)
+            ListButton.IsEnabled = !value;
     }
 
     private async void OnSaveClicked(object sender, EventArgs e)
@@ -57,7 +64,7 @@ public partial class AddVendedorPopup : Popup
         if (_isBusy)
             return;
 
-        var nome = NomeEntry.Text?.Trim();
+        var nome = NomeEntry.Text?.Trim().ToUpperInvariant();
         if (string.IsNullOrWhiteSpace(nome))
         {
             ShowError("Introduza o nome do vendedor.");
@@ -69,6 +76,7 @@ public partial class AddVendedorPopup : Popup
             SetBusy(true);
             HideError();
             var vendedor = await DatabaseService.InsertVendedorAsync(nome);
+            VendedoresDirty = true;
             Close(vendedor);
         }
         catch (Exception ex)
@@ -100,5 +108,74 @@ public partial class AddVendedorPopup : Popup
     {
         ErrorLabel.Text = string.Empty;
         ErrorLabel.IsVisible = false;
+    }
+
+    private void OnNomeTextChanged(object? sender, TextChangedEventArgs e)
+    {
+        HideError();
+
+        if (sender is not Entry entry)
+            return;
+
+        var upper = e.NewTextValue?.ToUpperInvariant() ?? string.Empty;
+        if (upper == e.NewTextValue)
+            return;
+
+        var caret = Math.Max(0, entry.CursorPosition);
+
+        entry.TextChanged -= OnNomeTextChanged;
+        entry.Text = upper;
+        entry.CursorPosition = Math.Min(caret, upper.Length);
+        entry.SelectionLength = 0;
+        entry.TextChanged += OnNomeTextChanged;
+    }
+
+    private async void OnShowVendedoresClicked(object sender, EventArgs e)
+    {
+        if (_isBusy)
+            return;
+
+        try
+        {
+            VendedoresDirty = false;
+            _isBusy = true;
+            SaveButton.IsEnabled = false;
+            CancelButton.IsEnabled = false;
+            if (ListButton is not null)
+                ListButton.IsEnabled = false;
+
+            var popup = new VendedoresListPopup();
+            var result = await AppShell.Current.ShowPopupAsync(popup) as VendedorListResult;
+
+            if (result is not null)
+            {
+                if (result.RefreshRequested)
+                    VendedoresDirty = true;
+
+                if (result.SelectedVendedor is Vendedor selected)
+                {
+                    var name = selected.Nome?.Trim().ToUpperInvariant() ?? string.Empty;
+                    NomeEntry.TextChanged -= OnNomeTextChanged;
+                    NomeEntry.Text = name;
+                    NomeEntry.CursorPosition = name.Length;
+                    NomeEntry.SelectionLength = 0;
+                    NomeEntry.TextChanged += OnNomeTextChanged;
+                    HideError();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            GlobalErro.TratarErro(ex);
+            await GlobalToast.ShowAsync("Erro ao carregar vendedores.", ToastTipo.Erro, 2500);
+        }
+        finally
+        {
+            _isBusy = false;
+            SaveButton.IsEnabled = true;
+            CancelButton.IsEnabled = true;
+            if (ListButton is not null)
+                ListButton.IsEnabled = true;
+        }
     }
 }

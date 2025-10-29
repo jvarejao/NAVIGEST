@@ -8,7 +8,7 @@ namespace NAVIGEST.Android.Pages
 {
     public partial class SplashIntroPage : ContentPage
     {
-        // Ajusta para a dura��o real do teu GIF (ms). Se o GIF for maior, aumenta este valor.
+        // Ajusta para a duracao real do GIF (ms). Se o GIF for maior, aumenta este valor.
         private const int GifDurationMs = 3500;
 
         private bool _started;
@@ -27,7 +27,7 @@ namespace NAVIGEST.Android.Pages
 
             try
             {
-                // L� o GIF do pacote
+                // Le o GIF do pacote
                 byte[] bytes;
                 try
                 {
@@ -38,7 +38,7 @@ namespace NAVIGEST.Android.Pages
                 }
                 catch
                 {
-                    // Fallback imediato se o ficheiro não existir – não bloqueia o arranque
+                    // Fallback imediato se o ficheiro nao existir - nao bloqueia o arranque
                     await Shell.Current.GoToAsync("//WelcomePage");
                     return;
                 }
@@ -51,7 +51,7 @@ namespace NAVIGEST.Android.Pages
                 }
                 catch
                 {
-                    // Se a convers�o falhar, segue para WelcomePage
+                    // Se a conversao falhar, segue para WelcomePage
                     await Shell.Current.GoToAsync("//WelcomePage");
                     return;
                 }
@@ -63,10 +63,10 @@ namespace NAVIGEST.Android.Pages
 <meta charset='utf-8'/>
 <meta name='viewport' content='width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no'>
 <style>
-  html,body{{margin:0;padding:0;height:100%;width:100%;background:#000;overflow:hidden;}}
-  .wrap{{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000;}}
-  /* Mant�m o GIF vis�vel por completo sem cortar */
-  img{{max-width:100vw;max-height:100vh;object-fit:contain;display:block;}}
+    html,body{{margin:0;padding:0;height:100%;width:100%;background:#000;overflow:hidden;}}
+    .wrap{{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000;}}
+    /* Mantem o GIF visivel por completo sem cortar */
+    img{{max-width:100vw;max-height:100vh;object-fit:contain;display:block;}}
 </style>
 </head>
 <body>
@@ -76,9 +76,18 @@ namespace NAVIGEST.Android.Pages
 </body>
 </html>";
 
-                await ShowHtmlAndFadeInAsync(html);
+                FallbackImage.IsVisible = true;
 
-                // Espera a duração definida para o GIF antes de navegar
+                try
+                {
+                    await ShowHtmlAndFadeInAsync(html);
+                }
+                finally
+                {
+                    FallbackImage.IsVisible = false;
+                }
+
+                // Espera a duracao definida para o GIF antes de navegar
                 await Task.Delay(GifDurationMs);
 
                 // Vai para WelcomePage
@@ -86,7 +95,7 @@ namespace NAVIGEST.Android.Pages
             }
             catch
             {
-                // Se algo falhar, não bloqueia o arranque
+                // Se algo falhar, nao bloqueia o arranque
                 await Shell.Current.GoToAsync("//WelcomePage");
             }
         }
@@ -109,7 +118,7 @@ namespace NAVIGEST.Android.Pages
                 GifView.Opacity = 0;
                 GifView.Source = new HtmlWebViewSource { Html = html };
 
-                // Aguarda o primeiro frame; se demorar, segue ap�s 4s para n�o ficar preso
+                // Aguarda o primeiro frame; se demorar, segue apos 4s para nao ficar preso
                 await Task.WhenAny(tcs.Task, Task.Delay(4000));
 
                 // Suaviza a entrada para evitar "flash" inicial
@@ -117,7 +126,7 @@ namespace NAVIGEST.Android.Pages
             }
             catch
             {
-                // Ignorar � n�o deve bloquear o arranque
+                // Ignorar e nao deve bloquear o arranque
             }
         }
 

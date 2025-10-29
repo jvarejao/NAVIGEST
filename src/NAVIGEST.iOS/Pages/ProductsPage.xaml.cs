@@ -6,9 +6,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
+using CommunityToolkit.Maui.Views;
 using NAVIGEST.iOS.PageModels;
 using NAVIGEST.iOS.Models;
 using NAVIGEST.iOS;
+using NAVIGEST.iOS.Popups;
 
 namespace NAVIGEST.iOS.Pages
 {
@@ -115,6 +117,7 @@ namespace NAVIGEST.iOS.Pages
 
         private void ShowListView()
         {
+            UnfocusFormFields();
             ListViewContainer.IsVisible = true;
             FormViewContainer.IsVisible = false;
             _isEditMode = false;
@@ -237,6 +240,8 @@ namespace NAVIGEST.iOS.Pages
         private void OnSearchBarTextChanged(object sender, TextChangedEventArgs e) { }
         private void OnCollectionViewScrolled(object sender, ItemsViewScrolledEventArgs e) => SearchBar.Unfocus();
 
+    private void OnFormBackgroundTapped(object sender, TappedEventArgs e) => UnfocusFormFields();
+
         // FAB
         private void OnAddProductTapped(object sender, EventArgs e)
         {
@@ -255,9 +260,59 @@ namespace NAVIGEST.iOS.Pages
             }
         }
 
+        private async void OnAddFamiliaTapped(object sender, EventArgs e)
+        {
+            try
+            {
+                if (BindingContext is not ProductsPageModel vm)
+                    return;
+
+                var popup = new AddProductFamilyPopup();
+                var result = await AppShell.Current.ShowPopupAsync(popup);
+
+                if (result is ProductFamilyInput familia && !string.IsNullOrWhiteSpace(familia.Codigo))
+                {
+                    var (ok, message, option) = await vm.AddFamilyAsync(familia.Codigo, familia.Descricao);
+                    if (!ok)
+                    {
+                        if (!string.IsNullOrWhiteSpace(message))
+                            await ShowAlertAsync("Família", message);
+
+                        if (popup.FamiliesDirty)
+                        {
+                            await vm.ReloadFamiliesAsync();
+                            FamiliaPicker.SelectedItem = vm.SelectedFamily;
+                        }
+                    }
+                    else
+                    {
+                        if (popup.FamiliesDirty)
+                            await vm.ReloadFamiliesAsync(option?.Codigo ?? familia.Codigo);
+
+                        var selectedOption = popup.FamiliesDirty ? vm.SelectedFamily : option;
+                        if (selectedOption is not null)
+                        {
+                            vm.SelectedFamily = selectedOption;
+                            FamiliaPicker.SelectedItem = selectedOption;
+                        }
+                    }
+                }
+                else if (popup.FamiliesDirty)
+                {
+                    await vm.ReloadFamiliesAsync();
+                    FamiliaPicker.SelectedItem = vm.SelectedFamily;
+                }
+            }
+            catch (Exception ex)
+            {
+                GlobalErro.TratarErro(ex, mostrarAlerta: true);
+            }
+        }
+
         // Cancelar
         private void OnCancelEditTapped(object sender, EventArgs e)
         {
+            UnfocusFormFields();
             if (BindingContext is ProductsPageModel vm &&
                 vm.ClearCommand?.CanExecute(null) == true)
             {
@@ -354,6 +409,32 @@ namespace NAVIGEST.iOS.Pages
         {
             if (BindingContext is ProductsPageModel vm)
                 vm.FormatValorOnBlur();
+        }
+
+        private void UnfocusFormFields()
+        {
+            try
+            {
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    try
+                    {
+                        CodigoEntry?.Unfocus();
+                        DescricaoEntry?.Unfocus();
+                        FamiliaPicker?.Unfocus();
+                        ColaboradorEntry?.Unfocus();
+                        PrecoCustoEntry?.Unfocus();
+                    }
+                    catch (Exception inner)
+                    {
+                        GlobalErro.TratarErro(inner, mostrarAlerta: false);
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                GlobalErro.TratarErro(ex, mostrarAlerta: false);
+            }
         }
     }
 }

@@ -136,6 +136,9 @@
     <MauiXaml Update="Popups\AddVendedorPopup.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>
+    <MauiXaml Update="Popups\VendedoresListPopup.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
   </ItemGroup>
 
 

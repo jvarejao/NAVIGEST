@@ -26,8 +26,26 @@ public class ProductsPageModel : INotifyPropertyChanged
 
     public ObservableCollection<Product> Products { get; } = new();
     public ObservableCollection<ProductGroup> GroupedProducts { get; } = new();
-    public ObservableCollection<string> Families { get; } = new();
-    public ObservableCollection<string> Familias => Families;
+    public ObservableCollection<ProductFamilyOption> Families { get; } = new();
+    public ObservableCollection<ProductFamilyOption> Familias => Families;
+
+    private ProductFamilyOption? _selectedFamily;
+    public ProductFamilyOption? SelectedFamily
+    {
+        get => _selectedFamily;
+        set
+        {
+            if (ReferenceEquals(_selectedFamily, value))
+                return;
+
+            _selectedFamily = value;
+            if (Editing is not null)
+                Editing.FamiliaSelecionada = value?.Codigo;
+
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(Editing));
+        }
+    }
 
     private Product? _selectedProduct;
     public Product? SelectedProduct
@@ -40,6 +58,7 @@ public class ProductsPageModel : INotifyPropertyChanged
             Debug.WriteLine($"[SELECT PRODUCT] {_selectedProduct?.Codigo}");
             OnPropertyChanged();
             EditModel = _selectedProduct?.Clone() ?? NewTemplate();
+            SyncSelectedFamilyFromEditing();
         }
     }
 
@@ -53,6 +72,7 @@ public class ProductsPageModel : INotifyPropertyChanged
             _editModel = value;
             OnPropertyChanged();
             OnPropertyChanged(nameof(Editing));
+            SyncSelectedFamilyFromEditing();
         }
     }
 
@@ -177,19 +197,17 @@ public class ProductsPageModel : INotifyPropertyChanged
                 }
             }
 
-            if (Families.Count == 0)
+            var fams = await DatabaseService.GetProductFamiliesAsync(ct);
+            Families.Clear();
+            foreach (var f in fams
+                         .GroupBy(f => f.Codigo, StringComparer.OrdinalIgnoreCase)
+                         .Select(g => g.First())
+                         .OrderBy(f => f.Codigo, StringComparer.OrdinalIgnoreCase))
             {
-                var fams = await DatabaseService.GetProductFamiliesAsync(ct); // IMPLEMENTAR
-                Families.Clear();
-                var orderedFamilies = fams
-                    .Select(f => f?.Trim() ?? string.Empty)
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .OrderBy(f => f, StringComparer.OrdinalIgnoreCase)
-                    .ToList();
-
-                foreach (var f in orderedFamilies)
-                    Families.Add(f);
+                Families.Add(f);
             }
+
+            SyncSelectedFamilyFromEditing();
 
             Repopulate(_all);
             if (Products.Count > 0 && SelectedProduct is null)
@@ -207,6 +225,46 @@ public class ProductsPageModel : INotifyPropertyChanged
         }
     }
 
+    public async Task ReloadFamiliesAsync(string? preferredCodigo = null)
+    {
+        try
+        {
+            var families = await DatabaseService.GetProductFamiliesAsync();
+            var ordered = families
+                .GroupBy(f => f.Codigo, StringComparer.OrdinalIgnoreCase)
+                .Select(g => g.First())
+                .OrderBy(f => f.Codigo, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            Families.Clear();
+            foreach (var family in ordered)
+                Families.Add(family);
+
+            var targetCodigo = preferredCodigo;
+            if (string.IsNullOrWhiteSpace(targetCodigo))
+            {
+                targetCodigo = SelectedFamily?.Codigo ?? Editing?.FamiliaSelecionada;
+            }
+
+            if (!string.IsNullOrWhiteSpace(targetCodigo))
+            {
+                var match = Families.FirstOrDefault(f => string.Equals(f.Codigo, targetCodigo, StringComparison.OrdinalIgnoreCase));
+                if (match is not null)
+                {
+                    SelectedFamily = match;
+                    return;
+                }
+            }
+
+            SyncSelectedFamilyFromEditing();
+        }
+        catch (Exception ex)
+        {
+            GlobalErro.TratarErro(ex);
+            await AppShell.DisplayToastAsync("Erro ao atualizar famílias.");
+        }
+    }
+
     private async Task OnNewAsync()
     {
         SelectedProduct = null;
@@ -216,6 +274,7 @@ public class ProductsPageModel : INotifyPropertyChanged
         EditModel.COLABORADOR = GetLoggedUserName();
         EditModel.Valor = FormatValor(EditModel.Valor);
         OnPropertyChanged(nameof(Editing));
+        SelectedFamily = null;
     }
 
     private void OnClear()
@@ -224,6 +283,7 @@ public class ProductsPageModel : INotifyPropertyChanged
         EditModel = NewTemplate();
         EditModel.Valor = FormatValor(EditModel.Valor);
         OnPropertyChanged(nameof(Editing));
+        SelectedFamily = null;
     }
 
     private async Task TryGenerateCodigoAsync()
@@ -451,6 +511,19 @@ public class ProductsPageModel : INotifyPropertyChanged
         return $"{sinal}{inteiro},{frac}€";
     }
 
+    private void SyncSelectedFamilyFromEditing()
+    {
+        var code = Editing?.Familia?.Trim();
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            SelectedFamily = null;
+            return;
+        }
+
+        var match = Families.FirstOrDefault(f => string.Equals(f.Codigo, code, StringComparison.OrdinalIgnoreCase));
+        SelectedFamily = match;
+    }
+
     private static string NormalizeFamilyTitle(string? familia)
     {
         var trimmed = familia?.Trim();
@@ -524,13 +597,13 @@ public class ProductsPageModel : INotifyPropertyChanged
     private void OnPropertyChanged([CallerMemberName] string? name = null)
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
-    public async Task<(bool ok, string message, string finalCode)> AddFamilyAsync(string codigo, string descricao)
+    public async Task<(bool ok, string message, ProductFamilyOption? family)> AddFamilyAsync(string codigo, string descricao)
     {
-        codigo = (codigo ?? "").Trim();
-        descricao = (descricao ?? "").Trim();
+    codigo = (codigo ?? string.Empty).Trim().ToUpperInvariant();
+    descricao = (descricao ?? string.Empty).Trim().ToUpperInvariant();
 
         if (string.IsNullOrWhiteSpace(codigo) || string.IsNullOrWhiteSpace(descricao))
-            return (false, "Código e descrição obrigatórios.", codigo);
+            return (false, "Código e descrição obrigatórios.", null);
 
         try
         {
@@ -544,20 +617,31 @@ public class ProductsPageModel : INotifyPropertyChanged
                 // Se ainda não implementado: ignora persistência silenciosamente
             }
 
-            if (!Families.Contains(codigo))
-                Families.Add(codigo);
+            var option = new ProductFamilyOption(codigo, descricao);
 
-            var ordered = Families.OrderBy(f => f, StringComparer.OrdinalIgnoreCase).ToList();
+            var existing = Families.FirstOrDefault(f => string.Equals(f.Codigo, codigo, StringComparison.OrdinalIgnoreCase));
+            if (existing is not null)
+                Families.Remove(existing);
+
+            Families.Add(option);
+
+            var ordered = Families
+                .OrderBy(f => f.Codigo, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
             Families.Clear();
-            foreach (var f in ordered) Families.Add(f);
+            foreach (var f in ordered)
+                Families.Add(f);
+
+            SelectedFamily = option;
 
             await AppShell.DisplayToastAsync("Família adicionada.");
-            return (true, "Ok", codigo);
+            return (true, "Ok", option);
         }
         catch (Exception ex)
         {
             GlobalErro.TratarErro(ex);
-            return (false, "Erro inesperado.", codigo);
+            return (false, "Erro inesperado.", null);
         }
     }
 

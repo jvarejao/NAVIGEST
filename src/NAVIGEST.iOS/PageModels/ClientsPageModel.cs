@@ -179,7 +179,7 @@ public class ClientsPageModel : INotifyPropertyChanged
         if (ReferenceEquals(_selectedVendedor, value)) return;
         _selectedVendedor = value;
         if (updateModel && EditModel != null)
-            EditModel.VENDEDOR = value?.Nome ?? string.Empty;
+            EditModel.VENDEDOR = value?.Nome?.Trim().ToUpperInvariant() ?? string.Empty;
         OnPropertyChanged(nameof(SelectedVendedor));
         if (updateModel)
             OnPropertyChanged(nameof(Editing));
@@ -203,6 +203,12 @@ public class ClientsPageModel : INotifyPropertyChanged
     {
         if (vendedor is null)
             return;
+
+        vendedor = new Vendedor
+        {
+            Id = vendedor.Id,
+            Nome = (vendedor.Nome ?? string.Empty).Trim().ToUpperInvariant()
+        };
 
         var existing = Vendedores.FirstOrDefault(v => v.Id == vendedor.Id);
         if (existing != null)
@@ -366,6 +372,32 @@ public class ClientsPageModel : INotifyPropertyChanged
         {
             IsBusy = false;
             IsRefreshing = false;
+        }
+    }
+
+    public async Task ReloadVendedoresAsync(Vendedor? preferred = null)
+    {
+        try
+        {
+            var vendedores = await DatabaseService.GetVendedoresAsync();
+            Vendedores.Clear();
+            foreach (var vendedor in vendedores)
+                Vendedores.Add(vendedor);
+
+            if (preferred is not null)
+            {
+                var match = Vendedores.FirstOrDefault(v => v.Id == preferred.Id);
+                SetSelectedVendedor(match, updateModel: true);
+            }
+            else
+            {
+                SyncSelectedVendedorFromModel();
+            }
+        }
+        catch (Exception ex)
+        {
+            GlobalErro.TratarErro(ex);
+            await AppShell.DisplayToastAsync("Erro ao atualizar vendedores.", ToastTipo.Erro, 2500);
         }
     }
 
@@ -752,11 +784,17 @@ public class ClientsPageModel : INotifyPropertyChanged
         }
         c.CLICODIGO = Clean(c.CLICODIGO, compress: false);
         c.CLINOME = Clean(c.CLINOME);
-    var telefoneClean = Clean(c.TELEFONE, compress: false);
-    c.TELEFONE = NormalizePhoneBody(telefoneClean ?? string.Empty);
-    c.INDICATIVO = DialCodeItem.NormalizePrefix(c.INDICATIVO);
+
+        var telefoneClean = Clean(c.TELEFONE, compress: false);
+        c.TELEFONE = NormalizePhoneBody(telefoneClean ?? string.Empty);
+        c.INDICATIVO = DialCodeItem.NormalizePrefix(c.INDICATIVO);
         c.EMAIL = Clean(c.EMAIL, compress: false);
-        c.VENDEDOR = Clean(c.VENDEDOR);
+
+        var vendedor = Clean(c.VENDEDOR);
+        c.VENDEDOR = string.IsNullOrWhiteSpace(vendedor)
+            ? string.Empty
+            : vendedor.ToUpperInvariant();
+
         c.VALORCREDITO = Clean(c.VALORCREDITO, compress: false);
     }
 

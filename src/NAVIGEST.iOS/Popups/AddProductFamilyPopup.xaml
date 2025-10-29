@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<toolkit:Popup x:Class="NAVIGEST.iOS.Popups.AddVendedorPopup"
+<toolkit:Popup x:Class="NAVIGEST.iOS.Popups.AddProductFamilyPopup"
                xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
                CanBeDismissedByTappingOutsideOfPopup="False">
   <toolkit:Popup.Size>
-    <Size Width="340" Height="320" />
+    <Size Width="340" Height="360" />
   </toolkit:Popup.Size>
 
   <Border BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
@@ -17,7 +17,7 @@
     </Border.Shadow>
     <Grid>
       <VerticalStackLayout Spacing="18">
-        <Label Text="Novo Vendedor"
+        <Label Text="Nova Família"
                FontSize="20"
                HorizontalOptions="Center"
                FontAttributes="Bold"
@@ -25,40 +25,40 @@
 
         <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
           <Label Text="Código"
-                 VerticalOptions="Center"
-                 TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
-          <Entry x:Name="IdEntry"
-                 Grid.Column="1"
-                 Placeholder="Código interno"
-                 IsEnabled="False"
-                 BackgroundColor="Transparent"
-                 TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
-                 HorizontalTextAlignment="End"/>
-          <Button x:Name="ListButton"
-                  Grid.Column="2"
+                VerticalOptions="Center"
+                TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+          <Entry x:Name="CodigoEntry"
+                Grid.Column="1"
+                Placeholder="Código interno"
+                BackgroundColor="Transparent"
+                IsEnabled="False"
+                TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
+                HorizontalTextAlignment="End"/>
+    <Button x:Name="ListButton"
+                Grid.Column="2"
                   WidthRequest="44"
                   HeightRequest="44"
                   Padding="0"
                   BackgroundColor="Transparent"
-                  Clicked="OnShowVendedoresClicked"
-                  SemanticProperties.Hint="Listar Vendedores">
+                  Clicked="OnShowFamiliesClicked"
+                  SemanticProperties.Hint="Listar Famílias">
             <Button.ImageSource>
               <FontImageSource Glyph="&#xF03A;" FontFamily="FA7Solid" Size="20" Color="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"/>
             </Button.ImageSource>
           </Button>
         </Grid>
 
-   <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
-          <Label Text="Nome"
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+          <Label Text="Descrição"
                  VerticalOptions="Center"
                  TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
-          <Entry x:Name="NomeEntry"
+          <Entry x:Name="DescricaoEntry"
                  Grid.Column="1"
-                 Placeholder="Nome do vendedor"
+                 Placeholder="Descrição da família"
                  BackgroundColor="Transparent"
                  TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
                  HorizontalTextAlignment="Start"
-                 MaxLength="120"
+                MaxLength="120"
                  TextTransform="Uppercase"/>
         </Grid>
 
