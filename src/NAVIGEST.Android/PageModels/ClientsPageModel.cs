@@ -172,7 +172,7 @@ public class ClientsPageModel : INotifyPropertyChanged
                 var vend = await DatabaseService.GetVendedoresAsync(ct);
                 Vendedores.Clear();
                 foreach (var v in vend)
-                    Vendedores.Add(v?.Trim() ?? "");
+                    Vendedores.Add(v?.Nome?.Trim() ?? string.Empty);
             }
 
             Repopulate(_all);

@@ -7,6 +7,9 @@
 
             <!-- Dicionários estáveis (não mudam com o tema) -->
             <ResourceDictionary.MergedDictionaries>
+                <!-- Apple/iOS Style -->
+                <ResourceDictionary Source="Resources/Styles/AppleStyles.xaml" />
+
                 <!-- Botões -->
                 <ResourceDictionary Source="Resources/Styles/Buttons.xaml" />
 

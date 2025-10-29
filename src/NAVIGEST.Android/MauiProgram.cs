@@ -1,9 +1,11 @@
 using CommunityToolkit.Maui; // Toolkit base
 using Microsoft.Extensions.Logging;
 using Syncfusion.Maui.Toolkit.Hosting;
+using UraniumUI;
 using NAVIGEST.Android.Services.Icons; // <-- IIconProvider (namespace)
 using NAVIGEST.Android.Pages;          // <-- Páginas
 using NAVIGEST.Android.PageModels;     // <-- ViewModels
+using NAVIGEST.Android.ViewModels;     // <-- HoursEntry
 
 #if ANDROID
 using Microsoft.Maui.Handlers;
@@ -22,6 +24,8 @@ namespace NAVIGEST.Android
             builder
                 .UseMauiApp<App>()
                 .UseMauiCommunityToolkit()
+                .UseUraniumUI()
+                .UseUraniumUIMaterial()
                 .ConfigureSyncfusionToolkit()
                 .ConfigureMauiHandlers(handlers =>
                 {
@@ -54,9 +58,6 @@ namespace NAVIGEST.Android
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                     fonts.AddFont("SegoeUI-Semibold.ttf", "SegoeSemibold");
                     fonts.AddFont("FluentSystemIcons-Regular.ttf", FluentUI.FontFamily);
-                    fonts.AddFont("Inter-Light.ttf", "InterLight");
-                    fonts.AddFont("Inter-Regular.ttf", "Inter");
-                    fonts.AddFont("Inter-SemiBold.ttf", "InterSemiBold");
                     fonts.AddFont("fa7_solid.otf", "FA7Solid");
                     fonts.AddFont("fa7-regular.otf", "FA7Regular");
                     fonts.AddFont("fa7_brands.otf", "FA7Brands");
@@ -86,8 +87,8 @@ namespace NAVIGEST.Android
             builder.Services.AddTransient<NAVIGEST.Android.PageModels.LoginPageModel>();
 
             // Horas
-            builder.Services.AddTransient<NAVIGEST.Android.ViewModels.HoursEntryViewModel>();
-            builder.Services.AddTransient<NAVIGEST.Android.Pages.HoursEntryPage>();
+            builder.Services.AddTransient<HoursEntryViewModel>();
+            builder.Services.AddTransient<HoursEntryPage>();
 
             // Splash e Welcome
             builder.Services.AddTransient<NAVIGEST.Android.Pages.SplashIntroPage>();

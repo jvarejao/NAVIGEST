@@ -154,7 +154,7 @@ public class ProductsPageModel : INotifyPropertyChanged
                 var fams = await DatabaseService.GetProductFamiliesAsync(ct); // IMPLEMENTAR
                 Families.Clear();
                 foreach (var f in fams)
-                    Families.Add(f?.Trim() ?? "");
+                    Families.Add(f?.NomeDisplay ?? string.Empty);
             }
 
             Repopulate(_all);

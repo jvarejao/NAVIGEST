@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<toolkit:Popup x:Class="NAVIGEST.Android.Popups.AddVendedorPopup"
+               xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+               xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+               CanBeDismissedByTappingOutsideOfPopup="False">
+  <toolkit:Popup.Size>
+    <Size Width="340" Height="320" />
+  </toolkit:Popup.Size>
+
+  <Border BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
+          StrokeThickness="0"
+          Padding="20"
+          StrokeShape="RoundRectangle 18">
+    <Border.Shadow>
+      <Shadow Brush="Black" Opacity="0.25" Radius="12" Offset="0,4"/>
+    </Border.Shadow>
+    <Grid>
+      <VerticalStackLayout Spacing="18">
+        <Label Text="Novo Vendedor"
+               FontSize="20"
+               HorizontalOptions="Center"
+               FontAttributes="Bold"
+               TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+
+        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+          <Label Text="Código"
+                 VerticalOptions="Center"
+                 TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+          <Entry x:Name="IdEntry"
+                 Grid.Column="1"
+                 Placeholder="Código interno"
+                 IsEnabled="False"
+                 BackgroundColor="Transparent"
+                 TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
+                 HorizontalTextAlignment="End"/>
+          <Button x:Name="ListButton"
+                  Grid.Column="2"
+                  WidthRequest="44"
+                  HeightRequest="44"
+                  Padding="0"
+                  BackgroundColor="Transparent"
+                  Clicked="OnShowVendedoresClicked"
+                  SemanticProperties.Hint="Listar Vendedores">
+            <Button.ImageSource>
+              <FontImageSource Glyph="&#xF03A;" FontFamily="FA7Solid" Size="20" Color="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"/>
+            </Button.ImageSource>
+          </Button>
+        </Grid>
+
+   <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+          <Label Text="Nome"
+                 VerticalOptions="Center"
+                 TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+          <Entry x:Name="NomeEntry"
+                 Grid.Column="1"
+                 Placeholder="Nome do vendedor"
+                 BackgroundColor="Transparent"
+                 TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
+                 HorizontalTextAlignment="Start"
+                 MaxLength="120"
+                 TextTransform="Uppercase"/>
+        </Grid>
+
+        <Label x:Name="ErrorLabel"
+               TextColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}"
+               FontSize="13"
+               IsVisible="False"/>
+
+        <HorizontalStackLayout HorizontalOptions="Center" Spacing="24">
+          <Button x:Name="CancelButton"
+                  WidthRequest="56"
+                  HeightRequest="56"
+                  Padding="0"
+                  BackgroundColor="#FF3B30"
+                  CornerRadius="28"
+                  Clicked="OnCancelClicked">
+            <Button.ImageSource>
+              <FontImageSource Glyph="&#xF00D;" FontFamily="FA7Solid" Size="22" Color="White"/>
+            </Button.ImageSource>
+          </Button>
+
+          <Button x:Name="SaveButton"
+                  WidthRequest="56"
+                  HeightRequest="56"
+                  Padding="0"
+                  BackgroundColor="#34C759"
+                  CornerRadius="28"
+                  Clicked="OnSaveClicked">
+            <Button.ImageSource>
+              <FontImageSource Glyph="&#xF00C;" FontFamily="FA7Solid" Size="22" Color="White"/>
+            </Button.ImageSource>
+          </Button>
+        </HorizontalStackLayout>
+      </VerticalStackLayout>
+
+      <ActivityIndicator x:Name="BusyIndicator"
+                          IsVisible="False"
+                          IsRunning="False"
+                          WidthRequest="32"
+                          HeightRequest="32"
+                          Color="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"
+                          HorizontalOptions="Center"
+                          VerticalOptions="Center"/>
+    </Grid>
+  </Border>
+</toolkit:Popup>

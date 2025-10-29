@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<toolkit:Popup x:Class="NAVIGEST.Android.Popups.VendedoresListPopup"
+               xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+               xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+               xmlns:models="clr-namespace:NAVIGEST.Android.Models"
+               CanBeDismissedByTappingOutsideOfPopup="False">
+  <toolkit:Popup.Size>
+    <Size Width="360" Height="520" />
+  </toolkit:Popup.Size>
+
+  <Border BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
+          StrokeThickness="0"
+          Padding="20"
+          StrokeShape="RoundRectangle 18">
+    <Border.Shadow>
+      <Shadow Brush="Black" Opacity="0.25" Radius="12" Offset="0,4" />
+    </Border.Shadow>
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
+      <Label Grid.Row="0"
+             Text="Vendedores"
+             FontSize="20"
+             FontAttributes="Bold"
+             HorizontalOptions="Center"
+             TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" />
+
+      <SearchBar x:Name="SearchBar"
+                 Grid.Row="1"
+                 Placeholder="Procurar vendedor..."
+                 TextChanged="OnSearchTextChanged"
+                 BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
+                 TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
+                 PlaceholderColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
+                 CancelButtonColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}" />
+
+      <CollectionView x:Name="VendedoresCollectionView"
+                      Grid.Row="2"
+                      ItemsSource="{Binding Vendedores}"
+                      SelectionMode="None"
+                      BackgroundColor="Transparent">
+        <CollectionView.EmptyView>
+          <Label Text="Sem vendedores registados."
+                 FontSize="14"
+                 TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
+                 HorizontalOptions="Center"
+                 VerticalOptions="Center" />
+        </CollectionView.EmptyView>
+
+        <CollectionView.ItemTemplate>
+          <DataTemplate x:DataType="models:Vendedor">
+            <Border StrokeThickness="0"
+                    BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#2C2C2E}"
+                    StrokeShape="RoundRectangle 12"
+                    Margin="0,6"
+                    Padding="14">
+              <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12" VerticalOptions="Center">
+                <Grid.GestureRecognizers>
+                  <TapGestureRecognizer Tapped="OnVendedorTapped"
+                                        CommandParameter="{Binding .}" />
+                </Grid.GestureRecognizers>
+
+                <VerticalStackLayout Spacing="2">
+                  <Label Text="{Binding Nome}"
+                         FontSize="16"
+                         FontAttributes="Bold"
+                         TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" />
+                  <Label Text="{Binding Id}"
+                         FontSize="12"
+                         TextColor="{AppThemeBinding Light=#8E8E93, Dark=#98989F}" />
+                </VerticalStackLayout>
+
+                <Button Grid.Column="1"
+                        WidthRequest="36"
+                        HeightRequest="36"
+                        Padding="0"
+                        BackgroundColor="Transparent"
+                        Clicked="OnEditVendedorClicked"
+                        SemanticProperties.Hint="Editar vendedor"
+                        CommandParameter="{Binding .}">
+                  <Button.ImageSource>
+                    <FontImageSource Glyph="&#xF044;" FontFamily="FA7Solid" Size="18" Color="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}" />
+                  </Button.ImageSource>
+                </Button>
+
+                <Button Grid.Column="2"
+                        WidthRequest="36"
+                        HeightRequest="36"
+                        Padding="0"
+                        BackgroundColor="Transparent"
+                        Clicked="OnDeleteVendedorClicked"
+                        SemanticProperties.Hint="Eliminar vendedor"
+                        CommandParameter="{Binding .}">
+                  <Button.ImageSource>
+                    <FontImageSource Glyph="&#xF1F8;" FontFamily="FA7Solid" Size="18" Color="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}" />
+                  </Button.ImageSource>
+                </Button>
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </CollectionView.ItemTemplate>
+      </CollectionView>
+
+      <Grid Grid.Row="3" ColumnDefinitions="*,*" ColumnSpacing="12">
+        <Button x:Name="CloseButton"
+                Grid.ColumnSpan="2"
+                Text="Fechar"
+                Style="{StaticResource AppleTintedButton}"
+                TextColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"
+                Clicked="OnCloseClicked" />
+      </Grid>
+
+      <Grid x:Name="BusyOverlay"
+            Grid.RowSpan="4"
+            BackgroundColor="#66000000"
+            IsVisible="False">
+        <ActivityIndicator x:Name="BusyIndicator"
+                           WidthRequest="32"
+                           HeightRequest="32"
+                           IsRunning="False"
+                           Color="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}" />
+      </Grid>
+    </Grid>
+  </Border>
+</toolkit:Popup>

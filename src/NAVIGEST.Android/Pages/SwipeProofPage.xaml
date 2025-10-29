@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage x:Class="NAVIGEST.Android.Pages.SwipeProofPage"
+             x:Name="Root"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="Swipe Proof">
+  <Grid BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}">
+    <CollectionView ItemsSource="{Binding Items}" SelectionMode="None" Margin="16">
+      <CollectionView.ItemTemplate>
+        <DataTemplate>
+          <SwipeView>
+            <SwipeView.RightItems>
+              <SwipeItems Mode="Reveal" SwipeBehaviorOnInvoked="Close">
+                <!-- PASTAS -->
+                <SwipeItem Text="Pastas" BackgroundColor="#00A3FF"
+                           Command="{Binding Source={x:Reference Root}, Path=OpenPastasCommand}"
+                           CommandParameter="{Binding .}">
+                  <SwipeItem.IconImageSource>
+                    <FontImageSource Glyph="&#xF07C;" FontFamily="FA7Solid" Size="18" Color="White"/>
+                  </SwipeItem.IconImageSource>
+                </SwipeItem>
+
+                <!-- EDITAR -->
+                <SwipeItem Text="Editar" BackgroundColor="#FFE400"
+                           Command="{Binding Source={x:Reference Root}, Path=EditClientCommand}"
+                           CommandParameter="{Binding .}">
+                  <SwipeItem.IconImageSource>
+                    <FontImageSource Glyph="&#xF044;" FontFamily="FA7Solid" Size="18" Color="#333333"/>
+                  </SwipeItem.IconImageSource>
+                </SwipeItem>
+
+                <!-- ELIMINAR -->
+                <SwipeItem Text="Eliminar" BackgroundColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}"
+                           Command="{Binding Source={x:Reference Root}, Path=DeleteClientCommand}"
+                           CommandParameter="{Binding .}">
+                  <SwipeItem.IconImageSource>
+                    <FontImageSource Glyph="&#xF1F8;" FontFamily="FA7Solid" Size="18" Color="White"/>
+                  </SwipeItem.IconImageSource>
+                </SwipeItem>
+              </SwipeItems>
+            </SwipeView.RightItems>
+
+            <!-- Conteúdo do item -->
+            <Grid Padding="14" BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}">
+              <Label Text="{Binding .}" FontSize="16"
+                     TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+            </Grid>
+          </SwipeView>
+        </DataTemplate>
+      </CollectionView.ItemTemplate>
+    </CollectionView>
+  </Grid>
+</ContentPage>
