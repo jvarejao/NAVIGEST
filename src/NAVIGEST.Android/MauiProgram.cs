@@ -10,6 +10,7 @@ using NAVIGEST.Android.ViewModels;     // <-- HoursEntry
 #if ANDROID
 using Microsoft.Maui.Handlers;
 using Android.Webkit;
+using Android.Util;
 using AColor = Android.Graphics.Color;
 #endif
 
@@ -19,6 +20,9 @@ namespace NAVIGEST.Android
     {
         public static MauiApp CreateMauiApp()
         {
+#if ANDROID
+            Log.Info("AppLifecycle", "MauiProgram.CreateMauiApp start");
+#endif
             var builder = MauiApp.CreateBuilder();
 
             builder
@@ -99,7 +103,11 @@ namespace NAVIGEST.Android
             builder.Services.AddSingleton<NAVIGEST.Android.Services.Icons.IIconProvider, NAVIGEST.Android.Services.Icons.IconProvider>();
 #endif
 
-            return builder.Build();
+            var app = builder.Build();
+#if ANDROID
+            Log.Info("AppLifecycle", "MauiProgram.CreateMauiApp completed");
+#endif
+            return app;
         }
     }
 }

@@ -1,6 +1,7 @@
 using Android.App;
 using Android.Content.PM;
 using Android.OS;
+using Android.Util;
 
 namespace NAVIGEST.Android
 {
@@ -13,5 +14,11 @@ namespace NAVIGEST.Android
             ConfigChanges.Keyboard | ConfigChanges.KeyboardHidden)]
     public class MainActivity : MauiAppCompatActivity
     {
+        protected override void OnCreate(Bundle? savedInstanceState)
+        {
+            Log.Info("AppLifecycle", "MainActivity.OnCreate start");
+            base.OnCreate(savedInstanceState);
+            Log.Info("AppLifecycle", "MainActivity.OnCreate end");
+        }
     }
 }

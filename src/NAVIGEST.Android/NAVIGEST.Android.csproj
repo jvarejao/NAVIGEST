@@ -54,7 +54,7 @@
 	<ItemGroup>
 		<MauiIcon Include="Resources\AppIcon\appicon.png" />
 		<MauiSplashScreen Include="Resources\Splash\appicon.png" Color="#17171a" BaseSize="128,128" />
-		<MauiAsset Include="Resources\Images\startup.gif" LogicalName="startup.gif" />
+		<MauiAsset Include="Resources\Raw\startup.gif" />
 	</ItemGroup>
 
 	<!-- Fonts -->

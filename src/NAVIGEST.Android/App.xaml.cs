@@ -1,5 +1,8 @@
 using NAVIGEST.Android.Resources.Styles;
 using Microsoft.Maui.Storage;
+#if ANDROID
+using Android.Util;
+#endif
 
 namespace NAVIGEST.Android
 {
@@ -9,11 +12,22 @@ namespace NAVIGEST.Android
         private bool _autoMode;
 
         public bool IsAutoTheme => _autoMode;
+#if ANDROID
+        private const string LogTag = "AppLifecycle";
+#endif
 
         public App()
         {
-            InitializeComponent(); // agora compila porque casa com x:Class no App.xaml
-            // MainPage = new AppShell(); // REMOVIDO para evitar conflito com CreateWindow
+            Console.WriteLine("[App] Console before InitializeComponent");
+#if ANDROID
+            Log.Info(LogTag, "ctor entered - before InitializeComponent");
+#endif
+            InitializeComponent();
+            System.Diagnostics.Debug.WriteLine("[App] Inicializando App...");
+            Console.WriteLine("[App] Console ctor hit");
+#if ANDROID
+            Log.Info(LogTag, "ctor after InitializeComponent");
+#endif
 
             var stored = Preferences.Get(ThemePrefKey, string.Empty);
             switch (stored)
@@ -30,15 +44,26 @@ namespace NAVIGEST.Android
                     EnableAutoTheme(persist: false);
                     break;
                 default:
-                    // fallback Light
                     _autoMode = false;
                     SetTheme(AppTheme.Light, persist: false);
                     break;
             }
+#if ANDROID
+            Log.Info(LogTag, "ctor finished theme setup");
+#endif
         }
 
         protected override Window CreateWindow(IActivationState? activationState)
-            => new(new AppShell());
+        {
+#if ANDROID
+            Log.Info(LogTag, "CreateWindow invoked");
+#endif
+            var shell = new AppShell();
+#if ANDROID
+            Log.Info(LogTag, "CreateWindow returning AppShell");
+#endif
+            return new Window(shell);
+        }
 
         public void EnableAutoTheme(bool persist = true)
         {

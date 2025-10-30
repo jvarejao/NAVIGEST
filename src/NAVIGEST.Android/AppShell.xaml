@@ -7,9 +7,11 @@
     Shell.FlyoutBehavior="Disabled"
     Title="NAVIGEST">
 
+    <!-- ✅ SplashIntroPage como CONTEÚDO INICIAL (não rota) -->
+    <ShellContent ContentTemplate="{DataTemplate pages:SplashIntroPage}" Route="splash" />
+    
     <!-- Rotas/páginas existentes -->
-    <ShellContent ContentTemplate="{DataTemplate pages:SplashIntroPage}" Route="SplashIntroPage" />
-    <ShellContent ContentTemplate="{DataTemplate pages:WelcomePage}" Route="WelcomePage" />
+    <ShellContent ContentTemplate="{DataTemplate pages:WelcomePage}" Route="welcome" />
     <ShellContent ContentTemplate="{DataTemplate pages:MainYahPage}" Route="mainpage" />
 
     <!-- Página de Horas -->

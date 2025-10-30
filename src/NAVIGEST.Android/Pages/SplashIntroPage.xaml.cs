@@ -4,158 +4,256 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Devices;
 
+
+using Microsoft.Maui.Handlers;
+using Android.Webkit;
+#if ANDROID
+using Android.Util;
+#endif
+using AColor = Android.Graphics.Color;
+
 namespace NAVIGEST.Android.Pages
 {
     public partial class SplashIntroPage : ContentPage
     {
-        // Ajusta para a duracao real do GIF (ms). Se o GIF for maior, aumenta este valor.
-        private const int GifDurationMs = 3500;
-
+        private const int GifDurationMs = 3500;       // duração do GIF
+        private const int MaxSplashDurationMs = 5000; // tempo máximo antes do fallback
         private bool _started;
+#if ANDROID
+        private const string LogTag = "SplashIntroPage";
+#endif
 
-        public SplashIntroPage()
-        {
+    public SplashIntroPage()
+    {
+#if ANDROID
+        Log.Debug(LogTag, "Ctor invoked");
+#endif
+            // Handler local: ativa permissões de file:// e corrige fundo branco
+            WebViewHandler.Mapper.AppendToMapping("FixLocalFiles", (handler, view) =>
+            {
+                var wv = handler.PlatformView;
+                if (wv is null) return;
+
+                var s = wv.Settings;
+                if (s is not null)
+                {
+                    s.AllowFileAccess = true;
+                    s.AllowContentAccess = true;
+                    s.AllowFileAccessFromFileURLs = true;
+                    s.AllowUniversalAccessFromFileURLs = true;
+                }
+
+                // Fundo preto imediato
+                wv.SetBackgroundColor(AColor.Black);
+            });
+
             InitializeComponent();
+
+            // Carregar imagem de fallback
+            try
+            {
+                FallbackImage.Source = ImageSource.FromFile("startup_fallback.png");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SplashIntroPage] Erro ao carregar fallback: {ex.Message}");
+#if ANDROID
+                Log.Warn(LogTag, $"Fallback image error: {ex.Message}");
+#endif
+            }
         }
 
         protected override async void OnAppearing()
         {
             base.OnAppearing();
-
+            System.Diagnostics.Debug.WriteLine("[SplashIntroPage] ✅ OnAppearing chamado!");
+#if ANDROID
+            Log.Debug(LogTag, "OnAppearing fired");
+#endif
             if (_started) return;
             _started = true;
 
             try
             {
-                // Le o GIF do pacote
-                byte[] bytes;
-                try
+                System.Diagnostics.Debug.WriteLine("[SplashIntroPage] Mostrando fallback image...");
+#if ANDROID
+                Log.Debug(LogTag, "Displaying fallback image");
+#endif
+                // Mostrar imagem de fallback IMEDIATAMENTE enquanto carrega o WebView
+                MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    using var stream = await FileSystem.OpenAppPackageFileAsync("startup.gif");
-                    using var ms = new MemoryStream();
-                    await stream.CopyToAsync(ms);
-                    bytes = ms.ToArray();
-                }
-                catch
-                {
-                    // Fallback imediato se o ficheiro nao existir - nao bloqueia o arranque
-                    await Shell.Current.GoToAsync("//WelcomePage");
-                    return;
-                }
+                    FallbackImage.IsVisible = true;
+                    FallbackImage.Opacity = 1;
+                    System.Diagnostics.Debug.WriteLine("[SplashIntroPage] Fallback image visível!");
+#if ANDROID
+                    Log.Debug(LogTag, "Fallback image now visible");
+#endif
+                });
 
-                // Android: usa base64 injetada no HTML
-                string base64 = string.Empty;
-                try
-                {
-                    base64 = await Task.Run(() => Convert.ToBase64String(bytes));
-                }
-                catch
-                {
-                    // Se a conversao falhar, segue para WelcomePage
-                    await Shell.Current.GoToAsync("//WelcomePage");
-                    return;
-                }
+                // Tentar carregar o GIF no background
+                System.Diagnostics.Debug.WriteLine("[SplashIntroPage] Iniciando TryShowGifAsync...");
+#if ANDROID
+                Log.Debug(LogTag, "Calling TryShowGifAsync");
+#endif
+                bool ok = await TryShowGifAsync();
+#if ANDROID
+                Log.Debug(LogTag, $"TryShowGifAsync completed. Success={ok}");
+#endif
 
-                var html = $@"
+                // Esperar pelo tempo do GIF
+                await Task.Delay(GifDurationMs);
+
+                // Fade-out suave antes de ir para WelcomePage
+                try { await this.FadeTo(0, 500, Easing.CubicOut); } catch { }
+
+                System.Diagnostics.Debug.WriteLine("[SplashIntroPage] Navegando para welcome...");
+#if ANDROID
+                Log.Debug(LogTag, "Navigating to 'welcome'");
+#endif
+                await Shell.Current.GoToAsync("welcome");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SplashIntroPage] Erro: {ex.Message}");
+#if ANDROID
+                Log.Error(LogTag, $"Erro em OnAppearing: {ex}");
+#endif
+                await Shell.Current.GoToAsync("welcome");
+            }
+        }
+
+    protected override void OnHandlerChanged()
+    {
+        base.OnHandlerChanged();
+#if ANDROID
+        Log.Info(LogTag, $"OnHandlerChanged. Handler={(Handler?.GetType().Name ?? "null")}");
+#endif
+    }
+
+    protected override void OnNavigatedTo(NavigatedToEventArgs args)
+    {
+        base.OnNavigatedTo(args);
+#if ANDROID
+            Log.Info(LogTag, "OnNavigatedTo fired");
+#endif
+    }
+private async Task<bool> TryShowGifAsync()
+{
+    try
+    {
+#if ANDROID
+    Log.Debug(LogTag, "TryShowGifAsync started");
+#endif
+        using var stream = await FileSystem.OpenAppPackageFileAsync("startup.gif");
+        using var ms = new MemoryStream();
+        await stream.CopyToAsync(ms);
+        var bytes = ms.ToArray();
+#if ANDROID
+    Log.Debug(LogTag, $"GIF bytes lidos: {bytes.Length}");
+#endif
+
+        // Cache o GIF em ficheiro
+        string cacheDir = FileSystem.CacheDirectory;
+        string gifPath = Path.Combine(cacheDir, "startup.gif");
+        await File.WriteAllBytesAsync(gifPath, bytes);
+#if ANDROID
+    Log.Debug(LogTag, $"GIF escrito em cache: {gifPath}");
+#endif
+
+        string base64 = Convert.ToBase64String(bytes);
+#if ANDROID
+    Log.Debug(LogTag, "Base64 criado");
+#endif
+
+        var html = $@"
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset='utf-8'/>
-<meta name='viewport' content='width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no'>
+<meta name='viewport' content='width=device-width,initial-scale=1'>
 <style>
-    html,body{{margin:0;padding:0;height:100%;width:100%;background:#000;overflow:hidden;}}
-    .wrap{{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000;}}
-    /* Mantem o GIF visivel por completo sem cortar */
-    img{{max-width:100vw;max-height:100vh;object-fit:contain;display:block;}}
+html,body{{margin:0;padding:0;height:100%;background:#000;overflow:hidden;}}
+img{{max-width:100vw;max-height:100vh;object-fit:contain;display:block;margin:auto;}}
 </style>
 </head>
 <body>
-  <div class='wrap'>
-    <img src='data:image/gif;base64,{base64}' alt='intro'/>
-  </div>
+<img src='data:image/gif;base64,{base64}' alt='intro'/>
 </body>
 </html>";
 
-                FallbackImage.IsVisible = true;
+        var htmlSource = new HtmlWebViewSource { Html = html };
 
-                try
-                {
-                    await ShowHtmlAndFadeInAsync(html);
-                }
-                finally
-                {
-                    FallbackImage.IsVisible = false;
-                }
+        // Mostrar WebView com fade in
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            GifView.BackgroundColor = Colors.Black;
+            GifView.Source = htmlSource;
+#if ANDROID
+            Log.Debug(LogTag, "HtmlWebViewSource atribuído");
+#endif
+        });
 
-                // Espera a duracao definida para o GIF antes de navegar
-                await Task.Delay(GifDurationMs);
+        // Fade in do WebView (dá tempo para renderizar)
+        await Task.Delay(300); // Pequeno delay para WebView inicializar
+        await GifView.FadeTo(1, 500);
+#if ANDROID
+        Log.Debug(LogTag, "GifView visível (FadeTo concluído)");
+#endif
+        
+        // Esconder fallback quando WebView está pronto
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            FallbackImage.IsVisible = false;
+#if ANDROID
+            Log.Debug(LogTag, "Fallback ocultado");
+#endif
+        });
 
-                // Vai para WelcomePage
-                await Shell.Current.GoToAsync("//WelcomePage");
-            }
-            catch
-            {
-                // Se algo falhar, nao bloqueia o arranque
-                await Shell.Current.GoToAsync("//WelcomePage");
-            }
-        }
+        return true;
+    }
+    catch (Exception ex)
+    {
+        System.Diagnostics.Debug.WriteLine($"[TryShowGifAsync] Erro: {ex.Message}");
+#if ANDROID
+        Log.Error(LogTag, $"TryShowGifAsync exception: {ex}");
+#endif
+        return false;
+    }
+}
+
 
         private async Task ShowHtmlAndFadeInAsync(string html)
         {
-            try
+            var tcs = new TaskCompletionSource();
+            void OnNavigated(object? s, WebNavigatedEventArgs e)
             {
-                var tcs = new TaskCompletionSource();
-
-                void OnNavigated(object? s, WebNavigatedEventArgs e)
-                {
-                    GifView.Navigated -= OnNavigated;
-                    tcs.TrySetResult();
-                }
-
-                GifView.Navigated += OnNavigated;
-
-                // Set source on UI thread
-                GifView.Opacity = 0;
-                GifView.Source = new HtmlWebViewSource { Html = html };
-
-                // Aguarda o primeiro frame; se demorar, segue apos 4s para nao ficar preso
-                await Task.WhenAny(tcs.Task, Task.Delay(4000));
-
-                // Suaviza a entrada para evitar "flash" inicial
-                await GifView.FadeTo(1, 180);
+                GifView.Navigated -= OnNavigated;
+                tcs.TrySetResult();
             }
-            catch
-            {
-                // Ignorar e nao deve bloquear o arranque
-            }
+
+            GifView.Navigated += OnNavigated;
+            GifView.Opacity = 0;
+            GifView.Source = new HtmlWebViewSource { Html = html };
+
+            await Task.WhenAny(tcs.Task, Task.Delay(3000));
+            await GifView.FadeTo(1, 200);
         }
 
-        // load a file:// URL into the WebView and fade in (used only on iOS)
         private async Task ShowUrlAndFadeInAsync(string url)
         {
-            try
+            var tcs = new TaskCompletionSource();
+            void OnNavigated(object? s, WebNavigatedEventArgs e)
             {
-                var tcs = new TaskCompletionSource();
-
-                void OnNavigated(object? s, WebNavigatedEventArgs e)
-                {
-                    GifView.Navigated -= OnNavigated;
-                    tcs.TrySetResult();
-                }
-
-                GifView.Navigated += OnNavigated;
-
-                GifView.Opacity = 0;
-                GifView.Source = new UrlWebViewSource { Url = url };
-
-                await Task.WhenAny(tcs.Task, Task.Delay(4000));
-
-                await GifView.FadeTo(1, 180);
+                GifView.Navigated -= OnNavigated;
+                tcs.TrySetResult();
             }
-            catch
-            {
-                // ignore
-            }
+
+            GifView.Navigated += OnNavigated;
+            GifView.Opacity = 0;
+            GifView.Source = new UrlWebViewSource { Url = url };
+
+            await Task.WhenAny(tcs.Task, Task.Delay(3000));
+            await GifView.FadeTo(1, 200);
         }
     }
 }
