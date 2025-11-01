@@ -125,31 +125,36 @@ namespace NAVIGEST.Android.Pages
 #if ANDROID
                 Log.Debug(LogTag, "TryShowGifAsync started");
 #endif
-                Stream? stream = null;
+                // Try to load animated GIF - if fails, skip (fallback image will show)
                 try
                 {
-                    stream = await FileSystem.OpenAppPackageFileAsync("startup.gif");
-                }
-                catch (FileNotFoundException)
-                {
+                    Stream? stream = null;
+                    try
+                    {
+                        stream = await FileSystem.OpenAppPackageFileAsync("startup.gif");
+                    }
+                    catch (FileNotFoundException)
+                    {
 #if ANDROID
-                    Log.Debug(LogTag, "startup.gif not found, trying fallback");
+                        Log.Debug(LogTag, "startup.gif not found, trying fallback GIF");
 #endif
-                    stream = await FileSystem.OpenAppPackageFileAsync("intro_720_15fps_slow.gif");
-                }
+                        stream = await FileSystem.OpenAppPackageFileAsync("intro_720_15fps_slow.gif");
+                    }
 
-                using (stream)
-                {
-                    using var ms = new MemoryStream();
-                    await stream.CopyToAsync(ms);
-                    var bytes = ms.ToArray();
+                    if (stream != null)
+                    {
+                        using (stream)
+                        {
+                            using var ms = new MemoryStream();
+                            await stream.CopyToAsync(ms);
+                            var bytes = ms.ToArray();
 #if ANDROID
-                    Log.Debug(LogTag, $"GIF bytes read: {bytes.Length}");
+                            Log.Debug(LogTag, $"GIF bytes read: {bytes.Length}");
 #endif
 
-                    string base64 = Convert.ToBase64String(bytes);
+                            string base64 = Convert.ToBase64String(bytes);
 
-                    var html = $@"
+                            var html = $@"
 <!DOCTYPE html>
 <html>
 <head>
@@ -165,33 +170,44 @@ img{{max-width:100vw;max-height:100vh;object-fit:contain;display:block;margin:au
 </body>
 </html>";
 
-                    var htmlSource = new HtmlWebViewSource { Html = html };
+                            var htmlSource = new HtmlWebViewSource { Html = html };
 
-                    MainThread.BeginInvokeOnMainThread(() =>
-                    {
-                        GifView.BackgroundColor = Colors.Black;
-                        GifView.Source = htmlSource;
+                            MainThread.BeginInvokeOnMainThread(() =>
+                            {
+                                GifView.BackgroundColor = Colors.Black;
+                                GifView.Source = htmlSource;
 #if ANDROID
-                        Log.Debug(LogTag, "HtmlWebViewSource assigned");
+                                Log.Debug(LogTag, "HtmlWebViewSource assigned");
 #endif
-                    });
+                            });
 
-                    await Task.Delay(300);
-                    await GifView.FadeTo(1, 500);
+                            await Task.Delay(300);
+                            await GifView.FadeTo(1, 500);
 #if ANDROID
-                    Log.Debug(LogTag, "GifView visible");
+                            Log.Debug(LogTag, "GifView visible");
 #endif
 
-                    MainThread.BeginInvokeOnMainThread(() =>
-                    {
-                        FallbackImage.IsVisible = false;
+                            MainThread.BeginInvokeOnMainThread(() =>
+                            {
+                                FallbackImage.IsVisible = false;
 #if ANDROID
-                        Log.Debug(LogTag, "Fallback hidden");
+                                Log.Debug(LogTag, "Fallback hidden");
 #endif
-                    });
+                            });
 
-                    return true;
+                            return true;
+                        }
+                    }
                 }
+                catch (Exception ex)
+                {
+#if ANDROID
+                    Log.Warn(LogTag, $"GIF loading failed, continuing with fallback: {ex.Message}");
+#endif
+                    // Continue without GIF - fallback image remains visible
+                }
+
+                return false; // Fallback image remains visible
             }
             catch (Exception ex)
             {
