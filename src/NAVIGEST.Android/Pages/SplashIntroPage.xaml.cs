@@ -129,16 +129,35 @@ namespace NAVIGEST.Android.Pages
                 try
                 {
                     Stream? stream = null;
-                    try
+                    
+                    // Tenta vários caminhos possíveis
+                    var pathsToTry = new[] 
+                    { 
+                        "startup.gif",
+                        "Resources/Raw/startup.gif",
+                        "intro_720_15fps_slow.gif",
+                        "Resources/Raw/intro_720_15fps_slow.gif"
+                    };
+                    
+                    foreach (var path in pathsToTry)
                     {
-                        stream = await FileSystem.OpenAppPackageFileAsync("startup.gif");
-                    }
-                    catch (FileNotFoundException)
-                    {
+                        try
+                        {
+                            stream = await FileSystem.OpenAppPackageFileAsync(path);
+                            if (stream != null)
+                            {
 #if ANDROID
-                        Log.Debug(LogTag, "startup.gif not found, trying fallback GIF");
+                                Log.Debug(LogTag, $"Successfully loaded GIF from: {path}");
 #endif
-                        stream = await FileSystem.OpenAppPackageFileAsync("intro_720_15fps_slow.gif");
+                                break;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+#if ANDROID
+                            Log.Debug(LogTag, $"Path '{path}' not found: {ex.Message}");
+#endif
+                        }
                     }
 
                     if (stream != null)
@@ -197,6 +216,12 @@ img{{max-width:100vw;max-height:100vh;object-fit:contain;display:block;margin:au
 
                             return true;
                         }
+                    }
+                    else
+                    {
+#if ANDROID
+                        Log.Debug(LogTag, "All GIF paths returned null, using fallback image");
+#endif
                     }
                 }
                 catch (Exception ex)
