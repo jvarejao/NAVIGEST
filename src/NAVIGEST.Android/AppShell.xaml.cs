@@ -29,9 +29,9 @@ public partial class AppShell : Shell
         Routing.RegisterRoute("projects", typeof(Pages.ProjectListPage));
         Routing.RegisterRoute("manage", typeof(Pages.ManageMetaPage));
 
-        // ✅ Registar SplashIntroPage corretamente
-        Routing.RegisterRoute("splash", typeof(Pages.SplashIntroPage));
-        Routing.RegisterRoute("welcome", typeof(Pages.WelcomePage));
+        // ✅ Registar SplashIntroPage e WelcomePage com rotas PascalCase (consistente com iOS)
+        Routing.RegisterRoute("SplashIntroPage", typeof(Pages.SplashIntroPage));
+        Routing.RegisterRoute("WelcomePage", typeof(Pages.WelcomePage));
     System.Diagnostics.Debug.WriteLine("[AppShell] Rotas registadas!");
 #if ANDROID
     Log.Debug(LogTag, "Routes registered");

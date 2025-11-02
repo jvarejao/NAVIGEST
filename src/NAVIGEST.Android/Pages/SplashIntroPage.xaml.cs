@@ -89,16 +89,16 @@ namespace NAVIGEST.Android.Pages
                 try { await this.FadeTo(0, 500, Easing.CubicOut); } catch { }
 
 #if ANDROID
-                Log.Debug(LogTag, "Navigating to 'welcome'");
+                Log.Debug(LogTag, "Navigating to 'WelcomePage'");
 #endif
-                await Shell.Current.GoToAsync("welcome");
+                await Shell.Current.GoToAsync("WelcomePage");
             }
             catch (Exception ex)
             {
 #if ANDROID
                 Log.Error(LogTag, $"Error in OnAppearing: {ex}");
 #endif
-                await Shell.Current.GoToAsync("welcome");
+                await Shell.Current.GoToAsync("WelcomePage");
             }
         }
 

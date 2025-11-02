@@ -177,7 +177,7 @@ public partial class WelcomePage : ContentPage
             #if WINDOWS
             await NavigateToLoginPageWindowsAsync();
             #elif ANDROID
-            await NavigateToAsync("Login");
+            await NavigateToLoginPageAndroidAsync();
             #elif IOS
             await NavigateToLoginPageiOSAsync();
             #else
