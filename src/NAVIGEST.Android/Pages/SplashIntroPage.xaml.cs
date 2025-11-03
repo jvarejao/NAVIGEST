@@ -14,7 +14,7 @@ namespace NAVIGEST.Android.Pages
 {
     public partial class SplashIntroPage : ContentPage
     {
-        private const int GifDurationMs = 3500;
+        private const int GifDurationMs = 4500;
         private const int MaxSplashDurationMs = 5000;
         private bool _started;
 #if ANDROID
@@ -125,18 +125,16 @@ namespace NAVIGEST.Android.Pages
 #if ANDROID
                 Log.Debug(LogTag, "TryShowGifAsync started");
 #endif
-                // Try to load animated GIF - if fails, skip (fallback image will show)
+                // Try to load animated GIF - startup.gif from Resources/Raw
                 try
                 {
                     Stream? stream = null;
                     
-                    // Tenta vários caminhos possíveis
+                    // Tenta startup.gif com os caminhos possíveis
                     var pathsToTry = new[] 
                     { 
-                        "startup.gif",
-                        "Resources/Raw/startup.gif",
-                        "intro_720_15fps_slow.gif",
-                        "Resources/Raw/intro_720_15fps_slow.gif"
+                        "Resources/Raw/startup.gif",  // ← Caminho correto (MauiAsset LogicalName)
+                        "startup.gif"                  // ← Fallback
                     };
                     
                     foreach (var path in pathsToTry)
@@ -147,7 +145,7 @@ namespace NAVIGEST.Android.Pages
                             if (stream != null)
                             {
 #if ANDROID
-                                Log.Debug(LogTag, $"Successfully loaded GIF from: {path}");
+                                Log.Debug(LogTag, $"✅ GIF loaded from: {path}");
 #endif
                                 break;
                             }
@@ -155,7 +153,7 @@ namespace NAVIGEST.Android.Pages
                         catch (Exception ex)
                         {
 #if ANDROID
-                            Log.Debug(LogTag, $"Path '{path}' not found: {ex.Message}");
+                            Log.Debug(LogTag, $"⚠ Path '{path}' not found: {ex.Message}");
 #endif
                         }
                     }

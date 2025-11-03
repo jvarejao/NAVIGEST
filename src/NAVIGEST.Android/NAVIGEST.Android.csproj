@@ -55,7 +55,6 @@
 		<MauiIcon Include="Resources\AppIcon\appicon.png" />
 		<MauiSplashScreen Include="Resources\Splash\appicon.png" Color="#17171a" BaseSize="128,128" />
 		<MauiAsset Include="Resources\Raw\startup.gif" />
-		<MauiAsset Include="Resources\Raw\intro_720_15fps_slow.gif" />
 		<MauiAsset Include="Resources\Raw\startup.mp4" />
 		<MauiAsset Include="Resources\Raw\SeedData.json" />
 		<MauiAsset Include="Resources\Images\startup_fallback.png" />
