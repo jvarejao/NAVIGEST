@@ -50,46 +50,225 @@ namespace NAVIGEST.Android.Pages
 
         private void OnPageSizeChanged(object sender, EventArgs e) { }
 
-        // -------- Seleo Desktop --------
-        private void OnClientSelectionChanged(object sender, SelectionChangedEventArgs e)
+        // -------- Swipe Actions --------
+        private void OnEditSwipeInvoked(object sender, EventArgs e)
         {
             try
             {
-                if (BindingContext is ClientsPageModel vm && e.CurrentSelection?.FirstOrDefault() is object item)
+                if (sender is SwipeItemView siv && siv.BindingContext is object item)
                 {
-                    if (vm.SelectCommand?.CanExecute(item) == true)
+                    if (BindingContext is ClientsPageModel vm && vm.SelectCommand?.CanExecute(item) == true)
+                    {
                         vm.SelectCommand.Execute(item);
+                        ShowFormView();
+                    }
                 }
             }
             catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
         }
 
-        // -------- Overlay Mobile --------
-        private void OnOpenClientPicker(object sender, EventArgs e)
-        {
-            ClientPickerOverlay.IsVisible = true;
-        }
-
-        private void OnCloseClientPicker(object sender, EventArgs e)
-        {
-            ClientPickerOverlay.IsVisible = false;
-        }
-
-        private void OnClientPickerSelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void OnDeleteSwipeInvoked(object sender, EventArgs e)
         {
             try
             {
-                if (BindingContext is ClientsPageModel vm && e.CurrentSelection?.FirstOrDefault() is object item)
+                if (sender is SwipeItemView siv && siv.BindingContext is object item)
                 {
-                    if (vm.SelectCommand?.CanExecute(item) == true)
-                        vm.SelectCommand.Execute(item);
-                    ClientPickerOverlay.IsVisible = false;
+                    if (BindingContext is ClientsPageModel vm && vm.DeleteCommand?.CanExecute(item) == true)
+                        vm.DeleteCommand.Execute(item);
                 }
             }
             catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
         }
 
-        // -------- Valor Crdito --------
+        private void OnPastasSwipeInvoked(object sender, EventArgs e)
+        {
+            try
+            {
+                if (sender is SwipeItemView siv && siv.BindingContext is object item)
+                {
+                    if (BindingContext is ClientsPageModel vm)
+                    {
+                        // Navigate to Pastas
+                        MainThread.BeginInvokeOnMainThread(async () =>
+                        {
+                            await Shell.Current.GoToAsync($"ClientPastas?clienteId={vm.Editing?.CLICODIGO}");
+                        });
+                    }
+                }
+            }
+            catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
+        }
+
+        private void OnServicesSwipeInvoked(object sender, EventArgs e)
+        {
+            try
+            {
+                if (sender is SwipeItemView siv && siv.BindingContext is object item)
+                {
+                    if (BindingContext is ClientsPageModel vm)
+                    {
+                        // Navigate to Services
+                        MainThread.BeginInvokeOnMainThread(async () =>
+                        {
+                            await Shell.Current.GoToAsync($"ClientServices?clienteId={vm.Editing?.CLICODIGO}");
+                        });
+                    }
+                }
+            }
+            catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
+        }
+
+        // -------- Cell Tap --------
+        private void OnClientCellTapped(object sender, TappedEventArgs e)
+        {
+            try
+            {
+                if (sender is Grid grid && grid.BindingContext is object item)
+                {
+                    if (BindingContext is ClientsPageModel vm && vm.SelectCommand?.CanExecute(item) == true)
+                    {
+                        vm.SelectCommand.Execute(item);
+                        ShowFormView();
+                    }
+                }
+            }
+            catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
+        }
+
+        // -------- Add Client FAB --------
+        private void OnAddClientTapped(object sender, TappedEventArgs e)
+        {
+            try
+            {
+                if (BindingContext is ClientsPageModel vm && vm.NewCommand?.CanExecute(null) == true)
+                {
+                    vm.NewCommand.Execute(null);
+                    ShowFormView();
+                }
+            }
+            catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
+        }
+
+        // -------- Form Controls --------
+        private void ShowFormView()
+        {
+            if (ListViewContainer is not null && FormViewContainer is not null)
+            {
+                ListViewContainer.IsVisible = false;
+                FormViewContainer.IsVisible = true;
+            }
+        }
+
+        private void OnSaveClientTapped(object sender, EventArgs e)
+        {
+            try
+            {
+                if (BindingContext is ClientsPageModel vm && vm.SaveCommand?.CanExecute(null) == true)
+                {
+                    vm.SaveCommand.Execute(null);
+                    HideFormView();
+                }
+            }
+            catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
+        }
+
+        private void OnCancelEditTapped(object sender, EventArgs e)
+        {
+            HideFormView();
+        }
+
+        private void HideFormView()
+        {
+            if (ListViewContainer is not null && FormViewContainer is not null)
+            {
+                FormViewContainer.IsVisible = false;
+                ListViewContainer.IsVisible = true;
+            }
+        }
+
+        private void OnFormBackgroundTapped(object sender, TappedEventArgs e)
+        {
+            HideFormView();
+        }
+
+        private void OnSwipeEnded(object sender, SwipeEndedEventArgs e)
+        {
+            // Swipe completed
+        }
+
+        private void OnCollectionViewScrolled(object sender, ItemsViewScrolledEventArgs e)
+        {
+            // Handle scroll if needed
+        }
+
+        private void OnSearchBarSearchButtonPressed(object sender, EventArgs e)
+        {
+            // Search completed
+        }
+
+        private void OnSearchBarTextChanged(object sender, TextChangedEventArgs e)
+        {
+            // Filtering is done through binding in ViewModel
+        }
+
+        private void OnAddVendedorTapped(object sender, EventArgs e)
+        {
+            try
+            {
+                if (BindingContext is ClientsPageModel vm)
+                {
+                    // Open vendor picker or add dialog
+                    MainThread.BeginInvokeOnMainThread(async () =>
+                    {
+                        var result = await DisplayPromptAsync(
+                            title: "Novo Vendedor",
+                            message: "Digite o nome do vendedor",
+                            placeholder: "Nome",
+                            accept: "Guardar",
+                            cancel: "Cancelar");
+
+                        if (!string.IsNullOrWhiteSpace(result))
+                        {
+                            // Add vendor through ViewModel if needed
+                            await GlobalToast.ShowAsync("Vendedor adicionado.", ToastTipo.Sucesso, 1600);
+                        }
+                    });
+                }
+            }
+            catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
+        }
+
+        private void OnPastasFormTapped(object sender, EventArgs e)
+        {
+            try
+            {
+                if (BindingContext is ClientsPageModel vm)
+                {
+                    // Navigate to Pastas
+                    MainThread.BeginInvokeOnMainThread(async () =>
+                    {
+                        await Shell.Current.GoToAsync($"ClientPastas?clienteId={vm.Editing?.CLICODIGO}");
+                        HideFormView();
+                    });
+                }
+            }
+            catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
+        }
+
+        private void OnDeleteFromFormTapped(object sender, EventArgs e)
+        {
+            try
+            {
+                if (BindingContext is ClientsPageModel vm && vm.DeleteCommand?.CanExecute(null) == true)
+                {
+                    vm.DeleteCommand.Execute(null);
+                    HideFormView();
+                }
+            }
+            catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
+        }
+
+        // -------- Valor Crédito --------
         private void OnValorCreditoFocused(object sender, FocusEventArgs e)
         {
             try

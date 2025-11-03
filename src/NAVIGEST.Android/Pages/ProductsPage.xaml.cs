@@ -75,90 +75,201 @@ public partial class ProductsPage : ContentPage
         catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
     }
 
-    // Overlay picker (mobile/tablet)
-    private void OnOpenProductPicker(object sender, EventArgs e)
-    {
-        ProductPickerOverlay.IsVisible = true;
-    }
-
-    private void OnCloseProductPicker(object sender, EventArgs e)
-    {
-        ProductPickerOverlay.IsVisible = false;
-    }
-
-    private void OnProductPickerSelectionChanged(object sender, SelectionChangedEventArgs e)
+    // -------- Swipe Actions --------
+    private void OnEditSwipeInvoked(object sender, EventArgs e)
     {
         try
         {
-            if (BindingContext is ProductsPageModel vm && e.CurrentSelection?.FirstOrDefault() is object item)
+            if (sender is SwipeItemView siv && siv.BindingContext is object item)
             {
-                if (vm.SelectCommand?.CanExecute(item) == true)
+                if (BindingContext is ProductsPageModel vm && vm.SelectCommand?.CanExecute(item) == true)
+                {
                     vm.SelectCommand.Execute(item);
-                ProductPickerOverlay.IsVisible = false;
+                    ShowFormView();
+                }
             }
         }
         catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
     }
 
-    // ---------- Popup Adicionar Famlia ----------
-    private void OnAddFamilyClicked(object sender, EventArgs e)
+    private void OnDeleteSwipeInvoked(object sender, EventArgs e)
     {
-        AddFamilyErrorLabel.IsVisible = false;
-        NewFamilyCodeEntry.Text = string.Empty;
-        NewFamilyNameEntry.Text = string.Empty;
-        AddFamilyOverlay.IsVisible = true;
-        NewFamilyCodeEntry.Focus();
-    }
-
-    private void OnCancelAddFamily(object sender, EventArgs e)
-    {
-        AddFamilyOverlay.IsVisible = false;
-    }
-
-    private async void OnSaveAddFamily(object sender, EventArgs e)
-    {
-        if (BindingContext is not ProductsPageModel vm) return;
-
-        var code = NewFamilyCodeEntry.Text?.Trim() ?? "";
-        var name = NewFamilyNameEntry.Text?.Trim() ?? "";
-
-        if (string.IsNullOrWhiteSpace(code) || string.IsNullOrWhiteSpace(name))
-        {
-            ShowAddFamilyError("Cdigo e descrio obrigatrios.");
-            return;
-        }
-
-        BtnSaveAddFamily.IsEnabled = false;
         try
         {
-            var (ok, msg, finalCode) = await vm.AddFamilyAsync(code, name);
-            if (!ok)
+            if (sender is SwipeItemView siv && siv.BindingContext is object item)
             {
-                ShowAddFamilyError(msg);
-                return;
+                if (BindingContext is ProductsPageModel vm && vm.DeleteCommand?.CanExecute(item) == true)
+                    vm.DeleteCommand.Execute(item);
             }
-
-            AddFamilyOverlay.IsVisible = false;
-            FamilyPicker.SelectedItem = finalCode;
-            await GlobalToast.ShowAsync("Famlia adicionada.", ToastTipo.Sucesso, 1600);
         }
-        catch (Exception ex)
-        {
-            ShowAddFamilyError("Erro ao guardar famlia.");
-            GlobalErro.TratarErro(ex, mostrarAlerta: false);
-            await GlobalToast.ShowAsync("Erro ao guardar famlia.", ToastTipo.Erro, 2500);
-        }
-        finally
-        {
-            BtnSaveAddFamily.IsEnabled = true;
-        }
+        catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
     }
 
-    private void ShowAddFamilyError(string msg)
+    // -------- Cell Tap --------
+    private void OnProductCellTapped(object sender, TappedEventArgs e)
     {
-        AddFamilyErrorLabel.Text = msg;
-        AddFamilyErrorLabel.IsVisible = true;
+        try
+        {
+            if (sender is Grid grid && grid.BindingContext is object item)
+            {
+                if (BindingContext is ProductsPageModel vm && vm.SelectCommand?.CanExecute(item) == true)
+                {
+                    vm.SelectCommand.Execute(item);
+                    ShowFormView();
+                }
+            }
+        }
+        catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
     }
+
+    // -------- Add Product FAB --------
+    private void OnAddProductTapped(object sender, TappedEventArgs e)
+    {
+        try
+        {
+            if (BindingContext is ProductsPageModel vm && vm.NewCommand?.CanExecute(null) == true)
+            {
+                vm.NewCommand.Execute(null);
+                ShowFormView();
+            }
+        }
+        catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
+    }
+
+    // -------- Form Controls --------
+    private void ShowFormView()
+    {
+        if (ListViewContainer is not null && FormViewContainer is not null)
+        {
+            ListViewContainer.IsVisible = false;
+            FormViewContainer.IsVisible = true;
+        }
+    }
+
+    private void OnSaveProductTapped(object sender, EventArgs e)
+    {
+        try
+        {
+            if (BindingContext is ProductsPageModel vm && vm.SaveCommand?.CanExecute(null) == true)
+            {
+                vm.SaveCommand.Execute(null);
+                HideFormView();
+            }
+        }
+        catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
+    }
+
+    private void OnCancelEditTapped(object sender, EventArgs e)
+    {
+        HideFormView();
+    }
+
+    private void HideFormView()
+    {
+        if (ListViewContainer is not null && FormViewContainer is not null)
+        {
+            FormViewContainer.IsVisible = false;
+            ListViewContainer.IsVisible = true;
+        }
+    }
+
+    private void OnFormBackgroundTapped(object sender, TappedEventArgs e)
+    {
+        HideFormView();
+    }
+
+    private void OnCollectionViewScrolled(object sender, ItemsViewScrolledEventArgs e)
+    {
+        // Handle scroll if needed
+    }
+
+    private void OnSearchBarSearchButtonPressed(object sender, EventArgs e)
+    {
+        // Search completed
+    }
+
+    private void OnSearchBarTextChanged(object sender, TextChangedEventArgs e)
+    {
+        // Filtering is done through binding in ViewModel
+    }
+
+    // -------- Familia Management --------
+    private void OnAddFamiliaTapped(object sender, EventArgs e)
+    {
+        try
+        {
+            if (BindingContext is ProductsPageModel vm)
+            {
+                // Open family picker or add dialog
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    var result = await DisplayPromptAsync(
+                        title: "Nova Família",
+                        message: "Digite o código e descrição",
+                        placeholder: "Código",
+                        accept: "Guardar",
+                        cancel: "Cancelar");
+
+                    if (!string.IsNullOrWhiteSpace(result))
+                    {
+                        // Add family through ViewModel
+                        try
+                        {
+                            var (ok, msg, finalCode) = await vm.AddFamilyAsync(result, result);
+                            if (ok)
+                            {
+                                await GlobalToast.ShowAsync("Família adicionada.", ToastTipo.Sucesso, 1600);
+                            }
+                            else
+                            {
+                                await GlobalToast.ShowAsync(msg ?? "Erro ao adicionar família.", ToastTipo.Erro, 2500);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            GlobalErro.TratarErro(ex, mostrarAlerta: false);
+                        }
+                    }
+                });
+            }
+        }
+        catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
+    }
+
+    private void OnPrecoCustoFocused(object sender, FocusEventArgs e)
+    {
+        try
+        {
+            if (sender is Entry entry)
+            {
+                var len = entry.Text?.Length ?? 0;
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    try { entry.CursorPosition = 0; entry.SelectionLength = len; } catch { }
+                });
+            }
+        }
+        catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
+    }
+
+    private void OnPrecoCustoUnfocused(object sender, FocusEventArgs e)
+    {
+        // Format price on blur if needed
+    }
+
+    private void OnDeleteFromFormTapped(object sender, EventArgs e)
+    {
+        try
+        {
+            if (BindingContext is ProductsPageModel vm && vm.DeleteCommand?.CanExecute(null) == true)
+            {
+                vm.DeleteCommand.Execute(null);
+                HideFormView();
+            }
+        }
+        catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
+    }
+
 
 #if WINDOWS
     // Cdigo Windows especfico (exemplo: animaes, navegao, layouts)
