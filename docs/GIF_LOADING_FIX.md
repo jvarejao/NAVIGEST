@@ -1,19 +1,24 @@
 # 🎬 GIF Loading Fix - Android SplashIntroPage
 
+## Arquivo Correto
+
+**GIF a usar**: `startup.gif` (827KB)  
+**Localização**: `src/NAVIGEST.Android/Resources/Raw/startup.gif`
+
 ## ❌ Problema Identificado
 
-O GIF (`intro_720_15fps_slow.gif`) **estava instalado no APK** mas **não estava sendo encontrado** pela função `FileSystem.OpenAppPackageFileAsync()`.
+O GIF (`startup.gif`) **estava instalado no APK** mas **não estava sendo encontrado** pela função `FileSystem.OpenAppPackageFileAsync()`.
 
 ### Investigação
 
 ```bash
 # APK listing mostrava:
-assets/Resources/Raw/intro_720_15fps_slow.gif    863318 bytes
+assets/Resources/Raw/startup.gif    874822 bytes  ✅ (presente)
 ```
 
 Mas o código tentava:
 ```csharp
-stream = await FileSystem.OpenAppPackageFileAsync("intro_720_15fps_slow.gif");
+stream = await FileSystem.OpenAppPackageFileAsync("startup.gif");
 ```
 
 Resultado: `null` (não encontrado)
@@ -22,31 +27,22 @@ Resultado: `null` (não encontrado)
 
 O problema era que `FileSystem.OpenAppPackageFileAsync()` espera o **caminho relativo completo** baseado no `LogicalName` do `MauiAsset`.
 
-Adicionei um **loop de tentativas** com múltiplos caminhos:
+Adicionei um **loop de tentativas** com múltiplos caminhos, priorizando o correto:
 
 ```csharp
 var pathsToTry = new[] 
 { 
-    "startup.gif",
-    "Resources/Raw/startup.gif",
-    "intro_720_15fps_slow.gif",
-    "Resources/Raw/intro_720_15fps_slow.gif"
+    "Resources/Raw/startup.gif",  // ← Caminho correto (MauiAsset LogicalName)
+    "startup.gif"                  // ← Fallback
 };
 
 foreach (var path in pathsToTry)
 {
-    try
+    stream = await FileSystem.OpenAppPackageFileAsync(path);
+    if (stream != null)
     {
-        stream = await FileSystem.OpenAppPackageFileAsync(path);
-        if (stream != null)
-        {
-            Log.Debug(LogTag, $"Successfully loaded GIF from: {path}");
-            break;
-        }
-    }
-    catch (Exception ex)
-    {
-        Log.Debug(LogTag, $"Path '{path}' not found: {ex.Message}");
+        Log.Debug(LogTag, $"✅ GIF loaded from: {path}");
+        break;
     }
 }
 ```
@@ -54,12 +50,13 @@ foreach (var path in pathsToTry)
 ### Logs de Sucesso
 
 ```
-D SplashIntroPage: Path 'startup.gif' not found: startup.gif
-D SplashIntroPage: Successfully loaded GIF from: Resources/Raw/startup.gif  ✅
-D SplashIntroPage: GIF bytes read: 874822
+D SplashIntroPage: TryShowGifAsync started
+D SplashIntroPage: ✅ GIF loaded from: Resources/Raw/startup.gif  ✅
+D SplashIntroPage: GIF bytes read: 827713
 D SplashIntroPage: HtmlWebViewSource assigned
 D SplashIntroPage: GifView visible
 D SplashIntroPage: Fallback hidden
+D SplashIntroPage: TryShowGifAsync completed. Success=True
 ```
 
 ## 🎯 Fluxo Resultante
@@ -68,9 +65,9 @@ D SplashIntroPage: Fallback hidden
 OnAppearing()
    ├─ Fallback image visible (imediatamente)
    ├─ TryShowGifAsync() iniciado
-   │   ├─ Loop através de 4 caminhos possíveis
-   │   ├─ Carrega `Resources/Raw/intro_720_15fps_slow.gif` ✅
-   │   ├─ Converte para base64 (874KB)
+   │   ├─ Tenta caminhos em ordem
+   │   ├─ Carrega `Resources/Raw/startup.gif` ✅
+   │   ├─ Converte para base64 (827KB)
    │   ├─ Cria HtmlWebViewSource com data URI
    │   ├─ FadeTo(1) para mostrar GIF animado
    │   └─ Hides fallback image
@@ -83,24 +80,25 @@ OnAppearing()
 
 ```xml
 <MauiAsset Include="Resources\Raw\startup.gif" />
-<MauiAsset Include="Resources\Raw\intro_720_15fps_slow.gif" />
 <MauiAsset Include="Resources\Raw\startup.mp4" />
 <MauiAsset Include="Resources\Raw\SeedData.json" />
 <MauiAsset Include="Resources\Images\startup_fallback.png" />
 ```
 
-O atributo `LogicalName` não está explícito, então MAUI usa o padrão que inclui o path relativo.
+O atributo `LogicalName` não está explícito, então MAUI usa o padrão que inclui o path relativo: `Resources/Raw/startup.gif`
 
 ## 🔍 Lição Aprendida
 
 - `FileSystem.OpenAppPackageFileAsync()` no Android requer o **caminho completo** conforme aparece no APK (`assets/Resources/Raw/...`)
-- Testar múltiplos caminhos é robustez contra variações de build configuration
+- O `LogicalName` do `MauiAsset` determina o caminho acessível
+- Priorizar o caminho correto evita fallbacks desnecessários
 - Logs são cruciais para debug de asset loading issues
 
 ## ✨ Resultado Final
 
-✅ GIF aparece animado no splash screen por 3.5s
-✅ Fallback image usada como intermediária enquanto WebView carrega
+✅ startup.gif carrega corretamente  
+✅ GIF aparece animado no splash screen por 3.5s  
+✅ Fallback image usada como intermediária enquanto WebView carrega  
 ✅ Transição suave para WelcomePage
 
-**Commit**: `15d4803` - "Fix GIF loading: try multiple paths including Resources/Raw prefix for proper file resolution"
+**Commit**: `f7d7595` - "Use startup.gif exclusively: simplify paths and remove non-existent intro_720_15fps_slow.gif from config"
