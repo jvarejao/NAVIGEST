@@ -226,10 +226,7 @@
     <!-- VIEW 2: Form -->
     <Grid x:Name="FormViewContainer" IsVisible="False"
           BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}">
-      <ScrollView>
-        <ScrollView.GestureRecognizers>
-          <TapGestureRecognizer Tapped="OnFormBackgroundTapped" NumberOfTapsRequired="1"/>
-        </ScrollView.GestureRecognizers>
+      <ScrollView VerticalScrollBarVisibility="Always">
         <VerticalStackLayout Spacing="20" Padding="16">
 
           <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,8,0,0">
@@ -238,7 +235,11 @@
             <Label Grid.Column="1" x:Name="FormTitle" Text="Novo Cliente"
                    FontSize="17" FontAttributes="Bold"
                    HorizontalOptions="Center" VerticalOptions="Center"
-                   TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+                   TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}">
+              <Label.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnFormBackgroundTapped" NumberOfTapsRequired="1"/>
+              </Label.GestureRecognizers>
+            </Label>
           </Grid>
 
           <Border StrokeShape="RoundRectangle 10"
@@ -343,7 +344,7 @@
               </Grid>
               <BoxView HeightRequest="0.5" Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}" Margin="16,0,0,0"/>
               <Grid Padding="16,12" ColumnDefinitions="*,Auto">
-                <Label Text="Anulado" TextColor="{AppThemeBinding Light:#000000, Dark:#FFFFFF}" VerticalOptions="Center"/>
+                <Label Text="Anulado" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
                 <Switch Grid.Column="1" x:Name="AnuladoSwitch" IsToggled="{Binding Editing.ANULADO, Mode=TwoWay}"/>
               </Grid>
             </VerticalStackLayout>
@@ -371,7 +372,7 @@
                       Clicked="OnDeleteFromFormTapped">
                 <Button.ImageSource>
                   <FontImageSource Glyph="&#xF1F8;" FontFamily="FA7Solid" Size="16"
-                                   Color="{AppThemeBinding Light:#F44336, Dark:#EF5350}"/>
+                                   Color="{AppThemeBinding Light=#F44336, Dark=#EF5350}"/>
                 </Button.ImageSource>
               </Button>
             </Grid>

@@ -5,7 +5,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Devices;
+using CommunityToolkit.Maui.Views;
 using NAVIGEST.Android.PageModels;
+using NAVIGEST.Android.Models;
+using NAVIGEST.Android.Popups;
 using NAVIGEST.Android; // GlobalToast / GlobalErro
 
 namespace NAVIGEST.Android.Pages
@@ -55,11 +58,11 @@ namespace NAVIGEST.Android.Pages
         {
             try
             {
-                if (sender is SwipeItemView siv && siv.BindingContext is object item)
+                if (sender is SwipeItemView siv && siv.BindingContext is Cliente cliente)
                 {
-                    if (BindingContext is ClientsPageModel vm && vm.SelectCommand?.CanExecute(item) == true)
+                    if (BindingContext is ClientsPageModel vm && vm.SelectCommand?.CanExecute(cliente) == true)
                     {
-                        vm.SelectCommand.Execute(item);
+                        vm.SelectCommand.Execute(cliente);
                         ShowFormView();
                     }
                 }
@@ -67,14 +70,21 @@ namespace NAVIGEST.Android.Pages
             catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
         }
 
-        private void OnDeleteSwipeInvoked(object sender, EventArgs e)
+        private async void OnDeleteSwipeInvoked(object sender, EventArgs e)
         {
             try
             {
-                if (sender is SwipeItemView siv && siv.BindingContext is object item)
+                if (sender is SwipeItemView siv && siv.BindingContext is Cliente cliente)
                 {
-                    if (BindingContext is ClientsPageModel vm && vm.DeleteCommand?.CanExecute(item) == true)
-                        vm.DeleteCommand.Execute(item);
+                    var confirm = await DisplayAlert("Eliminar Cliente", 
+                        $"Pretende eliminar '{cliente.CLINOME}'?", 
+                        "Eliminar", "Cancelar");
+                    
+                    if (!confirm)
+                        return;
+
+                    if (BindingContext is ClientsPageModel vm && vm.DeleteCommand?.CanExecute(cliente) == true)
+                        vm.DeleteCommand.Execute(cliente);
                 }
             }
             catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
@@ -215,25 +225,25 @@ namespace NAVIGEST.Android.Pages
         {
             try
             {
-                if (BindingContext is ClientsPageModel vm)
-                {
-                    // Open vendor picker or add dialog
-                    MainThread.BeginInvokeOnMainThread(async () =>
-                    {
-                        var result = await DisplayPromptAsync(
-                            title: "Novo Vendedor",
-                            message: "Digite o nome do vendedor",
-                            placeholder: "Nome",
-                            accept: "Guardar",
-                            cancel: "Cancelar");
+                if (BindingContext is not ClientsPageModel vm)
+                    return;
 
-                        if (!string.IsNullOrWhiteSpace(result))
-                        {
-                            // Add vendor through ViewModel if needed
-                            await GlobalToast.ShowAsync("Vendedor adicionado.", ToastTipo.Sucesso, 1600);
-                        }
-                    });
-                }
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    var popup = new AddVendedorPopup();
+                    var result = await AppShell.Current.ShowPopupAsync(popup);
+                    
+                    if (result is Vendedor vendedor)
+                    {
+                        vm.UpsertVendedor(vendedor);
+                        await GlobalToast.ShowAsync("Vendedor criado.", ToastTipo.Sucesso, 2000);
+                    }
+
+                    if (popup.VendedoresDirty)
+                    {
+                        await vm.LoadAsync(force: true);
+                    }
+                });
             }
             catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
         }

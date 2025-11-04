@@ -87,4 +87,27 @@
         </Style.Triggers>
     </Style>
 
+    <!-- Apple Styles adaptados para Android -->
+    
+    <!-- AppleTextButton: Botão de texto (sem fundo) -->
+    <Style x:Key="AppleTextButton" TargetType="Button" BasedOn="{StaticResource Button.Base}">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="{StaticResource BtnAppleBlue}" />
+        <Setter Property="BorderWidth" Value="0" />
+        <Setter Property="HeightRequest" Value="44" />
+        <Setter Property="Padding" Value="8,8" />
+        <Setter Property="FontSize" Value="17" />
+    </Style>
+
+    <!-- AppleFilledButton: Botão preenchido -->
+    <Style x:Key="AppleFilledButton" TargetType="Button" BasedOn="{StaticResource Button.Primary}">
+        <Setter Property="FontSize" Value="17" />
+        <Setter Property="FontAttributes" Value="Bold" />
+    </Style>
+
+    <!-- AppleTintedButton: Botão com borda/outline -->
+    <Style x:Key="AppleTintedButton" TargetType="Button" BasedOn="{StaticResource Button.Outline}">
+        <Setter Property="FontSize" Value="17" />
+    </Style>
+
 </ResourceDictionary>

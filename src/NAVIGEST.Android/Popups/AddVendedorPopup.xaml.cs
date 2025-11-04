@@ -144,7 +144,9 @@ public partial class AddVendedorPopup : Popup
             if (ListButton is not null)
                 ListButton.IsEnabled = false;
 
-            var popup = new VendedoresListPopup();
+            // Carregar lista de vendedores para passar ao popup
+            var vendedores = await DatabaseService.GetVendedoresAsync();
+            var popup = new VendedoresListPopup(vendedores);
             var result = await AppShell.Current.ShowPopupAsync(popup) as VendedorListResult;
 
             if (result is not null)

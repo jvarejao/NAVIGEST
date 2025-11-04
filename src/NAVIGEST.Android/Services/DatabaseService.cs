@@ -577,13 +577,17 @@ namespace NAVIGEST.Android.Services
             using var conn = new MySqlConnection(GetConnectionString());
             await conn.OpenAsync(ct);
 
-            const string depSql = "SELECT COUNT(*) FROM orderinfo WHERE CustomerNO=@cod;";
-            using (var dep = new MySqlCommand(depSql, conn))
+            // Verificar se tabela orderinfo existe antes de fazer query
+            if (await TableExistsAsync(conn, "orderinfo", ct))
             {
-                dep.Parameters.Add("@cod", MySqlDbType.VarChar, 30).Value = codigo;
-                var count = Convert.ToInt32(await dep.ExecuteScalarAsync(ct));
-                if (count > 0)
-                    throw new InvalidOperationException("Impossível eliminar. Existem serviços associados.");
+                const string depSql = "SELECT COUNT(*) FROM orderinfo WHERE CustomerNO=@cod;";
+                using (var dep = new MySqlCommand(depSql, conn))
+                {
+                    dep.Parameters.Add("@cod", MySqlDbType.VarChar, 30).Value = codigo;
+                    var count = Convert.ToInt32(await dep.ExecuteScalarAsync(ct));
+                    if (count > 0)
+                        throw new InvalidOperationException("Impossível eliminar. Existem serviços associados.");
+                }
             }
 
             const string del = "DELETE FROM CLIENTES WHERE CLICODIGO=@cod LIMIT 1;";
@@ -610,11 +614,11 @@ namespace NAVIGEST.Android.Services
         public static async Task<List<Vendedor>> GetVendedoresAsync(CancellationToken ct = default)
         {
             var list = new List<Vendedor>();
-            using var conn = new MySqlConnection(GetConnectionString());
-            await conn.OpenAsync(ct);
-
-            if (await TableExistsAsync(conn, "VENDEDORES", ct))
+            try
             {
+                using var conn = new MySqlConnection(GetConnectionString());
+                await conn.OpenAsync(ct);
+
                 const string sql = @"
                     SELECT IDVEND, RTRIM(NOMEVEND) AS Nome
                     FROM VENDEDORES
@@ -636,29 +640,9 @@ namespace NAVIGEST.Android.Services
                     });
                 }
             }
-            else
+            catch (Exception ex)
             {
-                const string fallbackSql = @"
-                    SELECT Id, RTRIM(Name) AS Nome
-                    FROM REGISTRATION
-                    WHERE RTRIM(TipoUtilizador)='VENDEDOR'
-                    ORDER BY Nome;";
-
-                using var cmd = new MySqlCommand(fallbackSql, conn);
-                using var rd = await cmd.ExecuteReaderAsync(ct);
-                var idOrdinal = rd.GetOrdinal("Id");
-                var nomeOrdinal = rd.GetOrdinal("Nome");
-
-                while (await rd.ReadAsync(ct))
-                {
-                    var nome = rd.IsDBNull(nomeOrdinal) ? string.Empty : rd.GetString(nomeOrdinal);
-                    var normalized = (nome ?? string.Empty).Trim().ToUpperInvariant();
-                    list.Add(new Vendedor
-                    {
-                        Id = rd.IsDBNull(idOrdinal) ? 0 : rd.GetInt32(idOrdinal),
-                        Nome = normalized
-                    });
-                }
+                System.Diagnostics.Debug.WriteLine($"[ERROR] GetVendedoresAsync: {ex.Message}");
             }
 
             return list;

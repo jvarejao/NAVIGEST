@@ -16,8 +16,10 @@
     <Border.Shadow>
       <Shadow Brush="Black" Opacity="0.25" Radius="12" Offset="0,4" />
     </Border.Shadow>
-
-    <Grid RowDefinitions="Auto,Auto,*,Auto">
+    <Grid RowDefinitions="Auto,Auto,*,Auto" 
+          RowSpacing="0"
+          ColumnSpacing="0"
+          BackgroundColor="Transparent">
       <Label Grid.Row="0"
              Text="Vendedores"
              FontSize="20"

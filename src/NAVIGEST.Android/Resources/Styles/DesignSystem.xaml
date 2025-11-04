@@ -23,6 +23,26 @@
     <x:String x:Key="Font.Regular">Inter</x:String>
     <x:String x:Key="Font.SemiBold">InterSemiBold</x:String>
 
+    <!-- iOS-Style Colors for AppleStyles -->
+    <Color x:Key="SurfaceLight">#FFFFFF</Color>
+    <Color x:Key="SurfaceDark">#1C1C1E</Color>
+    <Color x:Key="TextPrimaryLight">#000000</Color>
+    <Color x:Key="TextPrimaryDark">#FFFFFF</Color>
+    <Color x:Key="TextSecondaryLight">#8E8E93</Color>
+    <Color x:Key="TextSecondaryDark">#8E8E93</Color>
+    <Color x:Key="iOSBlue">#007AFF</Color>
+    <Color x:Key="iOSBlueDark">#0A84FF</Color>
+    <Color x:Key="iOSPurple">#5856D6</Color>
+    <Color x:Key="iOSPurpleDark">#5E5CE6</Color>
+    <Color x:Key="iOSRed">#FF3B30</Color>
+    <Color x:Key="iOSRedDark">#FF453A</Color>
+    <Color x:Key="iOSGreen">#34C759</Color>
+    <Color x:Key="iOSGreenDark">#30B0C0</Color>
+    <Color x:Key="iOSYellow">#FFCC00</Color>
+    <Color x:Key="iOSYellowDark">#FFD60A</Color>
+    <Color x:Key="iOSOrange">#FF9500</Color>
+    <Color x:Key="iOSOrangeDark">#FF9F0A</Color>
+
     <Color x:Key="Color.Bg">#F5F6F8</Color>
     <Color x:Key="Color.Surface">#FFFFFF</Color>
     <Color x:Key="Color.Text">#111827</Color>

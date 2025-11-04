@@ -18,6 +18,7 @@ public partial class VendedoresListPopup : Popup
     private readonly List<Vendedor> _all = new();
     private bool _isBusy;
     private bool _refreshRequested;
+    private IEnumerable<Vendedor>? _initialData;
 
     public ObservableCollection<Vendedor> Vendedores { get; } = new();
 
@@ -28,14 +29,47 @@ public partial class VendedoresListPopup : Popup
         Opened += OnPopupOpened;
     }
 
-    private void OnPopupOpened(object? sender, PopupOpenedEventArgs e) => _ = LoadAsync();
+    /// <summary>Construtor que permite passar dados pré-carregados</summary>
+    public VendedoresListPopup(IEnumerable<Vendedor>? initialData) : this()
+    {
+        _initialData = initialData;
+    }
+
+    private void OnPopupOpened(object? sender, PopupOpenedEventArgs e)
+    {
+        System.Diagnostics.Debug.WriteLine("[VendedoresListPopup] OnPopupOpened called");
+        _ = LoadAsync();
+    }
 
     private async Task LoadAsync()
     {
+        System.Diagnostics.Debug.WriteLine("[VendedoresListPopup] LoadAsync started");
         await RunBusyAsync(async () =>
         {
-            var vendedores = await DatabaseService.GetVendedoresAsync();
-            UpdateCache(vendedores);
+            try
+            {
+                List<Vendedor> vendedores;
+                
+                // Se dados foram fornecidos inicialmente, usar esses
+                if (_initialData != null)
+                {
+                    System.Diagnostics.Debug.WriteLine("[VendedoresListPopup] Using initial data");
+                    vendedores = _initialData.ToList();
+                }
+                else
+                {
+                    // Caso contrário, carregar do banco de dados
+                    System.Diagnostics.Debug.WriteLine("[VendedoresListPopup] Loading from database");
+                    vendedores = await DatabaseService.GetVendedoresAsync();
+                }
+                
+                System.Diagnostics.Debug.WriteLine($"[VendedoresListPopup] Loaded {vendedores.Count} vendedores");
+                UpdateCache(vendedores);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[VendedoresListPopup] Error: {ex.Message}");
+            }
         });
     }
 
