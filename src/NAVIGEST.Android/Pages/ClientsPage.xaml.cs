@@ -133,13 +133,17 @@ namespace NAVIGEST.Android.Pages
         {
             try
             {
-                if (sender is Grid grid && grid.BindingContext is object item)
+                if (sender is not Grid grid)
+                    return;
+
+                // Cast to Cliente directly
+                if (grid.BindingContext is not Cliente cliente)
+                    return;
+
+                if (BindingContext is ClientsPageModel vm && vm.SelectCommand?.CanExecute(cliente) == true)
                 {
-                    if (BindingContext is ClientsPageModel vm && vm.SelectCommand?.CanExecute(item) == true)
-                    {
-                        vm.SelectCommand.Execute(item);
-                        ShowFormView();
-                    }
+                    vm.SelectCommand.Execute(cliente);
+                    ShowFormView();
                 }
             }
             catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
