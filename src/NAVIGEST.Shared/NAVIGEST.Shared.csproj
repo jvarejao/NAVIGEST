@@ -1,13 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net9.0;net9.0-ios</TargetFrameworks>
+    <TargetFrameworks>net9.0;net9.0-ios;net9.0-android;net9.0-maccatalyst</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>NAVIGEST.Shared</RootNamespace>
+    <UseMaui>true</UseMaui>
   </PropertyGroup>
 
-  <!-- Minimal dependencies - add more as needed -->
+  <!-- MAUI Framework -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.0" />
+  </ItemGroup>
+
+  <!-- Additional dependencies -->
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
   </ItemGroup>

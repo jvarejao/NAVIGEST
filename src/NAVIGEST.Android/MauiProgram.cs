@@ -2,10 +2,11 @@ using CommunityToolkit.Maui; // Toolkit base
 using Microsoft.Extensions.Logging;
 using Syncfusion.Maui.Toolkit.Hosting;
 using UraniumUI;
-using NAVIGEST.Android.Services.Icons; // <-- IIconProvider (namespace)
-using NAVIGEST.Android.Pages;          // <-- Páginas
-using NAVIGEST.Android.PageModels;     // <-- ViewModels
-using NAVIGEST.Android.ViewModels;     // <-- HoursEntry
+
+using NAVIGEST.Android.Services.Icons;  // IIconProvider (namespace)
+using NAVIGEST.Android.Pages;           // Páginas
+using NAVIGEST.Android.PageModels;      // ViewModels
+using NAVIGEST.Android.ViewModels;      // HoursEntry
 
 #if ANDROID
 using Microsoft.Maui.Handlers;
@@ -79,14 +80,19 @@ namespace NAVIGEST.Android
             builder.Services.AddSingleton<TagRepository>();
             builder.Services.AddSingleton<SeedDataService>();
             builder.Services.AddSingleton<ModalErrorHandler>();
+
             builder.Services.AddSingleton<MainYahPageViewModel>();
             builder.Services.AddSingleton<MainYahPage>();
+
             builder.Services.AddSingleton<ProjectListPageModel>();
             builder.Services.AddSingleton<ManageMetaPageModel>();
+
             builder.Services.AddTransientWithShellRoute<ProjectDetailPage, ProjectDetailPageModel>("project");
             builder.Services.AddTransientWithShellRoute<TaskDetailPage, TaskDetailPageModel>("task");
+
             builder.Services.AddTransient<ProductsPageModel>();
             builder.Services.AddTransient<ProductsPage>();
+
             builder.Services.AddSingleton<NAVIGEST.Android.Services.Auth.IBiometricAuthService, NAVIGEST.Android.Services.Auth.BiometricAuthService>();
             builder.Services.AddTransient<NAVIGEST.Android.PageModels.LoginPageModel>();
 
@@ -98,15 +104,17 @@ namespace NAVIGEST.Android
             builder.Services.AddTransient<NAVIGEST.Android.Pages.SplashIntroPage>();
             builder.Services.AddTransient<NAVIGEST.Android.Pages.WelcomePage>();
 
-            // Provider de Ícones por plataforma
 #if ANDROID
+            // Provider de Ícones por plataforma
             builder.Services.AddSingleton<NAVIGEST.Android.Services.Icons.IIconProvider, NAVIGEST.Android.Services.Icons.IconProvider>();
 #endif
 
             var app = builder.Build();
+
 #if ANDROID
             Log.Info("AppLifecycle", "MauiProgram.CreateMauiApp completed");
 #endif
+
             return app;
         }
     }

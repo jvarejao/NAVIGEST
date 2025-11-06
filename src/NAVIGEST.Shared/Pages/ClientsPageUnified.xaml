@@ -1,0 +1,400 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage x:Class="NAVIGEST.Shared.Pages.ClientsPageUnified"
+             x:Name="ClientsPageRoot"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}"
+             Title="Clientes">
+
+  <ContentPage.Resources>
+    <ResourceDictionary>
+    </ResourceDictionary>
+  </ContentPage.Resources>
+
+  <Grid>
+    <!-- VIEW 1: Lista -->
+    <Grid x:Name="ListViewContainer" RowDefinitions="Auto,*" IsVisible="True">
+
+      <!-- Header -->
+      <Grid Padding="16,16,16,12" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}">
+        <SearchBar x:Name="SearchBar"
+                   Placeholder="Pesquisar clientes..."
+                   PlaceholderColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
+                   TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
+                   BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
+                   Text="{Binding Filter}"
+                   SearchButtonPressed="OnSearchBarSearchButtonPressed"
+                   TextChanged="OnSearchBarTextChanged"
+                   CancelButtonColor="{OnPlatform iOS={AppThemeBinding Light=#007AFF, Dark=#0A84FF}, Android={AppThemeBinding Light=#2196F3, Dark=#42A5F5}, MacCatalyst={AppThemeBinding Light=#007AFF, Dark=#0A84FF}}"/>
+      </Grid>
+
+      <!-- Lista -->
+      <RefreshView Grid.Row="1"
+           Command="{Binding RefreshCommand}"
+           IsRefreshing="{Binding IsRefreshing}">
+        <CollectionView x:Name="ClientsCollectionView"
+            ItemsSource="{Binding Filtered}"
+            SelectionMode="None"
+            BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}"
+            Scrolled="OnCollectionViewScrolled">
+
+            <CollectionView.ItemTemplate>
+              <DataTemplate>
+                <SwipeView HeightRequest="76"
+                           BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
+                           SwipeEnded="OnSwipeEnded">
+                  <SwipeView.RightItems>
+                    <SwipeItems Mode="Reveal" SwipeBehaviorOnInvoked="Close">
+                      <!-- Edit Button -->
+                      <SwipeItemView BindingContext="{Binding .}" Invoked="OnEditSwipeInvoked">
+                        <Grid WidthRequest="80"
+                          Padding="0"
+                          BackgroundColor="Transparent"
+                          HorizontalOptions="Center"
+                          VerticalOptions="Fill"
+                          IsClippedToBounds="False">
+                          <Border WidthRequest="56" HeightRequest="56" HorizontalOptions="Center" VerticalOptions="Center"
+                                  BackgroundColor="{OnPlatform iOS=#3C82F6, Android=#2196F3, MacCatalyst=#3C82F6}" StrokeThickness="0">
+                            <Border.StrokeShape>
+                              <RoundRectangle CornerRadius="28"/>
+                            </Border.StrokeShape>
+                            <Label FontFamily="FA7Solid" Text="&#xF044;" FontSize="22" TextColor="White"
+                                   HorizontalOptions="Center" VerticalOptions="Center"/>
+                          </Border>
+                        </Grid>
+                      </SwipeItemView>
+
+                      <!-- Delete Button -->
+                      <SwipeItemView BindingContext="{Binding .}" Invoked="OnDeleteSwipeInvoked">
+                        <Grid WidthRequest="80" Padding="0" BackgroundColor="Transparent" HorizontalOptions="Center" VerticalOptions="Fill">
+                          <Border WidthRequest="56" HeightRequest="56" HorizontalOptions="Center" VerticalOptions="Center"
+                                  BackgroundColor="{OnPlatform iOS=#EA4335, Android=#F44336, MacCatalyst=#EA4335}" StrokeThickness="0">
+                            <Border.StrokeShape>
+                              <RoundRectangle CornerRadius="28"/>
+                            </Border.StrokeShape>
+                            <Label FontFamily="FA7Solid" Text="&#xF1F8;" FontSize="22" TextColor="White"
+                                   HorizontalOptions="Center" VerticalOptions="Center"/>
+                          </Border>
+                        </Grid>
+                      </SwipeItemView>
+
+                      <!-- Pastas Button -->
+                      <SwipeItemView BindingContext="{Binding .}" Invoked="OnPastasSwipeInvoked">
+                        <Grid WidthRequest="80" Padding="0" BackgroundColor="Transparent" HorizontalOptions="Center" VerticalOptions="Fill">
+                          <Border WidthRequest="56" HeightRequest="56" HorizontalOptions="Center" VerticalOptions="Center"
+                                  BackgroundColor="{OnPlatform iOS=#FAA307, Android=#FF9800, MacCatalyst=#FAA307}" StrokeThickness="0">
+                            <Border.StrokeShape>
+                              <RoundRectangle CornerRadius="28"/>
+                            </Border.StrokeShape>
+                            <Label FontFamily="FA7Solid" Text="&#xF07C;" FontSize="22" TextColor="White"
+                                   HorizontalOptions="Center" VerticalOptions="Center"/>
+                          </Border>
+                        </Grid>
+                      </SwipeItemView>
+
+                      <!-- Services Button -->
+                      <SwipeItemView BindingContext="{Binding .}" Invoked="OnServicesSwipeInvoked">
+                        <Grid WidthRequest="80"
+                              Padding="0"
+                              BackgroundColor="Transparent"
+                              HorizontalOptions="Center"
+                              VerticalOptions="Fill"
+                              IsClippedToBounds="False">
+                          <Border WidthRequest="56" HeightRequest="56" HorizontalOptions="Center" VerticalOptions="Center"
+                                  BackgroundColor="{OnPlatform iOS=#5F63FB, Android=#4CAF50, MacCatalyst=#5F63FB}" StrokeThickness="0">
+                            <Border.StrokeShape>
+                              <RoundRectangle CornerRadius="28"/>
+                            </Border.StrokeShape>
+                            <Label FontFamily="FA7Solid"
+                                   Text="&#xF0AE;"
+                                   FontSize="22"
+                                   TextColor="White"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+                          </Border>
+
+                          <!-- Services Badge -->
+                          <Border WidthRequest="22"
+                            HeightRequest="22"
+                            StrokeThickness="0"
+                            BackgroundColor="#FF3B30"
+                            HorizontalOptions="End"
+                            VerticalOptions="Start"
+                            TranslationX="0"
+                            TranslationY="6"
+                            ZIndex="1"
+                            InputTransparent="True">
+                            <Border.StrokeShape>
+                              <RoundRectangle CornerRadius="11"/>
+                            </Border.StrokeShape>
+                            <Border.Triggers>
+                              <DataTrigger TargetType="Border"
+                                           Binding="{Binding ServicosCount}"
+                                           Value="0">
+                                <Setter Property="IsVisible" Value="False"/>
+                              </DataTrigger>
+                            </Border.Triggers>
+
+                            <Label Text="{Binding ServicosCount}"
+                                   FontSize="10"
+                                   FontAttributes="Bold"
+                                   TextColor="White"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+                          </Border>
+                        </Grid>
+                      </SwipeItemView>
+                    </SwipeItems>
+                  </SwipeView.RightItems>
+
+                  <!-- Content -->
+                  <Grid HeightRequest="76" MinimumHeightRequest="76" Padding="16,10"
+                        BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
+                        ColumnDefinitions="50,*,Auto"
+                        ColumnSpacing="12"
+                        RowSpacing="4">
+                    <Grid.GestureRecognizers>
+                      <TapGestureRecognizer Tapped="OnClientCellTapped"/>
+                    </Grid.GestureRecognizers>
+
+                    <!-- Avatar -->
+                    <Border Grid.RowSpan="2" WidthRequest="50" HeightRequest="50"
+                            StrokeThickness="0" BackgroundColor="{Binding AvatarColor}"
+                            VerticalOptions="Center">
+                      <Border.StrokeShape><RoundRectangle CornerRadius="25"/></Border.StrokeShape>
+                      <Label Text="{Binding Initials}" FontSize="20" FontAttributes="Bold"
+                             TextColor="White" HorizontalOptions="Center" VerticalOptions="Center"/>
+                    </Border>
+
+                    <!-- Nome -->
+                    <Label Grid.Column="1"
+                           Text="{Binding CLINOME}"
+                           FontSize="17"
+                           TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
+                           LineBreakMode="TailTruncation"
+                           VerticalOptions="End"/>
+
+                    <!-- Telefone -->
+                    <Label Grid.Column="1" Grid.Row="1"
+                           Text="{Binding TelefoneDisplay}"
+                           FontSize="14"
+                           TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
+                           LineBreakMode="TailTruncation"
+                           VerticalOptions="Start"/>
+
+                    <!-- Status -->
+                    <Label Grid.Column="2" Grid.RowSpan="2"
+                           FontFamily="FA7Solid"
+                           Text="{Binding StatusIcon}"
+                           FontSize="16"
+                           TextColor="{Binding StatusColor}"
+                           VerticalOptions="Center"
+                           HorizontalOptions="End"/>
+
+                    <!-- Separador -->
+                    <BoxView Grid.ColumnSpan="3" Grid.Row="1" HeightRequest="0.5"
+                             Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}"
+                             VerticalOptions="End" Margin="62,0,0,0"/>
+                  </Grid>
+                </SwipeView>
+              </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+      </RefreshView>
+
+      <!-- FAB -->
+      <Border Grid.Row="1"
+              WidthRequest="56" HeightRequest="56"
+              BackgroundColor="{OnPlatform iOS={AppThemeBinding Light=#007AFF, Dark=#0A84FF}, Android={AppThemeBinding Light=#2196F3, Dark=#42A5F5}, MacCatalyst={AppThemeBinding Light=#007AFF, Dark=#0A84FF}}"
+              StrokeThickness="0"
+              Margin="0,0,16,16"
+              HorizontalOptions="End"
+              VerticalOptions="End">
+        <Border.Shadow>
+          <Shadow Brush="Black" Opacity="0.3" Radius="8" Offset="0,4"/>
+        </Border.Shadow>
+        <Border.StrokeShape><RoundRectangle CornerRadius="28"/></Border.StrokeShape>
+        <Label FontFamily="FA7Solid" Text="&#xF067;" FontSize="24" TextColor="White"
+               HorizontalOptions="Center" VerticalOptions="Center"/>
+        <Border.GestureRecognizers>
+          <TapGestureRecognizer Tapped="OnAddClientTapped"/>
+        </Border.GestureRecognizers>
+      </Border>
+
+      <!-- Busy -->
+      <Grid Grid.RowSpan="2" IsVisible="{Binding IsBusy}" BackgroundColor="#66000000">
+        <ActivityIndicator IsRunning="True"
+                           Color="{OnPlatform iOS={AppThemeBinding Light=#007AFF, Dark=#0A84FF}, Android={AppThemeBinding Light=#2196F3, Dark=#42A5F5}, MacCatalyst={AppThemeBinding Light=#007AFF, Dark=#0A84FF}}"
+                           WidthRequest="40" HeightRequest="40"/>
+      </Grid>
+    </Grid>
+
+    <!-- VIEW 2: Form -->
+    <Grid x:Name="FormViewContainer" IsVisible="False"
+          BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}">
+      <ScrollView VerticalScrollBarVisibility="{OnPlatform iOS=Never, Android=Always, MacCatalyst=Always}">
+        <VerticalStackLayout Spacing="20" Padding="16">
+
+          <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,8,0,0">
+            <Button Grid.Column="0" Text="Cancelar"
+                    Style="{StaticResource AppleTextButton}" Clicked="OnCancelEditTapped"/>
+            <Label Grid.Column="1" x:Name="FormTitle" Text="Novo Cliente"
+                   FontSize="17" FontAttributes="Bold"
+                   HorizontalOptions="Center" VerticalOptions="Center"
+                   TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}">
+              <Label.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnFormBackgroundTapped" NumberOfTapsRequired="1"/>
+              </Label.GestureRecognizers>
+            </Label>
+          </Grid>
+
+          <!-- FORM SECTION 1: Personal Info -->
+          <Border StrokeShape="RoundRectangle 10"
+                  BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
+                  Stroke="Transparent" Padding="0">
+            <VerticalStackLayout Spacing="0">
+              <!-- Código -->
+              <Grid Padding="16,12" ColumnDefinitions="100,*">
+                <Label Text="Código" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
+                <Entry Grid.Column="1" x:Name="CodigoEntry" Text="{Binding Editing.CLICODIGO}" IsReadOnly="True"
+                       BackgroundColor="Transparent" TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}" HorizontalTextAlignment="End"/>
+              </Grid>
+              <BoxView HeightRequest="0.5" Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}" Margin="16,0,0,0"/>
+
+              <!-- Nome -->
+              <Grid Padding="16,12" ColumnDefinitions="100,*">
+                <Label Text="Nome" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
+                <Entry Grid.Column="1" x:Name="NomeEntry" Text="{Binding Editing.CLINOME}"
+                       BackgroundColor="Transparent" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" HorizontalTextAlignment="End" Placeholder="Nome completo" PlaceholderColor="{AppThemeBinding Light=#C6C6C8, Dark=#8E8E93}"/>
+              </Grid>
+              <BoxView HeightRequest="0.5" Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}" Margin="16,0,0,0"/>
+
+              <!-- Telefone -->
+              <Grid Padding="16,12" ColumnDefinitions="100,*">
+                <Label Text="Telefone" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
+                <Grid Grid.Column="1" RowDefinitions="Auto,2" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                  <Picker x:Name="DialCodePicker"
+                          ItemsSource="{Binding DialCodes}"
+                          SelectedItem="{Binding SelectedDialCodeItem}"
+                          ItemDisplayBinding="{Binding PickerDisplay}"
+                          HorizontalOptions="Start"
+                          VerticalOptions="Center"
+                          WidthRequest="80"
+                          BackgroundColor="Transparent"
+                          TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
+                          Title="Indicativo"/>
+                  <Entry Grid.Column="1" x:Name="TelefoneEntry" Text="{Binding PhoneBody}" Keyboard="Telephone"
+                         BackgroundColor="Transparent" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" HorizontalTextAlignment="Start" Placeholder="916 000 000" PlaceholderColor="{AppThemeBinding Light=#C6C6C8, Dark=#8E8E93}"/>
+                  <BoxView Grid.Row="1" Grid.ColumnSpan="2" HeightRequest="2"
+                           Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}"
+                           HorizontalOptions="Fill"
+                           VerticalOptions="End" />
+                </Grid>
+              </Grid>
+              <BoxView HeightRequest="0.5" Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}" Margin="16,0,0,0"/>
+
+              <!-- Email -->
+              <Grid Padding="16,12" ColumnDefinitions="100,*">
+                <Label Text="Email" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
+                <Grid Grid.Column="1" RowDefinitions="Auto,2">
+                  <Entry x:Name="EmailEntry" Text="{Binding Editing.EMAIL}" Keyboard="Email"
+                         BackgroundColor="Transparent" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" HorizontalTextAlignment="End" Placeholder="email@exemplo.com" PlaceholderColor="{AppThemeBinding Light=#C6C6C8, Dark=#8E8E93}"/>
+                  <BoxView Grid.Row="1" HeightRequest="2"
+                           Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}"
+                           HorizontalOptions="Fill"
+                           VerticalOptions="End" />
+                </Grid>
+              </Grid>
+              <BoxView HeightRequest="0.5" Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}" Margin="16,0,0,0"/>
+
+              <!-- Vendedor -->
+              <Grid Padding="16,12" ColumnDefinitions="100,*">
+                <Label Text="Vendedor" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
+                <Grid Grid.Column="1" ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                  <Button x:Name="AddVendedorButton"
+                          WidthRequest="40"
+                          HeightRequest="40"
+                          Padding="0"
+                          BackgroundColor="{OnPlatform iOS={AppThemeBinding Light=#007AFF, Dark=#0A84FF}, Android={AppThemeBinding Light=#2196F3, Dark=#42A5F5}, MacCatalyst={AppThemeBinding Light=#007AFF, Dark=#0A84FF}}"
+                          CornerRadius="20"
+                          Clicked="OnAddVendedorTapped">
+                    <Button.Shadow>
+                      <Shadow Brush="Black" Opacity="0.25" Radius="6" Offset="0,2"/>
+                    </Button.Shadow>
+                    <Button.ImageSource>
+                      <FontImageSource Glyph="&#xF067;" FontFamily="FA7Solid" Size="18" Color="White"/>
+                    </Button.ImageSource>
+                  </Button>
+                  <Picker Grid.Column="1"
+                          x:Name="VendedorPicker"
+                          ItemsSource="{Binding Vendedores}"
+                          SelectedItem="{Binding SelectedVendedor}"
+                          ItemDisplayBinding="{Binding Nome}"
+                          Title="Selecionar vendedor"
+                          BackgroundColor="Transparent"
+                          TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+                </Grid>
+              </Grid>
+              <BoxView HeightRequest="0.5" Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}" Margin="16,0,0,0"/>
+
+              <!-- Valor Crédito -->
+              <Grid Padding="16,12" ColumnDefinitions="100,*">
+                <Label Text="Valor Crédito" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
+                <Entry Grid.Column="1" x:Name="ValorCreditoEntry" Text="{Binding Editing.VALORCREDITO}" Keyboard="Numeric"
+                       BackgroundColor="Transparent" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" HorizontalTextAlignment="End" Placeholder="0,00" PlaceholderColor="{AppThemeBinding Light=#C6C6C8, Dark=#8E8E93}"
+                       Focused="OnValorCreditoFocused" Unfocused="OnValorCreditoUnfocused"/>
+              </Grid>
+            </VerticalStackLayout>
+          </Border>
+
+          <!-- FORM SECTION 2: Flags -->
+          <Border StrokeShape="RoundRectangle 10"
+                  BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
+                  Stroke="Transparent" Padding="0">
+            <VerticalStackLayout Spacing="0">
+              <Grid Padding="16,12" ColumnDefinitions="*,Auto">
+                <Label Text="Cliente Externo" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
+                <Switch Grid.Column="1" x:Name="ExternoSwitch" IsToggled="{Binding Editing.EXTERNO, Mode=TwoWay}"/>
+              </Grid>
+              <BoxView HeightRequest="0.5" Color="{AppThemeBinding Light=#C6C6C8, Dark#38383A}" Margin="16,0,0,0"/>
+              <Grid Padding="16,12" ColumnDefinitions="*,Auto">
+                <Label Text="Anulado" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
+                <Switch Grid.Column="1" x:Name="AnuladoSwitch" IsToggled="{Binding Editing.ANULADO, Mode=TwoWay}"/>
+              </Grid>
+            </VerticalStackLayout>
+          </Border>
+
+          <!-- ACTION BUTTONS -->
+          <VerticalStackLayout Spacing="12">
+            <Button x:Name="SaveButton" Text="Guardar" Style="{StaticResource AppleFilledButton}"
+                    Clicked="OnSaveClientTapped">
+              <Button.ImageSource>
+                <FontImageSource Glyph="&#xF0C7;" FontFamily="FA7Solid" Size="16" Color="White"/>
+              </Button.ImageSource>
+            </Button>
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8" IsVisible="False" x:Name="ActionButtonsGrid">
+              <Button Grid.Column="0" x:Name="PastasFormButton" Text="Pastas" Style="{StaticResource AppleTintedButton}"
+                      TextColor="{OnPlatform iOS=#5AC8FA, Android=#2196F3, MacCatalyst=#5AC8FA}"
+                      Clicked="OnPastasFormTapped">
+                <Button.ImageSource>
+                  <FontImageSource Glyph="&#xF07C;" FontFamily="FA7Solid" Size="16" Color="{OnPlatform iOS=#5AC8FA, Android=#2196F3, MacCatalyst=#5AC8FA}"/>
+                </Button.ImageSource>
+              </Button>
+
+              <Button Grid.Column="1" x:Name="DeleteFormButton" Text="Eliminar" Style="{StaticResource AppleTintedButton}"
+                      TextColor="{OnPlatform iOS={AppThemeBinding Light=#FF3B30, Dark=#FF453A}, Android={AppThemeBinding Light=#F44336, Dark=#EF5350}, MacCatalyst={AppThemeBinding Light=#FF3B30, Dark=#FF453A}}"
+                      Clicked="OnDeleteFromFormTapped">
+                <Button.ImageSource>
+                  <FontImageSource Glyph="&#xF1F8;" FontFamily="FA7Solid" Size="16"
+                                   Color="{OnPlatform iOS={AppThemeBinding Light=#FF3B30, Dark=#FF453A}, Android={AppThemeBinding Light=#F44336, Dark=#EF5350}, MacCatalyst={AppThemeBinding Light=#FF3B30, Dark=#FF453A}}"/>
+                </Button.ImageSource>
+              </Button>
+            </Grid>
+          </VerticalStackLayout>
+
+        </VerticalStackLayout>
+      </ScrollView>
+    </Grid>
+  </Grid>
+</ContentPage>
