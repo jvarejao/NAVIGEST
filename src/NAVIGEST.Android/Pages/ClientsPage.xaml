@@ -256,7 +256,7 @@
               <Grid Padding="16,12" ColumnDefinitions="100,*">
                 <Label Text="Nome" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
                 <Entry Grid.Column="1" x:Name="NomeEntry" Text="{Binding Editing.CLINOME}"
-                       BackgroundColor="Transparent" HorizontalTextAlignment="End" Placeholder="Nome completo"/>
+                       BackgroundColor="Transparent" HorizontalTextAlignment="End" Placeholder="Nome completo" PlaceholderColor="{AppThemeBinding Light=#C6C6C8, Dark=#8E8E93}"/>
               </Grid>
               <BoxView HeightRequest="0.5" Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}" Margin="16,0,0,0"/>
 
@@ -274,7 +274,7 @@
                           TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
                           Title="Indicativo"/>
                   <Entry Grid.Column="1" x:Name="TelefoneEntry" Text="{Binding PhoneBody}" Keyboard="Telephone"
-                         BackgroundColor="Transparent" HorizontalTextAlignment="Start" Placeholder="916 000 000"/>
+                         BackgroundColor="Transparent" HorizontalTextAlignment="Start" Placeholder="916 000 000" PlaceholderColor="{AppThemeBinding Light=#C6C6C8, Dark=#8E8E93}"/>
                   <BoxView Grid.Row="1" Grid.ColumnSpan="2" HeightRequest="2"
                            Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}"
                            HorizontalOptions="Fill"
@@ -287,7 +287,7 @@
                 <Label Text="Email" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
                 <Grid Grid.Column="1" RowDefinitions="Auto,2">
                   <Entry x:Name="EmailEntry" Text="{Binding Editing.EMAIL}" Keyboard="Email"
-                         BackgroundColor="Transparent" HorizontalTextAlignment="End" Placeholder="email@exemplo.com"/>
+                         BackgroundColor="Transparent" HorizontalTextAlignment="End" Placeholder="email@exemplo.com" PlaceholderColor="{AppThemeBinding Light=#C6C6C8, Dark=#8E8E93}"/>
                   <BoxView Grid.Row="1" HeightRequest="2"
                            Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}"
                            HorizontalOptions="Fill"
@@ -328,7 +328,7 @@
               <Grid Padding="16,12" ColumnDefinitions="100,*">
                 <Label Text="Valor Crédito" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
                 <Entry Grid.Column="1" x:Name="ValorCreditoEntry" Text="{Binding Editing.VALORCREDITO}" Keyboard="Numeric"
-                       BackgroundColor="Transparent" HorizontalTextAlignment="End" Placeholder="0,00"
+                       BackgroundColor="Transparent" HorizontalTextAlignment="End" Placeholder="0,00" PlaceholderColor="{AppThemeBinding Light=#C6C6C8, Dark=#8E8E93}"
                        Focused="OnValorCreditoFocused" Unfocused="OnValorCreditoUnfocused"/>
               </Grid>
             </VerticalStackLayout>

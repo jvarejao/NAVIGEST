@@ -617,6 +617,7 @@ public class ClientsPageModel : INotifyPropertyChanged
     {
         if (string.IsNullOrWhiteSpace(c.CLINOME)) { msg = "Nome obrigatório."; return false; }
         if (string.IsNullOrWhiteSpace(c.TELEFONE)) { msg = "Telefone obrigatório."; return false; }
+        if ((c.TELEFONE?.Length ?? 0) > 40) { msg = "Telefone demasiado longo (máx. 40 caracteres)."; return false; }
         if (string.IsNullOrWhiteSpace(c.EMAIL)) { msg = "Email obrigatório."; return false; }
         if (string.IsNullOrWhiteSpace(c.VENDEDOR)) { msg = "Vendedor obrigatório."; return false; }
 
