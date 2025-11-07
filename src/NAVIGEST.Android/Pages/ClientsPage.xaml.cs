@@ -76,18 +76,29 @@ namespace NAVIGEST.Android.Pages
             {
                 if (sender is SwipeItemView siv && siv.BindingContext is Cliente cliente)
                 {
-                    var confirm = await DisplayAlert("Eliminar Cliente", 
-                        $"Pretende eliminar '{cliente.CLINOME}'?", 
-                        "Eliminar", "Cancelar");
+                    // Confirmar exclusão com toast em vez de DisplayAlert
+                    await GlobalToast.ShowAsync($"A eliminar '{cliente.CLINOME}'...", ToastTipo.Info, 1000);
                     
-                    if (!confirm)
-                        return;
-
                     if (BindingContext is ClientsPageModel vm && vm.DeleteCommand?.CanExecute(cliente) == true)
+                    {
                         vm.DeleteCommand.Execute(cliente);
+                        await GlobalToast.ShowAsync("Cliente eliminado!", ToastTipo.Sucesso, 2000);
+                    }
+                    else
+                    {
+                        await GlobalToast.ShowAsync("Erro: comando não disponível", ToastTipo.Erro, 2000);
+                    }
+                }
+                else
+                {
+                    await GlobalToast.ShowAsync("Erro: cliente não encontrado", ToastTipo.Erro, 2000);
                 }
             }
-            catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
+            catch (Exception ex) 
+            { 
+                GlobalErro.TratarErro(ex, mostrarAlerta: false);
+                await GlobalToast.ShowAsync($"Erro ao eliminar: {ex.Message}", ToastTipo.Erro, 3000);
+            }
         }
 
         private void OnPastasSwipeInvoked(object sender, EventArgs e)
