@@ -48,6 +48,7 @@
 		<AndroidCreatePackagePerAbi>True</AndroidCreatePackagePerAbi>
 		<AndroidLinkTool>r8</AndroidLinkTool>
 		<AndroidKeyStore>False</AndroidKeyStore>
+		<PublishTrimmed>true</PublishTrimmed>
 	</PropertyGroup>
 
 	<!-- Resources -->

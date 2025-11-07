@@ -86,10 +86,13 @@ publish_android() {
     echo -e "\n${ROCKET} ${BOLD}${CYAN}Publicando Android...${NC}\n"
     cd "$ANDROID_DIR" || exit
     
-    dotnet publish -f net9.0-android -c Debug || { echo -e "${RED}Erro no build!${NC}"; return 1; }
+    dotnet publish -f net9.0-android -c Release --self-contained || { echo -e "${RED}Erro no build!${NC}"; return 1; }
+    
+    echo -e "${ANDROID} ${YELLOW}Desinstalando versão anterior...${NC}"
+    adb uninstall com.tuaempresa.navigest 2>/dev/null || echo -e "${YELLOW}App não estava instalada${NC}"
     
     echo -e "${ANDROID} ${YELLOW}Instalando no Android via ADB...${NC}"
-    adb install -r bin/Debug/net9.0-android/publish/com.tuaempresa.navigest-Signed.apk
+    adb install bin/Release/net9.0-android/com.tuaempresa.navigest-Signed.apk
     
     echo -e "\n${GREEN}✅ Android instalado com sucesso!${NC}\n"
 }
