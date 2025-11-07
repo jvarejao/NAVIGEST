@@ -76,17 +76,25 @@ namespace NAVIGEST.Android.Pages
             {
                 if (sender is SwipeItemView siv && siv.BindingContext is Cliente cliente)
                 {
-                    // Confirmar exclusão com toast em vez de DisplayAlert
+                    // Confirmar exclusão com o usuário
+                    var confirm = await DisplayAlert("Eliminar Cliente", 
+                        $"Pretende eliminar '{cliente.CLINOME}' permanentemente?", 
+                        "Eliminar", "Cancelar");
+                    
+                    if (!confirm)
+                        return;
+
+                    // Mostrar feedback da operação
                     await GlobalToast.ShowAsync($"A eliminar '{cliente.CLINOME}'...", ToastTipo.Info, 1000);
                     
                     if (BindingContext is ClientsPageModel vm && vm.DeleteCommand?.CanExecute(cliente) == true)
                     {
                         vm.DeleteCommand.Execute(cliente);
-                        await GlobalToast.ShowAsync("Cliente eliminado!", ToastTipo.Sucesso, 2000);
+                        await GlobalToast.ShowAsync("Cliente eliminado com sucesso!", ToastTipo.Sucesso, 2000);
                     }
                     else
                     {
-                        await GlobalToast.ShowAsync("Erro: comando não disponível", ToastTipo.Erro, 2000);
+                        await GlobalToast.ShowAsync("Erro: não foi possível eliminar o cliente", ToastTipo.Erro, 3000);
                     }
                 }
                 else
