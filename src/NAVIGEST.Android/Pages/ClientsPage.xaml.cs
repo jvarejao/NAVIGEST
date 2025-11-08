@@ -74,7 +74,28 @@ namespace NAVIGEST.Android.Pages
         {
             try
             {
-                if (sender is SwipeItemView siv && siv.BindingContext is Cliente cliente)
+                Cliente? cliente = null;
+
+                // Suportar ambos: SwipeItemView.Invoked e TapGestureRecognizer.Tapped
+                if (sender is SwipeItemView siv && siv.BindingContext is Cliente c1)
+                {
+                    cliente = c1;
+                }
+                else if (sender is Grid grid && grid.BindingContext is Cliente c2)
+                {
+                    cliente = c2;
+                }
+                // Se o sender for o Grid mas o BindingContext estiver no pai
+                else if (sender is Grid && this.BindingContext is CollectionView cv)
+                {
+                    // Tentar encontrar o cliente do elemento selecionado
+                    if (cv.SelectedItem is Cliente c3)
+                    {
+                        cliente = c3;
+                    }
+                }
+
+                if (cliente != null)
                 {
                     // Confirmar exclusão com o usuário
                     var confirm = await DisplayAlert("Eliminar Cliente", 
@@ -99,6 +120,7 @@ namespace NAVIGEST.Android.Pages
                 }
                 else
                 {
+                    System.Diagnostics.Debug.WriteLine($"DEBUG: Sender type = {sender?.GetType().Name}, BindingContext type = {(sender as BindableObject)?.BindingContext?.GetType().Name}");
                     await GlobalToast.ShowAsync("Erro: cliente não encontrado", ToastTipo.Erro, 2000);
                 }
             }
