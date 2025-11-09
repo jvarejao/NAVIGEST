@@ -472,40 +472,71 @@ public class ClientsPageModel : INotifyPropertyChanged
 #endif
     }
 
-    private async Task OnDeleteAsync()
+    /// <summary>
+    /// Método público para deletar um cliente específico (usado pelo swipe)
+    /// Permite aguardar o resultado com await
+    /// </summary>
+    public async Task DeleteClienteAsync(Cliente cliente)
     {
-        if (SelectedCliente is null) return;
+        System.Diagnostics.Debug.WriteLine($"[DELETE_VM] 1. DeleteClienteAsync chamado. Cliente: {cliente?.CLINOME} ({cliente?.CLICODIGO})");
+
+        if (cliente is null || string.IsNullOrWhiteSpace(cliente.CLICODIGO))
+        {
+            System.Diagnostics.Debug.WriteLine($"[DELETE_VM] 2. ERRO: Cliente é null ou CLICODIGO vazio. Cliente={cliente == null}, CLICODIGO={string.IsNullOrWhiteSpace(cliente?.CLICODIGO)}");
+            await AppShell.DisplayToastAsync("Cliente inválido.");
+            return;
+        }
 
         try
         {
-            var code = SelectedCliente.CLICODIGO;
-            if (string.IsNullOrWhiteSpace(code)) return;
-
+            var code = cliente.CLICODIGO;
+            System.Diagnostics.Debug.WriteLine($"[DELETE_VM] 3. Iniciando delete do cliente: {code}");
+            
             var ok = await DatabaseService.DeleteClienteAsync(code);
+            
+            System.Diagnostics.Debug.WriteLine($"[DELETE_VM] 4. DatabaseService.DeleteClienteAsync retornou: {ok}");
+            
             if (ok)
             {
-                _all.RemoveAll(c => c.CLICODIGO == code);
-                var toRemove = Clientes.FirstOrDefault(c => c.CLICODIGO == code);
-                if (toRemove != null) Clientes.Remove(toRemove);
-                SelectedCliente = null;
-                EditModel = NewClienteTemplate();
-                _codigoPreview = false;
+                // Update UI collections on main thread
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    System.Diagnostics.Debug.WriteLine($"[DELETE_VM] 5. Atualizando collections UI (MainThread)");
+                    _all.RemoveAll(c => c.CLICODIGO == code);
+                    var toRemove = Clientes.FirstOrDefault(c => c.CLICODIGO == code);
+                    if (toRemove != null) Clientes.Remove(toRemove);
+                    SelectedCliente = null;
+                    EditModel = NewClienteTemplate();
+                    _codigoPreview = false;
+                    OnPropertyChanged(nameof(Editing));
+                    System.Diagnostics.Debug.WriteLine($"[DELETE_VM] 6. Collections atualizadas");
+                });
                 await AppShell.DisplayToastAsync("Cliente eliminado.");
+                System.Diagnostics.Debug.WriteLine($"[DELETE_VM] 7. Toast de sucesso mostrado");
             }
             else
             {
+                System.Diagnostics.Debug.WriteLine($"[DELETE_VM] 4.a Delete falhou no banco de dados");
                 await AppShell.DisplayToastAsync("Nenhuma linha eliminada.");
             }
         }
         catch (InvalidOperationException depEx)
         {
+            System.Diagnostics.Debug.WriteLine($"[DELETE_VM] EXCEPTION (InvalidOp): {depEx.Message}");
             await AppShell.DisplayToastAsync(depEx.Message);
         }
         catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"[DELETE_VM] EXCEPTION (General): {ex.Message}\n{ex.StackTrace}");
             GlobalErro.TratarErro(ex);
             await AppShell.DisplayToastAsync("Erro ao eliminar.");
         }
+    }
+
+    private async Task OnDeleteAsync()
+    {
+        if (SelectedCliente is null) return;
+        await DeleteClienteAsync(SelectedCliente);
     }
 
     private async Task OnPastasAsync() => await OnCreateFoldersAsync();

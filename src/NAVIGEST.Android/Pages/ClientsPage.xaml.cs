@@ -63,7 +63,7 @@ namespace NAVIGEST.Android.Pages
                     if (BindingContext is ClientsPageModel vm && vm.SelectCommand?.CanExecute(cliente) == true)
                     {
                         vm.SelectCommand.Execute(cliente);
-                        ShowFormView();
+                        ShowFormView(isNew: false);
                     }
                 }
             }
@@ -74,80 +74,85 @@ namespace NAVIGEST.Android.Pages
         {
             try
             {
-                Cliente? cliente = null;
+                System.Diagnostics.Debug.WriteLine($"[DELETE_SWIPE] 1. Invoked. Sender type: {sender?.GetType().Name}");
 
-                // Suportar ambos: SwipeItemView.Invoked e TapGestureRecognizer.Tapped
-                if (sender is SwipeItemView siv && siv.BindingContext is Cliente c1)
+                // Sempre receber do SwipeItemView que tem o BindingContext correto
+                if (sender is not SwipeItemView siv || siv.BindingContext is not Cliente cliente)
                 {
-                    cliente = c1;
-                }
-                else if (sender is Grid grid && grid.BindingContext is Cliente c2)
-                {
-                    cliente = c2;
-                }
-                // Se o sender for o Grid mas o BindingContext estiver no pai
-                else if (sender is Grid && this.BindingContext is CollectionView cv)
-                {
-                    // Tentar encontrar o cliente do elemento selecionado
-                    if (cv.SelectedItem is Cliente c3)
-                    {
-                        cliente = c3;
-                    }
+                System.Diagnostics.Debug.WriteLine($"[DELETE_SWIPE] 2. ERRO: Sender type={sender?.GetType().Name}, BindingContext type={(sender as BindableObject)?.BindingContext?.GetType().Name}");
+                    await GlobalToast.ShowAsync("Erro: cliente não encontrado", ToastTipo.Erro, 2000);
+                    return;
                 }
 
-                if (cliente != null)
-                {
-                    // Confirmar exclusão com o usuário
-                    var confirm = await DisplayAlert("Eliminar Cliente", 
-                        $"Pretende eliminar '{cliente.CLINOME}' permanentemente?", 
-                        "Eliminar", "Cancelar");
-                    
-                    if (!confirm)
-                        return;
+                System.Diagnostics.Debug.WriteLine($"[DELETE_SWIPE] 3. Cliente extraído: {cliente.CLINOME} ({cliente.CLICODIGO})");
 
-                    // Mostrar feedback da operação
-                    await GlobalToast.ShowAsync($"A eliminar '{cliente.CLINOME}'...", ToastTipo.Info, 1000);
-                    
-                    if (BindingContext is ClientsPageModel vm && vm.DeleteCommand?.CanExecute(cliente) == true)
-                    {
-                        vm.DeleteCommand.Execute(cliente);
-                        await GlobalToast.ShowAsync("Cliente eliminado com sucesso!", ToastTipo.Sucesso, 2000);
-                    }
-                    else
-                    {
-                        await GlobalToast.ShowAsync("Erro: não foi possível eliminar o cliente", ToastTipo.Erro, 3000);
-                    }
+                // Confirmar exclusão com o usuário
+                var confirm = await DisplayAlert("Eliminar Cliente", 
+                    $"Pretende eliminar '{cliente.CLINOME}' permanentemente?", 
+                    "Eliminar", "Cancelar");
+                
+                System.Diagnostics.Debug.WriteLine($"[DELETE_SWIPE] 4. Confirmação: {confirm}");
+                
+                if (!confirm)
+                    return;
+
+                // Chamar o método público do ViewModel e AGUARDAR a conclusão
+                if (BindingContext is ClientsPageModel vm)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[DELETE_SWIPE] 5. Chamando DeleteClienteAsync com cliente: {cliente.CLINOME} ({cliente.CLICODIGO})");
+                    await vm.DeleteClienteAsync(cliente);
+                    System.Diagnostics.Debug.WriteLine($"[DELETE_SWIPE] 6. DeleteClienteAsync completado");
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"DEBUG: Sender type = {sender?.GetType().Name}, BindingContext type = {(sender as BindableObject)?.BindingContext?.GetType().Name}");
-                    await GlobalToast.ShowAsync("Erro: cliente não encontrado", ToastTipo.Erro, 2000);
+                    System.Diagnostics.Debug.WriteLine($"[DELETE_SWIPE] 5. ERRO: ViewModel é null");
+                    await GlobalToast.ShowAsync("Erro: ViewModel não disponível", ToastTipo.Erro, 2000);
                 }
             }
             catch (Exception ex) 
             { 
+                System.Diagnostics.Debug.WriteLine($"[DELETE_SWIPE] EXCEPTION: {ex}");
                 GlobalErro.TratarErro(ex, mostrarAlerta: false);
                 await GlobalToast.ShowAsync($"Erro ao eliminar: {ex.Message}", ToastTipo.Erro, 3000);
             }
         }
 
-        private void OnPastasSwipeInvoked(object sender, EventArgs e)
+        private async void OnPastasSwipeInvoked(object sender, EventArgs e)
         {
             try
             {
-                if (sender is SwipeItemView siv && siv.BindingContext is object item)
+                // Receber o Cliente diretamente do SwipeItemView (não usar vm.Editing!)
+                if (sender is not SwipeItemView siv || siv.BindingContext is not Cliente cliente)
                 {
-                    if (BindingContext is ClientsPageModel vm)
-                    {
-                        // Navigate to Pastas
-                        MainThread.BeginInvokeOnMainThread(async () =>
-                        {
-                            await Shell.Current.GoToAsync($"ClientPastas?clienteId={vm.Editing?.CLICODIGO}");
-                        });
-                    }
+                    await GlobalToast.ShowAsync("Erro: cliente não encontrado", ToastTipo.Erro, 2000);
+                    return;
                 }
+
+                if (string.IsNullOrWhiteSpace(cliente.CLICODIGO))
+                {
+                    await GlobalToast.ShowAsync("Erro: código do cliente inválido", ToastTipo.Erro, 2000);
+                    return;
+                }
+
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    try
+                    {
+                        await GlobalToast.ShowAsync("A abrir pastas...", ToastTipo.Info, 1000);
+                        await Shell.Current.GoToAsync($"ClientPastas?clienteId={cliente.CLICODIGO}");
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[PASTAS_SWIPE] Navigate failed: {ex}");
+                        await GlobalToast.ShowAsync($"Erro ao abrir pastas: {ex.Message}", ToastTipo.Erro, 3000);
+                    }
+                });
             }
-            catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
+            catch (Exception ex) 
+            { 
+                GlobalErro.TratarErro(ex, mostrarAlerta: false);
+                await GlobalToast.ShowAsync($"Erro: {ex.Message}", ToastTipo.Erro, 3000);
+            }
         }
 
         private void OnServicesSwipeInvoked(object sender, EventArgs e)
@@ -184,7 +189,7 @@ namespace NAVIGEST.Android.Pages
                 if (BindingContext is ClientsPageModel vm && vm.SelectCommand?.CanExecute(cliente) == true)
                 {
                     vm.SelectCommand.Execute(cliente);
-                    ShowFormView();
+                    ShowFormView(isNew: false);
                 }
             }
             catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
@@ -198,19 +203,31 @@ namespace NAVIGEST.Android.Pages
                 if (BindingContext is ClientsPageModel vm && vm.NewCommand?.CanExecute(null) == true)
                 {
                     vm.NewCommand.Execute(null);
-                    ShowFormView();
+                    ShowFormView(isNew: true);
                 }
             }
             catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
         }
 
         // -------- Form Controls --------
-        private void ShowFormView()
+        private void ShowFormView(bool isNew = false)
         {
             if (ListViewContainer is not null && FormViewContainer is not null)
             {
                 ListViewContainer.IsVisible = false;
                 FormViewContainer.IsVisible = true;
+            }
+
+            // Show action buttons (Pastas, Delete) only in edit mode (not when creating new)
+            if (FindByName("ActionButtonsGrid") is View actionGrid)
+            {
+                actionGrid.IsVisible = !isNew;
+            }
+
+            // Update form title
+            if (FindByName("FormTitle") is Label titleLabel)
+            {
+                titleLabel.Text = isNew ? "Novo Cliente" : "Editar Cliente";
             }
         }
 
@@ -302,8 +319,16 @@ namespace NAVIGEST.Android.Pages
                     // Navigate to Pastas
                     MainThread.BeginInvokeOnMainThread(async () =>
                     {
-                        await Shell.Current.GoToAsync($"ClientPastas?clienteId={vm.Editing?.CLICODIGO}");
-                        HideFormView();
+                        try
+                        {
+                            await Shell.Current.GoToAsync($"ClientPastas?clienteId={vm.Editing?.CLICODIGO}");
+                            HideFormView();
+                        }
+                        catch (Exception innerEx)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[PASTAS] GoToAsync failed: {innerEx}");
+                            await GlobalToast.ShowAsync($"Erro ao abrir pastas: {innerEx.Message}", ToastTipo.Erro, 3000);
+                        }
                     });
                 }
             }
@@ -314,9 +339,9 @@ namespace NAVIGEST.Android.Pages
         {
             try
             {
-                if (BindingContext is ClientsPageModel vm && vm.DeleteCommand?.CanExecute(null) == true)
+                if (BindingContext is ClientsPageModel vm && vm.DeleteCommand?.CanExecute(vm.Editing) == true)
                 {
-                    vm.DeleteCommand.Execute(null);
+                    vm.DeleteCommand.Execute(vm.Editing);
                     HideFormView();
                 }
             }

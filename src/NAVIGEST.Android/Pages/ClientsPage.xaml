@@ -65,11 +65,8 @@
                           </Border>
                         </Grid>
                       </SwipeItemView>
-                      <SwipeItemView BindingContext="{Binding .}">
+                      <SwipeItemView BindingContext="{Binding .}" Invoked="OnDeleteSwipeInvoked">
                         <Grid WidthRequest="80" Padding="0" BackgroundColor="Transparent" HorizontalOptions="Center" VerticalOptions="Fill" IsClippedToBounds="False">
-                          <Grid.GestureRecognizers>
-                            <TapGestureRecognizer Tapped="OnDeleteSwipeInvoked" />
-                          </Grid.GestureRecognizers>
                           <Border WidthRequest="56" HeightRequest="56" HorizontalOptions="Center" VerticalOptions="Center"
                                   BackgroundColor="#F44336" StrokeThickness="0">
                             <Border.StrokeShape>
