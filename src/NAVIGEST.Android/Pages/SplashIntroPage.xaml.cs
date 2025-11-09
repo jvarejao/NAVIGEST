@@ -9,6 +9,9 @@ using Android.Webkit;
 using Android.Util;
 #endif
 using AColor = Android.Graphics.Color;
+using NAVIGEST.Shared.Services;
+using NAVIGEST.Shared.Helpers;
+using System.Diagnostics;
 
 namespace NAVIGEST.Android.Pages
 {
@@ -84,6 +87,12 @@ namespace NAVIGEST.Android.Pages
                 Log.Debug(LogTag, $"TryShowGifAsync completed. Success={ok}");
 #endif
 
+                // ✅ VERIFICAR ATUALIZAÇÕES enquanto mostra splash
+#if ANDROID
+                Log.Debug(LogTag, "Calling CheckForUpdatesAsync");
+#endif
+                await CheckForUpdatesAsync();
+
                 await Task.Delay(GifDurationMs);
 
                 try { await this.FadeTo(0, 500, Easing.CubicOut); } catch { }
@@ -102,19 +111,166 @@ namespace NAVIGEST.Android.Pages
             }
         }
 
-        protected override void OnHandlerChanged()
-        {
-            base.OnHandlerChanged();
-#if ANDROID
-            Log.Info(LogTag, $"OnHandlerChanged. Handler={(Handler?.GetType().Name ?? "null")}");
-#endif
-        }
-
         protected override void OnNavigatedTo(NavigatedToEventArgs args)
         {
             base.OnNavigatedTo(args);
 #if ANDROID
             Log.Info(LogTag, "OnNavigatedTo fired");
+#endif
+        }
+
+        /// <summary>
+        /// Verifica se há atualizações disponíveis no GitHub
+        /// </summary>
+        private async Task CheckForUpdatesAsync()
+        {
+            try
+            {
+#if ANDROID
+                Log.Debug(LogTag, "CheckForUpdatesAsync: Iniciando verificação de atualizações");
+#endif
+                // Obter o serviço de atualizações do DI container
+                var updateService = Application.Current?.Handler?.MauiContext?.Services
+                    .GetService(typeof(IUpdateService)) as IUpdateService;
+
+                if (updateService == null)
+                {
+#if ANDROID
+                    Log.Warn(LogTag, "CheckForUpdatesAsync: UpdateService não está registado");
+#endif
+                    return;
+                }
+
+                // Buscar informações de atualização do GitHub
+                var updateInfo = await updateService.GetLatestAsync();
+
+                if (updateInfo == null)
+                {
+#if ANDROID
+                    Log.Debug(LogTag, "CheckForUpdatesAsync: Nenhuma informação de atualização obtida");
+#endif
+                    return;
+                }
+
+                string currentVersion = AppInfo.Current.VersionString ?? "0.0.0";
+                string latestVersion = updateInfo.Version ?? "0.0.0";
+
+#if ANDROID
+                Log.Debug(LogTag, $"CheckForUpdatesAsync: Versão atual={currentVersion}, Versão servidor={latestVersion}");
+#endif
+
+                // Comparar versões usando helper
+                if (VersionComparer.IsLessThan(currentVersion, latestVersion))
+                {
+#if ANDROID
+                    Log.Info(LogTag, $"CheckForUpdatesAsync: Atualização disponível! {currentVersion} → {latestVersion}");
+#endif
+                    await ShowUpdateAlertAsync(updateInfo);
+                }
+                else
+                {
+#if ANDROID
+                    Log.Debug(LogTag, $"CheckForUpdatesAsync: App está atualizada");
+#endif
+                }
+            }
+            catch (Exception ex)
+            {
+#if ANDROID
+                Log.Error(LogTag, $"CheckForUpdatesAsync: Erro ao verificar atualizações: {ex.Message}");
+#endif
+                Debug.WriteLine($"[SplashIntroPage] CheckForUpdatesAsync error: {ex}");
+                // Continua silenciosamente - não bloqueia o arranque
+            }
+        }
+
+        /// <summary>
+        /// Mostra alert de atualização disponível
+        /// </summary>
+        private async Task ShowUpdateAlertAsync(Shared.Models.AppUpdateInfo updateInfo)
+        {
+            try
+            {
+                bool isMandatory = VersionComparer.IsLessThan(AppInfo.Current.VersionString, updateInfo.MinSupportedVersion ?? "0.0.0");
+
+                string message = $"Nova versão disponível: {updateInfo.Version}\n\n{updateInfo.Notes ?? "Verifique as novidades!"}";
+                
+                if (isMandatory)
+                {
+                    message = $"⚠️ ATUALIZAÇÃO OBRIGATÓRIA ⚠️\n\n{message}";
+                }
+
+#if ANDROID
+                Log.Info(LogTag, $"ShowUpdateAlertAsync: Mostrando alert (obrigatória={isMandatory})");
+#endif
+
+                // Mostrar alert com botões apropriados
+                bool result;
+                if (isMandatory)
+                {
+                    // Apenas botão de atualizar - sem opção de ignorar
+                    result = await MainThread.InvokeOnMainThreadAsync(async () =>
+                    {
+                        var currentPage = GetRootPage();
+                        if (currentPage == null) return false;
+                        
+                        return await currentPage.DisplayAlert(
+                            "Atualização Obrigatória",
+                            message,
+                            "Atualizar Agora",
+                            null
+                        );
+                    });
+                }
+                else
+                {
+                    // Botão de atualizar e ignorar
+                    result = await MainThread.InvokeOnMainThreadAsync(async () =>
+                    {
+                        var currentPage = GetRootPage();
+                        if (currentPage == null) return false;
+                        
+                        return await currentPage.DisplayAlert(
+                            "Atualização Disponível",
+                            message,
+                            "Atualizar",
+                            "Depois"
+                        );
+                    });
+                }
+
+                // Se clicou "Atualizar" ou é obrigatória
+                if (result)
+                {
+#if ANDROID
+                    Log.Info(LogTag, $"ShowUpdateAlertAsync: Abrindo URL de download: {updateInfo.DownloadUrl}");
+#endif
+                    try
+                    {
+                        await Launcher.OpenAsync(updateInfo.DownloadUrl);
+                    }
+                    catch (Exception ex)
+                    {
+#if ANDROID
+                        Log.Error(LogTag, $"ShowUpdateAlertAsync: Erro ao abrir URL: {ex.Message}");
+#endif
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+#if ANDROID
+                Log.Error(LogTag, $"ShowUpdateAlertAsync: Erro ao mostrar alert: {ex.Message}");
+#endif
+                Debug.WriteLine($"[SplashIntroPage] ShowUpdateAlertAsync error: {ex}");
+            }
+        }
+
+        protected override void OnHandlerChanged()
+        {
+            base.OnHandlerChanged();
+#if ANDROID
+            Log.Info(LogTag, $"OnHandlerChanged. Handler={(Handler?.GetType().Name ?? "null")}");
 #endif
         }
 
@@ -273,6 +429,24 @@ img{{max-width:100vw;max-height:100vh;object-fit:contain;display:block;margin:au
 
             await Task.WhenAny(tcs.Task, Task.Delay(3000));
             await GifView.FadeTo(1, 200);
+        }
+
+        /// <summary>
+        /// Obtém a página raiz (Window.Page) de forma segura
+        /// </summary>
+        private Page? GetRootPage()
+        {
+            try
+            {
+                if (Application.Current?.Windows == null || Application.Current.Windows.Count == 0)
+                    return null;
+
+                return Application.Current.Windows[0]?.Page ?? this;
+            }
+            catch
+            {
+                return this;
+            }
         }
     }
 }

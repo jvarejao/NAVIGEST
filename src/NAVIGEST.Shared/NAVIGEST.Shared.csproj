@@ -8,6 +8,12 @@
     <UseMaui>true</UseMaui>
   </PropertyGroup>
 
+  <!-- Exclude SYNC_REFERENCE folder from build (contains reference code only) -->
+  <ItemGroup>
+    <Compile Remove="SYNC_REFERENCE/**" />
+    <EmbeddedResource Remove="SYNC_REFERENCE/**" />
+  </ItemGroup>
+
   <!-- MAUI Framework -->
   <ItemGroup>
     <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.0" />
