@@ -104,7 +104,15 @@ namespace NAVIGEST.Android.Pages
                 if (sender is not SwipeItemView siv || siv.BindingContext is not Cliente cliente)
                     return;
 
-                // Padrão do Form Delete: Apenas executar o DeleteCommand - sem confirmação
+                // Confirmação (padrão iOS)
+                var confirm = await ShowConfirmAsync("Eliminar Cliente",
+                    $"Tem a certeza que deseja eliminar '{cliente.CLINOME}'?",
+                    "Eliminar", "Cancelar");
+
+                if (!confirm)
+                    return;
+
+                // Padrão do Form Delete: Apenas executar o DeleteCommand - sem confirmação adicional
                 if (BindingContext is ClientsPageModel vm)
                 {
                     if (vm.DeleteCommand?.CanExecute(cliente) == true)
@@ -335,14 +343,25 @@ namespace NAVIGEST.Android.Pages
             catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
         }
 
-        private void OnDeleteFromFormTapped(object sender, EventArgs e)
+        private async void OnDeleteFromFormTapped(object sender, EventArgs e)
         {
             try
             {
-                if (BindingContext is ClientsPageModel vm && vm.DeleteCommand?.CanExecute(vm.Editing) == true)
+                if (BindingContext is ClientsPageModel vm && vm.Editing is not null)
                 {
-                    vm.DeleteCommand.Execute(vm.Editing);
-                    HideFormView();
+                    // Confirmação (padrão iOS)
+                    var confirm = await ShowConfirmAsync("Eliminar Cliente",
+                        $"Tem a certeza que deseja eliminar '{vm.Editing.CLINOME}'?",
+                        "Eliminar", "Cancelar");
+
+                    if (!confirm)
+                        return;
+
+                    if (vm.DeleteCommand?.CanExecute(vm.Editing) == true)
+                    {
+                        vm.DeleteCommand.Execute(vm.Editing);
+                        HideFormView();
+                    }
                 }
             }
             catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
