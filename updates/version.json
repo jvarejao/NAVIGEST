@@ -1,6 +1,6 @@
 {
-  "version": "1.0.1",
+  "version": "1.0.2",
   "minSupportedVersion": "1.0.0",
   "downloadUrl": "https://play.google.com/store/apps/details?id=com.tuaempresa.navigest",
-  "notes": "✨ Melhorias de performance\n🐛 Correções de bugs\n🔧 Verificação de atualizações implementada"
+  "notes": "✨ Versão 1.0.2 - Melhorias Gerais\n🐛 Correções de bugs\n🔧 Update Checker aprimorado\n📊 Versão visível em LoginPage"
 }

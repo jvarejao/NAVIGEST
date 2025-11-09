@@ -61,6 +61,9 @@ namespace NAVIGEST.Android.Pages
         {
             base.OnAppearing();
 
+            // ✅ Mostrar versão da app
+            VersionLabel.Text = $"Versão {AppInfo.Current.VersionString}";
+
             // ✅ Inicializa tudo (biometria, auto-login, etc)
             // O InitCommand vai fazer TODO o trabalho: verificar bio_enabled, chamar Face ID se necessário
             var vm = BindingContext as NAVIGEST.Android.PageModels.LoginPageModel;
