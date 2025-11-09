@@ -1,6 +1,6 @@
 {
-  "version": "1.0.0",
+  "version": "1.0.1",
   "minSupportedVersion": "1.0.0",
   "downloadUrl": "https://play.google.com/store/apps/details?id=com.tuaempresa.navigest",
-  "notes": "Versão inicial com suporte para Android, iOS, macOS e Windows."
+  "notes": "✨ Melhorias de performance\n🐛 Correções de bugs\n🔧 Verificação de atualizações implementada"
 }
