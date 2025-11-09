@@ -44,8 +44,13 @@ public class UpdateService : IUpdateService
             // Set timeout de 10 segundos
             using var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(10));
 
-            // GET request
-            var response = await _httpClient.GetAsync(GitHubJsonUrl, HttpCompletionOption.ResponseContentRead, cts.Token);
+            // Criar request com headers para desabilitar cache
+            using var request = new HttpRequestMessage(HttpMethod.Get, GitHubJsonUrl);
+            request.Headers.Add("Cache-Control", "no-cache, no-store, must-revalidate");
+            request.Headers.Add("Pragma", "no-cache");
+
+            // GET request com os headers de no-cache
+            var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead, cts.Token);
 
             // Se não conseguir fazer download, retorna null
             if (!response.IsSuccessStatusCode)
@@ -63,10 +68,14 @@ public class UpdateService : IUpdateService
                 return null;
             }
 
+            System.Diagnostics.Debug.WriteLine($"UpdateService: Raw JSON: {content}");
+
             // Faz deserialize do JSON
             // Mapeia camelCase do JSON para as propriedades PascalCase da classe
             var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var updateInfo = JsonSerializer.Deserialize<AppUpdateInfo>(content, options);
+
+            System.Diagnostics.Debug.WriteLine($"UpdateService: Deserialized - Version={updateInfo?.Version}, MinVersion={updateInfo?.MinSupportedVersion}");
 
             // Valida dados críticos
             if (updateInfo == null || 
