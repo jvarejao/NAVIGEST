@@ -27,6 +27,32 @@ namespace NAVIGEST.Android.Pages
             Dispatcher.Dispatch(async () => await EnsureLoadedAsync());
         }
 
+        // Helpers para DisplayAlert na MainThread (padrão iOS)
+        private static Task<bool> ShowConfirmAsync(string title, string message, string accept, string cancel)
+        {
+            return MainThread.InvokeOnMainThreadAsync(async () =>
+            {
+                var root = GetRootPage();
+                if (root is null)
+                    return false;
+                return await root.DisplayAlert(title, message, accept, cancel);
+            });
+        }
+
+        private static Page? GetRootPage()
+        {
+            var app = Application.Current;
+            if (app?.Windows.Count > 0 && app.Windows[0].Page is Page root)
+                return root switch
+                {
+                    Shell shell when shell.CurrentPage is Page current => current,
+                    Shell shell => shell,
+                    NavigationPage nav when nav.CurrentPage is not null => nav.CurrentPage,
+                    _ => root
+                };
+            return null;
+        }
+
         private async void OnPageLoaded(object? sender, EventArgs e) => await EnsureLoadedAsync();
 
         protected override async void OnAppearing()
@@ -74,50 +100,24 @@ namespace NAVIGEST.Android.Pages
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"[DELETE_SWIPE] 1. Invoked. Sender type: {sender?.GetType().Name}");
-
-                // Sempre receber do SwipeItemView que tem o BindingContext correto
+                // Extrair cliente do SwipeItemView
                 if (sender is not SwipeItemView siv || siv.BindingContext is not Cliente cliente)
-                {
-                System.Diagnostics.Debug.WriteLine($"[DELETE_SWIPE] 2. ERRO: Sender type={sender?.GetType().Name}, BindingContext type={(sender as BindableObject)?.BindingContext?.GetType().Name}");
-                    await GlobalToast.ShowAsync("Erro: cliente não encontrado", ToastTipo.Erro, 2000);
-                    return;
-                }
-
-                System.Diagnostics.Debug.WriteLine($"[DELETE_SWIPE] 3. Cliente extraído: {cliente.CLINOME} ({cliente.CLICODIGO})");
-
-                // Confirmar exclusão com o usuário
-                var confirm = await DisplayAlert("Eliminar Cliente", 
-                    $"Pretende eliminar '{cliente.CLINOME}' permanentemente?", 
-                    "Eliminar", "Cancelar");
-                
-                System.Diagnostics.Debug.WriteLine($"[DELETE_SWIPE] 4. Confirmação: {confirm}");
-                
-                if (!confirm)
                     return;
 
-                // Chamar o método público do ViewModel e AGUARDAR a conclusão
+                // Padrão do Form Delete: Apenas executar o DeleteCommand - sem confirmação
                 if (BindingContext is ClientsPageModel vm)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[DELETE_SWIPE] 5. Chamando DeleteClienteAsync com cliente: {cliente.CLINOME} ({cliente.CLICODIGO})");
-                    await vm.DeleteClienteAsync(cliente);
-                    System.Diagnostics.Debug.WriteLine($"[DELETE_SWIPE] 6. DeleteClienteAsync completado");
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"[DELETE_SWIPE] 5. ERRO: ViewModel é null");
-                    await GlobalToast.ShowAsync("Erro: ViewModel não disponível", ToastTipo.Erro, 2000);
+                    if (vm.DeleteCommand?.CanExecute(cliente) == true)
+                    {
+                        vm.DeleteCommand.Execute(cliente);
+                    }
                 }
             }
             catch (Exception ex) 
             { 
-                System.Diagnostics.Debug.WriteLine($"[DELETE_SWIPE] EXCEPTION: {ex}");
                 GlobalErro.TratarErro(ex, mostrarAlerta: false);
-                await GlobalToast.ShowAsync($"Erro ao eliminar: {ex.Message}", ToastTipo.Erro, 3000);
             }
-        }
-
-        private async void OnPastasSwipeInvoked(object sender, EventArgs e)
+        }        private async void OnPastasSwipeInvoked(object sender, EventArgs e)
         {
             try
             {
