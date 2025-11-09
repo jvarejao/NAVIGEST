@@ -255,5 +255,201 @@ private async void OnDeleteFromFormTapped(object sender, EventArgs e)
 
 ---
 
+## Session: App Update Checker System (2025-11-09)
+
+### 1. AppUpdateInfo Model (NEW)
+
+**Tipo**: Novo modelo
+
+**Arquivo**: `NAVIGEST.Shared/Models/AppUpdateInfo.cs`
+
+**Propósito**: 
+Representar estrutura JSON de informações de atualização obtidas do GitHub.
+
+**Propriedades**:
+```csharp
+public string Version { get; set; }              // Versão mais recente (ex: "1.0.5")
+public string MinSupportedVersion { get; set; } // Versão mínima (ex: "1.0.0")
+public string DownloadUrl { get; set; }         // URL para download/store
+public string Notes { get; set; }               // Changelog
+```
+
+**Status**: ✅ Implementado em Shared
+
+---
+
+### 2. IUpdateService Interface (NEW)
+
+**Tipo**: Nova interface
+
+**Arquivo**: `NAVIGEST.Shared/Services/IUpdateService.cs`
+
+**Propósito**: 
+Definir contrato para serviço de verificação de atualizações.
+
+**Método**:
+```csharp
+Task<AppUpdateInfo?> GetLatestAsync();  // Retorna null em caso de erro
+```
+
+**Status**: ✅ Implementado em Shared
+
+---
+
+### 3. UpdateService Implementation (NEW)
+
+**Tipo**: Nova implementação
+
+**Arquivo**: `NAVIGEST.Shared/Services/UpdateService.cs`
+
+**Propósito**: 
+Implementação HTTP do IUpdateService que obtém JSON do GitHub.
+
+**Features**:
+- HttpClient com timeout de 10 segundos
+- Deserialização JSON com System.Text.Json
+- Tratamento robusto de erros (logging apenas, sem exceções)
+- Suporta URLs raw do GitHub
+- ⚠️ IMPORTANTE: Muda GitHubJsonUrl para o teu repositório!
+
+**Método**:
+```csharp
+public async Task<AppUpdateInfo?> GetLatestAsync()
+{
+    // GET de GitHub
+    // Parse JSON
+    // Valida dados
+    // Retorna AppUpdateInfo ou null
+}
+```
+
+**Status**: ✅ Implementado em Shared
+
+**Configuração Necessária**:
+- Criar ficheiro JSON em GitHub: `/updates/version.json`
+- Atualizar URL em UpdateService.cs (line ~28)
+
+---
+
+### 4. VersionComparer Helper (NEW)
+
+**Tipo**: Novo helper estático
+
+**Arquivo**: `NAVIGEST.Shared/Helpers/VersionComparer.cs`
+
+**Propósito**: 
+Comparação semântica de versões (1.0.9 vs 1.0.10, v1.0, 1.0.0-beta, etc).
+
+**Métodos**:
+```csharp
+public static bool IsLessThan(string versionA, string versionB)         // a < b
+public static bool IsLessThanOrEqual(string versionA, string versionB) // a <= b
+```
+
+**Exemplos**:
+```
+"1.0.9" < "1.0.10"    → true
+"v1.0.5" < "1.0.6"    → true
+"1.0.5-beta" < "1.0.5" → true
+"1.0.0" < "1.0.0"     → false
+```
+
+**Status**: ✅ Implementado em Shared
+
+---
+
+### 5. MauiProgram.cs Registration (MODIFIED)
+
+**Tipo**: Modificação
+
+**Arquivo**: `NAVIGEST.Android/MauiProgram.cs` (Lines ~85-86)
+
+**Propósito**: 
+Registar UpdateService na injeção de dependências.
+
+**Antes**:
+```csharp
+builder.Services.AddSingleton<ModalErrorHandler>();
+// Sem UpdateService
+```
+
+**Depois**:
+```csharp
+builder.Services.AddSingleton<ModalErrorHandler>();
+
+// ✅ Update Service - Verificação de atualizações multi-plataforma
+builder.Services.AddSingleton<HttpClient>();
+builder.Services.AddSingleton<NAVIGEST.Shared.Services.IUpdateService, 
+                               NAVIGEST.Shared.Services.UpdateService>();
+```
+
+**Status**: ✅ Implementado em Android
+
+**Aplicável em**: iOS ✅, macOS ✅, Windows ✅ (mesma linha em cada MauiProgram)
+
+---
+
+## Fluxo de Verificação de Atualizações
+
+```
+OnAppearing() da página de entrada
+    ↓
+CheckForUpdatesAsync()
+    ↓
+1. Obter versão atual: AppInfo.Current.VersionString
+2. Chamar _updateService.GetLatestAsync()
+3. Se null → sair silenciosamente
+4. Comparar com VersionComparer:
+    ├─ current < minSupportedVersion?
+    │  └─ SIM: Alert obrigatório + abre URL
+    └─ current < version?
+       └─ SIM: Alert opcional (2 botões) + abre URL se aceitar
+```
+
+**Abertura de URLs**:
+- Android: `Launcher.OpenAsync()` abre APK/Play Store
+- iOS: `Launcher.OpenAsync()` abre App Store
+- macOS: `Launcher.OpenAsync()` abre App Store/link genérico
+- Windows: `Launcher.OpenAsync()` abre browser
+
+---
+
+## Ficheiros JSON de Exemplo
+
+**Localização**: `/updates/version.json` no GitHub
+
+**Conteúdo**:
+```json
+{
+  "version": "1.0.5",
+  "minSupportedVersion": "1.0.0",
+  "downloadUrl": "https://play.google.com/store/apps/details?id=com.tuaempresa.navigest",
+  "notes": "Correções de bugs e melhorias de performance."
+}
+```
+
+**URLs Recomendadas**:
+- Android: Google Play Store link
+- iOS: App Store link
+- macOS: App Store link
+- Windows: Link direto para MSIX ou site
+
+---
+
+## Status - Update Service
+
+| O quê | Shared | Android | iOS | macOS | Windows |
+|---|---|---|---|---|---|
+| AppUpdateInfo | ✅ | - | - | - | - |
+| IUpdateService | ✅ | - | - | - | - |
+| UpdateService | ✅ | - | - | - | - |
+| VersionComparer | ✅ | - | - | - | - |
+| MauiProgram Registration | - | ✅ | ⏳ | ⏳ | ⏳ |
+| Page Integration | - | ⏳ | ⏳ | ⏳ | ⏳ |
+
+---
+
 **Última Atualização**: 2025-11-09  
 **Próxima Revisão**: Quando próxima mudança for feita em Android
+
+```

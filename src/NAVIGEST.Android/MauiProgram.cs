@@ -81,6 +81,10 @@ namespace NAVIGEST.Android
             builder.Services.AddSingleton<SeedDataService>();
             builder.Services.AddSingleton<ModalErrorHandler>();
 
+            // ✅ Update Service - Verificação de atualizações multi-plataforma
+            builder.Services.AddSingleton<HttpClient>();
+            builder.Services.AddSingleton<NAVIGEST.Shared.Services.IUpdateService, NAVIGEST.Shared.Services.UpdateService>();
+
             builder.Services.AddSingleton<MainYahPageViewModel>();
             builder.Services.AddSingleton<MainYahPage>();
 
