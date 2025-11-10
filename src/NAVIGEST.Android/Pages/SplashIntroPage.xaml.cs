@@ -185,7 +185,7 @@ namespace NAVIGEST.Android.Pages
         }
 
         /// <summary>
-        /// Mostra alert de atualização disponível
+        /// Mostra alert de atualização disponível - Popup totalmente modal
         /// </summary>
         private async Task ShowUpdateAlertAsync(Shared.Models.AppUpdateInfo updateInfo)
         {
@@ -204,55 +204,84 @@ namespace NAVIGEST.Android.Pages
                 Log.Info(LogTag, $"ShowUpdateAlertAsync: Mostrando alert (obrigatória={isMandatory})");
 #endif
 
-                // Mostrar alert com botões apropriados
-                bool result;
-                if (isMandatory)
+                // Usar DisplayAlert - é modal por padrão em MAUI
+                string title = isMandatory ? "Atualização Obrigatória" : "Atualização Disponível";
+                string buttonAccept = isMandatory ? "Atualizar Agora" : "Atualizar";
+                
+                bool result = false;
+                
+                // Executar no main thread e esperar resultado
+                await MainThread.InvokeOnMainThreadAsync(async () =>
                 {
-                    // Apenas botão de atualizar - sem opção de ignorar
-                    result = await MainThread.InvokeOnMainThreadAsync(async () =>
+                    var page = GetRootPage();
+                    if (page != null)
                     {
-                        var currentPage = GetRootPage();
-                        if (currentPage == null) return false;
-                        
-                        return await currentPage.DisplayAlert(
-                            "Atualização Obrigatória",
-                            message,
-                            "Atualizar Agora",
-                            null
-                        );
-                    });
-                }
-                else
-                {
-                    // Botão de atualizar e ignorar
-                    result = await MainThread.InvokeOnMainThreadAsync(async () =>
-                    {
-                        var currentPage = GetRootPage();
-                        if (currentPage == null) return false;
-                        
-                        return await currentPage.DisplayAlert(
-                            "Atualização Disponível",
-                            message,
-                            "Atualizar",
-                            "Depois"
-                        );
-                    });
-                }
+                        if (isMandatory)
+                        {
+                            // Apenas botão de atualizar - sem opção de ignorar
+                            result = await page.DisplayAlert(title, message, buttonAccept, "Sair");
+                        }
+                        else
+                        {
+                            // Botão de atualizar e ignorar
+                            result = await page.DisplayAlert(title, message, buttonAccept, "Depois");
+                        }
+                    }
+                });
 
-                // Se clicou "Atualizar" ou é obrigatória
-                if (result)
+#if ANDROID
+                Log.Info(LogTag, $"ShowUpdateAlertAsync: Resultado={result} (true=Atualizar, false=Depois/Cancelado)");
+#endif
+
+                // Se clicou "Atualizar"
+                if (result && !string.IsNullOrWhiteSpace(updateInfo.DownloadUrl))
                 {
 #if ANDROID
-                    Log.Info(LogTag, $"ShowUpdateAlertAsync: Abrindo URL de download: {updateInfo.DownloadUrl}");
+                    Log.Info(LogTag, $"ShowUpdateAlertAsync: Abrindo URL: {updateInfo.DownloadUrl}");
 #endif
+                    
                     try
                     {
-                        await Launcher.OpenAsync(updateInfo.DownloadUrl);
+                        // Validar URL e abrir
+                        if (updateInfo.DownloadUrl.StartsWith("http://") || updateInfo.DownloadUrl.StartsWith("https://"))
+                        {
+                            // Usar MainThread para garantir que acontece no thread correto
+                            await MainThread.InvokeOnMainThreadAsync(async () =>
+                            {
+                                try
+                                {
+                                    await Launcher.OpenAsync(updateInfo.DownloadUrl);
+                                }
+                                catch (Exception ex)
+                                {
+#if ANDROID
+                                    Log.Error(LogTag, $"ShowUpdateAlertAsync: Launcher.OpenAsync falhou: {ex.Message}");
+#endif
+                                    // Fallback para Browser
+                                    try
+                                    {
+                                        await Browser.Default.OpenAsync(new Uri(updateInfo.DownloadUrl), BrowserLaunchMode.SystemPreferred);
+                                    }
+                                    catch (Exception browserEx)
+                                    {
+#if ANDROID
+                                        Log.Error(LogTag, $"ShowUpdateAlertAsync: Browser.Default.OpenAsync também falhou: {browserEx.Message}");
+#endif
+                                    }
+                                }
+                            });
+                        }
+                        else
+                        {
+#if ANDROID
+                            Log.Error(LogTag, $"ShowUpdateAlertAsync: URL não começa com http(s): {updateInfo.DownloadUrl}");
+#endif
+                        }
                     }
                     catch (Exception ex)
                     {
 #if ANDROID
-                        Log.Error(LogTag, $"ShowUpdateAlertAsync: Erro ao abrir URL: {ex.Message}");
+                        Log.Error(LogTag, $"ShowUpdateAlertAsync: Erro geral ao processar URL: {ex.Message}");
 #endif
                     }
                 }
