@@ -545,20 +545,23 @@ namespace NAVIGEST.Android.Services
                 exists = (await check.ExecuteScalarAsync(ct)) != null;
             }
 
+            // CORRIGIDO: Incluir INDICATIVO como campo separado (como em iOS)
+            // Isso evita o erro "Data too long" quando indicativo + telefone era concatenado
             string sql = exists
                 ? @"UPDATE CLIENTES SET
-                        CLINOME=@nome, TELEFONE=@tel, EMAIL=@mail,
+                        CLINOME=@nome, TELEFONE=@tel, INDICATIVO=@indic, EMAIL=@mail,
                         EXTERNO=@ext, ANULADO=@anu, VENDEDOR=@vend,
                         VALORCREDITO=@cred, PastasSincronizadas=@past
                     WHERE CLICODIGO=@cod LIMIT 1;"
                 : @"INSERT INTO CLIENTES
-                    (CLICODIGO, CLINOME, TELEFONE, EMAIL, EXTERNO, ANULADO, VENDEDOR, VALORCREDITO, PastasSincronizadas)
-                    VALUES (@cod,@nome,@tel,@mail,@ext,@anu,@vend,@cred,@past);";
+                    (CLICODIGO, CLINOME, TELEFONE, INDICATIVO, EMAIL, EXTERNO, ANULADO, VENDEDOR, VALORCREDITO, PastasSincronizadas)
+                    VALUES (@cod,@nome,@tel,@indic,@mail,@ext,@anu,@vend,@cred,@past);";
 
             using var cmd = new MySqlCommand(sql, conn);
             cmd.Parameters.Add("@cod", MySqlDbType.VarChar, 30).Value = c.CLICODIGO ?? "";
             cmd.Parameters.Add("@nome", MySqlDbType.VarChar, 150).Value = c.CLINOME ?? "";
             cmd.Parameters.Add("@tel", MySqlDbType.VarChar, 40).Value = c.TELEFONE ?? "";
+            cmd.Parameters.Add("@indic", MySqlDbType.VarChar, 12).Value = c.INDICATIVO ?? "";  // NOVO: salvar indicativo separado
             cmd.Parameters.Add("@mail", MySqlDbType.VarChar, 150).Value = c.EMAIL ?? "";
             cmd.Parameters.Add("@ext", MySqlDbType.Bit).Value = c.EXTERNO ? 1 : 0;
             cmd.Parameters.Add("@anu", MySqlDbType.Bit).Value = c.ANULADO ? 1 : 0;

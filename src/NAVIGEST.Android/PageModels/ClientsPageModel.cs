@@ -634,13 +634,20 @@ public class ClientsPageModel : INotifyPropertyChanged
     private bool Validate(Cliente c, out string msg)
     {
         if (string.IsNullOrWhiteSpace(c.CLINOME)) { msg = "Nome obrigatório."; return false; }
+        
+        // Validar telefone (agora separado do indicativo)
         if (string.IsNullOrWhiteSpace(c.TELEFONE)) { msg = "Telefone obrigatório."; return false; }
         if ((c.TELEFONE?.Length ?? 0) > 40) { msg = "Telefone demasiado longo (máx. 40 caracteres)."; return false; }
+        
+        // Validar indicativo (novo campo separado)
+        if ((c.INDICATIVO?.Length ?? 0) > 12) { msg = "Indicativo demasiado longo (máx. 12 caracteres)."; return false; }
+        
         if (string.IsNullOrWhiteSpace(c.EMAIL)) { msg = "Email obrigatório."; return false; }
         if (string.IsNullOrWhiteSpace(c.VENDEDOR)) { msg = "Vendedor obrigatório."; return false; }
 
+        // Formatar telefone se tiver apenas 9 dígitos
         var digits = new string((c.TELEFONE ?? string.Empty).Where(char.IsDigit).ToArray());
-        if (digits.Length == 9)
+        if (digits.Length == 9 && !c.TELEFONE.Contains(" "))
             c.TELEFONE = $"{digits.Substring(0, 3)} {digits.Substring(3, 3)} {digits.Substring(6, 3)}";
 
         c.VALORCREDITO = FormatValorCredito(c.VALORCREDITO);
@@ -874,17 +881,17 @@ public class ClientsPageModel : INotifyPropertyChanged
         if (!string.Equals(EditModel.INDICATIVO ?? string.Empty, normalizedPrefix, StringComparison.Ordinal))
             changed = true;
 
-        var newTelefone = string.IsNullOrEmpty(normalizedBody)
-            ? (string.IsNullOrEmpty(normalizedPrefix) ? string.Empty : normalizedPrefix)
-            : $"{normalizedPrefix} {normalizedBody}".Trim();
+        // CORREÇÃO: Salvar indicativo e telefone em campos separados (como em iOS)
+        // Antes estava concatenando: normalizedPrefix + " " + normalizedBody
+        // Agora: indicativo e telefone separados para evitar "Data too long" no banco
 
-        if (!string.Equals(currentTelefone, newTelefone, StringComparison.Ordinal))
+        if (!string.Equals(currentTelefone, normalizedBody, StringComparison.Ordinal))
             changed = true;
 
         if (changed)
         {
             EditModel.INDICATIVO = normalizedPrefix;
-            EditModel.TELEFONE = newTelefone;
+            EditModel.TELEFONE = normalizedBody;  // CORRIGIDO: apenas o número, sem indicativo
             OnPropertyChanged(nameof(Editing));
         }
     }
