@@ -29,6 +29,14 @@ packages/
 .vscode/
 *.code-workspace
 
+# App Builds (APK, IPA) - Use GitHub Releases for downloads
+*.apk
+*.ipa
+!releases/**/*.md
+releases/v*/*/*.apk
+releases/v*/*/*.ipa
+
+
 # Rider
 .idea/
 *.sln.iml
