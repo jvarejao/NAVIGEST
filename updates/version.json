@@ -1,6 +1,6 @@
 {
-  "version": "1.0.3",
+  "version": "1.0.4",
   "minSupportedVersion": "1.0.0",
-  "downloadUrl": "https://github.com/jvarejao/NAVIGEST/releases/download/v1.0.3/com.tuaempresa.navigest-arm64-v8a-Signed.apk",
-  "notes": "✨ Versão 1.0.3 - Sistema de Versão Instalada\n🎯 Versão agora visível no SplashScreen\n✅ Evita loop infinito de atualização\n� Sincronizado em Android e iOS"
+  "downloadUrl": "https://github.com/jvarejao/NAVIGEST/releases/download/v1.0.4/com.tuaempresa.navigest-arm64-v8a-Signed.apk",
+  "notes": "✨ Versão 1.0.4 - Melhorias UI\n🎯 Empresa name ocupar máxima largura\n✨ Versão visível no SplashScreen\n✅ Sistema de versão instalada estável"
 }
