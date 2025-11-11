@@ -453,3 +453,90 @@ CheckForUpdatesAsync()
 **Próxima Revisão**: Quando próxima mudança for feita em Android
 
 ```
+
+---
+
+## Session: Installed Version Manager (2025-11-11)
+
+### Sistema de Versão Instalada (NEW)
+
+**Tipo**: Sistema de armazenamento de versão
+
+**Arquivos Modificados**:
+- `Pages/SplashIntroPage.xaml.cs`
+- `Pages/LoginPage.xaml.cs`
+- `NAVIGEST.Android.csproj`
+
+**Propósito**: 
+Evitar loop infinito de atualização. App deve reconhecer que foi atualizada para v1.0.2 e não pedir atualização novamente.
+
+**O Problema**:
+- `AppInfo.Current.VersionString` vem do manifesto (build-time)
+- Não muda após reinstalar - fica sempre 1.0.0
+- Loop: Instala v1.0.2 → App ainda mostra 1.0.0 → Pede atualizar novamente
+
+**A Solução**:
+Usar `Preferences` para guardar versão instalada. Quando app inicia com versão diferente no manifesto, atualiza Preferences.
+
+**Código - SplashIntroPage.xaml.cs**:
+
+Adicionar:
+```csharp
+private const string INSTALLED_VERSION_KEY = "InstalledAppVersion";
+
+// OnAppearing:
+string manifestVersion = AppInfo.Current.VersionString ?? "1.0.0";
+string savedVersion = Preferences.Get(INSTALLED_VERSION_KEY, null) ?? manifestVersion;
+
+if (manifestVersion != savedVersion)
+{
+    Log.Info(LogTag, $"App foi atualizada: {savedVersion} → {manifestVersion}. Guardando nova versão.");
+    SaveInstalledVersion(manifestVersion);
+}
+
+// Métodos helpers:
+private string GetInstalledVersion()
+{
+    string? savedVersion = Preferences.Get(INSTALLED_VERSION_KEY, null);
+    if (!string.IsNullOrEmpty(savedVersion))
+        return savedVersion;
+    
+    string appVersion = AppInfo.Current.VersionString ?? "1.0.0";
+    SaveInstalledVersion(appVersion);
+    return appVersion;
+}
+
+private void SaveInstalledVersion(string version)
+{
+    Preferences.Set(INSTALLED_VERSION_KEY, version);
+}
+```
+
+Usar em `CheckForUpdatesAsync`:
+```csharp
+string currentVersion = GetInstalledVersion(); // Não AppInfo.Current.VersionString
+```
+
+**Código - LoginPage.xaml.cs**:
+
+```csharp
+string installedVersion = Preferences.Get(INSTALLED_VERSION_KEY, AppInfo.Current.VersionString ?? "1.0.0");
+VersionLabel.Text = $"Versão {installedVersion}";
+```
+
+**NAVIGEST.Android.csproj**:
+- ApplicationDisplayVersion: 1.0.0 → 1.0.2
+
+**Status**: ✅ Implementado e testado em Android
+**iOS**: ✅ Sincronizado (bb983c9)
+**macOS**: ⏳ Pendente
+**Windows**: ⏳ Pendente
+
+---
+
+**Última Atualização**: 2025-11-11
+**Próxima Revisão**: Quando iOS ou macOS precisarem sincronização
+
+`````
+
+```
