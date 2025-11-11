@@ -15,6 +15,7 @@ namespace NAVIGEST.Android.Pages
         private const string PrefRemember = "remember_username";
         private const string PrefUsername = "last_username";
         private const string AdminResetKey = "YAH-RESET-2024";
+        private const string INSTALLED_VERSION_KEY = "InstalledAppVersion";
 
         private string? _currentUserEmail;
         private byte[]? _currentUserPhoto;
@@ -61,8 +62,9 @@ namespace NAVIGEST.Android.Pages
         {
             base.OnAppearing();
 
-            // ✅ Mostrar versão da app
-            VersionLabel.Text = $"Versão {AppInfo.Current.VersionString}";
+            // ✅ Mostrar versão da app (usar versão guardada, não o manifest)
+            string installedVersion = Preferences.Get(INSTALLED_VERSION_KEY, AppInfo.Current.VersionString ?? "1.0.0");
+            VersionLabel.Text = $"Versão {installedVersion}";
 
             // ✅ Inicializa tudo (biometria, auto-login, etc)
             // O InitCommand vai fazer TODO o trabalho: verificar bio_enabled, chamar Face ID se necessário

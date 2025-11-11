@@ -20,6 +20,7 @@ namespace NAVIGEST.Android.Pages
         private const int GifDurationMs = 4500;
         private const int MaxSplashDurationMs = 5000;
         private bool _started;
+        private const string INSTALLED_VERSION_KEY = "InstalledAppVersion";
 #if ANDROID
         private const string LogTag = "SplashIntroPage";
 #endif
@@ -70,6 +71,18 @@ namespace NAVIGEST.Android.Pages
 
             try
             {
+                // Verificar se a app foi atualizada (versão no manifest diferente da guardada)
+                string manifestVersion = AppInfo.Current.VersionString ?? "1.0.0";
+                string savedVersion = Preferences.Get(INSTALLED_VERSION_KEY, null) ?? manifestVersion;
+                
+                if (manifestVersion != savedVersion)
+                {
+#if ANDROID
+                    Log.Info(LogTag, $"App foi atualizada: {savedVersion} → {manifestVersion}. Guardando nova versão.");
+#endif
+                    SaveInstalledVersion(manifestVersion);
+                }
+
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
                     FallbackImage.IsVisible = true;
@@ -152,7 +165,7 @@ namespace NAVIGEST.Android.Pages
                     return;
                 }
 
-                string currentVersion = AppInfo.Current.VersionString ?? "0.0.0";
+                string currentVersion = GetInstalledVersion();
                 string latestVersion = updateInfo.Version ?? "0.0.0";
 
 #if ANDROID
@@ -191,7 +204,7 @@ namespace NAVIGEST.Android.Pages
         {
             try
             {
-                bool isMandatory = VersionComparer.IsLessThan(AppInfo.Current.VersionString, updateInfo.MinSupportedVersion ?? "0.0.0");
+                bool isMandatory = VersionComparer.IsLessThan(GetInstalledVersion(), updateInfo.MinSupportedVersion ?? "0.0.0");
 
                 string message = $"Nova versão disponível: {updateInfo.Version}\n\n{updateInfo.Notes ?? "Verifique as novidades!"}";
                 
@@ -475,6 +488,62 @@ img{{max-width:100vw;max-height:100vh;object-fit:contain;display:block;margin:au
             catch
             {
                 return this;
+            }
+        }
+
+        /// <summary>
+        /// Obtém a versão instalada guardada em Preferences
+        /// Se não existir, usa AppInfo.Current.VersionString e guarda
+        /// </summary>
+        private string GetInstalledVersion()
+        {
+            try
+            {
+                // Tentar ler versão guardada
+                string? savedVersion = Preferences.Get(INSTALLED_VERSION_KEY, null);
+                
+                if (!string.IsNullOrEmpty(savedVersion))
+                {
+#if ANDROID
+                    Log.Debug(LogTag, $"GetInstalledVersion: Versão guardada = {savedVersion}");
+#endif
+                    return savedVersion;
+                }
+
+                // Se não existir guardada, usar versão do app manifest
+                string appVersion = AppInfo.Current.VersionString ?? "1.0.0";
+#if ANDROID
+                Log.Debug(LogTag, $"GetInstalledVersion: Primeira vez, usando versão app = {appVersion}");
+#endif
+                SaveInstalledVersion(appVersion);
+                return appVersion;
+            }
+            catch (Exception ex)
+            {
+#if ANDROID
+                Log.Error(LogTag, $"GetInstalledVersion: Erro = {ex.Message}");
+#endif
+                return AppInfo.Current.VersionString ?? "1.0.0";
+            }
+        }
+
+        /// <summary>
+        /// Guarda a versão instalada em Preferences
+        /// </summary>
+        private void SaveInstalledVersion(string version)
+        {
+            try
+            {
+                Preferences.Set(INSTALLED_VERSION_KEY, version);
+#if ANDROID
+                Log.Debug(LogTag, $"SaveInstalledVersion: Versão guardada = {version}");
+#endif
+            }
+            catch (Exception ex)
+            {
+#if ANDROID
+                Log.Error(LogTag, $"SaveInstalledVersion: Erro = {ex.Message}");
+#endif
             }
         }
     }
