@@ -16,7 +16,7 @@
 		<!-- App Info -->
 		<ApplicationTitle>NAVIGEST</ApplicationTitle>
 		<ApplicationId>com.tuaempresa.navigest</ApplicationId>
-		<ApplicationDisplayVersion>1.0.2</ApplicationDisplayVersion>
+		<ApplicationDisplayVersion>1.0.3</ApplicationDisplayVersion>
 		<ApplicationVersion>3</ApplicationVersion>
 
 		<!-- Supported platforms -->

@@ -71,6 +71,13 @@ namespace NAVIGEST.Android.Pages
 
             try
             {
+                // ✅ Mostrar versão no SplashScreen
+                string installedVersion = GetInstalledVersion();
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    VersionLabel.Text = $"Versão {installedVersion}";
+                });
+
                 // Verificar se a app foi atualizada (versão no manifest diferente da guardada)
                 string manifestVersion = AppInfo.Current.VersionString ?? "1.0.0";
                 string savedVersion = Preferences.Get(INSTALLED_VERSION_KEY, null) ?? manifestVersion;

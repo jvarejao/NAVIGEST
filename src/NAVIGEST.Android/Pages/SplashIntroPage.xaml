@@ -27,5 +27,15 @@
                HorizontalOptions="Center"
                Aspect="AspectFit"
                BackgroundColor="Black" />
+
+        <!-- Versão no canto inferior direito -->
+        <Label x:Name="VersionLabel"
+               Text="Versão 1.0.0"
+               TextColor="Gray"
+               FontSize="10"
+               VerticalOptions="End"
+               HorizontalOptions="End"
+               Margin="0,0,10,10"
+               Opacity="0.7" />
     </Grid>
 </ContentPage>
