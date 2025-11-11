@@ -1,8 +1,11 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using System.Diagnostics;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Devices;
+using NAVIGEST.Shared.Services;
+using NAVIGEST.Shared.Helpers;
 
 namespace NAVIGEST.iOS.Pages
 {
@@ -76,8 +79,11 @@ namespace NAVIGEST.iOS.Pages
                     var fileUrl = new Uri(cachePath).AbsoluteUri; // usa file://
                     await ShowUrlAndFadeInAsync(fileUrl);
 
-                    // Esconde fallback depois de WebView vis�vel
+                    // Esconde fallback depois de WebView visível
                     FallbackImage.IsVisible = false;
+
+                    // ✅ VERIFICAR ATUALIZAÇÕES enquanto mostra splash
+                    await CheckForUpdatesAsync();
 
                     await Task.Delay(GifDurationMs);
                     await Shell.Current.GoToAsync("//WelcomePage");
@@ -242,6 +248,140 @@ namespace NAVIGEST.iOS.Pages
             {
                 System.Diagnostics.Debug.WriteLine($"[SplashIntroPage] SaveInstalledVersion: Erro = {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// Verifica se há atualizações disponíveis no GitHub
+        /// </summary>
+        private async Task CheckForUpdatesAsync()
+        {
+            try
+            {
+                // Obter o serviço de atualizações do DI container
+                var updateService = Application.Current?.Handler?.MauiContext?.Services
+                    .GetService(typeof(IUpdateService)) as IUpdateService;
+
+                if (updateService == null)
+                {
+                    Debug.WriteLine("[SplashIntroPage] CheckForUpdatesAsync: UpdateService não está registado");
+                    return;
+                }
+
+                // Buscar informações de atualização do GitHub
+                var updateInfo = await updateService.GetLatestAsync();
+
+                if (updateInfo == null)
+                {
+                    Debug.WriteLine("[SplashIntroPage] CheckForUpdatesAsync: Nenhuma informação de atualização obtida");
+                    return;
+                }
+
+                string currentVersion = GetInstalledVersion();
+                string latestVersion = updateInfo.Version ?? "0.0.0";
+
+                Debug.WriteLine($"[SplashIntroPage] CheckForUpdatesAsync: Versão atual={currentVersion}, Versão servidor={latestVersion}");
+
+                // Comparar versões usando helper
+                if (VersionComparer.IsLessThan(currentVersion, latestVersion))
+                {
+                    Debug.WriteLine($"[SplashIntroPage] CheckForUpdatesAsync: Atualização disponível! {currentVersion} → {latestVersion}");
+                    await ShowUpdateAlertAsync(updateInfo);
+                }
+                else
+                {
+                    Debug.WriteLine($"[SplashIntroPage] CheckForUpdatesAsync: App está atualizada");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[SplashIntroPage] CheckForUpdatesAsync: Erro ao verificar atualizações: {ex.Message}");
+                // Continua silenciosamente - não bloqueia o arranque
+            }
+        }
+
+        /// <summary>
+        /// Mostra alert de atualização disponível
+        /// </summary>
+        private async Task ShowUpdateAlertAsync(Shared.Models.AppUpdateInfo updateInfo)
+        {
+            try
+            {
+                bool isMandatory = VersionComparer.IsLessThan(GetInstalledVersion(), updateInfo.MinSupportedVersion ?? "0.0.0");
+
+                string message = $"Nova versão disponível: {updateInfo.Version}\n\n{updateInfo.Notes ?? "Verifique as novidades!"}";
+                
+                if (isMandatory)
+                {
+                    message = $"⚠️ ATUALIZAÇÃO OBRIGATÓRIA ⚠️\n\n{message}";
+                }
+
+                Debug.WriteLine($"[SplashIntroPage] ShowUpdateAlertAsync: Mostrando alert (obrigatória={isMandatory})");
+
+                // Usar DisplayAlert - é modal por padrão em MAUI
+                string title = isMandatory ? "Atualização Obrigatória" : "Atualização Disponível";
+                string buttonAccept = isMandatory ? "Atualizar Agora" : "Atualizar";
+                
+                bool result = false;
+                
+                // Executar no main thread e esperar resultado
+                await MainThread.InvokeOnMainThreadAsync(async () =>
+                {
+                    var page = GetRootPage();
+                    if (page != null)
+                    {
+                        if (isMandatory)
+                        {
+                            // Apenas botão de atualizar - sem opção de ignorar
+                            result = await page.DisplayAlert(title, message, buttonAccept, "Sair");
+                        }
+                        else
+                        {
+                            // Botão de atualizar e ignorar
+                            result = await page.DisplayAlert(title, message, buttonAccept, "Depois");
+                        }
+                    }
+                });
+
+                if (result && updateInfo.DownloadUrl != null)
+                {
+                    try
+                    {
+                        await Launcher.Default.OpenAsync(new Uri(updateInfo.DownloadUrl));
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"[SplashIntroPage] ShowUpdateAlertAsync: Erro ao abrir URL: {ex.Message}");
+                    }
+                }
+                else if (isMandatory && !result)
+                {
+                    // Se atualização é obrigatória e o utilizador clicou em "Sair", fechar app
+                    Application.Current?.Quit();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[SplashIntroPage] ShowUpdateAlertAsync: Erro: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Obtém a página raiz (root page)
+        /// </summary>
+        private Page? GetRootPage()
+        {
+            // Usar a window atual se disponível
+            var window = Application.Current?.Windows.FirstOrDefault();
+            if (window != null)
+            {
+                var page = window.Page;
+                while (page?.Parent != null)
+                {
+                    page = page.Parent as Page;
+                }
+                return page;
+            }
+            return null;
         }
     }
 }
