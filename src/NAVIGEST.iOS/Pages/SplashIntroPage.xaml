@@ -21,5 +21,15 @@
                  HorizontalOptions="Fill"
                  VerticalOptions="Fill"
                  Opacity="0" />
+
+        <!-- Version Label -->
+        <Label x:Name="VersionLabel"
+               Text="Versão 1.0.0"
+               Margin="10,10,0,0"
+               VerticalOptions="Start"
+               HorizontalOptions="Start"
+               TextColor="Gray"
+               FontSize="10"
+               Opacity="0.7" />
     </Grid>
 </ContentPage>

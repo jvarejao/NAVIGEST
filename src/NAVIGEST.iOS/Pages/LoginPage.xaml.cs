@@ -62,6 +62,10 @@ namespace NAVIGEST.iOS.Pages
         {
             base.OnAppearing();
 
+            // ✅ Mostrar versão da app (usar versão guardada, não o manifest)
+            string installedVersion = Preferences.Get(INSTALLED_VERSION_KEY, AppInfo.Current.VersionString ?? "1.0.0");
+            VersionLabel.Text = $"Versão {installedVersion}";
+
             // ✅ Inicializa tudo (biometria, auto-login, etc)
             // O InitCommand vai fazer TODO o trabalho: verificar bio_enabled, chamar Face ID se necessário
             var vm = BindingContext as NAVIGEST.iOS.PageModels.LoginPageModel;

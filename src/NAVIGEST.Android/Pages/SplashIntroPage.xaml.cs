@@ -83,6 +83,13 @@ namespace NAVIGEST.Android.Pages
                     SaveInstalledVersion(manifestVersion);
                 }
 
+                // ✅ Mostrar versão no SplashScreen
+                string installedVersion = GetInstalledVersion();
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    VersionLabel.Text = $"Versão {installedVersion}";
+                });
+
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
                     FallbackImage.IsVisible = true;
