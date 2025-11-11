@@ -12,6 +12,7 @@ namespace NAVIGEST.iOS.Pages
         private const int GifDurationMs = 3500;
 
         private bool _started;
+        private const string INSTALLED_VERSION_KEY = "InstalledAppVersion";
 
         public SplashIntroPage()
         {
@@ -27,6 +28,16 @@ namespace NAVIGEST.iOS.Pages
 
             try
             {
+                // ✅ Verificar se a app foi atualizada (versão no manifest diferente da guardada)
+                string manifestVersion = AppInfo.Current.VersionString ?? "1.0.0";
+                string savedVersion = Preferences.Get(INSTALLED_VERSION_KEY, null) ?? manifestVersion;
+                
+                if (manifestVersion != savedVersion)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[SplashIntroPage] App foi atualizada: {savedVersion} → {manifestVersion}. Guardando nova versão.");
+                    SaveInstalledVersion(manifestVersion);
+                }
+
                 // L� o GIF do pacote
                 byte[] bytes;
                 try
@@ -177,6 +188,52 @@ namespace NAVIGEST.iOS.Pages
             catch
             {
                 // ignore
+            }
+        }
+
+        /// <summary>
+        /// Obtém a versão instalada guardada em Preferences
+        /// Se não existir, usa AppInfo.Current.VersionString e guarda
+        /// </summary>
+        private string GetInstalledVersion()
+        {
+            try
+            {
+                // Tentar ler versão guardada
+                string? savedVersion = Preferences.Get(INSTALLED_VERSION_KEY, null);
+                
+                if (!string.IsNullOrEmpty(savedVersion))
+                {
+                    System.Diagnostics.Debug.WriteLine($"[SplashIntroPage] GetInstalledVersion: Versão guardada = {savedVersion}");
+                    return savedVersion;
+                }
+
+                // Se não existir guardada, usar versão do app manifest
+                string appVersion = AppInfo.Current.VersionString ?? "1.0.0";
+                System.Diagnostics.Debug.WriteLine($"[SplashIntroPage] GetInstalledVersion: Primeira vez, usando versão app = {appVersion}");
+                SaveInstalledVersion(appVersion);
+                return appVersion;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SplashIntroPage] GetInstalledVersion: Erro = {ex.Message}");
+                return AppInfo.Current.VersionString ?? "1.0.0";
+            }
+        }
+
+        /// <summary>
+        /// Guarda a versão instalada em Preferences
+        /// </summary>
+        private void SaveInstalledVersion(string version)
+        {
+            try
+            {
+                Preferences.Set(INSTALLED_VERSION_KEY, version);
+                System.Diagnostics.Debug.WriteLine($"[SplashIntroPage] SaveInstalledVersion: Versão guardada = {version}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SplashIntroPage] SaveInstalledVersion: Erro = {ex.Message}");
             }
         }
     }

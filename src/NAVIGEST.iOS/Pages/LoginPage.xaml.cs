@@ -15,6 +15,7 @@ namespace NAVIGEST.iOS.Pages
         private const string PrefRemember = "remember_username";
         private const string PrefUsername = "last_username";
         private const string AdminResetKey = "YAH-RESET-2024";
+        private const string INSTALLED_VERSION_KEY = "InstalledAppVersion";
 
         private string? _currentUserEmail;
         private byte[]? _currentUserPhoto;
