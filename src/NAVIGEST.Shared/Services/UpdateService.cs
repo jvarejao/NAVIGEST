@@ -17,9 +17,6 @@ public class UpdateService : IUpdateService
 {
     private readonly HttpClient _httpClient;
 
-    // ⚠️ IMPORTANTE: Substituir isto pela URL real do teu ficheiro JSON no GitHub
-    // Formato: https://raw.githubusercontent.com/{owner}/{repo}/main/{path-to-json}
-    // Exemplo: https://raw.githubusercontent.com/jvarejao/NAVIGEST/main/updates/version.json
     private const string GitHubJsonUrl = "https://raw.githubusercontent.com/jvarejao/NAVIGEST/main/updates/version.json";
 
     public UpdateService(HttpClient httpClient)
