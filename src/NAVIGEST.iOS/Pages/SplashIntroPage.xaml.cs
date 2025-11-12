@@ -1,13 +1,8 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using System.Diagnostics;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Devices;
-using Microsoft.Maui.Controls.Hosting;
-using NAVIGEST.Shared.Services;
-using NAVIGEST.Shared.Helpers;
-using Microsoft.Maui.Networking;
 
 namespace NAVIGEST.iOS.Pages
 {
@@ -33,13 +28,6 @@ namespace NAVIGEST.iOS.Pages
 
             try
             {
-                // ✅ Mostrar versão no SplashScreen
-                string installedVersion = GetInstalledVersion();
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    VersionLabel.Text = $"Versão {installedVersion}";
-                });
-
                 // ✅ Verificar se a app foi atualizada (versão no manifest diferente da guardada)
                 string manifestVersion = AppInfo.Current.VersionString ?? "1.0.0";
                 string savedVersion = Preferences.Get(INSTALLED_VERSION_KEY, null) ?? manifestVersion;
@@ -81,11 +69,8 @@ namespace NAVIGEST.iOS.Pages
                     var fileUrl = new Uri(cachePath).AbsoluteUri; // usa file://
                     await ShowUrlAndFadeInAsync(fileUrl);
 
-                    // Esconde fallback depois de WebView visível
+                    // Esconde fallback depois de WebView vis�vel
                     FallbackImage.IsVisible = false;
-
-                    // ✅ VERIFICAR ATUALIZAÇÕES enquanto mostra splash
-                    await CheckForUpdatesAsync();
 
                     await Task.Delay(GifDurationMs);
                     await Shell.Current.GoToAsync("//WelcomePage");
@@ -249,163 +234,6 @@ namespace NAVIGEST.iOS.Pages
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[SplashIntroPage] SaveInstalledVersion: Erro = {ex.Message}");
-            }
-        }
-
-        private async Task CheckForUpdatesAsync()
-        {
-            try
-            {
-                Debug.WriteLine("[SplashIntroPage] CheckForUpdatesAsync: Iniciando verificação de atualizações");
-                
-                // Obter o serviço de atualizações do DI container
-                var updateService = Application.Current?.Handler?.MauiContext?.Services
-                    .GetService(typeof(IUpdateService)) as IUpdateService;
-
-                if (updateService == null)
-                {
-                    Debug.WriteLine("[SplashIntroPage] CheckForUpdatesAsync: UpdateService não está registado");
-                    return;
-                }
-
-                // Buscar informações de atualização do GitHub
-                var updateInfo = await updateService.GetLatestAsync();
-
-                if (updateInfo == null)
-                {
-                    Debug.WriteLine("[SplashIntroPage] CheckForUpdatesAsync: Nenhuma informação de atualização obtida");
-                    return;
-                }
-
-                string currentVersion = GetInstalledVersion();
-                string latestVersion = updateInfo.Version ?? "0.0.0";
-
-                Debug.WriteLine($"[SplashIntroPage] CheckForUpdatesAsync: Versão atual={currentVersion}, Versão servidor={latestVersion}");
-
-                // Comparar versões usando helper
-                if (VersionComparer.IsLessThan(currentVersion, latestVersion))
-                {
-                    Debug.WriteLine($"[SplashIntroPage] CheckForUpdatesAsync: Atualização disponível! {currentVersion} → {latestVersion}");
-                    await ShowUpdateAlertAsync(updateInfo);
-                }
-                else
-                {
-                    Debug.WriteLine($"[SplashIntroPage] CheckForUpdatesAsync: App está atualizada");
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"[SplashIntroPage] CheckForUpdatesAsync error: {ex}");
-                // Continua silenciosamente - não bloqueia o arranque
-            }
-        }
-
-        /// <summary>
-        /// Mostra alert de atualização disponível - Popup totalmente modal
-        /// </summary>
-        private async Task ShowUpdateAlertAsync(Shared.Models.AppUpdateInfo updateInfo)
-        {
-            try
-            {
-                bool isMandatory = VersionComparer.IsLessThan(GetInstalledVersion(), updateInfo.MinSupportedVersion ?? "0.0.0");
-
-                string message = $"Nova versão disponível: {updateInfo.Version}\n\n{updateInfo.Notes ?? "Verifique as novidades!"}";
-                
-                if (isMandatory)
-                {
-                    message = $"⚠️ ATUALIZAÇÃO OBRIGATÓRIA ⚠️\n\n{message}";
-                }
-
-                Debug.WriteLine($"[SplashIntroPage] ShowUpdateAlertAsync: Mostrando alert (obrigatória={isMandatory})");
-
-                // Usar DisplayAlert - é modal por padrão em MAUI
-                string title = isMandatory ? "Atualização Obrigatória" : "Atualização Disponível";
-                string buttonAccept = isMandatory ? "Atualizar Agora" : "Atualizar";
-                
-                bool result = false;
-                
-                // Executar no main thread e esperar resultado
-                await MainThread.InvokeOnMainThreadAsync(async () =>
-                {
-                    var page = GetRootPage();
-                    if (page != null)
-                    {
-                        if (isMandatory)
-                        {
-                            // Apenas botão de atualizar - sem opção de ignorar
-                            result = await page.DisplayAlert(title, message, buttonAccept, "Sair");
-                        }
-                        else
-                        {
-                            // Botão de atualizar e ignorar
-                            result = await page.DisplayAlert(title, message, buttonAccept, "Depois");
-                        }
-                    }
-                });
-
-                Debug.WriteLine($"[SplashIntroPage] ShowUpdateAlertAsync: Resultado={result} (true=Atualizar, false=Depois/Cancelado)");
-
-                // Se clicou "Atualizar"
-                if (result && !string.IsNullOrWhiteSpace(updateInfo.DownloadUrl))
-                {
-                    Debug.WriteLine($"[SplashIntroPage] ShowUpdateAlertAsync: Abrindo URL: {updateInfo.DownloadUrl}");
-                    
-                    try
-                    {
-                        // Validar URL e abrir
-                        if (updateInfo.DownloadUrl.StartsWith("http://") || updateInfo.DownloadUrl.StartsWith("https://"))
-                        {
-                            // Usar MainThread para garantir que acontece no thread correto
-                            await MainThread.InvokeOnMainThreadAsync(async () =>
-                            {
-                                try
-                                {
-                                    await Launcher.OpenAsync(updateInfo.DownloadUrl);
-                                }
-                                catch (Exception ex)
-                                {
-                                    Debug.WriteLine($"[SplashIntroPage] ShowUpdateAlertAsync: Launcher.OpenAsync falhou: {ex.Message}");
-                                    // Fallback para Browser
-                                    try
-                                    {
-                                        await Browser.Default.OpenAsync(new Uri(updateInfo.DownloadUrl), BrowserLaunchMode.SystemPreferred);
-                                    }
-                                    catch (Exception browserEx)
-                                    {
-                                        Debug.WriteLine($"[SplashIntroPage] ShowUpdateAlertAsync: Browser.Default.OpenAsync também falhou: {browserEx.Message}");
-                                    }
-                                }
-                            });
-                        }
-                        else
-                        {
-                            Debug.WriteLine($"[SplashIntroPage] ShowUpdateAlertAsync: URL não começa com http(s): {updateInfo.DownloadUrl}");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"[SplashIntroPage] ShowUpdateAlertAsync: Erro geral ao processar URL: {ex.Message}");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"[SplashIntroPage] ShowUpdateAlertAsync error: {ex}");
-            }
-        }
-
-        private Page? GetRootPage()
-        {
-            try
-            {
-                if (Application.Current?.Windows == null || Application.Current.Windows.Count == 0)
-                    return null;
-
-                return Application.Current.Windows[0]?.Page ?? this;
-            }
-            catch
-            {
-                return this;
             }
         }
     }
