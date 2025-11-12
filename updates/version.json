@@ -1,1 +1,1 @@
-{"version":"1.0.2","minSupportedVersion":"1.0.0","downloadUrl":"https://github.com/jvarejao/NAVIGEST/releases/download/v1.0.4/com.tuaempresa.navigest-arm64-v8a-Signed.apk","notes":"Versão 1.0.2"}
+{"version":"1.0.5","minSupportedVersion":"1.0.0","downloadUrl":"https://github.com/jvarejao/NAVIGEST/releases/download/v1.0.5/com.tuaempresa.navigest-arm64-v8a-Signed.apk","notes":"v1.0.5: Adicionada página About com verificação de atualizações pós-login. Correção da atualização automática de versão no label."}
