@@ -55,9 +55,6 @@ namespace NAVIGEST.Android.Pages
                 }
                 catch (Exception ex) { TratarErro(ex); }
 
-#if WINDOWS || MACCATALYST
-                if (MaxRestoreIcon != null) MaxRestoreIcon.Text = "\uf2d2";
-#endif
 #if !ANDROID && !IOS
                 this.SizeChanged += (s, e) =>
                 {
