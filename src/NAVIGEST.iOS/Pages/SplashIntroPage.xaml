@@ -8,6 +8,13 @@
 
     <!-- Preenche o ecrã; o HTML dentro centra o GIF com object-fit: contain -->
     <Grid BackgroundColor="Black">
+
+         <WebView x:Name="GifView"
+                 BackgroundColor="Black"
+                 HorizontalOptions="Fill"
+                 VerticalOptions="Fill"
+                 Opacity="0" />
+                 
         <!-- Fallback rápido: mostrar primeiro frame do GIF como imagem nativa (aparece mais depressa no iOS) -->
         <Image x:Name="FallbackImage"
                Source="startup.gif"
@@ -15,11 +22,15 @@
                HorizontalOptions="Fill"
                VerticalOptions="Fill"
                IsVisible="False" />
-
-        <WebView x:Name="GifView"
-                 BackgroundColor="Black"
-                 HorizontalOptions="Fill"
-                 VerticalOptions="Fill"
-                 Opacity="0" />
+     
+                  <!-- Version Label -->
+        <Label x:Name="VersionLabel"
+               Text="Versão 1.0.0"
+               Margin="10,10,0,0"
+               VerticalOptions="Start"
+               HorizontalOptions="Start"
+               TextColor="Gray"
+               FontSize="10"
+               Opacity="0.7" />
     </Grid>
 </ContentPage>

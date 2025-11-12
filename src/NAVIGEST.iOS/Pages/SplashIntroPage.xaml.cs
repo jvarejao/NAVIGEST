@@ -38,18 +38,38 @@ namespace NAVIGEST.iOS.Pages
                     SaveInstalledVersion(manifestVersion);
                 }
 
-                // L� o GIF do pacote
-                byte[] bytes;
-                try
+                // Ler o GIF do pacote - tentar múltiplos caminhos
+                byte[]? bytes = null;
+                var pathsToTry = new[] 
+                { 
+                    "Resources/Images/startup.gif",  // Path padrão do MAUI
+                    "startup.gif"                     // Fallback
+                };
+                
+                foreach (var path in pathsToTry)
                 {
-                    using var stream = await FileSystem.OpenAppPackageFileAsync("startup.gif");
-                    using var ms = new MemoryStream();
-                    await stream.CopyToAsync(ms);
-                    bytes = ms.ToArray();
+                    try
+                    {
+                        using var stream = await FileSystem.OpenAppPackageFileAsync(path);
+                        if (stream != null)
+                        {
+                            using var ms = new MemoryStream();
+                            await stream.CopyToAsync(ms);
+                            bytes = ms.ToArray();
+                            System.Diagnostics.Debug.WriteLine($"[SplashIntroPage] ✅ GIF carregado de: {path}");
+                            break;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[SplashIntroPage] Tentativa '{path}' falhou: {ex.Message}");
+                    }
                 }
-                catch
+                
+                if (bytes == null)
                 {
-                    // Fallback imediato se o ficheiro n�o existir � n�o bloqueia o arranque
+                    // Fallback imediato se o ficheiro não existir - não bloqueia o arranque
+                    System.Diagnostics.Debug.WriteLine("[SplashIntroPage] ❌ GIF não encontrado em nenhum caminho");
                     await Shell.Current.GoToAsync("//WelcomePage");
                     return;
                 }
