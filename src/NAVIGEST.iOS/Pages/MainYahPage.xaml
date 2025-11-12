@@ -216,6 +216,15 @@
                             </Grid>
                             <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="config.db" /></Border.GestureRecognizers>
                         </Border>
+
+                        <!-- SOBRE -->
+                        <Border Style="{StaticResource MenuItemBorder}">
+                            <Grid ColumnDefinitions="40,*">
+                                <Label Text="&#xF05A;" Style="{StaticResource SidebarIconLabel}" />
+                                <Label Grid.Column="1" Text="Sobre" Style="{StaticResource SidebarTextLabel}" IsVisible="{Binding IsSidebarExpanded}" />
+                            </Grid>
+                            <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="about" /></Border.GestureRecognizers>
+                        </Border>
                     </VerticalStackLayout>
                 </ScrollView>
 

@@ -25,4 +25,10 @@
         Title="Swipe Proof"
         Route="swipe-proof"
         ContentTemplate="{DataTemplate pages:SwipeProofPage}" />
+
+    <!-- Página Sobre -->
+    <ShellContent
+        Title="Sobre"
+        Route="about"
+        ContentTemplate="{DataTemplate pages:AboutPage}" />
 </Shell>
