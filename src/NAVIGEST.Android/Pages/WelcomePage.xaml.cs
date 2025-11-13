@@ -1,5 +1,7 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.IO;
+using NAVIGEST.Android;
 using NAVIGEST.Android.Services;
 using Microsoft.Maui.ApplicationModel; // MainThread
 using Microsoft.Maui.Graphics;
@@ -17,15 +19,17 @@ public partial class WelcomePage : ContentPage
     // chaves de memória da empresa escolhida
     private const string KeyCompanyCode = "company.code";
     private const string KeyCompanyName = "company.name";
+    private const string KeyCompanyLogo = "company.logo";
 
     private bool _programmaticSelect; // evita disparar navegação ao pré-selecionar
 
     // modelo para o picker (logo pronto)
     private sealed class CompanyDisplay
     {
-        public string CodEmp { get; init; } = "";
-        public string Empresa { get; init; } = "";
-        public ImageSource? LogoSrc { get; init; }
+    public string CodEmp { get; init; } = "";
+    public string Empresa { get; init; } = "";
+    public ImageSource? LogoSrc { get; init; }
+    public byte[]? LogoBytes { get; init; }
     }
 
     private readonly ObservableCollection<CompanyDisplay> _companies = new();
@@ -94,7 +98,8 @@ public partial class WelcomePage : ContentPage
             {
                 CodEmp = c.CodEmp,
                 Empresa = c.Empresa ?? c.CodEmp,
-                LogoSrc = src
+                LogoSrc = src,
+                LogoBytes = c.Logotipo
             });
         }
 
@@ -159,6 +164,22 @@ public partial class WelcomePage : ContentPage
         {
             Preferences.Default.Set(KeyCompanyCode, chosen.CodEmp);
             Preferences.Default.Set(KeyCompanyName, chosen.Empresa);
+            if (chosen.LogoBytes is { Length: > 0 })
+            {
+                var base64 = Convert.ToBase64String(chosen.LogoBytes);
+                Preferences.Default.Set(KeyCompanyLogo, base64);
+            }
+            else
+            {
+                Preferences.Default.Remove(KeyCompanyLogo);
+            }
+
+            if (UserSession.Current.User is not null)
+            {
+                UserSession.Current.User.CompanyName = chosen.Empresa;
+                UserSession.Current.User.CompanyLogo = chosen.LogoBytes;
+            }
+
             await CompanyPickerPanel.FadeTo(0, 120, Easing.CubicIn);
             CompanyPickerPanel.IsVisible = false;
             var theme = Application.Current?.RequestedTheme ?? AppTheme.Light;

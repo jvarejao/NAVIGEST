@@ -7,15 +7,21 @@ releases/
 │   │   └── navigest-1.0.2.apk
 │   └── ios/
 │       └── navigest-1.0.2.ipa (em breve)
-├── v1.0.3/
+├── v1.0.6/
 │   └── android/
-│       └── navigest-1.0.3.apk (em desenvolvimento)
+  └── com.tuaempresa.navigest-arm64-v8a-Signed.apk
 └── README.md
 ```
 
 ## 📥 Downloads Diretos
 
-### v1.0.2 (Atual - Teste)
+### v1.0.6 (Pré-release)
+- **Android APK arm64** (asset da Release GitHub):
+  ```
+  https://github.com/jvarejao/NAVIGEST/releases/download/v1.0.6/com.tuaempresa.navigest-arm64-v8a-Signed.apk
+  ```
+
+### v1.0.2 (Arquivo)
 - **Android APK arm64**: 
   ```
   https://raw.githubusercontent.com/jvarejao/NAVIGEST/main/releases/v1.0.2/android/navigest-1.0.2.apk

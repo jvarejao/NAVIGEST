@@ -16,8 +16,8 @@
 	<!-- App Info -->
 	<ApplicationTitle>NAVIGEST</ApplicationTitle>
 	<ApplicationId>com.tuaempresa.navigest</ApplicationId>
-	<ApplicationDisplayVersion>1.0.5</ApplicationDisplayVersion>
-	<ApplicationVersion>1</ApplicationVersion>		<!-- Supported platforms -->
+	<ApplicationDisplayVersion>1.0.6</ApplicationDisplayVersion>
+	<ApplicationVersion>6</ApplicationVersion>		<!-- Supported platforms -->
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
 
 		<!-- Android specific -->
@@ -57,6 +57,7 @@
 		<MauiAsset Include="Resources\Raw\startup.mp4" />
 		<MauiAsset Include="Resources\Raw\SeedData.json" />
 		<MauiAsset Include="Resources\Images\startup_fallback.png" />
+		<MauiImage Include="Resources\Images\*.png" />
 	</ItemGroup>
 
 	<!-- Fonts -->
