@@ -1,1 +1,1 @@
-{"version":"1.0.14","minSupportedVersion":"1.0.0","downloadUrl":"https://github.com/jvarejao/NAVIGEST/releases/download/v1.0.14/com.tuaempresa.navigest-arm64-v8a-Signed.apk","notes":"v1.0.14: Corrige erro de StaticResource no Picker da Família em ProductsPage."}
+{"version":"1.0.15","minSupportedVersion":"1.0.0","downloadUrl":"https://github.com/jvarejao/NAVIGEST/releases/download/v1.0.15/com.tuaempresa.navegest-arm64-v8a-Signed.apk","notes":"v1.0.15: Corrige formato de PlaceholderColor nos Entry fields do formulário de produtos."}
