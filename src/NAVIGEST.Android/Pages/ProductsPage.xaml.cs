@@ -5,6 +5,8 @@ using System;
 using System.Threading.Tasks;
 using System.Linq;
 using NAVIGEST.Android; // GlobalToast / GlobalErro
+using NAVIGEST.Android.Popups;
+using CommunityToolkit.Maui.Views;
 
 namespace NAVIGEST.Android.Pages;
 
@@ -115,7 +117,13 @@ public partial class ProductsPage : ContentPage
                 if (BindingContext is ProductsPageModel vm && vm.SelectCommand?.CanExecute(item) == true)
                 {
                     vm.SelectCommand.Execute(item);
-                    ShowFormView();
+                    // Delay para dar tempo ao ViewModel de atualizar os bindings
+                    MainThread.BeginInvokeOnMainThread(async () =>
+                    {
+                        await Task.Delay(100);
+                        ShowFormView();
+                        UpdateDeleteButtonVisibility();
+                    });
                 }
             }
         }
@@ -143,6 +151,22 @@ public partial class ProductsPage : ContentPage
         {
             ListViewContainer.IsVisible = false;
             FormViewContainer.IsVisible = true;
+        }
+        UpdateDeleteButtonVisibility();
+    }
+
+    private void UpdateDeleteButtonVisibility()
+    {
+        if (BindingContext is ProductsPageModel vm && DeleteFormButton is not null)
+        {
+            // Mostrar botão de delete apenas se há um produto selecionado
+            DeleteFormButton.IsVisible = !string.IsNullOrWhiteSpace(vm.Editing?.Codigo);
+            
+            // Atualizar título do form
+            if (FormTitle is not null)
+            {
+                FormTitle.Text = string.IsNullOrWhiteSpace(vm.Editing?.Codigo) ? "Novo Produto" : "Editar Produto";
+            }
         }
     }
 
@@ -200,35 +224,26 @@ public partial class ProductsPage : ContentPage
         {
             if (BindingContext is ProductsPageModel vm)
             {
-                // Open family picker or add dialog
                 MainThread.BeginInvokeOnMainThread(async () =>
                 {
-                    var result = await DisplayPromptAsync(
-                        title: "Nova Família",
-                        message: "Digite o código e descrição",
-                        placeholder: "Código",
-                        accept: "Guardar",
-                        cancel: "Cancelar");
-
-                    if (!string.IsNullOrWhiteSpace(result))
+                    try
                     {
-                        // Add family through ViewModel
-                        try
+                        var popup = new ProductFamiliesListPopup();
+                        var result = await Shell.Current.ShowPopupAsync(popup);
+                        
+                        if (result is ProductFamilyListResult familyResult && familyResult.SelectedFamily is not null)
                         {
-                            var (ok, msg, finalCode) = await vm.AddFamilyAsync(result, result);
-                            if (ok)
+                            vm.SelectedFamily = familyResult.SelectedFamily;
+                            if (familyResult.RefreshRequested)
                             {
-                                await GlobalToast.ShowAsync("Família adicionada.", ToastTipo.Sucesso, 1600);
-                            }
-                            else
-                            {
-                                await GlobalToast.ShowAsync(msg ?? "Erro ao adicionar família.", ToastTipo.Erro, 2500);
+                                await vm.ReloadFamiliesAsync(familyResult.SelectedFamily?.Codigo);
                             }
                         }
-                        catch (Exception ex)
-                        {
-                            GlobalErro.TratarErro(ex, mostrarAlerta: false);
-                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        GlobalErro.TratarErro(ex, mostrarAlerta: false);
+                        await AppShell.DisplayToastAsync("Erro ao abrir seletor de famílias.");
                     }
                 });
             }
