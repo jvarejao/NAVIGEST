@@ -194,7 +194,9 @@
                             <Grid Padding="16,12" ColumnDefinitions="110,*">
                                 <Label Text="Descrição" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
                                 <Entry Grid.Column="1" x:Name="DescricaoEntry" Text="{Binding Editing.Descricao}"
-                                       BackgroundColor="Transparent" HorizontalTextAlignment="End" Placeholder="Nome do produto"/>
+                                       BackgroundColor="Transparent" HorizontalTextAlignment="End" Placeholder="Nome do produto"
+                                       TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
+                                       PlaceholderColor="{AppThemeBinding Light=#C6C6C8, Dark=#8E8E93}"/>
                             </Grid>
                             <BoxView HeightRequest="0.5" Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}" Margin="16,0,0,0"/>
 
@@ -229,7 +231,10 @@
                             <Grid Padding="16,12" ColumnDefinitions="110,*">
                                 <Label Text="Colaborador" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
                                 <Entry Grid.Column="1" x:Name="ColaboradorEntry" Text="{Binding Editing.Colaborador}"
-                                       BackgroundColor="Transparent" HorizontalTextAlignment="End" Placeholder="Nome do colaborador"/>
+                                       BackgroundColor="Transparent" HorizontalTextAlignment="End" Placeholder="Nome do colaborador"
+                                       TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
+                                       PlaceholderColor="{AppThemeBinding Light=#C6C6C8, Dark=#8E8E93}"
+                                       IsReadOnly="True"/>
                             </Grid>
                             <BoxView HeightRequest="0.5" Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}" Margin="16,0,0,0"/>
 
@@ -237,6 +242,8 @@
                                 <Label Text="Preço de custo" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
                                 <Entry Grid.Column="1" x:Name="PrecoCustoEntry" Text="{Binding Editing.Valor}" Keyboard="Numeric"
                                        BackgroundColor="Transparent" HorizontalTextAlignment="End" Placeholder="0,00"
+                                       TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
+                                       PlaceholderColor="{AppThemeBinding Light:#C6C6C8, Dark=#8E8E93}"
                                        Focused="OnPrecoCustoFocused" Unfocused="OnPrecoCustoUnfocused"/>
                             </Grid>
                         </VerticalStackLayout>
