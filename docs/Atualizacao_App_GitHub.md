@@ -105,3 +105,5 @@ Os scripts na pasta `scripts/` (por exemplo `create-release.sh`, `setup-and-rele
 - Documentar pipelines para Windows e macOS assim que os binarios estiverem a ser distribuidos.
 - Automatizar geracao de release notes (ex.: `git cliff`) se necessario.
 - Avaliar integracao com GitHub Actions para builds assinados e envio automatico.
+
+./scripts/create-release.sh 1.0.10

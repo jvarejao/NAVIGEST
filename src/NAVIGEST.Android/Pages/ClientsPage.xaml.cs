@@ -80,7 +80,7 @@ namespace NAVIGEST.Android.Pages
         private void OnPageSizeChanged(object sender, EventArgs e) { }
 
         // -------- Swipe Actions --------
-        private void OnEditSwipeInvoked(object sender, EventArgs e)
+        private async void OnEditSwipeInvoked(object sender, EventArgs e)
         {
             try
             {
@@ -89,6 +89,7 @@ namespace NAVIGEST.Android.Pages
                     if (BindingContext is ClientsPageModel vm && vm.SelectCommand?.CanExecute(cliente) == true)
                     {
                         vm.SelectCommand.Execute(cliente);
+                        await Task.Delay(100);
                         ShowFormView(isNew: false);
                     }
                 }
@@ -183,7 +184,7 @@ namespace NAVIGEST.Android.Pages
         }
 
         // -------- Cell Tap --------
-        private void OnClientCellTapped(object sender, TappedEventArgs e)
+        private async void OnClientCellTapped(object sender, TappedEventArgs e)
         {
             try
             {
@@ -197,6 +198,7 @@ namespace NAVIGEST.Android.Pages
                 if (BindingContext is ClientsPageModel vm && vm.SelectCommand?.CanExecute(cliente) == true)
                 {
                     vm.SelectCommand.Execute(cliente);
+                    await Task.Delay(100);
                     ShowFormView(isNew: false);
                 }
             }
