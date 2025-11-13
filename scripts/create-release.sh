@@ -63,8 +63,8 @@ fi
 REPO="${REPO:-jvarejao/NAVIGEST}"
 PROJECT="src/NAVIGEST.Android/NAVIGEST.Android.csproj"
 FRAMEWORK="net9.0-android"
-APK_PATH="src/NAVIGEST.Android/bin/Release/${FRAMEWORK}/com.tuaempresa.navigest-arm64-v8a-Signed.apk"
-ASSET_LABEL="com.tuaempresa.navigest-arm64-v8a-Signed.apk"
+APK_PATH="src/NAVIGEST.Android/bin/Release/${FRAMEWORK}/com.navigatorcode.navigest-arm64-v8a-Signed.apk"
+ASSET_LABEL="com.navigatorcode.navigest-arm64-v8a-Signed.apk"
 
 if ! command -v dotnet >/dev/null 2>&1; then
     echo "Erro: dotnet não encontrado no PATH." >&2
