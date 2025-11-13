@@ -223,7 +223,7 @@
                                         SelectedItem="{Binding SelectedFamily}"
                                         Title="Selecionar família"
                                         BackgroundColor="Transparent"
-                                        TextColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}"/>
+                                        TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
                                 </Grid>
                             </Grid>
                             <BoxView HeightRequest="0.5" Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}" Margin="16,0,0,0"/>
