@@ -17,7 +17,7 @@
 
     <!-- App -->
     <ApplicationTitle>NAVIGEST</ApplicationTitle>
-    <ApplicationId>com.tuaempresa.navigest</ApplicationId>
+    <ApplicationId>com.navigatorcode.navigest</ApplicationId>
     <ApplicationDisplayVersion>1.0.0</ApplicationDisplayVersion>
     <!-- IMPORTANT for Android: integer version -->
     <ApplicationVersion>3</ApplicationVersion>

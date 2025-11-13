@@ -17,7 +17,7 @@
     <!-- App Info -->
     <ApplicationTitle>NAVIGEST</ApplicationTitle>
     <ApplicationDisplayName>NAVIGEST</ApplicationDisplayName>
-    <ApplicationId>com.tuaempresa.apploginmaui</ApplicationId>
+    <ApplicationId>com.navigatorcode.navigest</ApplicationId>
     <ApplicationDisplayVersion>1.0.2</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
     <ApplicationBuild>1</ApplicationBuild>
