@@ -29,6 +29,7 @@
     <!-- Tipografia / Texto -->
     <Color x:Key="BodyTextColor">#E5E7EB</Color>
     <Color x:Key="White">#FFFFFF</Color>
+    <Color x:Key="Black">#000000</Color>
 
     <!-- Listas / Tabelas -->
     <Color x:Key="ListHeaderBackgroundColor">#162132</Color>

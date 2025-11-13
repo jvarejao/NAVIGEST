@@ -29,6 +29,7 @@
     <!-- Tipografia -->
     <Color x:Key="BodyTextColor">#111827</Color>
     <Color x:Key="White">#FFFFFF</Color>
+    <Color x:Key="Black">#000000</Color>
 
     <!-- ENTRY (Light) -->
     <Color x:Key="EntryBackgroundColor">#FFFFFF</Color>
