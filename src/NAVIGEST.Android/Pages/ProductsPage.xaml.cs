@@ -78,7 +78,7 @@ public partial class ProductsPage : ContentPage
     }
 
     // -------- Swipe Actions --------
-    private void OnEditSwipeInvoked(object sender, EventArgs e)
+    private async void OnEditSwipeInvoked(object sender, EventArgs e)
     {
         try
         {
@@ -87,6 +87,7 @@ public partial class ProductsPage : ContentPage
                 if (BindingContext is ProductsPageModel vm && vm.SelectCommand?.CanExecute(item) == true)
                 {
                     vm.SelectCommand.Execute(item);
+                    await Task.Delay(100);
                     ShowFormView();
                 }
             }
