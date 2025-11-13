@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Storage;
@@ -186,7 +187,16 @@ namespace NAVIGEST.Android.Pages
         private static ImageSource BuildCompanyLogoSource(byte[]? logoBytes)
         {
             if (logoBytes is { Length: > 0 })
-                return ImageSource.FromStream(() => new MemoryStream(logoBytes));
+            {
+                // Clone buffer so the backing bytes remain valid for the stream source.
+                var buffer = new byte[logoBytes.Length];
+                Buffer.BlockCopy(logoBytes, 0, buffer, 0, logoBytes.Length);
+
+                return new StreamImageSource
+                {
+                    Stream = _ => Task.FromResult<Stream>(new MemoryStream(buffer, writable: false))
+                };
+            }
 
             var theme = Application.Current?.RequestedTheme ?? AppTheme.Light;
             return theme == AppTheme.Dark ? "yahcorbranco.png" : "yahcores.png";
