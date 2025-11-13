@@ -1,68 +1,153 @@
 #!/bin/bash
 
-# Script para criar GitHub Release com upload de APK
-# Uso: ./create-release.sh v1.0.2
+# Automação para criar release Android no GitHub.
+# Pré-requisitos: dotnet, gh, git, ambiente limpo e versão já atualizada no código.
+# Uso: ./scripts/create-release.sh 1.0.7 [--notes ficheiro] [--skip-build] [--target main]
 
-set -e
+set -euo pipefail
 
-VERSION=${1:-v1.0.2}
-REPO="jvarejao/NAVIGEST"
-APK_PATH="src/NAVIGEST.Android/bin/Debug/net9.0-android/com.tuaempresa.navigest-arm64-v8a-Signed.apk"
-RELEASE_NAME="NAVIGEST $VERSION"
+usage() {
+    echo "Uso: $0 <versao> [--notes ficheiro] [--skip-build] [--target branch]" >&2
+    exit 1
+}
 
-echo "📦 Criando GitHub Release $VERSION..."
+if [[ $# -lt 1 ]]; then
+    usage
+fi
 
-# Verificar se APK existe
-if [ ! -f "$APK_PATH" ]; then
-    echo "❌ Erro: APK não encontrado em $APK_PATH"
+VERSION=""
+NOTES_FILE=""
+SKIP_BUILD=0
+TARGET="main"
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --notes|-n)
+            shift
+            [[ $# -gt 0 ]] || usage
+            NOTES_FILE="$1"
+            ;;
+        --skip-build)
+            SKIP_BUILD=1
+            ;;
+        --target)
+            shift
+            [[ $# -gt 0 ]] || usage
+            TARGET="$1"
+            ;;
+        -h|--help)
+            usage
+            ;;
+        *)
+            if [[ -z "$VERSION" ]]; then
+                VERSION="$1"
+            else
+                usage
+            fi
+            ;;
+    esac
+    shift
+done
+
+if [[ -z "$VERSION" ]]; then
+    usage
+fi
+
+if [[ "$VERSION" == v* ]]; then
+    TAG="$VERSION"
+    VERSION="${VERSION:1}"
+else
+    TAG="v$VERSION"
+fi
+
+REPO="${REPO:-jvarejao/NAVIGEST}"
+PROJECT="src/NAVIGEST.Android/NAVIGEST.Android.csproj"
+FRAMEWORK="net9.0-android"
+APK_PATH="src/NAVIGEST.Android/bin/Release/${FRAMEWORK}/com.tuaempresa.navigest-arm64-v8a-Signed.apk"
+ASSET_LABEL="com.tuaempresa.navigest-arm64-v8a-Signed.apk"
+
+if ! command -v dotnet >/dev/null 2>&1; then
+    echo "Erro: dotnet não encontrado no PATH." >&2
     exit 1
 fi
 
-# Obter tamanho do APK
-APK_SIZE=$(ls -lh "$APK_PATH" | awk '{print $5}')
-echo "📁 APK: $APK_SIZE"
-
-# Verificar se gh CLI está instalado
-if ! command -v gh &> /dev/null; then
-    echo "❌ Erro: GitHub CLI (gh) não está instalado"
-    echo "   Instale com: brew install gh"
+if ! command -v gh >/dev/null 2>&1; then
+    echo "Erro: GitHub CLI (gh) não encontrado." >&2
     exit 1
 fi
 
-# Verificar autenticação
-if ! gh auth status &> /dev/null; then
-    echo "❌ Erro: Não autenticado no GitHub"
-    echo "   Execute: gh auth login"
+if ! gh auth status >/dev/null 2>&1; then
+    echo "Erro: autenticação do gh não configurada. Executa 'gh auth login'." >&2
     exit 1
 fi
 
-# Criar a release
-echo "🚀 Criando release..."
-gh release create "$VERSION" \
+if ! command -v git >/dev/null 2>&1; then
+    echo "Erro: git não encontrado." >&2
+    exit 1
+fi
+
+if [[ -n "$(git status --porcelain)" ]]; then
+    echo "Erro: diretório git com alterações pendentes. Faz commit ou stash antes de continuar." >&2
+    exit 1
+fi
+
+if [[ -n "$NOTES_FILE" && ! -f "$NOTES_FILE" ]]; then
+    echo "Erro: ficheiro de notas '$NOTES_FILE' não encontrado." >&2
+    exit 1
+fi
+
+if ! grep -q "<ApplicationDisplayVersion>$VERSION</ApplicationDisplayVersion>" "$PROJECT"; then
+    echo "Erro: ApplicationDisplayVersion em $PROJECT não está definido para $VERSION." >&2
+    exit 1
+fi
+
+if ! grep -q "\"version\":\"$VERSION\"" updates/version.json; then
+    echo "Erro: updates/version.json não está alinhado com a versão $VERSION." >&2
+    exit 1
+fi
+
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+echo "Branch atual: $CURRENT_BRANCH"
+
+echo "⬆️  A sincronizar $CURRENT_BRANCH com origin..."
+git push origin "$CURRENT_BRANCH"
+
+if [[ $SKIP_BUILD -eq 0 ]]; then
+    echo "🔨 A publicar APK Release (${FRAMEWORK})..."
+    dotnet publish "$PROJECT" -c Release -f "$FRAMEWORK"
+else
+    echo "⚠️  A publicar foi ignorado (--skip-build)."
+fi
+
+if [[ ! -f "$APK_PATH" ]]; then
+    echo "Erro: APK Release não encontrado em $APK_PATH" >&2
+    exit 1
+fi
+
+if [[ -z "$NOTES_FILE" ]]; then
+    TEMP_NOTES=$(mktemp /tmp/navigest-release-notes-XXXX.md)
+    cat <<EOF > "$TEMP_NOTES"
+## Destaques
+- Atualizações para a versão $VERSION.
+
+## Build
+- $ASSET_LABEL
+EOF
+    NOTES_FILE="$TEMP_NOTES"
+    trap 'rm -f "$TEMP_NOTES"' EXIT
+fi
+
+if gh release view "$TAG" >/dev/null 2>&1; then
+    echo "Erro: a release $TAG já existe. Remove-a ou usa outra versão." >&2
+    exit 1
+fi
+
+echo "� A criar release $TAG no repositório $REPO..."
+gh release create "$TAG" \
+    "$APK_PATH#$ASSET_LABEL" \
     --repo "$REPO" \
-    --title "$RELEASE_NAME" \
-    --notes "## ✨ Versão $VERSION
+    --title "NAVIGEST $TAG" \
+    --notes-file "$NOTES_FILE" \
+    --target "$TARGET"
 
-### 🎯 Principais Melhorias
-- ✅ App Update Checker com detecção automática
-- ✅ Indicativo e telefone separados (correção)
-- ✅ Download seguro com validação de URL
-- ✅ Versão exibida no LoginPage
-
-### 📥 Instalação
-1. Fazer download do APK
-2. Ativar 'Fontes desconhecidas' em Segurança
-3. Instalar o arquivo
-
-### 📋 Requisitos Mínimos
-- Android 8.0+ (API 26)
-
-### 🔗 Links
-- [GitHub Releases](https://github.com/jvarejao/NAVIGEST/releases)
-- [Documentação](https://github.com/jvarejao/NAVIGEST/blob/main/RELEASES.md)
-" \
-    --draft=false \
-    "$APK_PATH#navigest-${VERSION}.apk"
-
-echo "✅ Release $VERSION criada com sucesso!"
-echo "🔗 URL: https://github.com/$REPO/releases/tag/$VERSION"
+echo "✅ Release publicada: https://github.com/$REPO/releases/tag/$TAG"

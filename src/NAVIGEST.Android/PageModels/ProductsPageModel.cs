@@ -1,14 +1,18 @@
-﻿#nullable enable
+#nullable enable
 using NAVIGEST.Android.Models;
 using NAVIGEST.Android.Services;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Storage;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,12 +22,30 @@ public class ProductsPageModel : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    // Cache completo
     private readonly List<Product> _all = new();
 
     public ObservableCollection<Product> Products { get; } = new();
-    public ObservableCollection<Product> Filtered => Products;
-    public ObservableCollection<string> Families { get; } = new();
+    public ObservableCollection<ProductGroup> GroupedProducts { get; } = new();
+    public ObservableCollection<ProductFamilyOption> Families { get; } = new();
+    public ObservableCollection<ProductFamilyOption> Familias => Families;
+
+    private ProductFamilyOption? _selectedFamily;
+    public ProductFamilyOption? SelectedFamily
+    {
+        get => _selectedFamily;
+        set
+        {
+            if (ReferenceEquals(_selectedFamily, value))
+                return;
+
+            _selectedFamily = value;
+            if (Editing is not null)
+                Editing.FamiliaSelecionada = value?.Codigo;
+
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(Editing));
+        }
+    }
 
     private Product? _selectedProduct;
     public Product? SelectedProduct
@@ -33,9 +55,10 @@ public class ProductsPageModel : INotifyPropertyChanged
         {
             if (_selectedProduct == value) return;
             _selectedProduct = value;
-            Debug.WriteLine($"[SELECT PRODUCT] {_selectedProduct?.PRODCODIGO}");
+            Debug.WriteLine($"[SELECT PRODUCT] {_selectedProduct?.Codigo}");
             OnPropertyChanged();
             EditModel = _selectedProduct?.Clone() ?? NewTemplate();
+            SyncSelectedFamilyFromEditing();
         }
     }
 
@@ -49,6 +72,7 @@ public class ProductsPageModel : INotifyPropertyChanged
             _editModel = value;
             OnPropertyChanged();
             OnPropertyChanged(nameof(Editing));
+            SyncSelectedFamilyFromEditing();
         }
     }
 
@@ -94,11 +118,10 @@ public class ProductsPageModel : INotifyPropertyChanged
         set { if (_statusMessage != value) { _statusMessage = value; OnPropertyChanged(); } }
     }
 
-    // Comandos
     public Command NewCommand { get; }
     public Command ClearCommand { get; }
     public Command SaveCommand { get; }
-    public Command DeleteCommand { get; }
+    public Command<Product?> DeleteCommand { get; }
     public Command SearchCommand { get; }
     public Command RefreshCommand { get; }
     public Command<Product> SelectCommand { get; }
@@ -113,14 +136,38 @@ public class ProductsPageModel : INotifyPropertyChanged
         set { if (_isBusy != value) { _isBusy = value; OnPropertyChanged(); } }
     }
 
+    private bool _isRefreshing;
+    public bool IsRefreshing
+    {
+        get => _isRefreshing;
+        set
+        {
+            if (_isRefreshing == value) return;
+            _isRefreshing = value;
+            OnPropertyChanged();
+        }
+    }
+
     public ProductsPageModel()
     {
         NewCommand = new Command(async () => await OnNewAsync());
         ClearCommand = new Command(OnClear);
-        SaveCommand = new Command(async () => await OnSaveAsync());
-        DeleteCommand = new Command(async () => await OnDeleteAsync());
+        SaveCommand = new Command(async () => await SaveAsync());
+        DeleteCommand = new Command<Product?>(async product => await DeleteAsync(product));
         SearchCommand = new Command(ApplyFilterImmediate);
-        RefreshCommand = new Command(async () => await LoadAsync(force: true));
+        RefreshCommand = new Command(async () =>
+        {
+            if (IsRefreshing) return;
+            IsRefreshing = true;
+            try
+            {
+                await LoadAsync(force: true);
+            }
+            finally
+            {
+                IsRefreshing = false;
+            }
+        });
         SelectCommand = new Command<Product>(p =>
         {
             if (p == null) return;
@@ -141,7 +188,7 @@ public class ProductsPageModel : INotifyPropertyChanged
             if (force || _all.Count == 0)
             {
                 _all.Clear();
-                var list = await DatabaseService.GetProductsAsync(null, ct); // IMPLEMENTAR NO DatabaseService
+                var list = await DatabaseService.GetProductsAsync(null, ct);
                 foreach (var p in list)
                 {
                     Normalize(p);
@@ -149,13 +196,17 @@ public class ProductsPageModel : INotifyPropertyChanged
                 }
             }
 
-            if (Families.Count == 0)
+            var fams = await DatabaseService.GetProductFamiliesAsync(ct);
+            Families.Clear();
+            foreach (var f in fams
+                         .GroupBy(f => f.Codigo, StringComparer.OrdinalIgnoreCase)
+                         .Select(g => g.First())
+                         .OrderBy(f => f.Codigo, StringComparer.OrdinalIgnoreCase))
             {
-                var fams = await DatabaseService.GetProductFamiliesAsync(ct); // IMPLEMENTAR
-                Families.Clear();
-                foreach (var f in fams)
-                    Families.Add(f?.NomeDisplay ?? string.Empty);
+                Families.Add(f);
             }
+
+            SyncSelectedFamilyFromEditing();
 
             Repopulate(_all);
             if (Products.Count > 0 && SelectedProduct is null)
@@ -173,21 +224,64 @@ public class ProductsPageModel : INotifyPropertyChanged
         }
     }
 
+    public async Task ReloadFamiliesAsync(string? preferredCodigo = null)
+    {
+        try
+        {
+            var families = await DatabaseService.GetProductFamiliesAsync();
+            var ordered = families
+                .GroupBy(f => f.Codigo, StringComparer.OrdinalIgnoreCase)
+                .Select(g => g.First())
+                .OrderBy(f => f.Codigo, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            Families.Clear();
+            foreach (var family in ordered)
+                Families.Add(family);
+
+            var targetCodigo = preferredCodigo;
+            if (string.IsNullOrWhiteSpace(targetCodigo))
+            {
+                targetCodigo = SelectedFamily?.Codigo ?? Editing?.FamiliaSelecionada;
+            }
+
+            if (!string.IsNullOrWhiteSpace(targetCodigo))
+            {
+                var match = Families.FirstOrDefault(f => string.Equals(f.Codigo, targetCodigo, StringComparison.OrdinalIgnoreCase));
+                if (match is not null)
+                {
+                    SelectedFamily = match;
+                    return;
+                }
+            }
+
+            SyncSelectedFamilyFromEditing();
+        }
+        catch (Exception ex)
+        {
+            GlobalErro.TratarErro(ex);
+            await AppShell.DisplayToastAsync("Erro ao atualizar famílias.");
+        }
+    }
+
     private async Task OnNewAsync()
     {
         SelectedProduct = null;
         EditModel = NewTemplate();
         await TryGenerateCodigoAsync();
-        // Agora usa o nome do utilizador autenticado (sessão) em vez de Environment.UserName
         EditModel.COLABORADOR = GetLoggedUserName();
+        EditModel.Valor = FormatValor(EditModel.Valor);
         OnPropertyChanged(nameof(Editing));
+        SelectedFamily = null;
     }
 
     private void OnClear()
     {
         SelectedProduct = null;
         EditModel = NewTemplate();
+        EditModel.Valor = FormatValor(EditModel.Valor);
         OnPropertyChanged(nameof(Editing));
+        SelectedFamily = null;
     }
 
     private async Task TryGenerateCodigoAsync()
@@ -195,7 +289,7 @@ public class ProductsPageModel : INotifyPropertyChanged
         if (!string.IsNullOrWhiteSpace(EditModel.PRODCODIGO)) return;
         try
         {
-            EditModel.PRODCODIGO = await DatabaseService.GetNextProductCodigoAsync(); // IMPLEMENTAR
+            EditModel.PRODCODIGO = await DatabaseService.GetNextProductCodigoAsync();
             OnPropertyChanged(nameof(Editing));
         }
         catch (Exception ex)
@@ -205,100 +299,102 @@ public class ProductsPageModel : INotifyPropertyChanged
         }
     }
 
-    private async Task OnSaveAsync()
+    public async Task<bool> SaveAsync()
     {
-        if (EditModel is null) return;
+        if (EditModel is null)
+            return false;
 
         if (string.IsNullOrWhiteSpace(EditModel.PRODCODIGO))
             await TryGenerateCodigoAsync();
 
-        // Se por algum motivo ainda não tiver colaborador, preencher
         if (string.IsNullOrWhiteSpace(EditModel.COLABORADOR))
             EditModel.COLABORADOR = GetLoggedUserName();
 
+        EditModel.Valor = FormatValor(EditModel.Valor);
         Normalize(EditModel);
 
         if (!Validate(EditModel, out string msg))
         {
             await AppShell.DisplayToastAsync(msg);
             StatusMessage = msg;
-            return;
+            return false;
         }
-
-        bool existedBefore = _all.Any(p => p.PRODCODIGO == EditModel.PRODCODIGO && !string.IsNullOrWhiteSpace(EditModel.PRODCODIGO));
 
         try
         {
-            var ok = await DatabaseService.UpsertProductAsync(EditModel); // IMPLEMENTAR
-            if (ok)
+            var succeeded = await DatabaseService.UpsertProductAsync(EditModel);
+            if (!succeeded)
             {
-                var existing = _all.FirstOrDefault(p => p.PRODCODIGO == EditModel.PRODCODIGO);
-                if (existing == null)
-                {
-                    var cloned = EditModel.Clone();
-                    Normalize(cloned);
-                    _all.Add(cloned);
-                    Products.Add(cloned);
-                    SelectedProduct = cloned;
-                }
-                else
-                {
-                    Copy(EditModel, existing);
-                    Normalize(existing);
-                    var vis = Products.FirstOrDefault(p => p.PRODCODIGO == existing.PRODCODIGO);
-                    if (vis != null)
-                    {
-                        var idx = Products.IndexOf(vis);
-                        if (idx >= 0) Products[idx] = existing;
-                    }
-                    if (SelectedProduct?.PRODCODIGO == existing.PRODCODIGO)
-                        SelectedProduct = existing;
-                }
-                await AppShell.DisplayToastAsync("Produto guardado.");
-                StatusMessage = "Guardado.";
+                await AppShell.DisplayToastAsync("Sem alterações.");
+                return false;
+            }
+
+            var existing = _all.FirstOrDefault(p => string.Equals(p.PRODCODIGO, EditModel.PRODCODIGO, StringComparison.OrdinalIgnoreCase));
+            if (existing is null)
+            {
+                var cloned = EditModel.Clone();
+                Normalize(cloned);
+                _all.Add(cloned);
             }
             else
             {
-                await AppShell.DisplayToastAsync("Sem alterações.");
+                Copy(EditModel, existing);
+                Normalize(existing);
             }
+
+            Repopulate(_all);
+
+            SelectedProduct = Products.FirstOrDefault(p => string.Equals(p.PRODCODIGO, EditModel.PRODCODIGO, StringComparison.OrdinalIgnoreCase));
+            await AppShell.DisplayToastAsync("Produto guardado.");
+            StatusMessage = "Guardado.";
+            return true;
         }
         catch (Exception ex)
         {
             GlobalErro.TratarErro(ex);
             await AppShell.DisplayToastAsync("Erro ao guardar.");
             StatusMessage = "Erro ao guardar.";
+            return false;
         }
-        OnPropertyChanged(nameof(Editing));
+        finally
+        {
+            OnPropertyChanged(nameof(Editing));
+        }
     }
 
-    private async Task OnDeleteAsync()
+    public async Task<bool> DeleteAsync(Product? product = null)
     {
-        if (SelectedProduct is null) return;
+        var target = product ?? SelectedProduct;
+        if (target is null)
+            return false;
 
         try
         {
-            var code = SelectedProduct.PRODCODIGO;
-            if (string.IsNullOrWhiteSpace(code)) return;
+            var code = target.PRODCODIGO;
+            if (string.IsNullOrWhiteSpace(code))
+                return false;
 
-            var ok = await DatabaseService.DeleteProductAsync(code); // IMPLEMENTAR
-            if (ok)
-            {
-                _all.RemoveAll(p => p.PRODCODIGO == code);
-                var toRemove = Products.FirstOrDefault(p => p.PRODCODIGO == code);
-                if (toRemove != null) Products.Remove(toRemove);
-                SelectedProduct = null;
-                EditModel = NewTemplate();
-                await AppShell.DisplayToastAsync("Produto eliminado.");
-            }
-            else
+            var succeeded = await DatabaseService.DeleteProductAsync(code);
+            if (!succeeded)
             {
                 await AppShell.DisplayToastAsync("Nenhuma linha eliminada.");
+                return false;
             }
+
+            _all.RemoveAll(p => string.Equals(p.PRODCODIGO, code, StringComparison.OrdinalIgnoreCase));
+            Repopulate(_all);
+
+            SelectedProduct = Products.FirstOrDefault();
+            EditModel = NewTemplate();
+            await AppShell.DisplayToastAsync("Produto eliminado.");
+            StatusMessage = "Eliminado.";
+            return true;
         }
         catch (Exception ex)
         {
             GlobalErro.TratarErro(ex);
             await AppShell.DisplayToastAsync("Erro ao eliminar.");
+            return false;
         }
     }
 
@@ -312,9 +408,10 @@ public class ProductsPageModel : INotifyPropertyChanged
         }
 
         var filtered = _all.Where(p =>
-            (p.PRODNOME ?? string.Empty).ToLowerInvariant().Contains(q) ||
-            (p.PRODCODIGO ?? string.Empty).ToLowerInvariant().Contains(q) ||
-            (p.FAMILIA ?? string.Empty).ToLowerInvariant().Contains(q));
+            (p.Descricao ?? string.Empty).ToLowerInvariant().Contains(q) ||
+            (p.Codigo ?? string.Empty).ToLowerInvariant().Contains(q) ||
+            (p.Familia ?? string.Empty).ToLowerInvariant().Contains(q) ||
+            (p.Colaborador ?? string.Empty).ToLowerInvariant().Contains(q));
 
         Repopulate(filtered);
     }
@@ -338,12 +435,113 @@ public class ProductsPageModel : INotifyPropertyChanged
 
     private void Repopulate(IEnumerable<Product> items)
     {
-        var prev = SelectedProduct?.PRODCODIGO;
+        var snapshot = items
+            .Where(p => p is not null)
+            .OrderBy(p => NormalizeFamilyTitle(p.Familia), StringComparer.OrdinalIgnoreCase)
+            .ThenBy(p => p.Descricao, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(p => p.Codigo, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        var previousCode = SelectedProduct?.PRODCODIGO;
+
         Products.Clear();
-        foreach (var p in items)
-            Products.Add(p);
-        if (prev != null)
-            SelectedProduct = Products.FirstOrDefault(p => p.PRODCODIGO == prev);
+        GroupedProducts.Clear();
+
+        foreach (var group in snapshot
+                     .GroupBy(p => NormalizeFamilyTitle(p.Familia), StringComparer.OrdinalIgnoreCase)
+                     .OrderBy(g => g.Key, StringComparer.OrdinalIgnoreCase))
+        {
+            var orderedItems = group
+                .OrderBy(p => p.Descricao, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(p => p.Codigo, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            foreach (var item in orderedItems)
+                Products.Add(item);
+
+            GroupedProducts.Add(new ProductGroup(group.Key, orderedItems));
+        }
+
+        if (Products.Count == 0)
+        {
+            SelectedProduct = null;
+            return;
+        }
+
+        var nextSelection = previousCode is not null
+            ? Products.FirstOrDefault(p => string.Equals(p.PRODCODIGO, previousCode, StringComparison.OrdinalIgnoreCase))
+            : Products.FirstOrDefault();
+
+        if (nextSelection is not null)
+            SelectedProduct = nextSelection;
+    }
+
+    private static bool TryParseValor(string? raw, out decimal value)
+    {
+        value = 0m;
+        if (string.IsNullOrWhiteSpace(raw))
+            return false;
+
+        var sanitized = raw.Replace("€", string.Empty, StringComparison.OrdinalIgnoreCase);
+        sanitized = Regex.Replace(sanitized, @"\s+", string.Empty);
+        if (sanitized.Length == 0)
+            return false;
+
+        if (sanitized.Count(c => c == ',') == 0 && sanitized.Count(c => c == '.') > 1)
+            sanitized = sanitized.Replace(".", string.Empty, StringComparison.Ordinal);
+
+        if (!sanitized.Contains(',', StringComparison.Ordinal) && sanitized.Contains('.', StringComparison.Ordinal))
+            sanitized = sanitized.Replace('.', ',');
+
+        var normalized = sanitized.Replace(".", string.Empty, StringComparison.Ordinal).Replace(',', '.');
+        return decimal.TryParse(normalized, NumberStyles.Any, CultureInfo.InvariantCulture, out value);
+    }
+
+    private static string FormatValor(string? raw)
+    {
+        if (!TryParseValor(raw, out var dec))
+            return "0,00€";
+
+        var inteiro = Math.Abs(dec).ToString("0", CultureInfo.InvariantCulture);
+        inteiro = Regex.Replace(inteiro, @"\B(?=(\d{3})+(?!\d))", " ");
+        var frac = (Math.Abs(dec) - Math.Truncate(Math.Abs(dec))).ToString("F2", CultureInfo.InvariantCulture).Split('.')[1];
+        var sinal = dec < 0 ? "-" : string.Empty;
+        return $"{sinal}{inteiro},{frac}€";
+    }
+
+    private void SyncSelectedFamilyFromEditing()
+    {
+        var code = Editing?.Familia?.Trim();
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            SelectedFamily = null;
+            return;
+        }
+
+        var match = Families.FirstOrDefault(f => string.Equals(f.Codigo, code, StringComparison.OrdinalIgnoreCase));
+        SelectedFamily = match;
+    }
+
+    private static string NormalizeFamilyTitle(string? familia)
+    {
+        var trimmed = familia?.Trim();
+        return string.IsNullOrWhiteSpace(trimmed) ? "Sem família" : trimmed;
+    }
+
+    public void FormatValorOnBlur()
+    {
+        if (EditModel == null) return;
+        try
+        {
+            var before = EditModel.Valor;
+            EditModel.Valor = FormatValor(EditModel.Valor);
+            if (before != EditModel.Valor)
+                OnPropertyChanged(nameof(Editing));
+        }
+        catch (Exception ex)
+        {
+            GlobalErro.TratarErro(ex, mostrarAlerta: false);
+        }
     }
 
     private static void Copy(Product src, Product dst)
@@ -352,22 +550,30 @@ public class ProductsPageModel : INotifyPropertyChanged
         dst.PRODNOME = src.PRODNOME;
         dst.FAMILIA = src.FAMILIA;
         dst.COLABORADOR = src.COLABORADOR;
+        dst.VALOR = src.VALOR;
     }
 
     private bool Validate(Product p, out string msg)
     {
-        if (string.IsNullOrWhiteSpace(p.PRODNOME)) { msg = "Descrição obrigatória."; return false; }
-        if (string.IsNullOrWhiteSpace(p.FAMILIA)) { msg = "Família obrigatória."; return false; }
-        msg = "";
+        if (string.IsNullOrWhiteSpace(p.Descricao)) { msg = "Descrição obrigatória."; return false; }
+        if (string.IsNullOrWhiteSpace(p.Familia)) { msg = "Família obrigatória."; return false; }
+        if (!TryParseValor(p.Valor, out _))
+        {
+            msg = "Valor inválido.";
+            return false;
+        }
+
+        msg = string.Empty;
         return true;
     }
 
     private static Product NewTemplate() => new()
     {
-        PRODCODIGO = "",
-        PRODNOME = "",
-        FAMILIA = "",
-        COLABORADOR = ""
+        PRODCODIGO = string.Empty,
+        PRODNOME = string.Empty,
+        FAMILIA = string.Empty,
+        COLABORADOR = string.Empty,
+        VALOR = "0,00€"
     };
 
     private static void Normalize(Product p)
@@ -376,69 +582,78 @@ public class ProductsPageModel : INotifyPropertyChanged
         {
             if (string.IsNullOrWhiteSpace(s)) return s?.Trim();
             s = s.Trim();
-            return System.Text.RegularExpressions.Regex.Replace(s, @"\s{2,}", " ");
+            return Regex.Replace(s, @"\s{2,}", " ");
         }
 
         p.PRODCODIGO = p.PRODCODIGO?.Trim();
         p.PRODNOME = Clean(p.PRODNOME);
         p.FAMILIA = Clean(p.FAMILIA);
         p.COLABORADOR = Clean(p.COLABORADOR);
+        p.VALOR = FormatValor(p.VALOR);
     }
 
     private void OnPropertyChanged([CallerMemberName] string? name = null)
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
-    public async Task<(bool ok, string message, string finalCode)> AddFamilyAsync(string codigo, string descricao)
+    public async Task<(bool ok, string message, ProductFamilyOption? family)> AddFamilyAsync(string codigo, string descricao)
     {
-        codigo = (codigo ?? "").Trim();
-        descricao = (descricao ?? "").Trim();
+        codigo = (codigo ?? string.Empty).Trim().ToUpperInvariant();
+        descricao = (descricao ?? string.Empty).Trim().ToUpperInvariant();
 
         if (string.IsNullOrWhiteSpace(codigo) || string.IsNullOrWhiteSpace(descricao))
-            return (false, "Código e descrição obrigatórios.", codigo);
+            return (false, "Código e descrição obrigatórios.", null);
 
         try
         {
             bool persisted = false;
             try
             {
-                persisted = await DatabaseService.UpsertProductFamilyAsync(codigo, descricao); // IMPLEMENTAR
+                persisted = await DatabaseService.UpsertProductFamilyAsync(codigo, descricao);
             }
             catch
             {
-                // Se ainda não implementado: ignora persistência silenciosamente
+                // Ignora erros de persistência para fluxos ainda não disponíveis.
             }
 
-            if (!Families.Contains(codigo))
-                Families.Add(codigo);
+            var option = new ProductFamilyOption(codigo, descricao);
 
-            var ordered = Families.OrderBy(f => f, StringComparer.OrdinalIgnoreCase).ToList();
+            var existing = Families.FirstOrDefault(f => string.Equals(f.Codigo, codigo, StringComparison.OrdinalIgnoreCase));
+            if (existing is not null)
+                Families.Remove(existing);
+
+            Families.Add(option);
+
+            var ordered = Families
+                .OrderBy(f => f.Codigo, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
             Families.Clear();
-            foreach (var f in ordered) Families.Add(f);
+            foreach (var f in ordered)
+                Families.Add(f);
 
-            await AppShell.DisplayToastAsync("Família adicionada.");
-            return (true, "Ok", codigo);
+            SelectedFamily = option;
+
+            await AppShell.DisplayToastAsync(persisted ? "Família adicionada." : "Família disponível localmente.");
+            return (true, "Ok", option);
         }
         catch (Exception ex)
         {
             GlobalErro.TratarErro(ex);
-            return (false, "Erro inesperado.", codigo);
+            return (false, "Erro inesperado.", null);
         }
     }
 
-    // ---------------- Utilizador corrente ----------------
     private static string GetLoggedUserName()
     {
-        // Usa a sessão criada no LoginPage. Ajuste se existir outra propriedade (ex: Username).
         var name = UserSession.Current.User?.Name?.Trim();
         if (!string.IsNullOrWhiteSpace(name))
             return name!;
 
-        // Fallback: último username lembrado (se existir)
         var remembered = Preferences.Default.Get<string>("last_username", "")?.Trim();
         if (!string.IsNullOrWhiteSpace(remembered))
             return remembered!;
 
-        // Último recurso: nome do sistema
         return Environment.UserName;
     }
+
 }

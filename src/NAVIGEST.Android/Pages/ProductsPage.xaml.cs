@@ -254,7 +254,12 @@ public partial class ProductsPage : ContentPage
 
     private void OnPrecoCustoUnfocused(object sender, FocusEventArgs e)
     {
-        // Format price on blur if needed
+        try
+        {
+            if (BindingContext is ProductsPageModel vm)
+                vm.FormatValorOnBlur();
+        }
+        catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
     }
 
     private void OnDeleteFromFormTapped(object sender, EventArgs e)
