@@ -1,1 +1,1 @@
-{"version":"1.0.10","minSupportedVersion":"1.0.0","downloadUrl":"https://github.com/jvarejao/NAVIGEST/releases/download/v1.0.10/com.tuaempresa.navigest-arm64-v8a-Signed.apk","notes":"v1.0.10: Corrige recurso de cor Black faltando no ProductsPage."}
+{"version":"1.0.11","minSupportedVersion":"1.0.0","downloadUrl":"https://github.com/jvarejao/NAVIGEST/releases/download/v1.0.11/com.tuaempresa.navigest-arm64-v8a-Signed.apk","notes":"v1.0.11: Corrige carregamento de dados do cliente no formulário de edição ao clicar em editar ou na linha do cliente."}
