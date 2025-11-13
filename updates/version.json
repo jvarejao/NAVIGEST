@@ -1,1 +1,1 @@
-{"version":"1.0.8","minSupportedVersion":"1.0.0","downloadUrl":"https://github.com/jvarejao/NAVIGEST/releases/download/v1.0.8/com.tuaempresa.navigest-arm64-v8a-Signed.apk","notes":"v1.0.8: Alinha ProductsPage Android com iOS (CRUD, agrupamento por família, formatação de preços)."}
+{"version":"1.0.9","minSupportedVersion":"1.0.0","downloadUrl":"https://github.com/jvarejao/NAVIGEST/releases/download/v1.0.9/com.tuaempresa.navigest-arm64-v8a-Signed.apk","notes":"v1.0.9: Corrige form ProductsPage (carregamento de dados, picker famílias, popup gerenciar famílias)."}
