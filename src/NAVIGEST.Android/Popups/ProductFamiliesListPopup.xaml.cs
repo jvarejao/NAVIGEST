@@ -113,6 +113,14 @@ public partial class ProductFamiliesListPopup : Popup
         CloseWithResult(null);
     }
 
+    private void OnNewFamilyButtonClicked(object sender, EventArgs e)
+    {
+        if (_isBusy)
+            return;
+
+        ShowNewFamilyForm();
+    }
+
     private void OnFamilyTapped(object? sender, TappedEventArgs e)
     {
         if (_isBusy)
@@ -221,5 +229,70 @@ public partial class ProductFamiliesListPopup : Popup
     {
         _all.RemoveAll(f => string.Equals(f.Codigo, codigo, StringComparison.OrdinalIgnoreCase));
         ApplyFilter(SearchBar.Text);
+    }
+
+    // ===== NOVO: Modo Nova Família =====
+    private void ShowNewFamilyForm()
+    {
+        ListViewMode.IsVisible = false;
+        NewFamilyViewMode.IsVisible = true;
+        CodigoEntry.Text = string.Empty;
+        DescricaoEntry.Text = string.Empty;
+        MainThread.BeginInvokeOnMainThread(() => CodigoEntry.Focus());
+    }
+
+    private void HideNewFamilyForm()
+    {
+        ListViewMode.IsVisible = true;
+        NewFamilyViewMode.IsVisible = false;
+        CodigoEntry.Text = string.Empty;
+        DescricaoEntry.Text = string.Empty;
+    }
+
+    private void OnCancelNewFamilyClicked(object sender, EventArgs e)
+    {
+        HideNewFamilyForm();
+    }
+
+    private async void OnConfirmNewFamilyClicked(object sender, EventArgs e)
+    {
+        if (_isBusy)
+            return;
+
+        var codigo = CodigoEntry.Text?.Trim();
+        var descricao = DescricaoEntry.Text?.Trim().ToUpperInvariant();
+
+        if (string.IsNullOrWhiteSpace(codigo))
+        {
+            await GlobalToast.ShowAsync("Código obrigatório.", ToastTipo.Aviso, 2500);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(descricao))
+        {
+            await GlobalToast.ShowAsync("Descrição obrigatória.", ToastTipo.Aviso, 2500);
+            return;
+        }
+
+        await RunBusyAsync(async () =>
+        {
+            var saved = await DatabaseService.UpsertProductFamilyAsync(codigo, descricao);
+            if (!saved)
+            {
+                await GlobalToast.ShowAsync("Não foi possível guardar a família.", ToastTipo.Erro, 2500);
+                return;
+            }
+
+            _refreshRequested = true;
+            ReplaceInCache(codigo, descricao);
+            HideNewFamilyForm();
+            await GlobalToast.ShowAsync("Família criada com sucesso.", ToastTipo.Sucesso, 1800);
+        });
+    }
+
+    // Override do método de edit para abrir o formulário em vez de prompt
+    private void OpenNewFamilyForm()
+    {
+        ShowNewFamilyForm();
     }
 }
