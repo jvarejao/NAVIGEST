@@ -1,24 +1,36 @@
 #!/usr/bin/env python3
 """
-Script para criar release no GitHub automaticamente.
-Usa subprocess para chamar 'gh cli' ou 'curl' com API.
+Script para criar release no GitHub rapidamente.
+Otimizado com gh CLI - muito mais rápido e direto.
 """
 
 import subprocess
 import sys
 import os
-import json
 from pathlib import Path
 
-def create_release_with_gh():
-    """Criar release usando GitHub CLI (gh)"""
-    version = "1.0.17"
+def get_version_from_args():
+    """Obter versão dos argumentos ou de updates/version.json"""
+    if len(sys.argv) > 1:
+        return sys.argv[1]
+    
+    # Ler de updates/version.json
+    import json
+    try:
+        with open("updates/version.json", "r") as f:
+            data = json.load(f)
+            return data.get("version", "")
+    except:
+        return ""
+
+def create_release(version):
+    """Criar release rapidamente usando gh CLI"""
     tag = f"v{version}"
     repo = "jvarejao/NAVIGEST"
-    apk_path = f"releases/v{version}/com.navigatorcode.navigest-arm64-v8a-Signed.apk"
-    notes_file = "release_notes_v1.0.17.md"
+    apk_path = f"releases/{tag}/com.navigatorcode.navigest-arm64-v8a-Signed.apk"
+    notes_file = f"release_notes_{tag}.md"
     
-    # Verificar se todos os ficheiros existem
+    # Validar ficheiros
     if not Path(apk_path).exists():
         print(f"❌ APK não encontrado: {apk_path}")
         return False
@@ -27,7 +39,7 @@ def create_release_with_gh():
         print(f"❌ Release notes não encontrado: {notes_file}")
         return False
     
-    # Tentar criar a release
+    # Criar release
     try:
         print(f"📤 Criando release {tag}...")
         result = subprocess.run(
@@ -45,94 +57,43 @@ def create_release_with_gh():
         )
         
         if result.returncode == 0:
-            print("✅ Release criada com sucesso!")
-            print(result.stdout)
+            print(f"✅ Release criada: {tag}")
+            
+            # Mostrar info da release
+            info_result = subprocess.run(
+                [
+                    "gh", "release", "view", tag,
+                    "--json", "assets",
+                    "-q", "'.assets[0] | \"\(.name) - \(.url)\"'",
+                    "--repo", repo
+                ],
+                capture_output=True,
+                text=True,
+                timeout=30
+            )
+            
+            if info_result.returncode == 0:
+                print(f"📦 {info_result.stdout.strip()}")
+            
+            print(f"🔗 https://github.com/{repo}/releases/tag/{tag}")
             return True
         else:
-            print(f"❌ Erro ao criar release:")
-            print(result.stderr)
+            print(f"❌ Erro: {result.stderr}")
             return False
             
     except Exception as e:
-        print(f"❌ Exceção: {e}")
-        return False
-
-def create_release_with_curl():
-    """Fallback: criar release usando curl e API do GitHub"""
-    version = "1.0.17"
-    tag = f"v{version}"
-    repo = "jvarejao/NAVIGEST"
-    notes_file = "release_notes_v1.0.17.md"
-    
-    token = os.environ.get("GITHUB_TOKEN", "")
-    if not token:
-        print("⚠️  GITHUB_TOKEN não definido. Tente: export GITHUB_TOKEN=seu_token")
-        return False
-    
-    # Ler as release notes
-    try:
-        with open(notes_file, 'r', encoding='utf-8') as f:
-            notes = f.read()
-    except FileNotFoundError:
-        print(f"❌ Release notes não encontrado: {notes_file}")
-        return False
-    
-    # Escapar as notas para JSON
-    notes_json = json.dumps(notes)
-    
-    # Preparar payload
-    payload = {
-        "tag_name": tag,
-        "name": f"NAVIGEST {tag}",
-        "body": notes,
-        "draft": False,
-        "prerelease": False,
-        "target_commitish": "main"
-    }
-    
-    try:
-        print(f"📤 Criando release {tag} com curl...")
-        result = subprocess.run(
-            [
-                "curl", "-X", "POST",
-                "-H", f"Authorization: token {token}",
-                "-H", "Accept: application/vnd.github+json",
-                f"https://api.github.com/repos/{repo}/releases",
-                "-d", json.dumps(payload)
-            ],
-            capture_output=True,
-            text=True,
-            timeout=60
-        )
-        
-        if result.returncode == 0:
-            response = json.loads(result.stdout)
-            if "id" in response:
-                print(f"✅ Release criada! ID: {response['id']}")
-                print(f"URL: {response.get('html_url', '')}")
-                return True
-            else:
-                print(f"❌ Erro na resposta: {response.get('message', result.stdout)}")
-                return False
-        else:
-            print(f"❌ Erro curl: {result.stderr}")
-            return False
-            
-    except Exception as e:
-        print(f"❌ Exceção: {e}")
+        print(f"❌ Erro: {e}")
         return False
 
 if __name__ == "__main__":
-    # Tentar com gh primeiro
-    if create_release_with_gh():
-        sys.exit(0)
+    version = get_version_from_args()
     
-    # Se falhar, tentar com curl
-    print("\n⚠️  GitHub CLI falhou. Tentando com curl + API...")
-    if create_release_with_curl():
-        sys.exit(0)
+    if not version:
+        print("Uso: python3 create_gh_release.py [versão]")
+        print("Exemplo: python3 create_gh_release.py 1.0.17")
+        sys.exit(1)
     
-    print("\n❌ Falha ao criar release. Tente:")
-    print("1. Executar: gh auth login")
-    print("2. Ou: export GITHUB_TOKEN=seu_token_aqui")
-    sys.exit(1)
+    if create_release(version):
+        sys.exit(0)
+    else:
+        sys.exit(1)
