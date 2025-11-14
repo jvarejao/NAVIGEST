@@ -230,7 +230,7 @@ public partial class ProductsPage : ContentPage
                     try
                     {
                         var popup = new ProductFamiliesListPopup();
-                        var result = await this.ShowPopupAsync(popup);
+                        var result = await Application.Current.MainPage.ShowPopupAsync(popup);
                         
                         if (result is ProductFamilyListResult familyResult && familyResult.SelectedFamily is not null)
                         {
@@ -244,7 +244,7 @@ public partial class ProductsPage : ContentPage
                     catch (Exception ex)
                     {
                         GlobalErro.TratarErro(ex, mostrarAlerta: false);
-                        await AppShell.DisplayToastAsync("Erro ao abrir seletor de famílias.");
+                        await AppShell.DisplayToastAsync($"Erro: {ex.Message}");
                     }
                 });
             }

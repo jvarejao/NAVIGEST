@@ -6,7 +6,7 @@
                xmlns:models="clr-namespace:NAVIGEST.Android.Models"
                CanBeDismissedByTappingOutsideOfPopup="False">
   <toolkit:Popup.Size>
-    <Size Width="360" Height="520" />
+    <Size Width="360" Height="600" />
   </toolkit:Popup.Size>
 
   <Border BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
@@ -18,16 +18,17 @@
     </Border.Shadow>
 
     <!-- MODO LISTA (Padrão) -->
-    <Grid x:Name="ListViewMode" RowDefinitions="Auto,Auto,*,Auto" IsVisible="True">
+    <Grid x:Name="ListViewMode" RowDefinitions="Auto,8,Auto,8,*,12,Auto" IsVisible="True">
       <Label Grid.Row="0"
              Text="Famílias de Produto"
              FontSize="20"
              FontAttributes="Bold"
              HorizontalOptions="Center"
+             Margin="0,4"
              TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" />
 
       <SearchBar x:Name="SearchBar"
-                 Grid.Row="1"
+                 Grid.Row="2"
                  Placeholder="Procurar família..."
                  TextChanged="OnSearchTextChanged"
                  BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
@@ -36,7 +37,7 @@
                  CancelButtonColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}" />
 
       <CollectionView x:Name="FamiliesCollectionView"
-                      Grid.Row="2"
+                      Grid.Row="4"
                       ItemsSource="{Binding Families}"
                       SelectionMode="None"
                       BackgroundColor="Transparent">
@@ -102,7 +103,7 @@
         </CollectionView.ItemTemplate>
       </CollectionView>
 
-      <Grid Grid.Row="3" ColumnDefinitions="*,*" ColumnSpacing="12">
+      <Grid Grid.Row="6" ColumnDefinitions="*,*" ColumnSpacing="12">
         <Button x:Name="NewFamilyButton"
                 Grid.Column="0"
                 Text="Nova Família"
@@ -113,12 +114,12 @@
                 Grid.Column="1"
                 Text="Fechar"
                 Style="{StaticResource AppleTintedButton}"
-                TextColor="{AppThemeBinding Light:#007AFF, Dark=#0A84FF}"
+                TextColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"
                 Clicked="OnCloseClicked" />
       </Grid>
 
       <Grid x:Name="BusyOverlay"
-            Grid.RowSpan="4"
+            Grid.RowSpan="7"
             BackgroundColor="#66000000"
             IsVisible="False">
         <ActivityIndicator x:Name="BusyIndicator"

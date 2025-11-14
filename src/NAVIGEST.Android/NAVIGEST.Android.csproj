@@ -16,8 +16,8 @@
 	<!-- App Info -->
 	<ApplicationTitle>NAVIGEST</ApplicationTitle>
 	<ApplicationId>com.navigatorcode.navigest</ApplicationId>
-	<ApplicationDisplayVersion>1.0.18</ApplicationDisplayVersion>
-	<ApplicationVersion>18</ApplicationVersion>		<!-- Supported platforms -->
+	<ApplicationDisplayVersion>1.0.20</ApplicationDisplayVersion>
+	<ApplicationVersion>20</ApplicationVersion>		<!-- Supported platforms -->
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
 
 		<!-- Android specific -->
