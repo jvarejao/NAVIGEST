@@ -230,7 +230,7 @@ public partial class ProductsPage : ContentPage
                     try
                     {
                         var popup = new ProductFamiliesListPopup();
-                        var result = await Shell.Current.ShowPopupAsync(popup);
+                        var result = await this.ShowPopupAsync(popup);
                         
                         if (result is ProductFamilyListResult familyResult && familyResult.SelectedFamily is not null)
                         {
