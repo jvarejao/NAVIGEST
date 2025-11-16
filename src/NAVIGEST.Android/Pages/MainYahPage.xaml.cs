@@ -284,7 +284,7 @@ namespace NAVIGEST.Android.Pages
                                     if (page == null)
                                     {
                                         // fallback defensivo (não deve acontecer se DI estiver correto)
-                                        page = new HorasColaboradorPage(new NAVIGEST.Android.ViewModels.HorasColaboradorViewModel());
+                                        page = new HorasColaboradorPage(new NAVIGEST.Android.PageModels.HorasColaboradorViewModel());
                                     }
 
                                     var pageContent = page.Content;
