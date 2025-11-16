@@ -279,12 +279,12 @@ namespace NAVIGEST.Android.Pages
                                 {
                                     // Resolve a página via DI (respeita o teu construtor com VM)
                                     var services = this.Handler?.MauiContext?.Services;
-                                    var page = services?.GetService<HoursEntryPage>();
+                                    var page = services?.GetService<HorasColaboradorPage>();
 
                                     if (page == null)
                                     {
                                         // fallback defensivo (não deve acontecer se DI estiver correto)
-                                        page = new HoursEntryPage(new NAVIGEST.Android.ViewModels.HoursEntryViewModel());
+                                        page = new HorasColaboradorPage(new NAVIGEST.Android.ViewModels.HorasColaboradorViewModel());
                                     }
 
                                     var pageContent = page.Content;
@@ -313,7 +313,7 @@ namespace NAVIGEST.Android.Pages
                                     }
                                     else
                                     {
-                                        await DisplayToastAsync("HoursEntryPage sem conteúdo.");
+                                        await DisplayToastAsync("HorasColaboradorPage sem conteúdo.");
                                     }
                                 }
                                 catch (Exception ex) { TratarErro(ex); }

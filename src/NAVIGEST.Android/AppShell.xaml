@@ -20,6 +20,12 @@
         Route="hours-entry"
         ContentTemplate="{DataTemplate pages:HoursEntryPage}" />
 
+    <!-- Página de Horas Colaborador -->
+    <ShellContent
+        Title="Horas Colaborador"
+        Route="horas-colaborador"
+        ContentTemplate="{DataTemplate pages:HorasColaboradorPage}" />
+
     <!-- Página de Teste SwipeView -->
     <ShellContent
         Title="Swipe Proof"
