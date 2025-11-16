@@ -6,7 +6,7 @@
                xmlns:models="clr-namespace:NAVIGEST.Android.Models"
                CanBeDismissedByTappingOutsideOfPopup="False">
   <toolkit:Popup.Size>
-    <Size Width="400" Height="680" />
+    <Size Width="400" Height="580" />
   </toolkit:Popup.Size>
 
   <Border BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
@@ -54,37 +54,25 @@
                         TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
           </Grid>
 
-          <!-- Hora Início -->
+          <!-- Horas Totais -->
           <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
-            <Label Text="🕗 Hora Início"
+            <Label Text="⏱️ Horas Totais"
                    FontSize="14"
                    FontAttributes="Bold"
                    TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
-            <TimePicker x:Name="HoraInicioPicker"
-                        Grid.Row="1"
-                        Time="{Binding HoraInicio}"
-                        BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
-                        TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
-                        PropertyChanged="OnHoraChanged"/>
-          </Grid>
-
-          <!-- Hora Fim -->
-          <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
-            <Label Text="🕓 Hora Fim"
-                   FontSize="14"
-                   FontAttributes="Bold"
-                   TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
-            <Border x:Name="HoraFimBorder"
+            <Border x:Name="HorasTotalBorder"
                     BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
                     StrokeThickness="2"
                     Stroke="Transparent"
                     StrokeShape="RoundRectangle 8">
-              <TimePicker x:Name="HoraFimPicker"
-                          Grid.Row="1"
-                          Time="{Binding HoraFim}"
-                          BackgroundColor="Transparent"
-                          TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
-                          PropertyChanged="OnHoraChanged"/>
+              <Entry x:Name="HorasTotalEntry"
+                     Grid.Row="1"
+                     Placeholder="Ex: 8.5"
+                     Keyboard="Numeric"
+                     BackgroundColor="Transparent"
+                     TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
+                     PlaceholderColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
+                     TextChanged="OnHorasTotalChanged"/>
             </Border>
           </Grid>
 
@@ -117,20 +105,6 @@
                      HorizontalOptions="Start"
                      Margin="0,4,0,0"/>
             </VerticalStackLayout>
-          </Grid>
-
-          <!-- Tarefa -->
-          <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
-            <Label Text="🧰 Tarefa"
-                   FontSize="14"
-                   FontAttributes="Bold"
-                   TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
-            <Entry x:Name="TarefaEntry"
-                   Grid.Row="1"
-                   Placeholder="Descrição da tarefa"
-                   BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
-                   TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
-                   PlaceholderColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"/>
           </Grid>
 
           <!-- Observações -->

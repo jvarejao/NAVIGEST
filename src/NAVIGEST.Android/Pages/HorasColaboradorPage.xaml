@@ -27,7 +27,7 @@
                            TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
                            Margin="0,0,0,4"/>
                     <Picker ItemsSource="{Binding Colaboradores}"
-                            ItemDisplayBinding="{Binding Nome}"
+                            ItemDisplayBinding="{Binding DisplayText}"
                             SelectedItem="{Binding ColaboradorSelecionado}"
                             BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
                             TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
@@ -157,10 +157,10 @@
                                     <TapGestureRecognizer Tapped="OnItemTapped"/>
                                 </Border.GestureRecognizers>
 
-                                <Grid RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="6">
+                                <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
                                     <!-- Header: Data | Nome -->
                                     <Grid ColumnDefinitions="*,Auto">
-                                        <Label Text="{Binding NomeColab}"
+                                        <Label Text="{Binding NomeColaborador}"
                                                FontSize="17"
                                                FontAttributes="Bold"
                                                TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
@@ -176,20 +176,13 @@
                                            FontSize="15"
                                            TextColor="{AppThemeBinding Light=#34C759, Dark=#32D74B}"/>
 
-                                    <!-- Tarefa -->
-                                    <Label Grid.Row="2"
-                                           Text="{Binding Tarefa, StringFormat='🧰 {0}'}"
-                                           FontSize="14"
-                                           TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
-                                           LineBreakMode="TailTruncation"/>
-
                                     <!-- Observações -->
-                                    <Label Grid.Row="3"
-                                           Text="{Binding Obs, StringFormat='📝 {0}'}"
+                                    <Label Grid.Row="2"
+                                           Text="{Binding Observacoes, StringFormat='📝 {0}'}"
                                            FontSize="13"
                                            TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
                                            LineBreakMode="TailTruncation"
-                                           IsVisible="{Binding Obs, Converter={StaticResource StringNullOrEmptyToBoolConverter}}"/>
+                                           IsVisible="{Binding Observacoes, Converter={StaticResource StringNullOrEmptyToBoolConverter}}"/>
                                 </Grid>
                             </Border>
                         </SwipeView>

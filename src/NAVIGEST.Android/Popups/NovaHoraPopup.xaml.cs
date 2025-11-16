@@ -33,54 +33,44 @@ public partial class NovaHoraPopup : Popup
 
         // Carregar colaboradores
         ColaboradorPicker.ItemsSource = _colaboradores;
-        ColaboradorPicker.ItemDisplayBinding = new Binding("Nome");
+        ColaboradorPicker.ItemDisplayBinding = new Binding("DisplayText");
 
         // Se for edição, selecionar colaborador atual
-        if (_isEdit && !string.IsNullOrEmpty(_hora.CodColab))
+        if (_isEdit && _hora.IdColaborador > 0)
         {
-            var colab = _colaboradores.FirstOrDefault(c => c.Codigo == _hora.CodColab);
+            var colab = _colaboradores.FirstOrDefault(c => c.ID == _hora.IdColaborador);
             ColaboradorPicker.SelectedItem = colab;
         }
 
         // Preencher campos
-        DataPicker.Date = _hora.Data;
-        HoraInicioPicker.Time = _hora.HoraInicio;
-        HoraFimPicker.Time = _hora.HoraFim;
-        TarefaEntry.Text = _hora.Tarefa;
-        ObservacoesEditor.Text = _hora.Obs;
+        DataPicker.Date = _hora.DataTrabalho;
+        HorasTotalEntry.Text = (_hora.HorasTrab + _hora.HorasExtras).ToString("0.00");
+        ObservacoesEditor.Text = _hora.Observacoes;
 
         // Calcular horas iniciais
         CalcularHoras();
     }
 
-    private void OnHoraChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+    private void OnHorasTotalChanged(object sender, TextChangedEventArgs e)
     {
-        if (e.PropertyName == "Time")
-        {
-            CalcularHoras();
-        }
+        CalcularHoras();
     }
 
     private void CalcularHoras()
     {
-        var inicio = HoraInicioPicker.Time;
-        var fim = HoraFimPicker.Time;
-
-        // Validar
-        if (fim <= inicio)
+        if (!float.TryParse(HorasTotalEntry.Text?.Replace(",", "."), out float totalHoras) || totalHoras < 0)
         {
-            HoraFimBorder.Stroke = Colors.Red;
+            HorasTotalBorder.Stroke = Colors.Red;
             HorasNormaisLabel.Text = "0,00h";
             HorasExtraLabel.Text = "0,00h";
             return;
         }
 
-        HoraFimBorder.Stroke = Colors.Transparent;
+        HorasTotalBorder.Stroke = Colors.Transparent;
 
-        // Calcular
-        var duracao = (fim - inicio).TotalHours;
-        var horasNormais = Math.Min(duracao, 8.0);
-        var horasExtra = Math.Max(duracao - 8.0, 0.0);
+        // Calcular (máximo 8h normais, resto é extra)
+        var horasNormais = Math.Min(totalHoras, 8.0f);
+        var horasExtra = Math.Max(totalHoras - 8.0f, 0.0f);
 
         HorasNormaisLabel.Text = $"{horasNormais:0.00}h";
         HorasExtraLabel.Text = $"{horasExtra:0.00}h";
@@ -97,38 +87,35 @@ public partial class NovaHoraPopup : Popup
                 return;
             }
 
-            if (HoraFimPicker.Time <= HoraInicioPicker.Time)
+            if (!float.TryParse(HorasTotalEntry.Text?.Replace(",", "."), out float totalHoras) || totalHoras <= 0)
             {
-                MostrarErro("Hora fim deve ser maior que hora início");
+                MostrarErro("Insira um número de horas válido");
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(TarefaEntry.Text))
+            if (totalHoras > 24)
             {
-                MostrarErro("Preencha a tarefa");
+                MostrarErro("Número de horas não pode exceder 24h");
                 return;
             }
 
             SetBusy(true);
             EsconderErro();
 
-            // Atualizar objeto
-            _hora.CodColab = colab.Codigo;
-            _hora.NomeColab = colab.Nome;
-            _hora.Data = DataPicker.Date;
-            _hora.HoraInicio = HoraInicioPicker.Time;
-            _hora.HoraFim = HoraFimPicker.Time;
-            _hora.Tarefa = TarefaEntry.Text?.Trim() ?? string.Empty;
-            _hora.Obs = ObservacoesEditor.Text?.Trim();
-            _hora.Utilizador = Environment.UserName;
+            // Preencher objeto
+            _hora.DataTrabalho = DataPicker.Date;
+            _hora.IdColaborador = colab.ID;
+            _hora.NomeColaborador = colab.Nome;
+            _hora.Observacoes = ObservacoesEditor.Text?.Trim();
 
-            // Calcular horas finais
-            _hora.CalcularHoras();
+            // Calcular horas normais e extras
+            _hora.CalcularHoras(totalHoras);
 
-            // Guardar
+            // Gravar na BD
             var id = await DatabaseService.UpsertHoraColaboradorAsync(_hora);
             _hora.Id = id;
 
+            // Fechar popup com sucesso
             Close(_hora);
         }
         catch (Exception ex)
@@ -148,7 +135,7 @@ public partial class NovaHoraPopup : Popup
         {
             bool confirmacao = await Shell.Current.DisplayAlert(
                 "Confirmar",
-                "Eliminar este registo?",
+                "Eliminar este registo de horas?",
                 "Sim",
                 "Não"
             );
@@ -159,7 +146,9 @@ public partial class NovaHoraPopup : Popup
 
             await DatabaseService.DeleteHoraColaboradorAsync(_hora.Id);
 
-            Close(null);
+            // Fechar popup indicando eliminação (Id negativo)
+            _hora.Id = -1;
+            Close(_hora);
         }
         catch (Exception ex)
         {
