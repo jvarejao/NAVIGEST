@@ -40,18 +40,31 @@ public partial class HorasColaboradorViewModel : ObservableObject
 
     public HorasColaboradorViewModel()
     {
-        _ = InicializarAsync();
+        try
+        {
+            System.Diagnostics.Debug.WriteLine("[HorasColaboradorViewModel] Construtor iniciado");
+            _ = InicializarAsync();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[HorasColaboradorViewModel] Erro no construtor: {ex}");
+            GlobalErro.TratarErro(ex, mostrarAlerta: false);
+        }
     }
 
     private async Task InicializarAsync()
     {
         try
         {
+            System.Diagnostics.Debug.WriteLine("[HorasColaboradorViewModel] InicializarAsync - Iniciando");
             await CarregarColaboradoresAsync();
+            System.Diagnostics.Debug.WriteLine("[HorasColaboradorViewModel] InicializarAsync - Colaboradores carregados");
             await CarregarHorasAsync();
+            System.Diagnostics.Debug.WriteLine("[HorasColaboradorViewModel] InicializarAsync - Horas carregadas");
         }
         catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"[HorasColaboradorViewModel] Erro em InicializarAsync: {ex}");
             GlobalErro.TratarErro(ex, mostrarAlerta: false);
             Mensagem = "Erro ao inicializar página";
         }
@@ -97,7 +110,9 @@ public partial class HorasColaboradorViewModel : ObservableObject
     {
         try
         {
+            System.Diagnostics.Debug.WriteLine("[HorasColaboradorViewModel] CarregarColaboradoresAsync - Iniciando");
             var colaboradoresDb = await DatabaseService.GetColaboradoresAsync();
+            System.Diagnostics.Debug.WriteLine($"[HorasColaboradorViewModel] CarregarColaboradoresAsync - {colaboradoresDb.Count} colaboradores obtidos");
             
             Colaboradores.Clear();
             Colaboradores.Add(new Colaborador { ID = 0, Nome = "Todos" });

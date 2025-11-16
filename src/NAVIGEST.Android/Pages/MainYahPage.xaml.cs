@@ -277,17 +277,24 @@ namespace NAVIGEST.Android.Pages
                             {
                                 try
                                 {
+                                    Debug.WriteLine("[MainYahPage] Menu 'horas' selecionado");
+                                    
                                     // Resolve a página via DI (respeita o teu construtor com VM)
                                     var services = this.Handler?.MauiContext?.Services;
+                                    Debug.WriteLine($"[MainYahPage] Services disponível: {services != null}");
+                                    
                                     var page = services?.GetService<HorasColaboradorPage>();
+                                    Debug.WriteLine($"[MainYahPage] HorasColaboradorPage do DI: {page != null}");
 
                                     if (page == null)
                                     {
+                                        Debug.WriteLine("[MainYahPage] Criando HorasColaboradorPage manualmente");
                                         // fallback defensivo (não deve acontecer se DI estiver correto)
                                         page = new HorasColaboradorPage(new NAVIGEST.Android.PageModels.HorasColaboradorViewModel());
                                     }
 
                                     var pageContent = page.Content;
+                                    Debug.WriteLine($"[MainYahPage] Page.Content disponível: {pageContent != null}");
 
                                     if (BindingContext is MainYahPageViewModel vmX)
                                     {
@@ -296,6 +303,7 @@ namespace NAVIGEST.Android.Pages
 
                                     if (pageContent is not null)
                                     {
+                                        Debug.WriteLine("[MainYahPage] Chamando ShowContent");
                                         // manter o padrão que já usas nas outras páginas
                                         pageContent.BindingContext = page.BindingContext ?? pageContent.BindingContext;
                                         ShowContent(pageContent);
@@ -308,15 +316,24 @@ namespace NAVIGEST.Android.Pages
                                                 System.Reflection.BindingFlags.Public |
                                                 System.Reflection.BindingFlags.NonPublic);
                                             mi?.Invoke(page, null);
+                                            Debug.WriteLine("[MainYahPage] OnAppearing invocado");
                                         }
-                                        catch { /* silencioso como nos outros casos */ }
+                                        catch (Exception ex2) 
+                                        { 
+                                            Debug.WriteLine($"[MainYahPage] Erro ao invocar OnAppearing: {ex2.Message}");
+                                        }
                                     }
                                     else
                                     {
+                                        Debug.WriteLine("[MainYahPage] ERRO: Page.Content é null");
                                         await DisplayToastAsync("HorasColaboradorPage sem conteúdo.");
                                     }
                                 }
-                                catch (Exception ex) { TratarErro(ex); }
+                                catch (Exception ex) 
+                                { 
+                                    Debug.WriteLine($"[MainYahPage] ERRO no case 'horas': {ex}");
+                                    TratarErro(ex); 
+                                }
 
                                 CloseSidebarMobileIfNeeded();
                                 break;
