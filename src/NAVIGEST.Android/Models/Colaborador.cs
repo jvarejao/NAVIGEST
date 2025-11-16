@@ -2,9 +2,11 @@ namespace NAVIGEST.Android.Models;
 
 public class Colaborador
 {
-    public string Codigo { get; set; } = string.Empty;
+    public int ID { get; set; }
     public string Nome { get; set; } = string.Empty;
-    public string Email { get; set; } = string.Empty;
-    public string Telefone { get; set; } = string.Empty;
-    public bool Ativo { get; set; } = true;
+    public string? Funcao { get; set; }
+    public decimal? ValorHora { get; set; }
+
+    // Para display no Picker
+    public string DisplayText => $"{Nome}" + (string.IsNullOrEmpty(Funcao) ? "" : $" - {Funcao}");
 }

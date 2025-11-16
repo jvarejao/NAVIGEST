@@ -34,9 +34,9 @@ public partial class HorasColaboradorViewModel : ObservableObject
     private string mensagem = string.Empty;
 
     // Totais
-    public string TotalHorasNormais => $"Total Normal: {HorasList.Sum(h => h.HorasNormais):0.00}h";
-    public string TotalHorasExtra => $"Total Extra: {HorasList.Sum(h => h.HorasExtra):0.00}h";
-    public string TotalGeral => $"Total Geral: {HorasList.Sum(h => h.HorasNormais + h.HorasExtra):0.00}h";
+    public string TotalHorasNormais => $"Total Normal: {HorasList.Sum(h => h.HorasTrab):0.00}h";
+    public string TotalHorasExtra => $"Total Extra: {HorasList.Sum(h => h.HorasExtras):0.00}h";
+    public string TotalGeral => $"Total Geral: {HorasList.Sum(h => h.HorasTrab + h.HorasExtras):0.00}h";
 
     public HorasColaboradorViewModel()
     {
@@ -68,13 +68,13 @@ public partial class HorasColaboradorViewModel : ObservableObject
             Mensagem = "A carregar...";
 
             var horas = await DatabaseService.GetHorasColaboradorAsync(
-                ColaboradorSelecionado?.Codigo,
+                ColaboradorSelecionado?.ID == 0 ? null : ColaboradorSelecionado?.ID,
                 DataFiltroInicio,
                 DataFiltroFim
             );
 
             HorasList.Clear();
-            foreach (var hora in horas.OrderByDescending(h => h.Data).ThenByDescending(h => h.HoraInicio))
+            foreach (var hora in horas.OrderByDescending(h => h.DataTrabalho))
             {
                 HorasList.Add(hora);
             }
@@ -100,7 +100,7 @@ public partial class HorasColaboradorViewModel : ObservableObject
             var colaboradoresDb = await DatabaseService.GetColaboradoresAsync();
             
             Colaboradores.Clear();
-            Colaboradores.Add(new Colaborador { Codigo = string.Empty, Nome = "Todos" });
+            Colaboradores.Add(new Colaborador { ID = 0, Nome = "Todos" });
             
             foreach (var colab in colaboradoresDb.OrderBy(c => c.Nome))
             {
@@ -122,11 +122,8 @@ public partial class HorasColaboradorViewModel : ObservableObject
         {
             var popup = new Popups.NovaHoraPopup(new HoraColaborador
             {
-                Data = DateTime.Today,
-                HoraInicio = new TimeSpan(8, 0, 0),
-                HoraFim = new TimeSpan(17, 0, 0),
-                Utilizador = Environment.UserName
-            }, Colaboradores.Where(c => !string.IsNullOrEmpty(c.Codigo)).ToList());
+                DataTrabalho = DateTime.Today
+            }, Colaboradores.Where(c => c.ID > 0).ToList());
 
             var result = await Shell.Current.ShowPopupAsync(popup);
 
@@ -150,7 +147,7 @@ public partial class HorasColaboradorViewModel : ObservableObject
 
         try
         {
-            var popup = new Popups.NovaHoraPopup(hora, Colaboradores.Where(c => !string.IsNullOrEmpty(c.Codigo)).ToList());
+            var popup = new Popups.NovaHoraPopup(hora, Colaboradores.Where(c => c.ID > 0).ToList());
             var result = await Shell.Current.ShowPopupAsync(popup);
 
             if (result is HoraColaborador horaEditada && horaEditada.Id >= 0)
@@ -175,7 +172,7 @@ public partial class HorasColaboradorViewModel : ObservableObject
         {
             bool confirmacao = await Shell.Current.DisplayAlert(
                 "Confirmar",
-                $"Eliminar registo de {hora.NomeColab} do dia {hora.DataFormatted}?",
+                $"Eliminar registo de {hora.NomeColaborador} do dia {hora.DataFormatted}?",
                 "Sim",
                 "Não"
             );

@@ -1228,7 +1228,7 @@ FROM OrderInfo";
         // ========== HORAS COLABORADOR ==========
 
         public static async Task<List<HoraColaborador>> GetHorasColaboradorAsync(
-            string? codColab = null,
+            int? idColaborador = null,
             DateTime? dataInicio = null,
             DateTime? dataFim = null)
         {
@@ -1238,16 +1238,17 @@ FROM OrderInfo";
                 using var conn = new MySqlConnection(GetConnectionString());
                 await conn.OpenAsync();
 
-                var sql = @"SELECT ID, CODCOLAB, NOMECOLAB, DATA, HORAINICIO, HORAFIM, 
-                                   HORASNORMAIS, HORASEXTRA, TAREFA, OBS, VALIDADO, UTILIZADOR
-                            FROM HORASCOLABORADOR 
-                            WHERE (@CodColab IS NULL OR CODCOLAB = @CodColab)
-                              AND (@DataInicio IS NULL OR DATA >= @DataInicio)
-                              AND (@DataFim IS NULL OR DATA <= @DataFim)
-                            ORDER BY DATA DESC, HORAINICIO DESC";
+                var sql = @"SELECT ID, DataTrabalho, IDColaborador, NomeColaborador, 
+                                   IDCliente, Cliente, IDCentroCusto, DescCentroCusto,
+                                   HorasTrab, HorasExtras, Observacoes
+                            FROM HORASTRABALHADAS 
+                            WHERE (@IDColaborador IS NULL OR IDColaborador = @IDColaborador)
+                              AND (@DataInicio IS NULL OR DataTrabalho >= @DataInicio)
+                              AND (@DataFim IS NULL OR DataTrabalho <= @DataFim)
+                            ORDER BY DataTrabalho DESC";
 
                 using var cmd = new MySqlCommand(sql, conn);
-                cmd.Parameters.AddWithValue("@CodColab", string.IsNullOrEmpty(codColab) ? DBNull.Value : codColab);
+                cmd.Parameters.AddWithValue("@IDColaborador", idColaborador.HasValue ? idColaborador.Value : DBNull.Value);
                 cmd.Parameters.AddWithValue("@DataInicio", dataInicio.HasValue ? dataInicio.Value : DBNull.Value);
                 cmd.Parameters.AddWithValue("@DataFim", dataFim.HasValue ? dataFim.Value : DBNull.Value);
 
@@ -1257,17 +1258,16 @@ FROM OrderInfo";
                     list.Add(new HoraColaborador
                     {
                         Id = rd.GetInt32(0),
-                        CodColab = rd.IsDBNull(1) ? string.Empty : rd.GetString(1),
-                        NomeColab = rd.IsDBNull(2) ? string.Empty : rd.GetString(2),
-                        Data = rd.GetDateTime(3),
-                        HoraInicio = rd.IsDBNull(4) ? TimeSpan.Zero : rd.GetTimeSpan(4),
-                        HoraFim = rd.IsDBNull(5) ? TimeSpan.Zero : rd.GetTimeSpan(5),
-                        HorasNormais = rd.IsDBNull(6) ? 0 : rd.GetDecimal(6),
-                        HorasExtra = rd.IsDBNull(7) ? 0 : rd.GetDecimal(7),
-                        Tarefa = rd.IsDBNull(8) ? string.Empty : rd.GetString(8),
-                        Obs = rd.IsDBNull(9) ? null : rd.GetString(9),
-                        Validado = rd.IsDBNull(10) ? false : rd.GetBoolean(10),
-                        Utilizador = rd.IsDBNull(11) ? string.Empty : rd.GetString(11)
+                        DataTrabalho = rd.GetDateTime(1),
+                        IdColaborador = rd.GetInt32(2),
+                        NomeColaborador = rd.IsDBNull(3) ? string.Empty : rd.GetString(3),
+                        IdCliente = rd.IsDBNull(4) ? null : rd.GetString(4),
+                        Cliente = rd.IsDBNull(5) ? null : rd.GetString(5),
+                        IdCentroCusto = rd.IsDBNull(6) ? null : rd.GetInt32(6),
+                        DescCentroCusto = rd.IsDBNull(7) ? null : rd.GetString(7),
+                        HorasTrab = rd.GetFloat(8),
+                        HorasExtras = rd.GetFloat(9),
+                        Observacoes = rd.IsDBNull(10) ? null : rd.GetString(10)
                     });
                 }
             }
@@ -1289,24 +1289,25 @@ FROM OrderInfo";
                 if (hora.Id == 0)
                 {
                     // INSERT
-                    var sql = @"INSERT INTO HORASCOLABORADOR 
-                                (CODCOLAB, NOMECOLAB, DATA, HORAINICIO, HORAFIM, HORASNORMAIS, HORASEXTRA, TAREFA, OBS, VALIDADO, UTILIZADOR)
+                    var sql = @"INSERT INTO HORASTRABALHADAS 
+                                (DataTrabalho, IDColaborador, NomeColaborador, IDCliente, Cliente, 
+                                 IDCentroCusto, DescCentroCusto, HorasTrab, HorasExtras, Observacoes)
                                 VALUES 
-                                (@CodColab, @NomeColab, @Data, @HoraInicio, @HoraFim, @HorasNormais, @HorasExtra, @Tarefa, @Obs, @Validado, @Utilizador);
+                                (@DataTrabalho, @IDColaborador, @NomeColaborador, @IDCliente, @Cliente,
+                                 @IDCentroCusto, @DescCentroCusto, @HorasTrab, @HorasExtras, @Observacoes);
                                 SELECT LAST_INSERT_ID();";
 
                     using var cmd = new MySqlCommand(sql, conn);
-                    cmd.Parameters.AddWithValue("@CodColab", hora.CodColab);
-                    cmd.Parameters.AddWithValue("@NomeColab", hora.NomeColab);
-                    cmd.Parameters.AddWithValue("@Data", hora.Data);
-                    cmd.Parameters.AddWithValue("@HoraInicio", hora.HoraInicio);
-                    cmd.Parameters.AddWithValue("@HoraFim", hora.HoraFim);
-                    cmd.Parameters.AddWithValue("@HorasNormais", hora.HorasNormais);
-                    cmd.Parameters.AddWithValue("@HorasExtra", hora.HorasExtra);
-                    cmd.Parameters.AddWithValue("@Tarefa", hora.Tarefa);
-                    cmd.Parameters.AddWithValue("@Obs", hora.Obs ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Validado", hora.Validado);
-                    cmd.Parameters.AddWithValue("@Utilizador", hora.Utilizador);
+                    cmd.Parameters.AddWithValue("@DataTrabalho", hora.DataTrabalho);
+                    cmd.Parameters.AddWithValue("@IDColaborador", hora.IdColaborador);
+                    cmd.Parameters.AddWithValue("@NomeColaborador", hora.NomeColaborador);
+                    cmd.Parameters.AddWithValue("@IDCliente", hora.IdCliente ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Cliente", hora.Cliente ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@IDCentroCusto", hora.IdCentroCusto ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@DescCentroCusto", hora.DescCentroCusto ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@HorasTrab", hora.HorasTrab);
+                    cmd.Parameters.AddWithValue("@HorasExtras", hora.HorasExtras);
+                    cmd.Parameters.AddWithValue("@Observacoes", hora.Observacoes ?? (object)DBNull.Value);
 
                     var result = await cmd.ExecuteScalarAsync();
                     return Convert.ToInt32(result);
@@ -1314,26 +1315,25 @@ FROM OrderInfo";
                 else
                 {
                     // UPDATE
-                    var sql = @"UPDATE HORASCOLABORADOR 
-                                SET CODCOLAB=@CodColab, NOMECOLAB=@NomeColab, DATA=@Data, 
-                                    HORAINICIO=@HoraInicio, HORAFIM=@HoraFim, 
-                                    HORASNORMAIS=@HorasNormais, HORASEXTRA=@HorasExtra,
-                                    TAREFA=@Tarefa, OBS=@Obs, VALIDADO=@Validado, UTILIZADOR=@Utilizador
+                    var sql = @"UPDATE HORASTRABALHADAS 
+                                SET DataTrabalho=@DataTrabalho, IDColaborador=@IDColaborador, 
+                                    NomeColaborador=@NomeColaborador, IDCliente=@IDCliente, Cliente=@Cliente,
+                                    IDCentroCusto=@IDCentroCusto, DescCentroCusto=@DescCentroCusto,
+                                    HorasTrab=@HorasTrab, HorasExtras=@HorasExtras, Observacoes=@Observacoes
                                 WHERE ID=@Id";
 
                     using var cmd = new MySqlCommand(sql, conn);
                     cmd.Parameters.AddWithValue("@Id", hora.Id);
-                    cmd.Parameters.AddWithValue("@CodColab", hora.CodColab);
-                    cmd.Parameters.AddWithValue("@NomeColab", hora.NomeColab);
-                    cmd.Parameters.AddWithValue("@Data", hora.Data);
-                    cmd.Parameters.AddWithValue("@HoraInicio", hora.HoraInicio);
-                    cmd.Parameters.AddWithValue("@HoraFim", hora.HoraFim);
-                    cmd.Parameters.AddWithValue("@HorasNormais", hora.HorasNormais);
-                    cmd.Parameters.AddWithValue("@HorasExtra", hora.HorasExtra);
-                    cmd.Parameters.AddWithValue("@Tarefa", hora.Tarefa);
-                    cmd.Parameters.AddWithValue("@Obs", hora.Obs ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Validado", hora.Validado);
-                    cmd.Parameters.AddWithValue("@Utilizador", hora.Utilizador);
+                    cmd.Parameters.AddWithValue("@DataTrabalho", hora.DataTrabalho);
+                    cmd.Parameters.AddWithValue("@IDColaborador", hora.IdColaborador);
+                    cmd.Parameters.AddWithValue("@NomeColaborador", hora.NomeColaborador);
+                    cmd.Parameters.AddWithValue("@IDCliente", hora.IdCliente ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Cliente", hora.Cliente ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@IDCentroCusto", hora.IdCentroCusto ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@DescCentroCusto", hora.DescCentroCusto ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@HorasTrab", hora.HorasTrab);
+                    cmd.Parameters.AddWithValue("@HorasExtras", hora.HorasExtras);
+                    cmd.Parameters.AddWithValue("@Observacoes", hora.Observacoes ?? (object)DBNull.Value);
 
                     await cmd.ExecuteNonQueryAsync();
                     return hora.Id;
@@ -1353,7 +1353,7 @@ FROM OrderInfo";
                 using var conn = new MySqlConnection(GetConnectionString());
                 await conn.OpenAsync();
 
-                var sql = "DELETE FROM HORASCOLABORADOR WHERE ID=@Id";
+                var sql = "DELETE FROM HORASTRABALHADAS WHERE ID=@Id";
                 using var cmd = new MySqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@Id", id);
                 await cmd.ExecuteNonQueryAsync();
@@ -1373,10 +1373,9 @@ FROM OrderInfo";
                 using var conn = new MySqlConnection(GetConnectionString());
                 await conn.OpenAsync();
 
-                var sql = @"SELECT CODIGO, NOME, EMAIL, TELEFONE, ATIVO 
-                            FROM COLABORADORES 
-                            WHERE ATIVO = 1
-                            ORDER BY NOME";
+                var sql = @"SELECT ID, Nome, Funcao, ValorHora 
+                            FROM COLABORADORESTRAB
+                            ORDER BY Nome";
 
                 using var cmd = new MySqlCommand(sql, conn);
                 using var rd = await cmd.ExecuteReaderAsync();
@@ -1384,11 +1383,10 @@ FROM OrderInfo";
                 {
                     list.Add(new Colaborador
                     {
-                        Codigo = rd.IsDBNull(0) ? string.Empty : rd.GetString(0),
+                        ID = rd.GetInt32(0),
                         Nome = rd.IsDBNull(1) ? string.Empty : rd.GetString(1),
-                        Email = rd.IsDBNull(2) ? string.Empty : rd.GetString(2),
-                        Telefone = rd.IsDBNull(3) ? string.Empty : rd.GetString(3),
-                        Ativo = rd.IsDBNull(4) ? true : rd.GetBoolean(4)
+                        Funcao = rd.IsDBNull(2) ? null : rd.GetString(2),
+                        ValorHora = rd.IsDBNull(3) ? null : rd.GetDecimal(3)
                     });
                 }
             }

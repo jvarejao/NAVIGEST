@@ -9,59 +9,57 @@ public partial class HoraColaborador : ObservableObject
     private int id;
 
     [ObservableProperty]
-    private string codColab = string.Empty;
+    private DateTime dataTrabalho = DateTime.Today;
 
     [ObservableProperty]
-    private string nomeColab = string.Empty;
+    private int idColaborador;
 
     [ObservableProperty]
-    private DateTime data = DateTime.Today;
+    private string nomeColaborador = string.Empty;
 
     [ObservableProperty]
-    private TimeSpan horaInicio = new TimeSpan(8, 0, 0);
+    private string? idCliente;
 
     [ObservableProperty]
-    private TimeSpan horaFim = new TimeSpan(17, 0, 0);
+    private string? cliente;
 
     [ObservableProperty]
-    private decimal horasNormais;
+    private int? idCentroCusto;
 
     [ObservableProperty]
-    private decimal horasExtra;
+    private string? descCentroCusto;
 
     [ObservableProperty]
-    private string tarefa = string.Empty;
+    private float horasTrab;
 
     [ObservableProperty]
-    private string? obs;
+    private float horasExtras;
 
     [ObservableProperty]
-    private bool validado;
-
-    [ObservableProperty]
-    private string utilizador = string.Empty;
+    private string? observacoes;
 
     // Computed properties for display
-    public string DataFormatted => Data.ToString("dd/MM/yyyy");
-    public string HoraInicioFormatted => HoraInicio.ToString(@"hh\:mm");
-    public string HoraFimFormatted => HoraFim.ToString(@"hh\:mm");
-    public string HorasTotaisFormatted => $"{HorasNormais:0.00}h norm / {HorasExtra:0.00}h extra";
-    public string ResumoLinha => $"{DataFormatted} | {NomeColab}\n{HoraInicioFormatted}–{HoraFimFormatted} ({HorasTotaisFormatted})";
+    public string DataFormatted => DataTrabalho.ToString("dd/MM/yyyy");
+    public float HorasTotais => HorasTrab + HorasExtras;
+    public string HorasTotaisFormatted => $"{HorasTrab:0.00}h norm / {HorasExtras:0.00}h extra";
+    public string ResumoLinha => $"{DataFormatted} | {NomeColaborador}\n{HorasTrab:0.00}h normais + {HorasExtras:0.00}h extras = {HorasTotais:0.00}h total";
+    public string ClienteInfo => !string.IsNullOrEmpty(Cliente) ? Cliente : "Sem cliente";
+    public string CentroCustoInfo => !string.IsNullOrEmpty(DescCentroCusto) ? DescCentroCusto : "Sem centro de custo";
 
-    // Calcula automaticamente as horas
-    public void CalcularHoras()
+    // Calcula automaticamente as horas (considera máximo 8h normais)
+    public void CalcularHoras(float totalHoras)
     {
-        if (HoraFim <= HoraInicio)
+        if (totalHoras <= 0)
         {
-            HorasNormais = 0;
-            HorasExtra = 0;
+            HorasTrab = 0;
+            HorasExtras = 0;
             return;
         }
 
-        var duracao = (HoraFim - HoraInicio).TotalHours;
-        HorasNormais = (decimal)Math.Min(duracao, 8.0);
-        HorasExtra = (decimal)Math.Max(duracao - 8.0, 0.0);
+        HorasTrab = Math.Min(totalHoras, 8.0f);
+        HorasExtras = Math.Max(totalHoras - 8.0f, 0.0f);
 
+        OnPropertyChanged(nameof(HorasTotais));
         OnPropertyChanged(nameof(HorasTotaisFormatted));
         OnPropertyChanged(nameof(ResumoLinha));
     }
