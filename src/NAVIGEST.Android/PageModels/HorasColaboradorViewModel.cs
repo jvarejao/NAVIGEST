@@ -33,6 +33,9 @@ public partial class HorasColaboradorViewModel : ObservableObject
     [ObservableProperty]
     private string mensagem = string.Empty;
 
+    // Flag para prevenir recarregos durante inicialização
+    private bool _isInitializing = true;
+
     // Totais
     public string TotalHorasNormais => $"Total Normal: {HorasList.Sum(h => h.HorasTrab):0.00}h";
     public string TotalHorasExtra => $"Total Extra: {HorasList.Sum(h => h.HorasExtras):0.00}h";
@@ -47,6 +50,7 @@ public partial class HorasColaboradorViewModel : ObservableObject
     {
         try
         {
+            _isInitializing = true;
             await CarregarColaboradoresAsync();
             await CarregarHorasAsync();
         }
@@ -54,6 +58,10 @@ public partial class HorasColaboradorViewModel : ObservableObject
         {
             GlobalErro.TratarErro(ex, mostrarAlerta: false);
             Mensagem = "Erro ao inicializar página";
+        }
+        finally
+        {
+            _isInitializing = false;
         }
     }
 
@@ -67,8 +75,11 @@ public partial class HorasColaboradorViewModel : ObservableObject
             IsBusy = true;
             Mensagem = "A carregar...";
 
+            // Se "Todos" estiver selecionado (ID = 0), passa null para obter todos
+            int? idColaboradorFiltro = ColaboradorSelecionado?.ID == 0 ? null : ColaboradorSelecionado?.ID;
+
             var horas = await DatabaseService.GetHorasColaboradorAsync(
-                ColaboradorSelecionado?.ID == 0 ? null : ColaboradorSelecionado?.ID,
+                idColaboradorFiltro,
                 DataFiltroInicio,
                 DataFiltroFim
             );
@@ -80,7 +91,7 @@ public partial class HorasColaboradorViewModel : ObservableObject
             }
 
             AtualizarTotais();
-            Mensagem = $"{HorasList.Count} registo(s) carregado(s)";
+            Mensagem = $"{HorasList.Count} registo(s) encontrado(s)";
         }
         catch (Exception ex)
         {
@@ -193,17 +204,29 @@ public partial class HorasColaboradorViewModel : ObservableObject
 
     partial void OnColaboradorSelecionadoChanged(Colaborador? value)
     {
-        _ = CarregarHorasAsync();
+        // Só recarrega se a inicialização terminou
+        if (!_isInitializing && value != null)
+        {
+            _ = CarregarHorasAsync();
+        }
     }
 
     partial void OnDataFiltroInicioChanged(DateTime value)
     {
-        _ = CarregarHorasAsync();
+        // Só recarrega se a inicialização terminou
+        if (!_isInitializing)
+        {
+            _ = CarregarHorasAsync();
+        }
     }
 
     partial void OnDataFiltroFimChanged(DateTime value)
     {
-        _ = CarregarHorasAsync();
+        // Só recarrega se a inicialização terminou
+        if (!_isInitializing)
+        {
+            _ = CarregarHorasAsync();
+        }
     }
 
     private void AtualizarTotais()
