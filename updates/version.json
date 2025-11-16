@@ -1,1 +1,1 @@
-{"version":"1.0.27","minSupportedVersion":"1.0.0","downloadUrl":"https://github.com/jvarejao/NAVIGEST/releases/download/v1.0.27/com.navigatorcode.navigest-arm64-v8a-Signed.apk","notes":"v1.0.27: Sistema de Horas Colaborador adaptado para tabelas HORASTRABALHADAS e COLABORADORESTRAB (Android)"}
+{"version":"1.0.28","minSupportedVersion":"1.0.0","downloadUrl":"https://github.com/jvarejao/NAVIGEST/releases/download/v1.0.28/com.navigatorcode.navigest-arm64-v8a-Signed.apk","notes":"v1.0.28: Fix crash menu Horas + logging detalhado para debug (Android)"}
