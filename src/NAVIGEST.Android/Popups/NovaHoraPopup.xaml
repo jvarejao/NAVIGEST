@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<toolkit:Popup x:Class="NAVIGEST.Android.Popups.NovaHoraPopup"
+               xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+               xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+               xmlns:models="clr-namespace:NAVIGEST.Android.Models"
+               CanBeDismissedByTappingOutsideOfPopup="False">
+  <toolkit:Popup.Size>
+    <Size Width="400" Height="680" />
+  </toolkit:Popup.Size>
+
+  <Border BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
+          StrokeThickness="0"
+          Padding="24"
+          StrokeShape="RoundRectangle 18">
+    <Border.Shadow>
+      <Shadow Brush="Black" Opacity="0.25" Radius="12" Offset="0,4"/>
+    </Border.Shadow>
+    
+    <Grid RowDefinitions="Auto,*,Auto" RowSpacing="20">
+      <!-- Título -->
+      <Label Grid.Row="0"
+             x:Name="TituloLabel"
+             Text="➕ NOVO REGISTO DE HORAS"
+             FontSize="20"
+             FontAttributes="Bold"
+             HorizontalOptions="Center"
+             TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+
+      <!-- Formulário -->
+      <ScrollView Grid.Row="1">
+        <VerticalStackLayout Spacing="16">
+          <!-- Colaborador -->
+          <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
+            <Label Text="👤 Colaborador"
+                   FontSize="14"
+                   FontAttributes="Bold"
+                   TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+            <Picker x:Name="ColaboradorPicker"
+                    Grid.Row="1"
+                    BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
+                    TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+          </Grid>
+
+          <!-- Data -->
+          <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
+            <Label Text="📅 Data"
+                   FontSize="14"
+                   FontAttributes="Bold"
+                   TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+            <DatePicker x:Name="DataPicker"
+                        Grid.Row="1"
+                        BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
+                        TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+          </Grid>
+
+          <!-- Hora Início -->
+          <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
+            <Label Text="🕗 Hora Início"
+                   FontSize="14"
+                   FontAttributes="Bold"
+                   TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+            <TimePicker x:Name="HoraInicioPicker"
+                        Grid.Row="1"
+                        Time="{Binding HoraInicio}"
+                        BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
+                        TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
+                        PropertyChanged="OnHoraChanged"/>
+          </Grid>
+
+          <!-- Hora Fim -->
+          <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
+            <Label Text="🕓 Hora Fim"
+                   FontSize="14"
+                   FontAttributes="Bold"
+                   TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+            <Border x:Name="HoraFimBorder"
+                    BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
+                    StrokeThickness="2"
+                    Stroke="Transparent"
+                    StrokeShape="RoundRectangle 8">
+              <TimePicker x:Name="HoraFimPicker"
+                          Grid.Row="1"
+                          Time="{Binding HoraFim}"
+                          BackgroundColor="Transparent"
+                          TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
+                          PropertyChanged="OnHoraChanged"/>
+            </Border>
+          </Grid>
+
+          <!-- Horas Calculadas (Readonly) -->
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+            <VerticalStackLayout>
+              <Label Text="🔢 Horas Normais"
+                     FontSize="14"
+                     FontAttributes="Bold"
+                     TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+              <Label x:Name="HorasNormaisLabel"
+                     Text="0,00h"
+                     FontSize="18"
+                     FontAttributes="Bold"
+                     TextColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"
+                     HorizontalOptions="Start"
+                     Margin="0,4,0,0"/>
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Grid.Column="1">
+              <Label Text="🔁 Horas Extra"
+                     FontSize="14"
+                     FontAttributes="Bold"
+                     TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+              <Label x:Name="HorasExtraLabel"
+                     Text="0,00h"
+                     FontSize="18"
+                     FontAttributes="Bold"
+                     TextColor="{AppThemeBinding Light=#FF9500, Dark=#FF9F0A}"
+                     HorizontalOptions="Start"
+                     Margin="0,4,0,0"/>
+            </VerticalStackLayout>
+          </Grid>
+
+          <!-- Tarefa -->
+          <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
+            <Label Text="🧰 Tarefa"
+                   FontSize="14"
+                   FontAttributes="Bold"
+                   TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+            <Entry x:Name="TarefaEntry"
+                   Grid.Row="1"
+                   Placeholder="Descrição da tarefa"
+                   BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
+                   TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
+                   PlaceholderColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"/>
+          </Grid>
+
+          <!-- Observações -->
+          <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
+            <Label Text="📝 Observações"
+                   FontSize="14"
+                   FontAttributes="Bold"
+                   TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+            <Editor x:Name="ObservacoesEditor"
+                    Grid.Row="1"
+                    Placeholder="Observações adicionais"
+                    HeightRequest="80"
+                    BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
+                    TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
+                    PlaceholderColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"/>
+          </Grid>
+
+          <!-- Erro -->
+          <Label x:Name="ErrorLabel"
+                 TextColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}"
+                 FontSize="13"
+                 IsVisible="False"
+                 HorizontalOptions="Center"/>
+        </VerticalStackLayout>
+      </ScrollView>
+
+      <!-- Botões -->
+      <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="16">
+        <!-- Eliminar (só aparece ao editar) -->
+        <Button x:Name="EliminarButton"
+                WidthRequest="56"
+                HeightRequest="56"
+                Padding="0"
+                BackgroundColor="#F44336"
+                CornerRadius="28"
+                IsVisible="False"
+                Clicked="OnEliminarClicked">
+          <Button.Shadow>
+            <Shadow Brush="Black" Opacity="0.25" Radius="8" Offset="0,2"/>
+          </Button.Shadow>
+          <Button.ImageSource>
+            <FontImageSource Glyph="&#xF1F8;" FontFamily="FA7Solid" Size="22" Color="White"/>
+          </Button.ImageSource>
+        </Button>
+
+        <BoxView Grid.Column="1"/>
+
+        <!-- Cancelar -->
+        <Button x:Name="CancelarButton"
+                Grid.Column="2"
+                WidthRequest="56"
+                HeightRequest="56"
+                Padding="0"
+                BackgroundColor="#FF3B30"
+                CornerRadius="28"
+                Clicked="OnCancelarClicked">
+          <Button.Shadow>
+            <Shadow Brush="Black" Opacity="0.25" Radius="8" Offset="0,2"/>
+          </Button.Shadow>
+          <Button.ImageSource>
+            <FontImageSource Glyph="&#xF00D;" FontFamily="FA7Solid" Size="22" Color="White"/>
+          </Button.ImageSource>
+        </Button>
+
+        <!-- Guardar -->
+        <Button x:Name="GuardarButton"
+                Grid.Column="3"
+                WidthRequest="56"
+                HeightRequest="56"
+                Padding="0"
+                BackgroundColor="#34C759"
+                CornerRadius="28"
+                Clicked="OnGuardarClicked">
+          <Button.Shadow>
+            <Shadow Brush="Black" Opacity="0.25" Radius="8" Offset="0,2"/>
+          </Button.Shadow>
+          <Button.ImageSource>
+            <FontImageSource Glyph="&#xF00C;" FontFamily="FA7Solid" Size="22" Color="White"/>
+          </Button.ImageSource>
+        </Button>
+      </Grid>
+
+      <!-- Loading -->
+      <Grid Grid.RowSpan="3"
+            x:Name="BusyOverlay"
+            IsVisible="False"
+            BackgroundColor="#99000000">
+        <ActivityIndicator IsRunning="True"
+                           Color="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"
+                           WidthRequest="48"
+                           HeightRequest="48"/>
+      </Grid>
+    </Grid>
+  </Border>
+</toolkit:Popup>

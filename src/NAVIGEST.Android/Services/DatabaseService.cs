@@ -1225,6 +1225,181 @@ FROM OrderInfo";
             return (count, orderNo, customer);
         }
 
+        // ========== HORAS COLABORADOR ==========
+
+        public static async Task<List<HoraColaborador>> GetHorasColaboradorAsync(
+            string? codColab = null,
+            DateTime? dataInicio = null,
+            DateTime? dataFim = null)
+        {
+            var list = new List<HoraColaborador>();
+            try
+            {
+                using var conn = new MySqlConnection(GetConnectionString());
+                await conn.OpenAsync();
+
+                var sql = @"SELECT ID, CODCOLAB, NOMECOLAB, DATA, HORAINICIO, HORAFIM, 
+                                   HORASNORMAIS, HORASEXTRA, TAREFA, OBS, VALIDADO, UTILIZADOR
+                            FROM HORASCOLABORADOR 
+                            WHERE (@CodColab IS NULL OR CODCOLAB = @CodColab)
+                              AND (@DataInicio IS NULL OR DATA >= @DataInicio)
+                              AND (@DataFim IS NULL OR DATA <= @DataFim)
+                            ORDER BY DATA DESC, HORAINICIO DESC";
+
+                using var cmd = new MySqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@CodColab", string.IsNullOrEmpty(codColab) ? DBNull.Value : codColab);
+                cmd.Parameters.AddWithValue("@DataInicio", dataInicio.HasValue ? dataInicio.Value : DBNull.Value);
+                cmd.Parameters.AddWithValue("@DataFim", dataFim.HasValue ? dataFim.Value : DBNull.Value);
+
+                using var rd = await cmd.ExecuteReaderAsync();
+                while (await rd.ReadAsync())
+                {
+                    list.Add(new HoraColaborador
+                    {
+                        Id = rd.GetInt32(0),
+                        CodColab = rd.IsDBNull(1) ? string.Empty : rd.GetString(1),
+                        NomeColab = rd.IsDBNull(2) ? string.Empty : rd.GetString(2),
+                        Data = rd.GetDateTime(3),
+                        HoraInicio = rd.IsDBNull(4) ? TimeSpan.Zero : rd.GetTimeSpan(4),
+                        HoraFim = rd.IsDBNull(5) ? TimeSpan.Zero : rd.GetTimeSpan(5),
+                        HorasNormais = rd.IsDBNull(6) ? 0 : rd.GetDecimal(6),
+                        HorasExtra = rd.IsDBNull(7) ? 0 : rd.GetDecimal(7),
+                        Tarefa = rd.IsDBNull(8) ? string.Empty : rd.GetString(8),
+                        Obs = rd.IsDBNull(9) ? null : rd.GetString(9),
+                        Validado = rd.IsDBNull(10) ? false : rd.GetBoolean(10),
+                        Utilizador = rd.IsDBNull(11) ? string.Empty : rd.GetString(11)
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao obter horas: {ex.Message}");
+                throw;
+            }
+            return list;
+        }
+
+        public static async Task<int> UpsertHoraColaboradorAsync(HoraColaborador hora)
+        {
+            try
+            {
+                using var conn = new MySqlConnection(GetConnectionString());
+                await conn.OpenAsync();
+
+                if (hora.Id == 0)
+                {
+                    // INSERT
+                    var sql = @"INSERT INTO HORASCOLABORADOR 
+                                (CODCOLAB, NOMECOLAB, DATA, HORAINICIO, HORAFIM, HORASNORMAIS, HORASEXTRA, TAREFA, OBS, VALIDADO, UTILIZADOR)
+                                VALUES 
+                                (@CodColab, @NomeColab, @Data, @HoraInicio, @HoraFim, @HorasNormais, @HorasExtra, @Tarefa, @Obs, @Validado, @Utilizador);
+                                SELECT LAST_INSERT_ID();";
+
+                    using var cmd = new MySqlCommand(sql, conn);
+                    cmd.Parameters.AddWithValue("@CodColab", hora.CodColab);
+                    cmd.Parameters.AddWithValue("@NomeColab", hora.NomeColab);
+                    cmd.Parameters.AddWithValue("@Data", hora.Data);
+                    cmd.Parameters.AddWithValue("@HoraInicio", hora.HoraInicio);
+                    cmd.Parameters.AddWithValue("@HoraFim", hora.HoraFim);
+                    cmd.Parameters.AddWithValue("@HorasNormais", hora.HorasNormais);
+                    cmd.Parameters.AddWithValue("@HorasExtra", hora.HorasExtra);
+                    cmd.Parameters.AddWithValue("@Tarefa", hora.Tarefa);
+                    cmd.Parameters.AddWithValue("@Obs", hora.Obs ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Validado", hora.Validado);
+                    cmd.Parameters.AddWithValue("@Utilizador", hora.Utilizador);
+
+                    var result = await cmd.ExecuteScalarAsync();
+                    return Convert.ToInt32(result);
+                }
+                else
+                {
+                    // UPDATE
+                    var sql = @"UPDATE HORASCOLABORADOR 
+                                SET CODCOLAB=@CodColab, NOMECOLAB=@NomeColab, DATA=@Data, 
+                                    HORAINICIO=@HoraInicio, HORAFIM=@HoraFim, 
+                                    HORASNORMAIS=@HorasNormais, HORASEXTRA=@HorasExtra,
+                                    TAREFA=@Tarefa, OBS=@Obs, VALIDADO=@Validado, UTILIZADOR=@Utilizador
+                                WHERE ID=@Id";
+
+                    using var cmd = new MySqlCommand(sql, conn);
+                    cmd.Parameters.AddWithValue("@Id", hora.Id);
+                    cmd.Parameters.AddWithValue("@CodColab", hora.CodColab);
+                    cmd.Parameters.AddWithValue("@NomeColab", hora.NomeColab);
+                    cmd.Parameters.AddWithValue("@Data", hora.Data);
+                    cmd.Parameters.AddWithValue("@HoraInicio", hora.HoraInicio);
+                    cmd.Parameters.AddWithValue("@HoraFim", hora.HoraFim);
+                    cmd.Parameters.AddWithValue("@HorasNormais", hora.HorasNormais);
+                    cmd.Parameters.AddWithValue("@HorasExtra", hora.HorasExtra);
+                    cmd.Parameters.AddWithValue("@Tarefa", hora.Tarefa);
+                    cmd.Parameters.AddWithValue("@Obs", hora.Obs ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Validado", hora.Validado);
+                    cmd.Parameters.AddWithValue("@Utilizador", hora.Utilizador);
+
+                    await cmd.ExecuteNonQueryAsync();
+                    return hora.Id;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao gravar hora: {ex.Message}");
+                throw;
+            }
+        }
+
+        public static async Task DeleteHoraColaboradorAsync(int id)
+        {
+            try
+            {
+                using var conn = new MySqlConnection(GetConnectionString());
+                await conn.OpenAsync();
+
+                var sql = "DELETE FROM HORASCOLABORADOR WHERE ID=@Id";
+                using var cmd = new MySqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@Id", id);
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao eliminar hora: {ex.Message}");
+                throw;
+            }
+        }
+
+        public static async Task<List<Colaborador>> GetColaboradoresAsync()
+        {
+            var list = new List<Colaborador>();
+            try
+            {
+                using var conn = new MySqlConnection(GetConnectionString());
+                await conn.OpenAsync();
+
+                var sql = @"SELECT CODIGO, NOME, EMAIL, TELEFONE, ATIVO 
+                            FROM COLABORADORES 
+                            WHERE ATIVO = 1
+                            ORDER BY NOME";
+
+                using var cmd = new MySqlCommand(sql, conn);
+                using var rd = await cmd.ExecuteReaderAsync();
+                while (await rd.ReadAsync())
+                {
+                    list.Add(new Colaborador
+                    {
+                        Codigo = rd.IsDBNull(0) ? string.Empty : rd.GetString(0),
+                        Nome = rd.IsDBNull(1) ? string.Empty : rd.GetString(1),
+                        Email = rd.IsDBNull(2) ? string.Empty : rd.GetString(2),
+                        Telefone = rd.IsDBNull(3) ? string.Empty : rd.GetString(3),
+                        Ativo = rd.IsDBNull(4) ? true : rd.GetBoolean(4)
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao obter colaboradores: {ex.Message}");
+                // Se tabela não existir, retorna lista vazia
+                return list;
+            }
+            return list;
+        }
 
     }
 }
