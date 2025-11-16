@@ -6,7 +6,7 @@
                xmlns:models="clr-namespace:NAVIGEST.Android.Models"
                CanBeDismissedByTappingOutsideOfPopup="False">
   <toolkit:Popup.Size>
-    <Size Width="360" Height="600" />
+    <Size Width="360" Height="520" />
   </toolkit:Popup.Size>
 
   <Border BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
@@ -17,18 +17,18 @@
       <Shadow Brush="Black" Opacity="0.25" Radius="12" Offset="0,4" />
     </Border.Shadow>
 
-    <!-- MODO LISTA (Padrão) -->
-    <Grid x:Name="ListViewMode" RowDefinitions="Auto,8,Auto,8,*,12,Auto" IsVisible="True">
+    <Grid>
+      <!-- MODO LISTA (Padrão) -->
+      <Grid x:Name="ListViewMode" RowDefinitions="Auto,Auto,*,Auto" IsVisible="True">
       <Label Grid.Row="0"
              Text="Famílias de Produto"
              FontSize="20"
              FontAttributes="Bold"
              HorizontalOptions="Center"
-             Margin="0,4"
              TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" />
 
       <SearchBar x:Name="SearchBar"
-                 Grid.Row="2"
+                 Grid.Row="1"
                  Placeholder="Procurar família..."
                  TextChanged="OnSearchTextChanged"
                  BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
@@ -37,7 +37,7 @@
                  CancelButtonColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}" />
 
       <CollectionView x:Name="FamiliesCollectionView"
-                      Grid.Row="4"
+                      Grid.Row="2"
                       ItemsSource="{Binding Families}"
                       SelectionMode="None"
                       BackgroundColor="Transparent">
@@ -103,23 +103,15 @@
         </CollectionView.ItemTemplate>
       </CollectionView>
 
-      <Grid Grid.Row="6" ColumnDefinitions="*,*" ColumnSpacing="12">
-        <Button x:Name="NewFamilyButton"
-                Grid.Column="0"
-                Text="Nova Família"
-                Style="{StaticResource AppleTintedButton}"
-                TextColor="{AppThemeBinding Light=#2196F3, Dark=#42A5F5}"
-                Clicked="OnNewFamilyButtonClicked" />
-        <Button x:Name="CloseButton"
-                Grid.Column="1"
-                Text="Fechar"
-                Style="{StaticResource AppleTintedButton}"
-                TextColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"
-                Clicked="OnCloseClicked" />
-      </Grid>
+      <Button x:Name="CloseButton"
+              Grid.Row="3"
+              Text="Fechar"
+              Style="{StaticResource AppleTintedButton}"
+              TextColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"
+              Clicked="OnCloseClicked" />
 
       <Grid x:Name="BusyOverlay"
-            Grid.RowSpan="7"
+            Grid.RowSpan="4"
             BackgroundColor="#66000000"
             IsVisible="False">
         <ActivityIndicator x:Name="BusyIndicator"
@@ -231,6 +223,7 @@
           </Border.GestureRecognizers>
         </Border>
       </Grid>
+    </Grid>
     </Grid>
   </Border>
 </toolkit:Popup>

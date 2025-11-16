@@ -229,15 +229,28 @@ public partial class ProductsPage : ContentPage
                 {
                     try
                     {
-                        var popup = new ProductFamiliesListPopup();
+                        var popup = new AddProductFamilyPopup();
                         var result = await Application.Current.MainPage.ShowPopupAsync(popup);
                         
-                        if (result is ProductFamilyListResult familyResult && familyResult.SelectedFamily is not null)
+                        if (result is ProductFamilyInput familia && !string.IsNullOrWhiteSpace(familia.Codigo))
                         {
-                            vm.SelectedFamily = familyResult.SelectedFamily;
-                            if (familyResult.RefreshRequested)
+                            var (ok, message, option) = await vm.AddFamilyAsync(familia.Codigo, familia.Descricao);
+                            if (!ok)
                             {
-                                await vm.ReloadFamiliesAsync(familyResult.SelectedFamily?.Codigo);
+                                if (!string.IsNullOrWhiteSpace(message))
+                                    await AppShell.DisplayToastAsync(message);
+
+                                if (popup.FamiliesDirty)
+                                {
+                                    await vm.ReloadFamiliesAsync();
+                                }
+                            }
+                            else
+                            {
+                                if (popup.FamiliesDirty)
+                                    await vm.ReloadFamiliesAsync(option?.Codigo ?? familia.Codigo);
+                                else
+                                    vm.SelectedFamily = option;
                             }
                         }
                     }
