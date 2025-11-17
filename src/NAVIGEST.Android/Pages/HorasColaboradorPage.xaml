@@ -15,83 +15,224 @@
         </ResourceDictionary>
     </ContentPage.Resources>
 
-    <Grid RowDefinitions="Auto,Auto,*,Auto" Padding="16">
-        <!-- Filtros -->
+    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" Padding="16">
+        
+        <!-- ROW 0: SMART STATS CARD (Painel de Controle) -->
         <Border Grid.Row="0"
                 BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
                 StrokeThickness="0"
                 Padding="16"
-                StrokeShape="RoundRectangle 12">
+                StrokeShape="RoundRectangle 12"
+                Margin="0,0,0,12">
             <Border.Shadow>
                 <Shadow Brush="Black" Opacity="0.15" Radius="8" Offset="0,2"/>
             </Border.Shadow>
             
-            <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,*" ColumnSpacing="12" RowSpacing="12">
-                <!-- Colaborador -->
-                <VerticalStackLayout Grid.Column="0">
-                    <Label Text="👤 Colaborador" 
-                           FontSize="13"
-                           TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
-                           Margin="0,0,0,4"/>
-                    <Picker ItemsSource="{Binding Colaboradores}"
-                            ItemDisplayBinding="{Binding DisplayText}"
-                            SelectedItem="{Binding ColaboradorSelecionado}"
-                            BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
-                            TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
-                </VerticalStackLayout>
+            <VerticalStackLayout Spacing="12">
+                <!-- Período + Colaborador selecionado -->
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                    <VerticalStackLayout>
+                        <Label Text="📅 Período"
+                               FontSize="12"
+                               TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"/>
+                        <Label Text="{Binding PeriodoSelecionado}"
+                               FontSize="13"
+                               FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+                    </VerticalStackLayout>
+                    
+                    <VerticalStackLayout Grid.Column="1">
+                        <Label Text="👤 Colaborador"
+                               FontSize="12"
+                               TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"/>
+                        <Label Text="{Binding ColaboradorDisplay}"
+                               FontSize="13"
+                               FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light=#007AFF, Dark:#0A84FF}"/>
+                    </VerticalStackLayout>
+                </Grid>
 
-                <!-- Data Início -->
-                <VerticalStackLayout Grid.Column="1">
-                    <Label Text="📅 Data Início" 
-                           FontSize="13"
-                           TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
-                           Margin="0,0,0,4"/>
-                    <DatePicker Date="{Binding DataFiltroInicio}"
-                                BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
-                                TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
-                </VerticalStackLayout>
+                <!-- Total Geral em Destaque -->
+                <Border BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
+                        StrokeThickness="0"
+                        Padding="12"
+                        StrokeShape="RoundRectangle 8">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <VerticalStackLayout>
+                            <Label Text="Total Horas"
+                                   FontSize="13"
+                                   TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"/>
+                            <Label Text="{Binding TotalGeral}"
+                                   FontSize="28"
+                                   FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light=#34C759, Dark=#32D74B}"/>
+                        </VerticalStackLayout>
+                        
+                        <!-- Alerta de Extras se houver -->
+                        <Label Grid.Column="1"
+                               Text="{Binding AlertaExtras}"
+                               FontSize="14"
+                               FontAttributes="Bold"
+                               TextColor="#FF9500"
+                               IsVisible="{Binding TemExtras}"
+                               VerticalOptions="Center"
+                               HorizontalOptions="End"/>
+                    </Grid>
+                </Border>
 
-                <!-- Data Fim -->
-                <VerticalStackLayout Grid.Row="1" Grid.Column="0">
-                    <Label Text="📅 Data Fim" 
-                           FontSize="13"
-                           TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
-                           Margin="0,0,0,4"/>
-                    <DatePicker Date="{Binding DataFiltroFim}"
-                                BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
-                                TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
-                </VerticalStackLayout>
+                <!-- Stats: Normal | Extra | Média -->
+                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                    <Border BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" 
+                            StrokeThickness="0" Padding="8" StrokeShape="RoundRectangle 8">
+                        <VerticalStackLayout>
+                            <Label Text="📊 Normal"
+                                   FontSize="11"
+                                   TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"/>
+                            <Label Text="{Binding TotalHorasNormais}"
+                                   FontSize="14"
+                                   FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light=#007AFF, Dark:#0A84FF}"/>
+                        </VerticalStackLayout>
+                    </Border>
+                    
+                    <Border Grid.Column="1" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" 
+                            StrokeThickness="0" Padding="8" StrokeShape="RoundRectangle 8">
+                        <VerticalStackLayout>
+                            <Label Text="⚡ Extra"
+                                   FontSize="11"
+                                   TextColor="{AppThemeBinding Light=#8E8E93, Dark:#8E8E93}"/>
+                            <Label Text="{Binding TotalHorasExtra}"
+                                   FontSize="14"
+                                   FontAttributes="Bold"
+                                   TextColor="#FF9500"/>
+                        </VerticalStackLayout>
+                    </Border>
+                    
+                    <Border Grid.Column="2" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark:#2C2C2E}" 
+                            StrokeThickness="0" Padding="8" StrokeShape="RoundRectangle 8">
+                        <VerticalStackLayout>
+                            <Label Text="📈 Média/dia"
+                                   FontSize="11"
+                                   TextColor="{AppThemeBinding Light=#8E8E93, Dark:#8E8E93}"/>
+                            <Label Text="{Binding MediaHorasDia, StringFormat='{0:0.0}h'}"
+                                   FontSize="14"
+                                   FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light=#34C759, Dark:#32D74B}"/>
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
 
-                <!-- Mensagem -->
-                <Label Grid.Row="1" Grid.Column="1"
-                       Text="{Binding Mensagem}"
-                       FontSize="12"
-                       TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
-                       VerticalOptions="End"/>
-            </Grid>
+                <!-- Breakdown: X colaboradores, Y dias -->
+                <Label FontSize="12"
+                       TextColor="{AppThemeBinding Light:#8E8E93, Dark:#8E8E93}"
+                       HorizontalTextAlignment="Center">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="👥 " FontSize="12"/>
+                            <Span Text="{Binding TotalColaboradores}" FontSize="12" FontAttributes="Bold"/>
+                            <Span Text=" colaboradores | 📅 " FontSize="12"/>
+                            <Span Text="{Binding TotalDias}" FontSize="12" FontAttributes="Bold"/>
+                            <Span Text=" dias" FontSize="12"/>
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+            </VerticalStackLayout>
         </Border>
 
-        <!-- Botões -->
-        <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="12" Margin="0,12">
-            <Button Grid.Column="0"
-                    Text="🔄 Atualizar"
-                    Command="{Binding CarregarHorasCommand}"
-                    BackgroundColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"
-                    TextColor="White"
-                    CornerRadius="12"
-                    HeightRequest="48"/>
-            
-            <Button Grid.Column="1"
-                    Text="➕ Novo Registo"
-                    Command="{Binding AbrirNovoRegistoCommand}"
-                    BackgroundColor="{AppThemeBinding Light=#34C759, Dark=#32D74B}"
-                    TextColor="White"
-                    CornerRadius="12"
-                    HeightRequest="48"/>
-        </Grid>
+        <!-- ROW 1: FILTROS ACCORDION (Colapsável) -->
+        <Border Grid.Row="1"
+                BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
+                StrokeThickness="0"
+                Padding="0"
+                StrokeShape="RoundRectangle 12"
+                Margin="0,0,0,12">
+            <Border.Shadow>
+                <Shadow Brush="Black" Opacity="0.15" Radius="8" Offset="0,2"/>
+            </Border.Shadow>
 
-        <!-- Lista -->
-        <RefreshView Grid.Row="2"
+            <!-- Botão do Accordion -->
+            <VerticalStackLayout>
+                <Button Text="{Binding FiltrosAbertos, StringFormat='{0:🔼 Filtros Avançados|🔽 Filtros Avançados}'}"
+                        Command="{Binding AlternarFiltrosCommand}"
+                        BackgroundColor="Transparent"
+                        TextColor="{AppThemeBinding Light=#007AFF, Dark:#0A84FF}"
+                        FontAttributes="Bold"
+                        FontSize="14"
+                        Padding="16"
+                        BorderWidth="0"/>
+
+                <!-- Conteúdo do Accordion (Colapsável) -->
+                <VerticalStackLayout IsVisible="{Binding FiltrosAbertos}"
+                                    Padding="16,0,16,16"
+                                    Spacing="12">
+                    <!-- Colaborador -->
+                    <VerticalStackLayout>
+                        <Label Text="👤 Selecione Colaborador" 
+                               FontSize="13"
+                               TextColor="{AppThemeBinding Light=#8E8E93, Dark:#8E8E93}"
+                               Margin="0,0,0,4"/>
+                        <Picker ItemsSource="{Binding Colaboradores}"
+                                ItemDisplayBinding="{Binding DisplayText}"
+                                SelectedItem="{Binding ColaboradorSelecionado}"
+                                BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark:#2C2C2E}"
+                                TextColor="{AppThemeBinding Light=#000000, Dark:#FFFFFF}"/>
+                    </VerticalStackLayout>
+
+                    <!-- Data Intervalo -->
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                        <VerticalStackLayout>
+                            <Label Text="📅 Data Início" 
+                                   FontSize="13"
+                                   TextColor="{AppThemeBinding Light:#8E8E93, Dark:#8E8E93}"
+                                   Margin="0,0,0,4"/>
+                            <DatePicker Date="{Binding DataFiltroInicio}"
+                                        BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark:#2C2C2E}"
+                                        TextColor="{AppThemeBinding Light:#000000, Dark:#FFFFFF}"/>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Grid.Column="1">
+                            <Label Text="📅 Data Fim" 
+                                   FontSize="13"
+                                   TextColor="{AppThemeBinding Light:#8E8E93, Dark:#8E8E93}"
+                                   Margin="0,0,0,4"/>
+                            <DatePicker Date="{Binding DataFiltroFim}"
+                                        BackgroundColor="{AppThemeBinding Light:#F2F2F7, Dark:#2C2C2E}"
+                                        TextColor="{AppThemeBinding Light:#000000, Dark:#FFFFFF}"/>
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <!-- Botões de Ação -->
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                        <Button Grid.Column="0"
+                                Text="🔄 Atualizar"
+                                Command="{Binding CarregarHorasCommand}"
+                                BackgroundColor="{AppThemeBinding Light=#007AFF, Dark:#0A84FF}"
+                                TextColor="White"
+                                CornerRadius="8"
+                                HeightRequest="40"/>
+                        
+                        <Button Grid.Column="1"
+                                Text="➕ Novo Registo"
+                                Command="{Binding AbrirNovoRegistoCommand}"
+                                BackgroundColor="{AppThemeBinding Light=#34C759, Dark:#32D74B}"
+                                TextColor="White"
+                                CornerRadius="8"
+                                HeightRequest="40"/>
+                    </Grid>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+        </Border>
+
+        <!-- ROW 2: STATUS MESSAGE -->
+        <Label Grid.Row="2"
+               Text="{Binding Mensagem}"
+               FontSize="12"
+               TextColor="{AppThemeBinding Light:#8E8E93, Dark:#8E8E93}"
+               HorizontalTextAlignment="Center"
+               Margin="0,0,0,12"/>
+
+        <!-- ROW 3: LISTA COMPACTA -->
+        <RefreshView Grid.Row="3"
                      IsRefreshing="{Binding IsBusy}"
                      Command="{Binding CarregarHorasCommand}">
             <CollectionView ItemsSource="{Binding HorasList}"
@@ -104,7 +245,7 @@
                                HorizontalOptions="Center"/>
                         <Label Text="Nenhum registo encontrado"
                                FontSize="16"
-                               TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
+                               TextColor="{AppThemeBinding Light=#8E8E93, Dark:#8E8E93}"
                                HorizontalOptions="Center"/>
                     </VerticalStackLayout>
                 </CollectionView.EmptyView>
@@ -152,44 +293,58 @@
                                 </SwipeItems>
                             </SwipeView.RightItems>
 
-                            <Border BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
-                                    StrokeThickness="0"
-                                    Padding="16"
-                                    Margin="0,6"
-                                    StrokeShape="RoundRectangle 12">
-                                <Border.Shadow>
-                                    <Shadow Brush="Black" Opacity="0.1" Radius="6" Offset="0,2"/>
-                                </Border.Shadow>
+                            <!-- Item Compacto -->
+                            <Border BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark:#1C1C1E}"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 8"
+                                    Stroke="{AppThemeBinding Light=#E5E5EA, Dark=#3A3A3C}"
+                                    Padding="12"
+                                    Margin="0,4">
                                 <Border.GestureRecognizers>
                                     <TapGestureRecognizer Tapped="OnItemTapped"/>
                                 </Border.GestureRecognizers>
 
-                                <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
-                                    <!-- Header: Data | Nome -->
-                                    <Grid ColumnDefinitions="*,Auto">
-                                        <Label Text="{Binding NomeColaborador}"
-                                               FontSize="17"
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                    <!-- Data (coluna esquerda) -->
+                                    <VerticalStackLayout WidthRequest="60">
+                                        <Label Text="{Binding DataTrabalho, StringFormat='{0:dd}'}"
+                                               FontSize="18"
                                                FontAttributes="Bold"
-                                               TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
-                                        <Label Grid.Column="1"
-                                               Text="{Binding DataFormatted}"
-                                               FontSize="15"
-                                               TextColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"/>
-                                    </Grid>
+                                               TextColor="{AppThemeBinding Light=#007AFF, Dark:#0A84FF}"
+                                               HorizontalTextAlignment="Center"/>
+                                        <Label Text="{Binding DataTrabalho, StringFormat='{0:MMM}'}"
+                                               FontSize="10"
+                                               TextColor="{AppThemeBinding Light:#8E8E93, Dark:#8E8E93}"
+                                               HorizontalTextAlignment="Center"/>
+                                    </VerticalStackLayout>
 
-                                    <!-- Horário -->
-                                    <Label Grid.Row="1"
-                                           Text="{Binding HorasTotaisFormatted, StringFormat='🕐 {0}'}"
-                                           FontSize="15"
-                                           TextColor="{AppThemeBinding Light=#34C759, Dark=#32D74B}"/>
+                                    <!-- Detalhes (meio) -->
+                                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="4">
+                                        <Label Text="{Binding NomeColaborador}"
+                                               FontSize="14"
+                                               FontAttributes="Bold"
+                                               TextColor="{AppThemeBinding Light:#000000, Dark:#FFFFFF}"/>
+                                        <Label Text="{Binding HorasTotaisFormatted, StringFormat='🕐 {0}'}"
+                                               FontSize="12"
+                                               TextColor="{AppThemeBinding Light:#34C759, Dark:#32D74B}"/>
+                                        <Label Text="{Binding ClienteInfo, StringFormat='🏢 {0}'}"
+                                               FontSize="11"
+                                               TextColor="{AppThemeBinding Light:#8E8E93, Dark:#8E8E93}"
+                                               LineBreakMode="TailTruncation"/>
+                                    </VerticalStackLayout>
 
-                                    <!-- Observações -->
-                                    <Label Grid.Row="2"
-                                           Text="{Binding Observacoes, StringFormat='📝 {0}'}"
-                                           FontSize="13"
-                                           TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
-                                           LineBreakMode="TailTruncation"
-                                           IsVisible="{Binding Observacoes, Converter={StaticResource StringNullOrEmptyToBoolConverter}}"/>
+                                    <!-- Total horas (direita) -->
+                                    <VerticalStackLayout Grid.Column="2" HorizontalOptions="End" VerticalOptions="Center" Spacing="2">
+                                        <Label Text="{Binding HorasTotais, StringFormat='{0:0.0}'}"
+                                               FontSize="16"
+                                               FontAttributes="Bold"
+                                               TextColor="{AppThemeBinding Light:#007AFF, Dark:#0A84FF}}"
+                                               HorizontalTextAlignment="End"/>
+                                        <Label Text="horas"
+                                               FontSize="10"
+                                               TextColor="{AppThemeBinding Light:#8E8E93, Dark:#8E8E93}"
+                                               HorizontalTextAlignment="End"/>
+                                    </VerticalStackLayout>
                                 </Grid>
                             </Border>
                         </SwipeView>
@@ -198,56 +353,12 @@
             </CollectionView>
         </RefreshView>
 
-        <!-- Totais -->
-        <Border Grid.Row="3"
-                BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
-                StrokeThickness="0"
-                Padding="16"
-                Margin="0,12,0,0"
-                StrokeShape="RoundRectangle 12">
-            <Border.Shadow>
-                <Shadow Brush="Black" Opacity="0.15" Radius="8" Offset="0,2"/>
-            </Border.Shadow>
-            
-            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
-                <VerticalStackLayout>
-                    <Label Text="Horas Normais"
-                           FontSize="12"
-                           TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"/>
-                    <Label Text="{Binding TotalHorasNormais}"
-                           FontSize="16"
-                           FontAttributes="Bold"
-                           TextColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"/>
-                </VerticalStackLayout>
-
-                <VerticalStackLayout Grid.Column="1">
-                    <Label Text="Horas Extra"
-                           FontSize="12"
-                           TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"/>
-                    <Label Text="{Binding TotalHorasExtra}"
-                           FontSize="16"
-                           FontAttributes="Bold"
-                           TextColor="{AppThemeBinding Light=#FF9500, Dark=#FF9F0A}"/>
-                </VerticalStackLayout>
-
-                <VerticalStackLayout Grid.Column="2">
-                    <Label Text="Total Geral"
-                           FontSize="12"
-                           TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"/>
-                    <Label Text="{Binding TotalGeral}"
-                           FontSize="16"
-                           FontAttributes="Bold"
-                           TextColor="{AppThemeBinding Light=#34C759, Dark=#32D74B}"/>
-                </VerticalStackLayout>
-            </Grid>
-        </Border>
-
-        <!-- Loading -->
-        <Grid Grid.RowSpan="4"
+        <!-- ROW 4: LOADING OVERLAY -->
+        <Grid Grid.RowSpan="5"
               IsVisible="{Binding IsBusy}"
               BackgroundColor="#66000000">
             <ActivityIndicator IsRunning="True"
-                               Color="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"
+                               Color="{AppThemeBinding Light:#007AFF, Dark:#0A84FF}"
                                WidthRequest="48"
                                HeightRequest="48"/>
         </Grid>

@@ -33,13 +33,25 @@ public partial class HorasColaboradorViewModel : ObservableObject
     [ObservableProperty]
     private string mensagem = string.Empty;
 
+    [ObservableProperty]
+    private bool filtrosAbertos = false;
+
     // Flag para prevenir recarregos durante inicialização
     private bool _isInitializing = true;
 
-    // Totais
-    public string TotalHorasNormais => $"Total Normal: {HorasList.Sum(h => h.HorasTrab):0.00}h";
-    public string TotalHorasExtra => $"Total Extra: {HorasList.Sum(h => h.HorasExtras):0.00}h";
-    public string TotalGeral => $"Total Geral: {HorasList.Sum(h => h.HorasTrab + h.HorasExtras):0.00}h";
+    // Totais simples
+    public string TotalHorasNormais => $"{HorasList.Sum(h => h.HorasTrab):0.00}h";
+    public string TotalHorasExtra => $"{HorasList.Sum(h => h.HorasExtras):0.00}h";
+    public string TotalGeral => $"{HorasList.Sum(h => h.HorasTrab + h.HorasExtras):0.00}h";
+
+    // Stats Inteligentes
+    public int TotalColaboradores => HorasList.Select(h => h.IdColaborador).Distinct().Count();
+    public int TotalDias => HorasList.Select(h => h.DataTrabalho.Date).Distinct().Count();
+    public float MediaHorasDia => TotalDias > 0 ? (float)HorasList.Sum(h => h.HorasTrab + h.HorasExtras) / TotalDias : 0;
+    public string AlertaExtras => HorasList.Sum(h => h.HorasExtras) > 10 ? $"⚠️ {HorasList.Sum(h => h.HorasExtras):0.00}h extras" : "";
+    public bool TemExtras => HorasList.Sum(h => h.HorasExtras) > 0;
+    public string PeriodoSelecionado => $"{DataFiltroInicio:dd/MM} → {DataFiltroFim:dd/MM}";
+    public string ColaboradorDisplay => ColaboradorSelecionado?.Nome ?? "Selecione";
 
     public HorasColaboradorViewModel()
     {
@@ -63,6 +75,12 @@ public partial class HorasColaboradorViewModel : ObservableObject
         {
             _isInitializing = false;
         }
+    }
+
+    [RelayCommand]
+    private void AlternarFiltros()
+    {
+        FiltrosAbertos = !FiltrosAbertos;
     }
 
     [RelayCommand]
@@ -234,5 +252,12 @@ public partial class HorasColaboradorViewModel : ObservableObject
         OnPropertyChanged(nameof(TotalHorasNormais));
         OnPropertyChanged(nameof(TotalHorasExtra));
         OnPropertyChanged(nameof(TotalGeral));
+        OnPropertyChanged(nameof(TotalColaboradores));
+        OnPropertyChanged(nameof(TotalDias));
+        OnPropertyChanged(nameof(MediaHorasDia));
+        OnPropertyChanged(nameof(AlertaExtras));
+        OnPropertyChanged(nameof(TemExtras));
+        OnPropertyChanged(nameof(PeriodoSelecionado));
+        OnPropertyChanged(nameof(ColaboradorDisplay));
     }
 }
