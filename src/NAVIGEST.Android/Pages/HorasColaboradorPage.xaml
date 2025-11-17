@@ -4,9 +4,16 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:NAVIGEST.Android.PageModels"
              xmlns:models="clr-namespace:NAVIGEST.Android.Models"
+             xmlns:converters="clr-namespace:NAVIGEST.Android.Converters"
              x:DataType="vm:HorasColaboradorViewModel"
              BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}"
              Title="⏱️ Horas de Colaborador">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:StringNullOrEmptyToBoolConverter x:Key="StringNullOrEmptyToBoolConverter"/>
+        </ResourceDictionary>
+    </ContentPage.Resources>
 
     <Grid RowDefinitions="Auto,Auto,*,Auto" Padding="16">
         <!-- Filtros -->
