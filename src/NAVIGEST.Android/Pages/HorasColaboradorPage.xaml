@@ -48,7 +48,7 @@
                         <Label Text="{Binding ColaboradorDisplay}"
                                FontSize="13"
                                FontAttributes="Bold"
-                               TextColor="{AppThemeBinding Light=#007AFF, Dark:#0A84FF}"/>
+                               TextColor="{AppThemeBinding Light=#007AFF Dark=#0A84FF}"/>
                     </VerticalStackLayout>
                 </Grid>
 
@@ -91,7 +91,7 @@
                             <Label Text="{Binding TotalHorasNormais}"
                                    FontSize="14"
                                    FontAttributes="Bold"
-                                   TextColor="{AppThemeBinding Light=#007AFF, Dark:#0A84FF}"/>
+                                   TextColor="{AppThemeBinding Light=#007AFF Dark=#0A84FF}"/>
                         </VerticalStackLayout>
                     </Border>
                     
@@ -100,7 +100,7 @@
                         <VerticalStackLayout>
                             <Label Text="⚡ Extra"
                                    FontSize="11"
-                                   TextColor="{AppThemeBinding Light=#8E8E93, Dark:#8E8E93}"/>
+                                   TextColor="{AppThemeBinding Light=#8E8E93 Dark=#8E8E93}"/>
                             <Label Text="{Binding TotalHorasExtra}"
                                    FontSize="14"
                                    FontAttributes="Bold"
@@ -108,23 +108,23 @@
                         </VerticalStackLayout>
                     </Border>
                     
-                    <Border Grid.Column="2" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark:#2C2C2E}" 
+                    <Border Grid.Column="2" BackgroundColor="{AppThemeBinding Light=#F2F2F7 Dark=#2C2C2E}" 
                             StrokeThickness="0" Padding="8" StrokeShape="RoundRectangle 8">
                         <VerticalStackLayout>
                             <Label Text="📈 Média/dia"
                                    FontSize="11"
-                                   TextColor="{AppThemeBinding Light=#8E8E93, Dark:#8E8E93}"/>
+                                   TextColor="{AppThemeBinding Light=#8E8E93 Dark=#8E8E93}"/>
                             <Label Text="{Binding MediaHorasDia, StringFormat='{0:0.0}h'}"
                                    FontSize="14"
                                    FontAttributes="Bold"
-                                   TextColor="{AppThemeBinding Light=#34C759, Dark:#32D74B}"/>
+                                   TextColor="{AppThemeBinding Light=#34C759 Dark=#32D74B}"/>
                         </VerticalStackLayout>
                     </Border>
                 </Grid>
 
                 <!-- Breakdown: X colaboradores, Y dias -->
                 <Label FontSize="12"
-                       TextColor="{AppThemeBinding Light:#8E8E93, Dark:#8E8E93}"
+                       TextColor="{AppThemeBinding Light:#8E8E93, Dark=#8E8E93}"
                        HorizontalTextAlignment="Center">
                     <Label.FormattedText>
                         <FormattedString>
@@ -155,7 +155,7 @@
                 <Button Text="{Binding FiltrosAbertos, StringFormat='{0:🔼 Filtros Avançados|🔽 Filtros Avançados}'}"
                         Command="{Binding AlternarFiltrosCommand}"
                         BackgroundColor="Transparent"
-                        TextColor="{AppThemeBinding Light=#007AFF, Dark:#0A84FF}"
+                        TextColor="{AppThemeBinding Light=#007AFF Dark=#0A84FF}"
                         FontAttributes="Bold"
                         FontSize="14"
                         Padding="16"
@@ -169,13 +169,13 @@
                     <VerticalStackLayout>
                         <Label Text="👤 Selecione Colaborador" 
                                FontSize="13"
-                               TextColor="{AppThemeBinding Light=#8E8E93, Dark:#8E8E93}"
+                               TextColor="{AppThemeBinding Light=#8E8E93 Dark=#8E8E93}"
                                Margin="0,0,0,4"/>
                         <Picker ItemsSource="{Binding Colaboradores}"
                                 ItemDisplayBinding="{Binding DisplayText}"
                                 SelectedItem="{Binding ColaboradorSelecionado}"
-                                BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark:#2C2C2E}"
-                                TextColor="{AppThemeBinding Light=#000000, Dark:#FFFFFF}"/>
+                                BackgroundColor="{AppThemeBinding Light=#F2F2F7 Dark=#2C2C2E}"
+                                TextColor="{AppThemeBinding Light=#000000 Dark=#FFFFFF}"/>
                     </VerticalStackLayout>
 
                     <!-- Data Intervalo -->
@@ -183,21 +183,21 @@
                         <VerticalStackLayout>
                             <Label Text="📅 Data Início" 
                                    FontSize="13"
-                                   TextColor="{AppThemeBinding Light:#8E8E93, Dark:#8E8E93}"
+                                   TextColor="{AppThemeBinding Light:#8E8E93, Dark=#8E8E93}"
                                    Margin="0,0,0,4"/>
                             <DatePicker Date="{Binding DataFiltroInicio}"
-                                        BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark:#2C2C2E}"
-                                        TextColor="{AppThemeBinding Light:#000000, Dark:#FFFFFF}"/>
+                                        BackgroundColor="{AppThemeBinding Light=#F2F2F7 Dark=#2C2C2E}"
+                                        TextColor="{AppThemeBinding Light:#000000, Dark=#FFFFFF}"/>
                         </VerticalStackLayout>
 
                         <VerticalStackLayout Grid.Column="1">
                             <Label Text="📅 Data Fim" 
                                    FontSize="13"
-                                   TextColor="{AppThemeBinding Light:#8E8E93, Dark:#8E8E93}"
+                                   TextColor="{AppThemeBinding Light:#8E8E93, Dark=#8E8E93}"
                                    Margin="0,0,0,4"/>
                             <DatePicker Date="{Binding DataFiltroFim}"
-                                        BackgroundColor="{AppThemeBinding Light:#F2F2F7, Dark:#2C2C2E}"
-                                        TextColor="{AppThemeBinding Light:#000000, Dark:#FFFFFF}"/>
+                                        BackgroundColor="{AppThemeBinding Light:#F2F2F7, Dark=#2C2C2E}"
+                                        TextColor="{AppThemeBinding Light:#000000, Dark=#FFFFFF}"/>
                         </VerticalStackLayout>
                     </Grid>
 
@@ -206,7 +206,7 @@
                         <Button Grid.Column="0"
                                 Text="🔄 Atualizar"
                                 Command="{Binding CarregarHorasCommand}"
-                                BackgroundColor="{AppThemeBinding Light=#007AFF, Dark:#0A84FF}"
+                                BackgroundColor="{AppThemeBinding Light=#007AFF Dark=#0A84FF}"
                                 TextColor="White"
                                 CornerRadius="8"
                                 HeightRequest="40"/>
@@ -214,7 +214,7 @@
                         <Button Grid.Column="1"
                                 Text="➕ Novo Registo"
                                 Command="{Binding AbrirNovoRegistoCommand}"
-                                BackgroundColor="{AppThemeBinding Light=#34C759, Dark:#32D74B}"
+                                BackgroundColor="{AppThemeBinding Light=#34C759 Dark=#32D74B}"
                                 TextColor="White"
                                 CornerRadius="8"
                                 HeightRequest="40"/>
@@ -227,7 +227,7 @@
         <Label Grid.Row="2"
                Text="{Binding Mensagem}"
                FontSize="12"
-               TextColor="{AppThemeBinding Light:#8E8E93, Dark:#8E8E93}"
+               TextColor="{AppThemeBinding Light:#8E8E93, Dark=#8E8E93}"
                HorizontalTextAlignment="Center"
                Margin="0,0,0,12"/>
 
@@ -245,7 +245,7 @@
                                HorizontalOptions="Center"/>
                         <Label Text="Nenhum registo encontrado"
                                FontSize="16"
-                               TextColor="{AppThemeBinding Light=#8E8E93, Dark:#8E8E93}"
+                               TextColor="{AppThemeBinding Light=#8E8E93 Dark=#8E8E93}"
                                HorizontalOptions="Center"/>
                     </VerticalStackLayout>
                 </CollectionView.EmptyView>
@@ -294,7 +294,7 @@
                             </SwipeView.RightItems>
 
                             <!-- Item Compacto -->
-                            <Border BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark:#1C1C1E}"
+                            <Border BackgroundColor="{AppThemeBinding Light=#FFFFFF Dark=#1C1C1E}"
                                     StrokeThickness="1"
                                     StrokeShape="RoundRectangle 8"
                                     Stroke="{AppThemeBinding Light=#E5E5EA Dark=#3A3A3C}"
@@ -310,11 +310,11 @@
                                         <Label Text="{Binding DataTrabalho, StringFormat='{0:dd}'}"
                                                FontSize="18"
                                                FontAttributes="Bold"
-                                               TextColor="{AppThemeBinding Light=#007AFF, Dark:#0A84FF}"
+                                               TextColor="{AppThemeBinding Light=#007AFF Dark=#0A84FF}"
                                                HorizontalTextAlignment="Center"/>
                                         <Label Text="{Binding DataTrabalho, StringFormat='{0:MMM}'}"
                                                FontSize="10"
-                                               TextColor="{AppThemeBinding Light:#8E8E93, Dark:#8E8E93}"
+                                               TextColor="{AppThemeBinding Light:#8E8E93, Dark=#8E8E93}"
                                                HorizontalTextAlignment="Center"/>
                                     </VerticalStackLayout>
 
@@ -323,13 +323,13 @@
                                         <Label Text="{Binding NomeColaborador}"
                                                FontSize="14"
                                                FontAttributes="Bold"
-                                               TextColor="{AppThemeBinding Light:#000000, Dark:#FFFFFF}"/>
+                                               TextColor="{AppThemeBinding Light:#000000, Dark=#FFFFFF}"/>
                                         <Label Text="{Binding HorasTotaisFormatted, StringFormat='🕐 {0}'}"
                                                FontSize="12"
-                                               TextColor="{AppThemeBinding Light:#34C759, Dark:#32D74B}"/>
+                                               TextColor="{AppThemeBinding Light:#34C759, Dark=#32D74B}"/>
                                         <Label Text="{Binding ClienteInfo, StringFormat='🏢 {0}'}"
                                                FontSize="11"
-                                               TextColor="{AppThemeBinding Light:#8E8E93, Dark:#8E8E93}"
+                                               TextColor="{AppThemeBinding Light:#8E8E93, Dark=#8E8E93}"
                                                LineBreakMode="TailTruncation"/>
                                     </VerticalStackLayout>
 
@@ -338,11 +338,11 @@
                                         <Label Text="{Binding HorasTotais, StringFormat='{0:0.0}'}"
                                                FontSize="16"
                                                FontAttributes="Bold"
-                                               TextColor="{AppThemeBinding Light:#007AFF, Dark:#0A84FF}}"
+                                               TextColor="{AppThemeBinding Light:#007AFF, Dark=#0A84FF}}"
                                                HorizontalTextAlignment="End"/>
                                         <Label Text="horas"
                                                FontSize="10"
-                                               TextColor="{AppThemeBinding Light:#8E8E93, Dark:#8E8E93}"
+                                               TextColor="{AppThemeBinding Light:#8E8E93, Dark=#8E8E93}"
                                                HorizontalTextAlignment="End"/>
                                     </VerticalStackLayout>
                                 </Grid>
@@ -358,7 +358,7 @@
               IsVisible="{Binding IsBusy}"
               BackgroundColor="#66000000">
             <ActivityIndicator IsRunning="True"
-                               Color="{AppThemeBinding Light:#007AFF, Dark:#0A84FF}"
+                               Color="{AppThemeBinding Light:#007AFF, Dark=#0A84FF}"
                                WidthRequest="48"
                                HeightRequest="48"/>
         </Grid>
