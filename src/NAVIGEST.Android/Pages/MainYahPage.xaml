@@ -205,10 +205,19 @@
                     <Border Style="{StaticResource MenuItemBorder}">
                         <Grid ColumnDefinitions="40,*">
                             <Label Text="&#xF017;" Style="{StaticResource SidebarIconLabel}" />
-                            <Label Grid.Column="1" Text="Horas" Style="{StaticResource SidebarTextLabel}" IsVisible="{Binding IsSidebarExpanded}" />
+                            <Label Grid.Column="1" Text="Horas (Nova)" Style="{StaticResource SidebarTextLabel}" IsVisible="{Binding IsSidebarExpanded}" />
                         </Grid>
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="horas" />
+                        </Border.GestureRecognizers>
+                    </Border>
+                    <Border Style="{StaticResource MenuItemBorder}">
+                        <Grid ColumnDefinitions="40,*">
+                            <Label Text="&#xF017;" Style="{StaticResource SidebarIconLabel}" />
+                            <Label Grid.Column="1" Text="Horas (Old)" Style="{StaticResource SidebarTextLabel}" IsVisible="{Binding IsSidebarExpanded}" />
+                        </Grid>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="horas_old" />
                         </Border.GestureRecognizers>
                     </Border>
                     <Border Style="{StaticResource MenuItemBorder}">

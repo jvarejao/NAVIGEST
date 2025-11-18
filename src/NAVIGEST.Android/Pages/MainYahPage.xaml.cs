@@ -321,6 +321,50 @@ namespace NAVIGEST.Android.Pages
                                 CloseSidebarMobileIfNeeded();
                                 break;
                             }
+                        case "horas_old":
+                            {
+                                try
+                                {
+                                    var services = this.Handler?.MauiContext?.Services;
+                                    var page = services?.GetService<HorasColaboradorPageOld>();
+
+                                    if (page == null)
+                                    {
+                                        page = new HorasColaboradorPageOld(new NAVIGEST.Android.PageModels.HorasColaboradorViewModel());
+                                    }
+
+                                    var pageContent = page.Content;
+
+                                    if (BindingContext is MainYahPageViewModel vmX)
+                                    {
+                                        vmX.IsConfigExpanded = false;
+                                    }
+
+                                    if (pageContent is not null)
+                                    {
+                                        pageContent.BindingContext = page.BindingContext ?? pageContent.BindingContext;
+                                        ShowContent(pageContent);
+
+                                        try
+                                        {
+                                            var mi = page.GetType().GetMethod("OnAppearing",
+                                                System.Reflection.BindingFlags.Instance |
+                                                System.Reflection.BindingFlags.Public |
+                                                System.Reflection.BindingFlags.NonPublic);
+                                            mi?.Invoke(page, null);
+                                        }
+                                        catch { /* silencioso como nos outros casos */ }
+                                    }
+                                    else
+                                    {
+                                        await DisplayToastAsync("HorasColaboradorPageOld sem conteúdo.");
+                                    }
+                                }
+                                catch (Exception ex) { TratarErro(ex); }
+
+                                CloseSidebarMobileIfNeeded();
+                                break;
+                            }
 
                     }
                 }

@@ -107,6 +107,7 @@ namespace NAVIGEST.Android
             // Horas Colaborador
             builder.Services.AddTransient<HorasColaboradorViewModel>();
             builder.Services.AddTransient<HorasColaboradorPage>();
+            builder.Services.AddTransient<HorasColaboradorPageOld>();
 
             // Splash e Welcome
             builder.Services.AddTransient<NAVIGEST.Android.Pages.SplashIntroPage>();
