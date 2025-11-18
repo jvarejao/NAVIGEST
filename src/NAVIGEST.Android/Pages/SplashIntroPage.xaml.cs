@@ -7,11 +7,15 @@ using Microsoft.Maui.Handlers;
 using Android.Webkit;
 #if ANDROID
 using Android.Util;
+using Android.App;
+using AndroidContent = Android.Content;
+using AndroidApp = Android.App.Application;
 #endif
 using AColor = Android.Graphics.Color;
 using NAVIGEST.Shared.Services;
 using NAVIGEST.Shared.Helpers;
 using System.Diagnostics;
+using Application = Microsoft.Maui.Controls.Application;
 
 namespace NAVIGEST.Android.Pages
 {
@@ -71,16 +75,54 @@ namespace NAVIGEST.Android.Pages
 
             try
             {
-                // Verificar se a app foi atualizada (versão no manifest diferente da guardada)
+                // ✅ CRITICAL FIX: Sempre sincronizar versão instalada com Preferences
+                // Isto garante que após atualizar a app, a versão fica registada
                 string manifestVersion = AppInfo.Current.VersionString ?? "1.0.0";
-                string savedVersion = Preferences.Get(INSTALLED_VERSION_KEY, null) ?? manifestVersion;
+                string? savedVersion = Preferences.Get(INSTALLED_VERSION_KEY, null);
                 
-                if (manifestVersion != savedVersion)
+#if ANDROID
+                Log.Info(LogTag, $"Version check: Manifest={manifestVersion}, Saved={savedVersion ?? "null"}");
+#endif
+                
+                // Se não houver versão guardada OU versões são diferentes → sincronizar
+                if (string.IsNullOrEmpty(savedVersion) || manifestVersion != savedVersion)
                 {
 #if ANDROID
-                    Log.Info(LogTag, $"App foi atualizada: {savedVersion} → {manifestVersion}. Guardando nova versão.");
+                    Log.Info(LogTag, $"App versão alterada: {savedVersion ?? "primeira vez"} → {manifestVersion}. Atualizando Preferences.");
 #endif
-                    SaveInstalledVersion(manifestVersion);
+                    // Força atualização persistent no Preferences com múltiplas tentativas
+                    try
+                    {
+                        Preferences.Set(INSTALLED_VERSION_KEY, manifestVersion);
+#if ANDROID
+                        // Em Android, tenta usar SharedPreferences diretamente se disponível
+                        var context = AndroidApp.Context;
+                        if (context != null)
+                        {
+                            var prefs = context.GetSharedPreferences("com.navigatorcode.navigest_preferences", (AndroidContent.FileCreationMode)0);
+                            if (prefs != null)
+                            {
+                                var editor = prefs.Edit();
+                                if (editor != null)
+                                {
+                                    editor.PutString(INSTALLED_VERSION_KEY, manifestVersion);
+                                    editor.Commit(); // Síncrono - força escrita no disco
+                                    Log.Info(LogTag, $"✅ SharedPreferences sync completo. Versão guardada: {manifestVersion}");
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Log.Info(LogTag, $"✅ Preferences atualizado (sem SharedPreferences direto). Versão: {manifestVersion}");
+                        }
+#endif
+                    }
+                    catch (Exception prefEx)
+                    {
+#if ANDROID
+                        Log.Error(LogTag, $"Erro ao atualizar Preferences: {prefEx.Message}");
+#endif
+                    }
                 }
 
                 // ✅ Mostrar versão no SplashScreen
