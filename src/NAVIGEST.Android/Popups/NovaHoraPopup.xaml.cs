@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls;
 using NAVIGEST.Android.Models;
@@ -12,6 +13,7 @@ public partial class NovaHoraPopup : Popup
 {
     private HoraColaborador _hora;
     private List<Colaborador> _colaboradores;
+    private List<Cliente> _clientes = new();
     private bool _isEdit;
 
     public NovaHoraPopup(HoraColaborador hora, List<Colaborador> colaboradores)
@@ -22,10 +24,10 @@ public partial class NovaHoraPopup : Popup
         _colaboradores = colaboradores;
         _isEdit = hora.Id > 0;
 
-        InicializarForm();
+        _ = InicializarFormAsync();
     }
 
-    private void InicializarForm()
+    private async Task InicializarFormAsync()
     {
         // Configurar título
         TituloLabel.Text = _isEdit ? "✏️ EDITAR REGISTO DE HORAS" : "➕ NOVO REGISTO DE HORAS";
@@ -34,6 +36,35 @@ public partial class NovaHoraPopup : Popup
         // Carregar colaboradores
         ColaboradorPicker.ItemsSource = _colaboradores;
         ColaboradorPicker.ItemDisplayBinding = new Binding("DisplayText");
+
+        // Carregar clientes da BD
+        try
+        {
+            var clientesDb = await DatabaseService.GetClientesAsync(null);
+            _clientes = clientesDb.OrderBy(c => c.CLINOME).ToList();
+            
+            // Adicionar opção "Sem cliente" no início
+            _clientes.Insert(0, new Cliente { CLICODIGO = "0", CLINOME = "Sem cliente" });
+            
+            ClientePicker.ItemsSource = _clientes;
+            ClientePicker.ItemDisplayBinding = new Binding("CLINOME");
+            
+            // Se for edição, selecionar cliente atual
+            if (_isEdit && !string.IsNullOrEmpty(_hora.IdCliente))
+            {
+                var cliente = _clientes.FirstOrDefault(c => c.CLICODIGO == _hora.IdCliente);
+                ClientePicker.SelectedItem = cliente;
+            }
+            else
+            {
+                // Selecionar "Sem cliente" por padrão
+                ClientePicker.SelectedIndex = 0;
+            }
+        }
+        catch (Exception ex)
+        {
+            GlobalErro.TratarErro(ex, mostrarAlerta: false);
+        }
 
         // Se for edição, selecionar colaborador atual
         if (_isEdit && _hora.IdColaborador > 0)
@@ -102,10 +133,23 @@ public partial class NovaHoraPopup : Popup
             SetBusy(true);
             EsconderErro();
 
-            // Preencher objeto
+            // Preencher objeto - Colaborador
             _hora.DataTrabalho = DataPicker.Date;
             _hora.IdColaborador = colab.ID;
             _hora.NomeColaborador = colab.Nome;
+            
+            // Preencher objeto - Cliente
+            if (ClientePicker.SelectedItem is Cliente cliente && cliente.CLICODIGO != "0")
+            {
+                _hora.IdCliente = cliente.CLICODIGO;
+                _hora.Cliente = cliente.CLINOME;
+            }
+            else
+            {
+                _hora.IdCliente = null;
+                _hora.Cliente = null;
+            }
+            
             _hora.Observacoes = ObservacoesEditor.Text?.Trim();
 
             // Calcular horas normais e extras

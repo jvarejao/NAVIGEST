@@ -6,7 +6,7 @@
                xmlns:models="clr-namespace:NAVIGEST.Android.Models"
                CanBeDismissedByTappingOutsideOfPopup="False">
   <toolkit:Popup.Size>
-    <Size Width="400" Height="580" />
+    <Size Width="400" Height="680" />
   </toolkit:Popup.Size>
 
   <Border BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
@@ -37,6 +37,18 @@
                    FontAttributes="Bold"
                    TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
             <Picker x:Name="ColaboradorPicker"
+                    Grid.Row="1"
+                    BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
+                    TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+          </Grid>
+
+          <!-- Cliente -->
+          <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
+            <Label Text="🏢 Cliente"
+                   FontSize="14"
+                   FontAttributes="Bold"
+                   TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+            <Picker x:Name="ClientePicker"
                     Grid.Row="1"
                     BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
                     TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
