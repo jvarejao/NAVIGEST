@@ -36,6 +36,9 @@ public partial class HorasColaboradorViewModel : ObservableObject
     [ObservableProperty]
     private bool filtrosAbertos = false;
 
+    [ObservableProperty]
+    private int tabAtiva = 1; // 1=Resumo, 2=Lista, 3=Calendário
+
     // Flag para prevenir recarregos durante inicialização
     private bool _isInitializing = true;
 
@@ -259,5 +262,46 @@ public partial class HorasColaboradorViewModel : ObservableObject
         OnPropertyChanged(nameof(TemExtras));
         OnPropertyChanged(nameof(PeriodoSelecionado));
         OnPropertyChanged(nameof(ColaboradorDisplay));
+    }
+
+    // Métodos de atalho de período
+    [RelayCommand]
+    private void SelecionarHoje()
+    {
+        DataFiltroInicio = DateTime.Today;
+        DataFiltroFim = DateTime.Today;
+    }
+
+    [RelayCommand]
+    private void SelecionarEstaSemana()
+    {
+        var hoje = DateTime.Today;
+        var diaSemana = (int)hoje.DayOfWeek;
+        var inicioSemana = hoje.AddDays(-(diaSemana == 0 ? 6 : diaSemana - 1)); // Segunda-feira
+        
+        DataFiltroInicio = inicioSemana;
+        DataFiltroFim = hoje;
+    }
+
+    [RelayCommand]
+    private void SelecionarEsteMes()
+    {
+        var hoje = DateTime.Today;
+        DataFiltroInicio = new DateTime(hoje.Year, hoje.Month, 1);
+        DataFiltroFim = hoje;
+    }
+
+    [RelayCommand]
+    private void SelecionarUltimos30Dias()
+    {
+        DataFiltroInicio = DateTime.Today.AddDays(-30);
+        DataFiltroFim = DateTime.Today;
+    }
+
+    [RelayCommand]
+    private void SelecionarMes(DateTime mesSelecionado)
+    {
+        DataFiltroInicio = new DateTime(mesSelecionado.Year, mesSelecionado.Month, 1);
+        DataFiltroFim = new DateTime(mesSelecionado.Year, mesSelecionado.Month, DateTime.DaysInMonth(mesSelecionado.Year, mesSelecionado.Month));
     }
 }
