@@ -48,18 +48,6 @@ public partial class NovaHoraPopup : Popup
             
             ClientePicker.ItemsSource = _clientes;
             ClientePicker.ItemDisplayBinding = new Binding("CLINOME");
-            
-            // Se for edição, selecionar cliente atual
-            if (_isEdit && !string.IsNullOrEmpty(_hora.IdCliente))
-            {
-                var cliente = _clientes.FirstOrDefault(c => c.CLICODIGO == _hora.IdCliente);
-                ClientePicker.SelectedItem = cliente;
-            }
-            else
-            {
-                // Selecionar "Sem cliente" por padrão
-                ClientePicker.SelectedIndex = 0;
-            }
         }
         catch (Exception ex)
         {
@@ -71,40 +59,63 @@ public partial class NovaHoraPopup : Popup
         {
             var colab = _colaboradores.FirstOrDefault(c => c.ID == _hora.IdColaborador);
             ColaboradorPicker.SelectedItem = colab;
+            
+            // Selecionar cliente também (se existir)
+            if (!string.IsNullOrEmpty(_hora.IdCliente))
+            {
+                var idClienteTrim = _hora.IdCliente.Trim();
+                var clienteSelecionado = _clientes.FirstOrDefault(c => c.CLICODIGO?.Trim() == idClienteTrim);
+                
+                if (clienteSelecionado != null)
+                {
+                    ClientePicker.SelectedItem = clienteSelecionado;
+                }
+                else
+                {
+                    // Cliente não existe mais na BD - selecionar "Sem cliente"
+                    ClientePicker.SelectedIndex = 0;
+                    await Shell.Current.DisplayAlert("⚠️ Aviso", 
+                        $"O cliente '{idClienteTrim}' já não existe na base de dados.\n\n" +
+                        $"Este registo tinha o cliente: {_hora.Cliente ?? "N/A"}", 
+                        "OK");
+                }
+            }
+            else
+            {
+                ClientePicker.SelectedIndex = 0;
+            }
+        }
+        else
+        {
+            // Novo registo - sem cliente por padrão
+            ClientePicker.SelectedIndex = 0;
         }
 
         // Preencher campos
         DataPicker.Date = _hora.DataTrabalho;
-        HorasTotalEntry.Text = (_hora.HorasTrab + _hora.HorasExtras).ToString("0.00");
+        HorasNormaisEntry.Text = _hora.HorasTrab.ToString("0.00");
+        HorasExtrasEntry.Text = _hora.HorasExtras.ToString("0.00");
         ObservacoesEditor.Text = _hora.Observacoes;
 
-        // Calcular horas iniciais
-        CalcularHoras();
+        // Calcular total inicial
+        CalcularTotal();
     }
 
-    private void OnHorasTotalChanged(object sender, TextChangedEventArgs e)
+    private void OnHorasChanged(object sender, TextChangedEventArgs e)
     {
-        CalcularHoras();
+        CalcularTotal();
     }
 
-    private void CalcularHoras()
+    private void CalcularTotal()
     {
-        if (!float.TryParse(HorasTotalEntry.Text?.Replace(",", "."), out float totalHoras) || totalHoras < 0)
-        {
-            HorasTotalBorder.Stroke = Colors.Red;
-            HorasNormaisLabel.Text = "0,00h";
-            HorasExtraLabel.Text = "0,00h";
-            return;
-        }
-
-        HorasTotalBorder.Stroke = Colors.Transparent;
-
-        // Calcular (máximo 8h normais, resto é extra)
-        var horasNormais = Math.Min(totalHoras, 8.0f);
-        var horasExtra = Math.Max(totalHoras - 8.0f, 0.0f);
-
-        HorasNormaisLabel.Text = $"{horasNormais:0.00}h";
-        HorasExtraLabel.Text = $"{horasExtra:0.00}h";
+        float.TryParse(HorasNormaisEntry.Text?.Replace(",", "."), out float horasNormais);
+        float.TryParse(HorasExtrasEntry.Text?.Replace(",", "."), out float horasExtras);
+        
+        if (horasNormais < 0) horasNormais = 0;
+        if (horasExtras < 0) horasExtras = 0;
+        
+        float total = horasNormais + horasExtras;
+        TotalHorasLabel.Text = $"{total:0.00}h";
     }
 
     private async void OnGuardarClicked(object sender, EventArgs e)
@@ -118,15 +129,21 @@ public partial class NovaHoraPopup : Popup
                 return;
             }
 
-            if (!float.TryParse(HorasTotalEntry.Text?.Replace(",", "."), out float totalHoras) || totalHoras <= 0)
+            if (!float.TryParse(HorasNormaisEntry.Text?.Replace(",", "."), out float horasNormais) || horasNormais < 0)
             {
-                MostrarErro("Insira um número de horas válido");
+                MostrarErro("Insira horas normais válidas");
                 return;
             }
 
-            if (totalHoras > 24)
+            if (!float.TryParse(HorasExtrasEntry.Text?.Replace(",", "."), out float horasExtras) || horasExtras < 0)
             {
-                MostrarErro("Número de horas não pode exceder 24h");
+                MostrarErro("Insira horas extras válidas");
+                return;
+            }
+
+            if (horasNormais + horasExtras > 24)
+            {
+                MostrarErro("Total de horas não pode exceder 24h");
                 return;
             }
 
@@ -152,8 +169,9 @@ public partial class NovaHoraPopup : Popup
             
             _hora.Observacoes = ObservacoesEditor.Text?.Trim();
 
-            // Calcular horas normais e extras
-            _hora.CalcularHoras(totalHoras);
+            // Guardar horas normais e extras diretamente
+            _hora.HorasTrab = horasNormais;
+            _hora.HorasExtras = horasExtras;
 
             // Gravar na BD
             var id = await DatabaseService.UpsertHoraColaboradorAsync(_hora);

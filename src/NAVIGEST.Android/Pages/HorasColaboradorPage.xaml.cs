@@ -6,6 +6,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Shapes;
 using CommunityToolkit.Maui.Views;
+using CommunityToolkit.Maui.Alerts;
 using NAVIGEST.Android.PageModels;
 using NAVIGEST.Android.Models;
 using NAVIGEST.Android.Popups;
@@ -265,7 +266,7 @@ public partial class HorasColaboradorPage : ContentPage
         // Botão Adicionar
         var btnAdicionar = new Button
         {
-            Text = "➕ Adicionar Hora",
+            Text = "➕ Adicionar Horas Trab.",
             BackgroundColor = Color.FromArgb("#0A84FF"),
             TextColor = Colors.White,
             FontAttributes = FontAttributes.Bold,
@@ -291,7 +292,8 @@ public partial class HorasColaboradorPage : ContentPage
             ItemsSource = _vm.Colaboradores.ToList(),
             ItemDisplayBinding = new Binding("Nome"),
             SelectedItem = _vm.ColaboradorSelecionado,
-            BackgroundColor = Application.Current?.RequestedTheme == AppTheme.Dark ? Color.FromArgb("#2C2C2E") : Color.FromArgb("#F5F5F7")
+            BackgroundColor = Application.Current?.RequestedTheme == AppTheme.Dark ? Color.FromArgb("#2C2C2E") : Color.FromArgb("#F5F5F7"),
+            TextColor = Application.Current?.RequestedTheme == AppTheme.Dark ? Colors.White : Colors.Black
         };
         colabPicker.SelectedIndexChanged += (s, e) =>
         {
@@ -339,7 +341,8 @@ public partial class HorasColaboradorPage : ContentPage
         {
             Date = _vm.DataFiltroInicio,
             Format = "dd/MM/yyyy",
-            BackgroundColor = Application.Current?.RequestedTheme == AppTheme.Dark ? Color.FromArgb("#2C2C2E") : Color.FromArgb("#F5F5F7")
+            BackgroundColor = Application.Current?.RequestedTheme == AppTheme.Dark ? Color.FromArgb("#2C2C2E") : Color.FromArgb("#F5F5F7"),
+            TextColor = Application.Current?.RequestedTheme == AppTheme.Dark ? Colors.White : Colors.Black
         };
         dataInicioPicker.DateSelected += (s, e) =>
         {
@@ -355,7 +358,8 @@ public partial class HorasColaboradorPage : ContentPage
         {
             Date = _vm.DataFiltroFim,
             Format = "dd/MM/yyyy",
-            BackgroundColor = Application.Current?.RequestedTheme == AppTheme.Dark ? Color.FromArgb("#2C2C2E") : Color.FromArgb("#F5F5F7")
+            BackgroundColor = Application.Current?.RequestedTheme == AppTheme.Dark ? Color.FromArgb("#2C2C2E") : Color.FromArgb("#F5F5F7"),
+            TextColor = Application.Current?.RequestedTheme == AppTheme.Dark ? Colors.White : Colors.Black
         };
         dataFimPicker.DateSelected += (s, e) =>
         {
@@ -394,30 +398,97 @@ public partial class HorasColaboradorPage : ContentPage
     {
         var swipeView = new SwipeView();
         
-        var editSwipe = new SwipeItem
-        {
-            Text = "Editar",
-            BackgroundColor = Color.FromArgb("#0A84FF")
+        // Editar - Botão circular
+        var editGrid = new Grid 
+        { 
+            WidthRequest = 80, 
+            Padding = 0, 
+            BackgroundColor = Colors.Transparent, 
+            HorizontalOptions = LayoutOptions.Center, 
+            VerticalOptions = LayoutOptions.Fill 
         };
-        editSwipe.Invoked += async (s, e) =>
+        var editBorder = new Border
         {
-            if ((s as SwipeItem)?.BindingContext is HoraColaborador hora)
+            WidthRequest = 56,
+            HeightRequest = 56,
+            BackgroundColor = Color.FromArgb("#0A84FF"),
+            StrokeThickness = 0,
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Center,
+            StrokeShape = new RoundRectangle { CornerRadius = 28 }
+        };
+        editBorder.Content = new Label
+        {
+            Text = "✏️",
+            FontSize = 28,
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Center
+        };
+        editGrid.Add(editBorder);
+        
+        var editSwipeView = new SwipeItemView { Content = editGrid };
+        editSwipeView.Invoked += async (s, e) =>
+        {
+            if ((s as SwipeItemView)?.BindingContext is HoraColaborador hora)
+            {
+                System.Diagnostics.Debug.WriteLine($">>> SWIPE EDITAR - IdCliente: '{hora.IdCliente}', Cliente: '{hora.Cliente}'");
                 await AbrirNovaHoraPopupAsync(hora);
+            }
         };
         
-        var deleteSwipe = new SwipeItem
-        {
-            Text = "Eliminar",
-            BackgroundColor = Color.FromArgb("#FF3B30")
+        // Eliminar - Botão circular
+        var deleteGrid = new Grid 
+        { 
+            WidthRequest = 80, 
+            Padding = 0, 
+            BackgroundColor = Colors.Transparent, 
+            HorizontalOptions = LayoutOptions.Center, 
+            VerticalOptions = LayoutOptions.Fill 
         };
-        deleteSwipe.Invoked += async (s, e) =>
+        var deleteBorder = new Border
         {
-            if ((s as SwipeItem)?.BindingContext is HoraColaborador hora)
-                await _vm.EliminarHoraCommand.ExecuteAsync(hora);
+            WidthRequest = 56,
+            HeightRequest = 56,
+            BackgroundColor = Color.FromArgb("#FF3B30"),
+            StrokeThickness = 0,
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Center,
+            StrokeShape = new RoundRectangle { CornerRadius = 28 }
+        };
+        deleteBorder.Content = new Label
+        {
+            Text = "🗑️",
+            FontSize = 28,
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Center
+        };
+        deleteGrid.Add(deleteBorder);
+        
+        var deleteSwipeView = new SwipeItemView { Content = deleteGrid };
+        deleteSwipeView.Invoked += async (s, e) =>
+        {
+            if ((s as SwipeItemView)?.BindingContext is HoraColaborador hora)
+            {
+                bool confirmacao = await Shell.Current.DisplayAlert(
+                    "Confirmar",
+                    "Eliminar este registo de horas?",
+                    "Sim",
+                    "Não"
+                );
+                
+                if (confirmacao)
+                {
+                    await _vm.EliminarHoraCommand.ExecuteAsync(hora.Id);
+                    await Toast.Make("Registo eliminado com sucesso", CommunityToolkit.Maui.Core.ToastDuration.Short).Show();
+                }
+            }
         };
         
-        swipeView.LeftItems = new SwipeItems { editSwipe };
-        swipeView.RightItems = new SwipeItems { deleteSwipe };
+        // Ambos os botões circulares no lado direito
+        var swipeItems = new SwipeItems { Mode = SwipeMode.Reveal, SwipeBehaviorOnInvoked = SwipeBehaviorOnInvoked.Close };
+        swipeItems.Add(editSwipeView);
+        swipeItems.Add(deleteSwipeView);
+        swipeView.RightItems = swipeItems;
         
         var itemBorder = new Border
         {
@@ -447,16 +518,37 @@ public partial class HorasColaboradorPage : ContentPage
         lblCliente.SetBinding(Label.IsVisibleProperty, new Binding("Cliente", converter: new StringNotEmptyConverter()));
         itemGrid.Add(lblCliente, 0, 2);
         
-        var lblTotal = new Label 
+        // Lado direito: Horas Normal + Extra
+        var horasStack = new VerticalStackLayout 
         { 
-            FontSize = 18, 
+            Spacing = 2,
+            VerticalOptions = LayoutOptions.Center,
+            HorizontalOptions = LayoutOptions.End
+        };
+        
+        var lblHorasNormais = new Label 
+        { 
+            FontSize = 16, 
             FontAttributes = FontAttributes.Bold, 
             TextColor = Color.FromArgb("#34C759"),
-            VerticalTextAlignment = TextAlignment.Center
+            HorizontalTextAlignment = TextAlignment.End
         };
-        lblTotal.SetBinding(Label.TextProperty, new Binding(".", converter: new TotalHorasConverter()));
-        itemGrid.Add(lblTotal, 1, 0);
-        Grid.SetRowSpan(lblTotal, 3);
+        lblHorasNormais.SetBinding(Label.TextProperty, new Binding("HorasTrab", stringFormat: "✓ {0:0.0}h"));
+        horasStack.Add(lblHorasNormais);
+        
+        var lblHorasExtra = new Label 
+        { 
+            FontSize = 14, 
+            FontAttributes = FontAttributes.Bold, 
+            TextColor = Color.FromArgb("#FF9500"),
+            HorizontalTextAlignment = TextAlignment.End
+        };
+        lblHorasExtra.SetBinding(Label.TextProperty, new Binding("HorasExtras", stringFormat: "⚡ {0:0.0}h"));
+        lblHorasExtra.SetBinding(Label.IsVisibleProperty, new Binding("HorasExtras", converter: new HorasExtraConverter()));
+        horasStack.Add(lblHorasExtra);
+        
+        itemGrid.Add(horasStack, 1, 0);
+        Grid.SetRowSpan(horasStack, 3);
         
         itemBorder.Content = itemGrid;
         swipeView.Content = itemBorder;
@@ -482,13 +574,30 @@ public partial class HorasColaboradorPage : ContentPage
     {
         try
         {
-            var popup = new NovaHoraPopup(hora, _vm.Colaboradores.ToList());
+            // Se hora é null, criar novo objeto
+            var horaParaEditar = hora ?? new HoraColaborador
+            {
+                DataTrabalho = DateTime.Today,
+                HorasTrab = 0,
+                HorasExtras = 0,
+                IdColaborador = _vm.ColaboradorSelecionado?.ID ?? 0
+            };
+            
+            var popup = new NovaHoraPopup(horaParaEditar, _vm.Colaboradores.ToList());
             var page = Application.Current?.Windows[0]?.Page;
             if (page != null)
             {
                 var result = await page.ShowPopupAsync(popup);
-                if (result is bool sucesso && sucesso)
+                
+                // Popup retorna HoraColaborador quando salva/edita com sucesso, ou Id=-1 quando elimina
+                if (result is HoraColaborador horaResultado)
                 {
+                    if (horaResultado.Id == -1)
+                    {
+                        // Foi eliminado no popup
+                        await Toast.Make("Registo eliminado com sucesso", CommunityToolkit.Maui.Core.ToastDuration.Short).Show();
+                    }
+                    // Recarregar lista
                     await _vm.CarregarHorasCommand.ExecuteAsync(null);
                 }
             }
@@ -698,6 +807,19 @@ public partial class HorasColaboradorPage : ContentPage
                 return $"{total:0.0}h";
             }
             return "0h";
+        }
+        
+        public object? ConvertBack(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
+            => throw new NotImplementedException();
+    }
+    
+    private class HorasExtraConverter : IValueConverter
+    {
+        public object? Convert(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
+        {
+            if (value is float horas)
+                return horas > 0;
+            return false;
         }
         
         public object? ConvertBack(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)

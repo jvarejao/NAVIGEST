@@ -66,32 +66,70 @@
                         TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
           </Grid>
 
-          <!-- Horas Totais -->
+          <!-- Horas Normais -->
           <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
-            <Label Text="⏱️ Horas Totais"
+            <Label Text="✓ Horas Normais"
                    FontSize="14"
                    FontAttributes="Bold"
-                   TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
-            <Border x:Name="HorasTotalBorder"
+                   TextColor="{AppThemeBinding Light=#34C759, Dark=#30D158}"/>
+            <Border x:Name="HorasNormaisBorder"
+                    Grid.Row="1"
                     BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
                     StrokeThickness="2"
                     Stroke="Transparent"
                     StrokeShape="RoundRectangle 8">
-              <Entry x:Name="HorasTotalEntry"
-                     Grid.Row="1"
-                     Placeholder="Ex: 8.5"
+              <Entry x:Name="HorasNormaisEntry"
+                     Placeholder="Ex: 8"
                      Keyboard="Numeric"
                      BackgroundColor="Transparent"
                      TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
                      PlaceholderColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
-                     TextChanged="OnHorasTotalChanged"/>
+                     TextChanged="OnHorasChanged"/>
             </Border>
+          </Grid>
+
+          <!-- Horas Extras -->
+          <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
+            <Label Text="⚡ Horas Extras"
+                   FontSize="14"
+                   FontAttributes="Bold"
+                   TextColor="{AppThemeBinding Light=#FF9500, Dark=#FF9F0A}"/>
+            <Border x:Name="HorasExtrasBorder"
+                    Grid.Row="1"
+                    BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
+                    StrokeThickness="2"
+                    Stroke="Transparent"
+                    StrokeShape="RoundRectangle 8">
+              <Entry x:Name="HorasExtrasEntry"
+                     Placeholder="Ex: 2"
+                     Keyboard="Numeric"
+                     BackgroundColor="Transparent"
+                     TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
+                     PlaceholderColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
+                     TextChanged="OnHorasChanged"/>
+            </Border>
+          </Grid>
+
+          <!-- Total Calculado -->
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+            <Label Text="📊 Total:"
+                   FontSize="14"
+                   FontAttributes="Bold"
+                   TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
+                   VerticalOptions="Center"/>
+            <Label x:Name="TotalHorasLabel"
+                   Grid.Column="1"
+                   Text="0,00h"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   TextColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"
+                   VerticalOptions="Center"/>
           </Grid>
 
           <!-- Horas Calculadas (Readonly) -->
           <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
             <VerticalStackLayout>
-              <Label Text="🔢 Horas Normais"
+              <Label Text="� Horas Normais"
                      FontSize="14"
                      FontAttributes="Bold"
                      TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
