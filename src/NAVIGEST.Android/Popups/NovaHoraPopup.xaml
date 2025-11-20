@@ -9,7 +9,7 @@
     <Size Width="400" Height="680" />
   </toolkit:Popup.Size>
 
-  <Border BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
+  <Border BackgroundColor="{AppThemeBinding Light=#FFFFFF Dark=#1C1C1E}"
           StrokeThickness="0"
           Padding="24"
           StrokeShape="RoundRectangle 18">
@@ -25,7 +25,7 @@
              FontSize="20"
              FontAttributes="Bold"
              HorizontalOptions="Center"
-             TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+             TextColor="{AppThemeBinding Light=#000000 Dark=#FFFFFF}"/>
 
       <!-- Formulário -->
       <ScrollView Grid.Row="1">
@@ -35,9 +35,9 @@
             <Label Text="👤 Colaborador"
                    FontSize="14"
                    FontAttributes="Bold"
-                   TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+                   TextColor="{AppThemeBinding Light=#000000 Dark=#FFFFFF}"/>
             <Border Grid.Row="1"
-                    BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
+                    BackgroundColor="{AppThemeBinding Light=#F2F2F7 Dark=#2C2C2E}"
                     StrokeThickness="0"
                     StrokeShape="RoundRectangle 8">
               <Grid ColumnDefinitions="*,Auto">
@@ -45,12 +45,13 @@
                        Text="Selecione colaborador"
                        Padding="12,10"
                        VerticalOptions="Center"
-                       TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+                       TextColor="{AppThemeBinding Light=#000000 Dark=#FFFFFF}"/>
                 <Button Grid.Column="1"
-                        Text="🔍"
+                        FontFamily="FA7Solid"
+                        Text="&#xF002;"
                         FontSize="20"
                         BackgroundColor="Transparent"
-                        TextColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"
+                        TextColor="{AppThemeBinding Light=#007AFF Dark=#0A84FF}"
                         Clicked="OnSelecionarColaboradorClicked"
                         WidthRequest="50"/>
               </Grid>
@@ -67,9 +68,9 @@
             <Label Text="🏢 Cliente"
                    FontSize="14"
                    FontAttributes="Bold"
-                   TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+                   TextColor="{AppThemeBinding Light=#000000 Dark=#FFFFFF}"/>
             <Border Grid.Row="1"
-                    BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
+                    BackgroundColor="{AppThemeBinding Light=#F2F2F7 Dark=#2C2C2E}"
                     StrokeThickness="0"
                     StrokeShape="RoundRectangle 8">
               <Grid ColumnDefinitions="*,Auto">
@@ -77,12 +78,13 @@
                        Text="Sem cliente"
                        Padding="12,10"
                        VerticalOptions="Center"
-                       TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+                       TextColor="{AppThemeBinding Light=#000000 Dark=#FFFFFF}"/>
                 <Button Grid.Column="1"
-                        Text="🔍"
+                        FontFamily="FA7Solid"
+                        Text="&#xF002;"
                         FontSize="20"
                         BackgroundColor="Transparent"
-                        TextColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"
+                        TextColor="{AppThemeBinding Light=#007AFF Dark=#0A84FF}"
                         Clicked="OnPesquisarClienteClicked"
                         WidthRequest="50"/>
               </Grid>
@@ -90,8 +92,8 @@
             <Picker x:Name="ClientePicker"
                     Grid.Row="1"
                     IsVisible="False"
-                    BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
-                    TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+                    BackgroundColor="{AppThemeBinding Light=#F2F2F7 Dark=#2C2C2E}"
+                    TextColor="{AppThemeBinding Light=#000000 Dark=#FFFFFF}"/>
           </Grid>
 
           <!-- Data -->
@@ -99,11 +101,11 @@
             <Label Text="📅 Data"
                    FontSize="14"
                    FontAttributes="Bold"
-                   TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+                   TextColor="{AppThemeBinding Light=#000000 Dark=#FFFFFF}"/>
             <DatePicker x:Name="DataPicker"
                         Grid.Row="1"
-                        BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
-                        TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+                        BackgroundColor="{AppThemeBinding Light=#F2F2F7 Dark=#2C2C2E}"
+                        TextColor="{AppThemeBinding Light=#000000 Dark=#FFFFFF}"/>
           </Grid>
 
           <!-- Horas Normais -->
@@ -111,19 +113,19 @@
             <Label Text="✓ Horas Normais"
                    FontSize="14"
                    FontAttributes="Bold"
-                   TextColor="{AppThemeBinding Light=#34C759, Dark=#30D158}"/>
+                   TextColor="{AppThemeBinding Light=#34C759 Dark=#30D158}"/>
             <Border x:Name="HorasNormaisBorder"
                     Grid.Row="1"
-                    BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
+                    BackgroundColor="{AppThemeBinding Light=#F2F2F7 Dark=#2C2C2E}"
                     StrokeThickness="2"
                     Stroke="Transparent"
                     StrokeShape="RoundRectangle 8">
               <Entry x:Name="HorasNormaisEntry"
                      Placeholder="Ex: 8 ou 8.5"
-                     Keyboard="Default"
+                     Keyboard="Numeric"
                      BackgroundColor="Transparent"
-                     TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
-                     PlaceholderColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
+                     TextColor="{AppThemeBinding Light=#000000 Dark=#FFFFFF}"
+                     PlaceholderColor="{AppThemeBinding Light=#8E8E93 Dark=#8E8E93}"
                      TextChanged="OnHorasChanged"/>
             </Border>
           </Grid>
@@ -133,57 +135,42 @@
             <Label Text="⚡ Horas Extras"
                    FontSize="14"
                    FontAttributes="Bold"
-                   TextColor="{AppThemeBinding Light=#FF9500, Dark=#FF9F0A}"/>
+                   TextColor="{AppThemeBinding Light=#FF9500 Dark=#FF9F0A}"/>
             <Border x:Name="HorasExtrasBorder"
                     Grid.Row="1"
-                    BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
+                    BackgroundColor="{AppThemeBinding Light=#F2F2F7 Dark=#2C2C2E}"
                     StrokeThickness="2"
                     Stroke="Transparent"
                     StrokeShape="RoundRectangle 8">
               <Entry x:Name="HorasExtrasEntry"
                      Placeholder="Ex: 2 ou 2.5"
-                     Keyboard="Default"
+                     Keyboard="Numeric"
                      BackgroundColor="Transparent"
-                     TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
-                     PlaceholderColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
+                     TextColor="{AppThemeBinding Light=#000000 Dark=#FFFFFF}"
+                     PlaceholderColor="{AppThemeBinding Light=#8E8E93 Dark=#8E8E93}"
                      TextChanged="OnHorasChanged"/>
             </Border>
           </Grid>
 
-          <!-- Total Calculado -->
-          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
-            <Label Text="📊 Total:"
-                   FontSize="14"
-                   FontAttributes="Bold"
-                   TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
-                   VerticalOptions="Center"/>
-            <Label x:Name="TotalHorasLabel"
-                   Grid.Column="1"
-                   Text="0,00h"
-                   FontSize="18"
-                   FontAttributes="Bold"
-                   TextColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"
-                   VerticalOptions="Center"/>
-          </Grid>
 
           <!-- Observações -->
           <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
             <Label Text="📝 Observações"
                    FontSize="14"
                    FontAttributes="Bold"
-                   TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+                   TextColor="{AppThemeBinding Light=#000000 Dark=#FFFFFF}"/>
             <Editor x:Name="ObservacoesEditor"
                     Grid.Row="1"
                     Placeholder="Observações adicionais"
                     HeightRequest="80"
-                    BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
-                    TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
-                    PlaceholderColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"/>
+                    BackgroundColor="{AppThemeBinding Light=#F2F2F7 Dark=#2C2C2E}"
+                    TextColor="{AppThemeBinding Light=#000000 Dark=#FFFFFF}"
+                    PlaceholderColor="{AppThemeBinding Light=#8E8E93 Dark=#8E8E93}"/>
           </Grid>
 
           <!-- Erro -->
           <Label x:Name="ErrorLabel"
-                 TextColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}"
+                 TextColor="{AppThemeBinding Light=#FF3B30 Dark=#FF453A}"
                  FontSize="13"
                  IsVisible="False"
                  HorizontalOptions="Center"/>
@@ -252,7 +239,7 @@
             IsVisible="False"
             BackgroundColor="#99000000">
         <ActivityIndicator IsRunning="True"
-                           Color="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"
+                           Color="{AppThemeBinding Light=#007AFF Dark=#0A84FF}"
                            WidthRequest="48"
                            HeightRequest="48"/>
       </Grid>

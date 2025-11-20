@@ -101,33 +101,12 @@ public partial class NovaHoraPopup : Popup
         HorasExtrasEntry.Text = _hora.HorasExtras.ToString("0.00");
         ObservacoesEditor.Text = _hora.Observacoes;
 
-        // Forçar cálculo do total após preencher os campos - usar MainThread para garantir UI atualizada
-        MainThread.BeginInvokeOnMainThread(() =>
-        {
-            CalcularTotal();
-        });
+        // Total label removido - nenhum cálculo necessário;
     }
 
     private void OnHorasChanged(object sender, TextChangedEventArgs e)
     {
-        CalcularTotal();
-    }
-
-    private void CalcularTotal()
-    {
-        float.TryParse(HorasNormaisEntry.Text?.Replace(",", "."), out float horasNormais);
-        float.TryParse(HorasExtrasEntry.Text?.Replace(",", "."), out float horasExtras);
-        
-        if (horasNormais < 0) horasNormais = 0;
-        if (horasExtras < 0) horasExtras = 0;
-        
-        float total = horasNormais + horasExtras;
-        MainThread.BeginInvokeOnMainThread(() =>
-        {
-            TotalHorasLabel.Text = $"{total:0.00}h";
-            TotalHorasLabel.TextColor = Colors.White;
-            TotalHorasLabel.FontAttributes = FontAttributes.Bold;
-        });
+        // Total label removido
     }
 
     private async void OnGuardarClicked(object sender, EventArgs e)
@@ -209,6 +188,7 @@ public partial class NovaHoraPopup : Popup
             _hora.HorasExtras = horasExtras;
 
             // Gravar na BD
+            await Shell.Current.DisplayAlert("DEBUG", $"Cliente selecionado: {(_clienteSelecionado?.CLINOME ?? "Nenhum")}", "OK");
             await Shell.Current.DisplayAlert("DEBUG", "Chamando UpsertHoraColaboradorAsync...", "OK");
             
             int id;
@@ -333,7 +313,6 @@ public partial class NovaHoraPopup : Popup
             {
                 _colaboradorSelecionado = colaboradorSelecionado;
                 ColaboradorLabel.Text = colaboradorSelecionado.Nome;
-                CalcularTotal();
             }
         }
         catch (Exception ex)

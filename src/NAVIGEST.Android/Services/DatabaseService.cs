@@ -1288,29 +1288,37 @@ FROM OrderInfo";
 
                 if (hora.Id == 0)
                 {
-                    // INSERT
-                    var sql = @"INSERT INTO HORASTRABALHADAS 
-                                (DataTrabalho, IDColaborador, NomeColaborador, IDCliente, Cliente, 
-                                 IDCentroCusto, DescCentroCusto, HorasTrab, HorasExtras, Observacoes)
-                                VALUES 
-                                (@DataTrabalho, @IDColaborador, @NomeColaborador, @IDCliente, @Cliente,
-                                 @IDCentroCusto, @DescCentroCusto, @HorasTrab, @HorasExtras, @Observacoes);
-                                SELECT LAST_INSERT_ID();";
+                    // FIX: Manually generate ID because the table does not have AUTO_INCREMENT
+                    var maxIdSql = "SELECT COALESCE(MAX(ID), 0) FROM HORASTRABALHADAS";
+                    using (var maxIdCmd = new MySqlCommand(maxIdSql, conn))
+                    {
+                        var maxId = Convert.ToInt32(await maxIdCmd.ExecuteScalarAsync());
+                        var newId = maxId + 1;
 
-                    using var cmd = new MySqlCommand(sql, conn);
-                    cmd.Parameters.AddWithValue("@DataTrabalho", hora.DataTrabalho);
-                    cmd.Parameters.AddWithValue("@IDColaborador", hora.IdColaborador);
-                    cmd.Parameters.AddWithValue("@NomeColaborador", hora.NomeColaborador);
-                    cmd.Parameters.AddWithValue("@IDCliente", hora.IdCliente ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Cliente", hora.Cliente ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@IDCentroCusto", hora.IdCentroCusto ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@DescCentroCusto", hora.DescCentroCusto ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@HorasTrab", hora.HorasTrab);
-                    cmd.Parameters.AddWithValue("@HorasExtras", hora.HorasExtras);
-                    cmd.Parameters.AddWithValue("@Observacoes", hora.Observacoes ?? (object)DBNull.Value);
+                        // INSERT with explicit ID
+                        var sql = @"INSERT INTO HORASTRABALHADAS 
+                                    (ID, DataTrabalho, IDColaborador, NomeColaborador, IDCliente, Cliente, 
+                                     IDCentroCusto, DescCentroCusto, HorasTrab, HorasExtras, Observacoes)
+                                    VALUES 
+                                    (@ID, @DataTrabalho, @IDColaborador, @NomeColaborador, @IDCliente, @Cliente,
+                                     @IDCentroCusto, @DescCentroCusto, @HorasTrab, @HorasExtras, @Observacoes)";
 
-                    var result = await cmd.ExecuteScalarAsync();
-                    return Convert.ToInt32(result);
+                        using var cmd = new MySqlCommand(sql, conn);
+                        cmd.Parameters.AddWithValue("@ID", newId);
+                        cmd.Parameters.AddWithValue("@DataTrabalho", hora.DataTrabalho);
+                        cmd.Parameters.AddWithValue("@IDColaborador", hora.IdColaborador);
+                        cmd.Parameters.AddWithValue("@NomeColaborador", hora.NomeColaborador);
+                        cmd.Parameters.AddWithValue("@IDCliente", hora.IdCliente ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Cliente", hora.Cliente ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@IDCentroCusto", hora.IdCentroCusto ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@DescCentroCusto", hora.DescCentroCusto ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@HorasTrab", hora.HorasTrab);
+                        cmd.Parameters.AddWithValue("@HorasExtras", hora.HorasExtras);
+                        cmd.Parameters.AddWithValue("@Observacoes", hora.Observacoes ?? (object)DBNull.Value);
+
+                        await cmd.ExecuteNonQueryAsync();
+                        return newId;
+                    }
                 }
                 else
                 {
