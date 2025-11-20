@@ -17,7 +17,7 @@ namespace NAVIGEST.Android.Services
             return new DbSettings
             {
                 Server = Preferences.Default.Get(KeyServer, "100.81.152.95"),
-                Port = (uint)Preferences.Default.Get(KeyPort, 3308),
+                Port = (uint)Preferences.Default.Get(KeyPort, 3307),
                 Database = Preferences.Default.Get(KeyDatabase, "YAHPUBLICIDADE2025"),
                 UserId = Preferences.Default.Get(KeyUserId, "YAH"),
                 Password = Preferences.Default.Get(KeyPassword, "#JONy2244&")

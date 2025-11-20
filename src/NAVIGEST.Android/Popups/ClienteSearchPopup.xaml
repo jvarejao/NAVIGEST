@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<toolkit:Popup x:Class="NAVIGEST.Android.Popups.ClienteSearchPopup"
+               xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+               xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+               CanBeDismissedByTappingOutsideOfPopup="True">
+  <toolkit:Popup.Size>
+    <Size Width="400" Height="500" />
+  </toolkit:Popup.Size>
+
+  <Border BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
+          StrokeThickness="0"
+          Padding="20"
+          StrokeShape="RoundRectangle 18">
+    <Border.Shadow>
+      <Shadow Brush="Black" Opacity="0.3" Radius="16" Offset="0,4"/>
+    </Border.Shadow>
+    
+    <Grid RowDefinitions="Auto,Auto,*" RowSpacing="16">
+      <!-- Título -->
+      <Label FontFamily="FA7Solid"
+             Text="&#xF002;"
+             FontSize="24"
+             HorizontalOptions="Center"
+             TextColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"/>
+
+      <!-- SearchBar -->
+      <Border Grid.Row="1"
+              BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
+              StrokeThickness="0"
+              StrokeShape="RoundRectangle 12">
+        <SearchBar x:Name="searchBar"
+                   Placeholder="Pesquisar cliente..."
+                   TextChanged="OnSearchTextChanged"
+                   BackgroundColor="Transparent"
+                   TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
+                   PlaceholderColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"/>
+      </Border>
+
+      <!-- Lista de resultados -->
+      <CollectionView x:Name="clientesCollection"
+                      Grid.Row="2"
+                      SelectionMode="Single"
+                      SelectionChanged="OnClienteSelected">
+        <CollectionView.ItemTemplate>
+          <DataTemplate>
+            <Border Padding="16,12"
+                    Margin="0,6"
+                    BackgroundColor="{AppThemeBinding Light=#F9F9F9, Dark=#2C2C2E}"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 12">
+              <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                <Label FontFamily="FA7Solid"
+                       Text="&#xF007;"
+                       FontSize="20"
+                       VerticalOptions="Center"
+                       TextColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"/>
+                <VerticalStackLayout Grid.Column="1" Spacing="4">
+                  <Label Text="{Binding CLINOME}"
+                         FontSize="15"
+                         FontAttributes="None"
+                         TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+                  <Label Text="{Binding CLICODIGO}"
+                         FontSize="12"
+                         FontAttributes="None"
+                         TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"/>
+                </VerticalStackLayout>
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </CollectionView.ItemTemplate>
+      </CollectionView>
+    </Grid>
+  </Border>
+</toolkit:Popup>

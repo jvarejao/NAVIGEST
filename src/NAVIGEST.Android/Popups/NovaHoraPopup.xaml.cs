@@ -15,6 +15,8 @@ public partial class NovaHoraPopup : Popup
     private List<Colaborador> _colaboradores;
     private List<Cliente> _clientes = new();
     private bool _isEdit;
+    private Cliente? _clienteSelecionado;
+    private Colaborador? _colaboradorSelecionado;
 
     public NovaHoraPopup(HoraColaborador hora, List<Colaborador> colaboradores)
     {
@@ -33,10 +35,6 @@ public partial class NovaHoraPopup : Popup
         TituloLabel.Text = _isEdit ? "✏️ EDITAR REGISTO DE HORAS" : "➕ NOVO REGISTO DE HORAS";
         EliminarButton.IsVisible = _isEdit;
 
-        // Carregar colaboradores
-        ColaboradorPicker.ItemsSource = _colaboradores;
-        ColaboradorPicker.ItemDisplayBinding = new Binding("DisplayText");
-
         // Carregar clientes da BD
         try
         {
@@ -45,9 +43,6 @@ public partial class NovaHoraPopup : Popup
             
             // Adicionar opção "Sem cliente" no início
             _clientes.Insert(0, new Cliente { CLICODIGO = "0", CLINOME = "Sem cliente" });
-            
-            ClientePicker.ItemsSource = _clientes;
-            ClientePicker.ItemDisplayBinding = new Binding("CLINOME");
         }
         catch (Exception ex)
         {
@@ -58,7 +53,11 @@ public partial class NovaHoraPopup : Popup
         if (_isEdit && _hora.IdColaborador > 0)
         {
             var colab = _colaboradores.FirstOrDefault(c => c.ID == _hora.IdColaborador);
-            ColaboradorPicker.SelectedItem = colab;
+            if (colab != null)
+            {
+                _colaboradorSelecionado = colab;
+                ColaboradorLabel.Text = colab.Nome;
+            }
             
             // Selecionar cliente também (se existir)
             if (!string.IsNullOrEmpty(_hora.IdCliente))
@@ -68,12 +67,14 @@ public partial class NovaHoraPopup : Popup
                 
                 if (clienteSelecionado != null)
                 {
-                    ClientePicker.SelectedItem = clienteSelecionado;
+                    _clienteSelecionado = clienteSelecionado;
+                    ClienteLabel.Text = clienteSelecionado.CLINOME;
                 }
                 else
                 {
                     // Cliente não existe mais na BD - selecionar "Sem cliente"
-                    ClientePicker.SelectedIndex = 0;
+                    _clienteSelecionado = _clientes[0];
+                    ClienteLabel.Text = "Sem cliente";
                     await Shell.Current.DisplayAlert("⚠️ Aviso", 
                         $"O cliente '{idClienteTrim}' já não existe na base de dados.\n\n" +
                         $"Este registo tinha o cliente: {_hora.Cliente ?? "N/A"}", 
@@ -82,13 +83,16 @@ public partial class NovaHoraPopup : Popup
             }
             else
             {
-                ClientePicker.SelectedIndex = 0;
+                _clienteSelecionado = _clientes[0];
+                ClienteLabel.Text = "Sem cliente";
             }
         }
         else
         {
             // Novo registo - sem cliente por padrão
-            ClientePicker.SelectedIndex = 0;
+            _clienteSelecionado = _clientes[0];
+            ClienteLabel.Text = "Sem cliente";
+            ColaboradorLabel.Text = "Selecione colaborador";
         }
 
         // Preencher campos
@@ -97,8 +101,11 @@ public partial class NovaHoraPopup : Popup
         HorasExtrasEntry.Text = _hora.HorasExtras.ToString("0.00");
         ObservacoesEditor.Text = _hora.Observacoes;
 
-        // Calcular total inicial
-        CalcularTotal();
+        // Forçar cálculo do total após preencher os campos - usar MainThread para garantir UI atualizada
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            CalcularTotal();
+        });
     }
 
     private void OnHorasChanged(object sender, TextChangedEventArgs e)
@@ -115,38 +122,66 @@ public partial class NovaHoraPopup : Popup
         if (horasExtras < 0) horasExtras = 0;
         
         float total = horasNormais + horasExtras;
-        TotalHorasLabel.Text = $"{total:0.00}h";
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            TotalHorasLabel.Text = $"{total:0.00}h";
+            TotalHorasLabel.TextColor = Colors.White;
+            TotalHorasLabel.FontAttributes = FontAttributes.Bold;
+        });
     }
 
     private async void OnGuardarClicked(object sender, EventArgs e)
     {
         try
         {
-            // Validar
-            if (ColaboradorPicker.SelectedItem is not Colaborador colab)
+            await Shell.Current.DisplayAlert("DEBUG", "Botão GUARDAR clicado!", "OK");
+            
+            // Validar colaborador
+            if (_colaboradorSelecionado == null)
             {
+                await Shell.Current.DisplayAlert("DEBUG", "FALHOU: Colaborador não selecionado", "OK");
                 MostrarErro("Selecione um colaborador");
                 return;
             }
+            
+            var colab = _colaboradorSelecionado;
+            await Shell.Current.DisplayAlert("DEBUG", $"Colaborador OK: {colab.Nome} (ID={colab.ID})", "OK");
 
-            if (!float.TryParse(HorasNormaisEntry.Text?.Replace(",", "."), out float horasNormais) || horasNormais < 0)
+            // Validar campos de horas - aceitar vazio como 0
+            string horasNormaisText = string.IsNullOrWhiteSpace(HorasNormaisEntry.Text) ? "0" : HorasNormaisEntry.Text.Replace(",", ".");
+            string horasExtrasText = string.IsNullOrWhiteSpace(HorasExtrasEntry.Text) ? "0" : HorasExtrasEntry.Text.Replace(",", ".");
+            
+            await Shell.Current.DisplayAlert("DEBUG", $"Horas: N={horasNormaisText}, E={horasExtrasText}", "OK");
+            
+            if (!float.TryParse(horasNormaisText, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float horasNormais) || horasNormais < 0)
             {
-                MostrarErro("Insira horas normais válidas");
+                await Shell.Current.DisplayAlert("DEBUG", "FALHOU: Parse horas normais", "OK");
+                MostrarErro("Insira horas normais válidas (0-24)");
                 return;
             }
 
-            if (!float.TryParse(HorasExtrasEntry.Text?.Replace(",", "."), out float horasExtras) || horasExtras < 0)
+            if (!float.TryParse(horasExtrasText, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float horasExtras) || horasExtras < 0)
             {
-                MostrarErro("Insira horas extras válidas");
+                await Shell.Current.DisplayAlert("DEBUG", "FALHOU: Parse horas extras", "OK");
+                MostrarErro("Insira horas extras válidas (0-24)");
                 return;
             }
 
             if (horasNormais + horasExtras > 24)
             {
+                await Shell.Current.DisplayAlert("DEBUG", "FALHOU: Total > 24h", "OK");
                 MostrarErro("Total de horas não pode exceder 24h");
                 return;
             }
+            
+            if (horasNormais + horasExtras == 0)
+            {
+                await Shell.Current.DisplayAlert("DEBUG", "FALHOU: Total = 0", "OK");
+                MostrarErro("Insira pelo menos 1 hora");
+                return;
+            }
 
+            await Shell.Current.DisplayAlert("DEBUG", "Validações OK! Vai gravar...", "OK");
             SetBusy(true);
             EsconderErro();
 
@@ -156,10 +191,10 @@ public partial class NovaHoraPopup : Popup
             _hora.NomeColaborador = colab.Nome;
             
             // Preencher objeto - Cliente
-            if (ClientePicker.SelectedItem is Cliente cliente && cliente.CLICODIGO != "0")
+            if (_clienteSelecionado != null && _clienteSelecionado.CLICODIGO != "0")
             {
-                _hora.IdCliente = cliente.CLICODIGO;
-                _hora.Cliente = cliente.CLINOME;
+                _hora.IdCliente = _clienteSelecionado.CLICODIGO;
+                _hora.Cliente = _clienteSelecionado.CLINOME;
             }
             else
             {
@@ -174,11 +209,27 @@ public partial class NovaHoraPopup : Popup
             _hora.HorasExtras = horasExtras;
 
             // Gravar na BD
-            var id = await DatabaseService.UpsertHoraColaboradorAsync(_hora);
+            await Shell.Current.DisplayAlert("DEBUG", "Chamando UpsertHoraColaboradorAsync...", "OK");
+            
+            int id;
+            try
+            {
+                id = await DatabaseService.UpsertHoraColaboradorAsync(_hora);
+            }
+            catch (Exception exDb)
+            {
+                await Shell.Current.DisplayAlert("ERRO NA BD", $"Exception: {exDb.Message}\n\n{exDb.InnerException?.Message}", "OK");
+                GlobalErro.TratarErro(exDb, mostrarAlerta: true);
+                throw;
+            }
+            
             _hora.Id = id;
+            await Shell.Current.DisplayAlert("DEBUG", $"Gravado! ID={id}. Vai fechar popup...", "OK");
 
             // Fechar popup com sucesso
+            await Shell.Current.DisplayAlert("DEBUG", $"Chamando Close() com objeto ID={_hora.Id}", "OK");
             Close(_hora);
+            await Shell.Current.DisplayAlert("DEBUG", "DEPOIS de Close() - NÃO DEVIA APARECER!", "OK");
         }
         catch (Exception ex)
         {
@@ -228,6 +279,29 @@ public partial class NovaHoraPopup : Popup
         Close(null);
     }
 
+    private async void OnPesquisarClienteClicked(object sender, EventArgs e)
+    {
+        try
+        {
+            var popup = new ClienteSearchPopup(_clientes);
+            var page = Application.Current?.Windows[0]?.Page;
+            if (page != null)
+            {
+                var result = await page.ShowPopupAsync(popup);
+                if (result is Cliente clienteSelecionado)
+                {
+                    _clienteSelecionado = clienteSelecionado;
+                    ClienteLabel.Text = clienteSelecionado.CLINOME;
+                    ClientePicker.SelectedItem = clienteSelecionado;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            GlobalErro.TratarErro(ex, mostrarAlerta: true);
+        }
+    }
+
     private void SetBusy(bool busy)
     {
         BusyOverlay.IsVisible = busy;
@@ -246,5 +320,25 @@ public partial class NovaHoraPopup : Popup
     {
         ErrorLabel.Text = string.Empty;
         ErrorLabel.IsVisible = false;
+    }
+
+    private async void OnSelecionarColaboradorClicked(object sender, EventArgs e)
+    {
+        try
+        {
+            var popup = new ColaboradorSearchPopup(_colaboradores);
+            var result = await Shell.Current.ShowPopupAsync(popup);
+            
+            if (result is Colaborador colaboradorSelecionado)
+            {
+                _colaboradorSelecionado = colaboradorSelecionado;
+                ColaboradorLabel.Text = colaboradorSelecionado.Nome;
+                CalcularTotal();
+            }
+        }
+        catch (Exception ex)
+        {
+            GlobalErro.TratarErro(ex, mostrarAlerta: false);
+        }
     }
 }

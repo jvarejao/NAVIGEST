@@ -162,13 +162,13 @@ public partial class HorasColaboradorViewModel : ObservableObject
             if (result is HoraColaborador novaHora && novaHora.Id >= 0)
             {
                 await CarregarHorasAsync();
-                await AppShell.DisplayToastAsync("Registo guardado com sucesso");
+                await GlobalToast.ShowAsync("Registo guardado com sucesso", ToastTipo.Sucesso);
             }
         }
         catch (Exception ex)
         {
             GlobalErro.TratarErro(ex, mostrarAlerta: false);
-            await AppShell.DisplayToastAsync("Erro ao criar registo");
+            await GlobalToast.ShowAsync("Erro ao criar registo", ToastTipo.Erro);
         }
     }
 
@@ -185,13 +185,13 @@ public partial class HorasColaboradorViewModel : ObservableObject
             if (result is HoraColaborador horaEditada && horaEditada.Id >= 0)
             {
                 await CarregarHorasAsync();
-                await AppShell.DisplayToastAsync("Registo atualizado com sucesso");
+                await GlobalToast.ShowAsync("Registo atualizado com sucesso", ToastTipo.Sucesso);
             }
         }
         catch (Exception ex)
         {
             GlobalErro.TratarErro(ex, mostrarAlerta: false);
-            await AppShell.DisplayToastAsync("Erro ao editar registo");
+            await GlobalToast.ShowAsync("Erro ao editar registo", ToastTipo.Erro);
         }
     }
 
@@ -214,12 +214,12 @@ public partial class HorasColaboradorViewModel : ObservableObject
             await DatabaseService.DeleteHoraColaboradorAsync(hora.Id);
             HorasList.Remove(hora);
             AtualizarTotais();
-            await AppShell.DisplayToastAsync("Registo eliminado");
+            await GlobalToast.ShowAsync("Registo eliminado com sucesso", ToastTipo.Sucesso);
         }
         catch (Exception ex)
         {
             GlobalErro.TratarErro(ex, mostrarAlerta: false);
-            await AppShell.DisplayToastAsync("Erro ao eliminar registo");
+            await GlobalToast.ShowAsync("Erro ao eliminar registo", ToastTipo.Erro);
         }
     }
 

@@ -419,8 +419,9 @@ public partial class HorasColaboradorPage : ContentPage
         };
         editBorder.Content = new Label
         {
-            Text = "✏️",
-            FontSize = 28,
+            Text = "✎",
+            FontSize = 32,
+            TextColor = Colors.White,
             HorizontalOptions = LayoutOptions.Center,
             VerticalOptions = LayoutOptions.Center
         };
@@ -457,8 +458,10 @@ public partial class HorasColaboradorPage : ContentPage
         };
         deleteBorder.Content = new Label
         {
-            Text = "🗑️",
-            FontSize = 28,
+            FontFamily = "FA7Solid",
+            Text = "\uf1f8",
+            FontSize = 22,
+            TextColor = Colors.White,
             HorizontalOptions = LayoutOptions.Center,
             VerticalOptions = LayoutOptions.Center
         };
@@ -469,18 +472,7 @@ public partial class HorasColaboradorPage : ContentPage
         {
             if ((s as SwipeItemView)?.BindingContext is HoraColaborador hora)
             {
-                bool confirmacao = await Shell.Current.DisplayAlert(
-                    "Confirmar",
-                    "Eliminar este registo de horas?",
-                    "Sim",
-                    "Não"
-                );
-                
-                if (confirmacao)
-                {
-                    await _vm.EliminarHoraCommand.ExecuteAsync(hora.Id);
-                    await Toast.Make("Registo eliminado com sucesso", CommunityToolkit.Maui.Core.ToastDuration.Short).Show();
-                }
+                await _vm.EliminarHoraCommand.ExecuteAsync(hora);
             }
         };
         
@@ -595,9 +587,15 @@ public partial class HorasColaboradorPage : ContentPage
                     if (horaResultado.Id == -1)
                     {
                         // Foi eliminado no popup
-                        await Toast.Make("Registo eliminado com sucesso", CommunityToolkit.Maui.Core.ToastDuration.Short).Show();
+                        GlobalToast.ShowAsync("Registo eliminado com sucesso", ToastTipo.Sucesso);
                     }
                     // Recarregar lista
+                    else
+                    {
+                        // Foi guardado/atualizado
+                        string mensagem = hora?.Id > 0 ? "Registo atualizado com sucesso" : "Registo adicionado com sucesso";
+                        GlobalToast.ShowAsync(mensagem, ToastTipo.Sucesso);
+                    }
                     await _vm.CarregarHorasCommand.ExecuteAsync(null);
                 }
             }
