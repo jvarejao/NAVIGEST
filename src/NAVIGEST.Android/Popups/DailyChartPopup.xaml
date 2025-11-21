@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<toolkit:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+               xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+               xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Maui;assembly=LiveChartsCore.SkiaSharpView.Maui"
+               x:Class="NAVIGEST.Android.Popups.DailyChartPopup"
+               Color="Transparent">
+
+    <Border BackgroundColor="{AppThemeBinding Light=White, Dark=#1C1C1E}"
+            StrokeShape="RoundRectangle 16"
+            WidthRequest="350"
+            HeightRequest="400"
+            Padding="16">
+        <Grid RowDefinitions="Auto,*,Auto" RowSpacing="12">
+            <Label x:Name="TitleLabel" 
+                   Text="Detalhe Diário" 
+                   FontAttributes="Bold" 
+                   FontSize="18" 
+                   HorizontalOptions="Center"/>
+
+            <lvc:CartesianChart Grid.Row="1" x:Name="DailyChart" LegendPosition="Bottom"/>
+
+            <Button Grid.Row="2" 
+                    Text="Fechar" 
+                    Clicked="OnCloseClicked"
+                    BackgroundColor="#0A84FF"
+                    TextColor="White"/>
+        </Grid>
+    </Border>
+</toolkit:Popup>

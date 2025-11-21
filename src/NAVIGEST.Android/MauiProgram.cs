@@ -1,7 +1,10 @@
 using CommunityToolkit.Maui; // Toolkit base
 using Microsoft.Extensions.Logging;
 using Syncfusion.Maui.Toolkit.Hosting;
+using Syncfusion.Maui.Core.Hosting;
 using UraniumUI;
+using SkiaSharp.Views.Maui.Controls.Hosting;
+using LiveChartsCore.SkiaSharpView.Maui;
 
 using NAVIGEST.Android.Services.Icons;  // IIconProvider (namespace)
 using NAVIGEST.Android.Pages;           // Páginas
@@ -31,7 +34,10 @@ namespace NAVIGEST.Android
                 .UseMauiCommunityToolkit()
                 .UseUraniumUI()
                 .UseUraniumUIMaterial()
+                .UseSkiaSharp()
+                .UseLiveCharts()
                 .ConfigureSyncfusionToolkit()
+                .ConfigureSyncfusionCore()
                 .ConfigureMauiHandlers(handlers =>
                 {
 #if ANDROID

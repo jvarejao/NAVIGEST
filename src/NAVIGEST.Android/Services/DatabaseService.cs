@@ -1484,5 +1484,320 @@ FROM OrderInfo";
             cmd.Parameters.AddWithValue("@ID", id);
             await cmd.ExecuteNonQueryAsync();
         }
+
+        // ================= DASHBOARD / STATS =================
+
+        public static async Task<DashboardMetrics> GetDashboardMetricsAsync(int? colabId, int year)
+        {
+            var m = new DashboardMetrics();
+            using var conn = new MySqlConnection(GetConnectionString());
+            await conn.OpenAsync();
+
+            // Base filter
+            string filter = "WHERE YEAR(DataTrabalho) = @year";
+            if (colabId.HasValue) filter += " AND IDColaborador = @colabId";
+
+            // 1. Totals
+            string sqlTotals = $@"
+                SELECT 
+                    SUM(HorasTrab) as Normais, 
+                    SUM(HorasExtras) as Extras, 
+                    COUNT(DISTINCT DataTrabalho) as DiasTrab
+                FROM HORASTRABALHADAS 
+                {filter}";
+
+            using (var cmd = new MySqlCommand(sqlTotals, conn))
+            {
+                cmd.Parameters.AddWithValue("@year", year);
+                if (colabId.HasValue) cmd.Parameters.AddWithValue("@colabId", colabId.Value);
+
+                using var rd = await cmd.ExecuteReaderAsync();
+                if (await rd.ReadAsync())
+                {
+                    m.TotalHorasNormais = rd.IsDBNull(0) ? 0 : rd.GetDouble(0);
+                    m.TotalHorasExtras = rd.IsDBNull(1) ? 0 : rd.GetDouble(1);
+                    m.TotalDiasTrabalhados = rd.IsDBNull(2) ? 0 : rd.GetInt32(2);
+                }
+            }
+            m.TotalHoras = m.TotalHorasNormais + m.TotalHorasExtras;
+            if (m.TotalDiasTrabalhados > 0)
+                m.MediaHorasDia = m.TotalHoras / m.TotalDiasTrabalhados;
+
+            // 2. Absences (Not supported yet in HORASTRABALHADAS, returning 0)
+            m.TotalAusencias = 0;
+
+            // 3. Top Client
+            string sqlTop = $@"
+                SELECT Cliente 
+                FROM HORASTRABALHADAS
+                {filter}
+                GROUP BY Cliente
+                ORDER BY SUM(HorasTrab + HorasExtras) DESC
+                LIMIT 1";
+            
+            using (var cmd = new MySqlCommand(sqlTop, conn))
+            {
+                cmd.Parameters.AddWithValue("@year", year);
+                if (colabId.HasValue) cmd.Parameters.AddWithValue("@colabId", colabId.Value);
+                var res = await cmd.ExecuteScalarAsync();
+                m.TopCliente = res?.ToString() ?? "-";
+            }
+
+            return m;
+        }
+
+        public static async Task<List<MonthlyHoursData>> GetMonthlyHoursStatsAsync(int? colabId, int year)
+        {
+            var list = new List<MonthlyHoursData>();
+            using var conn = new MySqlConnection(GetConnectionString());
+            await conn.OpenAsync();
+
+            string filter = "WHERE YEAR(DataTrabalho) = @year";
+            if (colabId.HasValue) filter += " AND IDColaborador = @colabId";
+
+            string sql = $@"
+                SELECT 
+                    MONTH(DataTrabalho) as Mes,
+                    SUM(HorasTrab) as Normais,
+                    SUM(HorasExtras) as Extras
+                FROM HORASTRABALHADAS
+                {filter}
+                GROUP BY MONTH(DataTrabalho)
+                ORDER BY MONTH(DataTrabalho)";
+
+            var dataMap = new Dictionary<int, (double N, double E)>();
+
+            using (var cmd = new MySqlCommand(sql, conn))
+            {
+                cmd.Parameters.AddWithValue("@year", year);
+                if (colabId.HasValue) cmd.Parameters.AddWithValue("@colabId", colabId.Value);
+                using var rd = await cmd.ExecuteReaderAsync();
+                while (await rd.ReadAsync())
+                {
+                    int m = rd.GetInt32(0);
+                    double n = rd.GetDouble(1);
+                    double e = rd.GetDouble(2);
+                    dataMap[m] = (n, e);
+                }
+            }
+
+            // Fill all 12 months
+            var culture = new CultureInfo("pt-PT");
+            for (int i = 1; i <= 12; i++)
+            {
+                var item = new MonthlyHoursData
+                {
+                    MesNumero = i,
+                    Ano = year,
+                    Mes = culture.DateTimeFormat.GetAbbreviatedMonthName(i).ToUpper(),
+                    HorasNormais = dataMap.ContainsKey(i) ? dataMap[i].N : 0,
+                    HorasExtras = dataMap.ContainsKey(i) ? dataMap[i].E : 0,
+                    HorasIdeais = CalculateIdealHours(i, year)
+                };
+                list.Add(item);
+            }
+
+            return list;
+        }
+
+        private static double CalculateIdealHours(int month, int year)
+        {
+            int days = DateTime.DaysInMonth(year, month);
+            int workDays = 0;
+            for (int d = 1; d <= days; d++)
+            {
+                var date = new DateTime(year, month, d);
+                if (date.DayOfWeek != DayOfWeek.Saturday && date.DayOfWeek != DayOfWeek.Sunday)
+                    workDays++;
+            }
+            return workDays * 8.0;
+        }
+
+        public static async Task<List<DailyHoursData>> GetDailyHoursStatsAsync(int? colabId, int month, int year)
+        {
+            var list = new List<DailyHoursData>();
+            using var conn = new MySqlConnection(GetConnectionString());
+            await conn.OpenAsync();
+
+            string filter = "WHERE YEAR(DataTrabalho) = @year AND MONTH(DataTrabalho) = @month";
+            if (colabId.HasValue) filter += " AND IDColaborador = @colabId";
+
+            string sql = $@"
+                SELECT 
+                    DAY(DataTrabalho) as Dia,
+                    SUM(HorasTrab) as Normais,
+                    SUM(HorasExtras) as Extras
+                FROM HORASTRABALHADAS
+                {filter}
+                GROUP BY DAY(DataTrabalho)
+                ORDER BY DAY(DataTrabalho)";
+
+            var dataMap = new Dictionary<int, (double N, double E)>();
+
+            using (var cmd = new MySqlCommand(sql, conn))
+            {
+                cmd.Parameters.AddWithValue("@year", year);
+                cmd.Parameters.AddWithValue("@month", month);
+                if (colabId.HasValue) cmd.Parameters.AddWithValue("@colabId", colabId.Value);
+                using var rd = await cmd.ExecuteReaderAsync();
+                while (await rd.ReadAsync())
+                {
+                    int d = rd.GetInt32(0);
+                    double n = rd.GetDouble(1);
+                    double e = rd.GetDouble(2);
+                    dataMap[d] = (n, e);
+                }
+            }
+
+            int daysInMonth = DateTime.DaysInMonth(year, month);
+            for (int d = 1; d <= daysInMonth; d++)
+            {
+                var date = new DateTime(year, month, d);
+                bool isWorkDay = date.DayOfWeek != DayOfWeek.Saturday && date.DayOfWeek != DayOfWeek.Sunday;
+                
+                list.Add(new DailyHoursData
+                {
+                    Dia = d,
+                    Data = date,
+                    HorasNormais = dataMap.ContainsKey(d) ? dataMap[d].N : 0,
+                    HorasExtras = dataMap.ContainsKey(d) ? dataMap[d].E : 0,
+                    HorasIdeais = isWorkDay ? 8.0 : 0
+                });
+            }
+
+            return list;
+        }
+
+        public static async Task<List<AbsenceSummary>> GetAbsenceStatsAsync(int? colabId, int year)
+        {
+            var list = new List<AbsenceSummary>();
+            // Absences not yet implemented in HORASTRABALHADAS
+            return await Task.FromResult(list);
+            /*
+            using var conn = new MySqlConnection(GetConnectionString());
+            await conn.OpenAsync();
+
+            string filter = "WHERE YEAR(Data) = @year AND TipoRegisto != 'Trabalho'";
+            if (colabId.HasValue) filter += " AND ColaboradorID = @colabId";
+
+            string sql = $@"
+                SELECT TipoRegisto, COUNT(*) as Qtd
+                FROM REGISTO_HORAS
+                {filter}
+                GROUP BY TipoRegisto
+                ORDER BY Qtd DESC";
+
+            using (var cmd = new MySqlCommand(sql, conn))
+            {
+                cmd.Parameters.AddWithValue("@year", year);
+                if (colabId.HasValue) cmd.Parameters.AddWithValue("@colabId", colabId.Value);
+                using var rd = await cmd.ExecuteReaderAsync();
+                while (await rd.ReadAsync())
+                {
+                    list.Add(new AbsenceSummary
+                    {
+                        Tipo = rd.GetString(0),
+                        Dias = rd.GetInt32(1),
+                        Cor = GetColorForAbsence(rd.GetString(0))
+                    });
+                }
+            }
+            return list;
+            */
+        }
+
+        private static string GetColorForAbsence(string type)
+        {
+            return type.ToLower() switch
+            {
+                "férias" => "#FF2D55", // Red/Pink
+                "baixa" => "#AF52DE", // Purple
+                "feriado" => "#FF9500", // Orange
+                _ => "#8E8E93" // Gray
+            };
+        }
+
+        public static async Task<List<string>> GetAbsenceDetailsAsync(int? colabId, string type, int year)
+        {
+            var list = new List<string>();
+            // Absences not yet implemented
+            return await Task.FromResult(list);
+            /*
+            using var conn = new MySqlConnection(GetConnectionString());
+            await conn.OpenAsync();
+
+            string filter = "WHERE YEAR(Data) = @year AND TipoRegisto = @type";
+            if (colabId.HasValue) filter += " AND ColaboradorID = @colabId";
+
+            string sql = $@"
+                SELECT Data
+                FROM REGISTO_HORAS
+                {filter}
+                ORDER BY Data";
+
+            using (var cmd = new MySqlCommand(sql, conn))
+            {
+                cmd.Parameters.AddWithValue("@year", year);
+                cmd.Parameters.AddWithValue("@type", type);
+                if (colabId.HasValue) cmd.Parameters.AddWithValue("@colabId", colabId.Value);
+                using var rd = await cmd.ExecuteReaderAsync();
+                while (await rd.ReadAsync())
+                {
+                    list.Add(rd.GetDateTime(0).ToString("dd/MM/yyyy"));
+                }
+            }
+            return list;
+            */
+        }
+
+        public static async Task<List<ClientHoursSummary>> GetClientHoursStatsAsync(int? colabId, int year)
+        {
+            var list = new List<ClientHoursSummary>();
+            using var conn = new MySqlConnection(GetConnectionString());
+            await conn.OpenAsync();
+
+            string filter = "WHERE YEAR(DataTrabalho) = @year";
+            if (colabId.HasValue) filter += " AND IDColaborador = @colabId";
+
+            // Get Total first for percentage
+            string sqlTotal = $"SELECT SUM(HorasTrab + HorasExtras) FROM HORASTRABALHADAS {filter}";
+            double total = 0;
+            using (var cmd = new MySqlCommand(sqlTotal, conn))
+            {
+                cmd.Parameters.AddWithValue("@year", year);
+                if (colabId.HasValue) cmd.Parameters.AddWithValue("@colabId", colabId.Value);
+                var res = await cmd.ExecuteScalarAsync();
+                if (res != null && res != DBNull.Value) total = Convert.ToDouble(res);
+            }
+
+            if (total == 0) return list;
+
+            string sql = $@"
+                SELECT Cliente, SUM(HorasTrab + HorasExtras) as Total
+                FROM HORASTRABALHADAS
+                {filter}
+                GROUP BY Cliente
+                ORDER BY Total DESC
+                LIMIT 5";
+
+            using (var cmd = new MySqlCommand(sql, conn))
+            {
+                cmd.Parameters.AddWithValue("@year", year);
+                if (colabId.HasValue) cmd.Parameters.AddWithValue("@colabId", colabId.Value);
+                using var rd = await cmd.ExecuteReaderAsync();
+                while (await rd.ReadAsync())
+                {
+                    string cliente = rd.IsDBNull(0) ? "Sem Cliente" : rd.GetString(0);
+                    double h = rd.GetDouble(1);
+                    list.Add(new ClientHoursSummary
+                    {
+                        Cliente = cliente,
+                        Horas = h,
+                        Percentagem = h / total
+                    });
+                }
+            }
+            return list;
+        }
     }
 }
