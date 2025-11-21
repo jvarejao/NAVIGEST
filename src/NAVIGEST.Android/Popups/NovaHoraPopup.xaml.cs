@@ -14,6 +14,7 @@ public partial class NovaHoraPopup : Popup
     private HoraColaborador _hora;
     private List<Colaborador> _colaboradores;
     private List<Cliente> _clientes = new();
+    private List<AbsenceType> _absenceTypes = new();
     private bool _isEdit;
     private Cliente? _clienteSelecionado;
     private Colaborador? _colaboradorSelecionado;
@@ -95,14 +96,45 @@ public partial class NovaHoraPopup : Popup
             ColaboradorLabel.Text = "Selecione colaborador";
         }
 
-        // Preencher campos
+                // Preencher campos
         DataPicker.Date = _hora.DataTrabalho;
         HorasNormaisEntry.Text = _hora.HorasTrab.ToString("0.00");
         HorasExtrasEntry.Text = _hora.HorasExtras.ToString("0.00");
         ObservacoesEditor.Text = _hora.Observacoes;
 
-        // Total label removido - nenhum cálculo necessário;
+        // Carregar Tipos de Ausência
+        _absenceTypes = await DatabaseService.GetAbsenceTypesAsync();
+        AbsenceTypePicker.ItemsSource = _absenceTypes;
+
+        // Verificar se é Ausência
+        bool isAbsence = false;
+        if (_isEdit && _hora.IdCentroCusto.HasValue)
+        {
+            var absence = _absenceTypes.FirstOrDefault(a => a.Id == _hora.IdCentroCusto.Value);
+            if (absence != null)
+            {
+                isAbsence = true;
+                AbsenceTypePicker.SelectedItem = absence;
+            }
+        }
+
+        TipoRegistoPicker.SelectedIndex = isAbsence ? 1 : 0;
+        UpdateVisibility(isAbsence);
     }
+
+    private void OnTipoRegistoChanged(object sender, EventArgs e)
+    {
+        bool isAbsence = TipoRegistoPicker.SelectedIndex == 1;
+        UpdateVisibility(isAbsence);
+    }
+
+    private void UpdateVisibility(bool isAbsence)
+    {
+        if (ClientContainer != null) ClientContainer.IsVisible = !isAbsence;
+        if (AbsenceReasonContainer != null) AbsenceReasonContainer.IsVisible = isAbsence;
+    }
+
+
 
     private void OnHorasChanged(object sender, TextChangedEventArgs e)
     {
@@ -122,32 +154,46 @@ public partial class NovaHoraPopup : Popup
             
             var colab = _colaboradorSelecionado;
 
+            bool isAbsence = TipoRegistoPicker.SelectedIndex == 1;
+
             // Validar campos de horas - aceitar vazio como 0
             string horasNormaisText = string.IsNullOrWhiteSpace(HorasNormaisEntry.Text) ? "0" : HorasNormaisEntry.Text.Replace(",", ".");
             string horasExtrasText = string.IsNullOrWhiteSpace(HorasExtrasEntry.Text) ? "0" : HorasExtrasEntry.Text.Replace(",", ".");
             
-            if (!float.TryParse(horasNormaisText, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float horasNormais) || horasNormais < 0)
-            {
-                MostrarErro("Insira horas normais válidas (0-24)");
-                return;
-            }
+            float horasNormais = 0;
+            float horasExtras = 0;
 
-            if (!float.TryParse(horasExtrasText, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float horasExtras) || horasExtras < 0)
+            if (!isAbsence)
             {
-                MostrarErro("Insira horas extras válidas (0-24)");
-                return;
-            }
+                if (!float.TryParse(horasNormaisText, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out horasNormais) || horasNormais < 0)
+                {
+                    MostrarErro("Insira horas normais válidas (0-24)");
+                    return;
+                }
 
-            if (horasNormais + horasExtras > 24)
-            {
-                MostrarErro("Total de horas não pode exceder 24h");
-                return;
+                if (!float.TryParse(horasExtrasText, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out horasExtras) || horasExtras < 0)
+                {
+                    MostrarErro("Insira horas extras válidas (0-24)");
+                    return;
+                }
+
+                if (horasNormais + horasExtras > 24)
+                {
+                    MostrarErro("Total de horas não pode exceder 24h");
+                    return;
+                }
+                
+                if (horasNormais + horasExtras == 0)
+                {
+                    MostrarErro("Insira pelo menos 1 hora");
+                    return;
+                }
             }
-            
-            if (horasNormais + horasExtras == 0)
+            else
             {
-                MostrarErro("Insira pelo menos 1 hora");
-                return;
+                // Se for ausência, forçamos 0 para não somar nas horas trabalhadas
+                horasNormais = 0;
+                horasExtras = 0;
             }
 
             SetBusy(true);
@@ -157,17 +203,35 @@ public partial class NovaHoraPopup : Popup
             _hora.DataTrabalho = DataPicker.Date;
             _hora.IdColaborador = colab.ID;
             _hora.NomeColaborador = colab.Nome;
-            
-            // Preencher objeto - Cliente
-            if (_clienteSelecionado != null && _clienteSelecionado.CLICODIGO != "0")
+            if (isAbsence)
             {
-                _hora.IdCliente = _clienteSelecionado.CLICODIGO;
-                _hora.Cliente = _clienteSelecionado.CLINOME;
+                if (AbsenceTypePicker.SelectedItem is not AbsenceType absence)
+                {
+                    MostrarErro("Selecione o motivo da ausência");
+                    SetBusy(false);
+                    return;
+                }
+                _hora.IdCentroCusto = absence.Id;
+                _hora.DescCentroCusto = absence.Descricao;
+                _hora.IdCliente = null;
+                _hora.Cliente = absence.Descricao.ToUpper(); // Mostrar motivo na lista
             }
             else
             {
-                _hora.IdCliente = null;
-                _hora.Cliente = null;
+                _hora.IdCentroCusto = null;
+                _hora.DescCentroCusto = null;
+
+                // Preencher objeto - Cliente
+                if (_clienteSelecionado != null && _clienteSelecionado.CLICODIGO != "0")
+                {
+                    _hora.IdCliente = _clienteSelecionado.CLICODIGO;
+                    _hora.Cliente = _clienteSelecionado.CLINOME;
+                }
+                else
+                {
+                    _hora.IdCliente = null;
+                    _hora.Cliente = null;
+                }
             }
             
             _hora.Observacoes = ObservacoesEditor.Text?.Trim();

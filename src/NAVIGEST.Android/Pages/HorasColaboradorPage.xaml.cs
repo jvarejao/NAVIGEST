@@ -138,6 +138,21 @@ public partial class HorasColaboradorPage : ContentPage
         headerGrid.Add(colabStack, 1, 0);
         
         mainStack.Add(headerGrid);
+
+        // Botão de Configuração de Ausências
+        var btnConfig = new Button
+        {
+            Text = "⚙️ Gerir Tipos de Ausência",
+            BackgroundColor = Color.FromArgb("#E5E5EA"),
+            TextColor = Colors.Black,
+            FontSize = 14,
+            CornerRadius = 8,
+            HeightRequest = 40
+        };
+        btnConfig.SetAppThemeColor(Button.BackgroundColorProperty, Color.FromArgb("#E5E5EA"), Color.FromArgb("#2C2C2E"));
+        btnConfig.SetAppThemeColor(Button.TextColorProperty, Colors.Black, Colors.White);
+        btnConfig.Clicked += OnManageAbsenceTypesClicked;
+        mainStack.Add(btnConfig);
         
         // Card Total Geral
         var totalBorder = new Border
@@ -991,6 +1006,13 @@ public partial class HorasColaboradorPage : ContentPage
                         IdColaborador = _vm.ColaboradorSelecionado?.ID ?? 0
                     };
                     await AbrirNovaHoraPopupAsync(novaHora);
+                    await AtualizarFiltroCalendarioAsync();
+                }
+                // Se o resultado for HoraColaborador, significa que clicou em "Editar"
+                else if (result is HoraColaborador horaToEdit)
+                {
+                    await AbrirNovaHoraPopupAsync(horaToEdit);
+                    await AtualizarFiltroCalendarioAsync();
                 }
             }
         }
@@ -1059,5 +1081,20 @@ public partial class HorasColaboradorPage : ContentPage
         
         public object? ConvertBack(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
             => throw new NotImplementedException();
+    }
+
+    private async void OnManageAbsenceTypesClicked(object? sender, EventArgs e)
+    {
+        try
+        {
+            // Tenta navegar via Shell Route
+            await Shell.Current.GoToAsync(nameof(AbsenceTypesPage));
+        }
+        catch (Exception ex)
+        {
+            // Fallback ou erro
+            System.Diagnostics.Debug.WriteLine($"Erro ao navegar: {ex.Message}");
+            await DisplayAlert("Erro", $"Não foi possível abrir a página de gestão de ausências.\nErro: {ex.Message}", "OK");
+        }
     }
 }

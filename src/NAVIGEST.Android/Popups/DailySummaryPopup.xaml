@@ -5,7 +5,11 @@
                xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
                xmlns:models="clr-namespace:NAVIGEST.Android.Models"
                xmlns:popups="clr-namespace:NAVIGEST.Android.Popups"
+               xmlns:converters="clr-namespace:NAVIGEST.Android.Converters"
                CanBeDismissedByTappingOutsideOfPopup="True">
+    <toolkit:Popup.Resources>
+        <converters:DoubleComparisonConverter x:Key="DoubleComparisonConverter" />
+    </toolkit:Popup.Resources>
     <toolkit:Popup.Size>
         <Size Width="380" Height="500" />
     </toolkit:Popup.Size>
@@ -28,6 +32,12 @@
                            FontAttributes="Bold"
                            HorizontalOptions="Center"
                            TextColor="{DynamicResource BodyTextColor}"/>
+                    <Label x:Name="WeekendLabel"
+                           Text="🎉 Fim de Semana"
+                           FontSize="12"
+                           TextColor="#FF9500"
+                           HorizontalOptions="Center"
+                           IsVisible="False"/>
                     <Label x:Name="TotalHoursLabel"
                            Text="Total: 8h"
                            FontSize="14"
@@ -59,9 +69,9 @@
                                 StrokeShape="RoundRectangle 8"
                                 Padding="12"
                                 Margin="0,0,0,8">
-                            <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto">
+                            <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
                                 <!-- Row 0: Collaborator Name (Visible if showing all) -->
-                                <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
+                                <Label Grid.Row="0" Grid.Column="0"
                                        Text="{Binding NomeColaborador}"
                                        FontAttributes="Bold"
                                        FontSize="13"
@@ -69,23 +79,40 @@
                                        IsVisible="{Binding Source={RelativeSource AncestorType={x:Type popups:DailySummaryPopup}}, Path=ShowCollaboratorName}"
                                        Margin="0,0,0,4"/>
 
-                                <!-- Row 1: Client & Hours -->
+                                <!-- Row 0: Hours (Green/Orange) -->
+                                <HorizontalStackLayout Grid.Row="0" Grid.Column="1" VerticalOptions="Center" Spacing="4">
+                                    <Label Text="{Binding HorasTrab, StringFormat='{0:0.##}h'}" 
+                                           TextColor="#4CD964" 
+                                           FontAttributes="Bold"
+                                           FontSize="12"/>
+                                    <Label Text="{Binding HorasExtras, StringFormat='(+{0:0.##}h)'}" 
+                                           TextColor="#FF9500" 
+                                           FontAttributes="Bold"
+                                           FontSize="12"
+                                           IsVisible="{Binding HorasExtras, Converter={StaticResource DoubleComparisonConverter}, ConverterParameter='gt:0'}"/>
+                                </HorizontalStackLayout>
+                                <!-- Row 1: Client -->
                                 <Label Grid.Row="1" Grid.Column="0"
                                        Text="{Binding ClienteInfo}"
                                        FontAttributes="Bold"
                                        FontSize="14"
                                        LineBreakMode="TailTruncation"
-                                       TextColor="{DynamicResource BodyTextColor}"/>
-                                
-                                <Label Grid.Row="1" Grid.Column="1"
-                                       Text="{Binding HorasTotaisFormatted}"
-                                       FontSize="12"
-                                       HorizontalTextAlignment="End"
                                        VerticalOptions="Center"
-                                       TextColor="{DynamicResource BodyTextColor}"/>
+                                       TextColor="{DynamicResource BodyTextColor}"/>                                                         
+
+                                <!-- Row 1: Edit Button -->
+                                <Button Grid.Row="1" Grid.Column="1"
+                                        Text="✏️"
+                                        FontSize="16"
+                                        BackgroundColor="Transparent"
+                                        TextColor="{DynamicResource BodyTextColor}"
+                                        Padding="0"
+                                        HeightRequest="30"
+                                        WidthRequest="30"
+                                        Clicked="OnEditClicked"/>
 
                                 <!-- Row 2: Description/Observations -->
-                                <Label Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                                <Label Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3"
                                        Text="{Binding Observacoes}"
                                        FontSize="12"
                                        TextColor="{DynamicResource SecondaryTextColor}"

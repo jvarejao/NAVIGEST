@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="NAVIGEST.Android.Pages.AbsenceTypesPage"
+             Title="Tipos de Ausência"
+             BackgroundColor="{DynamicResource PageBackgroundColor}">
+
+    <Grid RowDefinitions="*,Auto" Padding="16" RowSpacing="16">
+        <CollectionView x:Name="TypesCollectionView"
+                        SelectionMode="None">
+            <CollectionView.EmptyView>
+                <Label Text="Nenhum tipo de ausência definido."
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"
+                       TextColor="{DynamicResource SecondaryTextColor}"/>
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <SwipeView>
+                        <SwipeView.RightItems>
+                            <SwipeItems>
+                                <SwipeItem Text="Eliminar"
+                                           BackgroundColor="Red"
+                                           Invoked="OnDeleteInvoked"
+                                           CommandParameter="{Binding .}"/>
+                            </SwipeItems>
+                        </SwipeView.RightItems>
+                        <Border StrokeThickness="0"
+                                BackgroundColor="{DynamicResource CardBackgroundColor}"
+                                StrokeShape="RoundRectangle 8"
+                                Padding="16"
+                                Margin="0,0,0,8">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnItemTapped" CommandParameter="{Binding .}"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="{Binding Descricao}"
+                                   FontSize="16"
+                                   TextColor="{DynamicResource BodyTextColor}"/>
+                        </Border>
+                    </SwipeView>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <Button Grid.Row="1"
+                Text="Adicionar Novo Tipo"
+                BackgroundColor="{DynamicResource AppAccent}"
+                TextColor="White"
+                FontAttributes="Bold"
+                Clicked="OnAddClicked"
+                HeightRequest="50"
+                CornerRadius="8"/>
+    </Grid>
+</ContentPage>

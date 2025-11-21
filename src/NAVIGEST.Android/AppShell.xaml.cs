@@ -28,6 +28,7 @@ public partial class AppShell : Shell
         Routing.RegisterRoute("mainpage", typeof(Pages.MainYahPage));
         Routing.RegisterRoute("projects", typeof(Pages.ProjectListPage));
         Routing.RegisterRoute("manage", typeof(Pages.ManageMetaPage));
+        Routing.RegisterRoute(nameof(Pages.AbsenceTypesPage), typeof(Pages.AbsenceTypesPage));
 
         // ✅ Registar SplashIntroPage e WelcomePage com rotas PascalCase (consistente com iOS)
         Routing.RegisterRoute("SplashIntroPage", typeof(Pages.SplashIntroPage));

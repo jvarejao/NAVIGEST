@@ -1407,5 +1407,82 @@ FROM OrderInfo";
             return list;
         }
 
+        // ================= TIPOS DE AUSÊNCIA (FALTAS/FÉRIAS) =================
+
+        public static async Task CreateAbsenceTypesTableAsync()
+        {
+            try
+            {
+                using var conn = new MySqlConnection(GetConnectionString());
+                await conn.OpenAsync();
+                var sql = @"
+                    CREATE TABLE IF NOT EXISTS TIPOS_AUSENCIA (
+                        ID INT PRIMARY KEY AUTO_INCREMENT,
+                        Descricao VARCHAR(100) NOT NULL
+                    );";
+                using var cmd = new MySqlCommand(sql, conn);
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao criar tabela TIPOS_AUSENCIA: {ex.Message}");
+            }
+        }
+
+        public static async Task<List<AbsenceType>> GetAbsenceTypesAsync()
+        {
+            var list = new List<AbsenceType>();
+            try
+            {
+                await CreateAbsenceTypesTableAsync(); // Ensure table exists
+
+                using var conn = new MySqlConnection(GetConnectionString());
+                await conn.OpenAsync();
+                var sql = "SELECT ID, Descricao FROM TIPOS_AUSENCIA ORDER BY Descricao";
+                using var cmd = new MySqlCommand(sql, conn);
+                using var reader = await cmd.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                {
+                    list.Add(new AbsenceType
+                    {
+                        Id = reader.GetInt32("ID"),
+                        Descricao = reader.GetString("Descricao")
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao obter tipos de ausência: {ex.Message}");
+            }
+            return list;
+        }
+
+        public static async Task SaveAbsenceTypeAsync(AbsenceType type)
+        {
+            using var conn = new MySqlConnection(GetConnectionString());
+            await conn.OpenAsync();
+            string sql;
+            if (type.Id > 0)
+                sql = "UPDATE TIPOS_AUSENCIA SET Descricao = @Desc WHERE ID = @ID";
+            else
+                sql = "INSERT INTO TIPOS_AUSENCIA (Descricao) VALUES (@Desc)";
+
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@Desc", type.Descricao);
+            if (type.Id > 0)
+                cmd.Parameters.AddWithValue("@ID", type.Id);
+
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        public static async Task DeleteAbsenceTypeAsync(int id)
+        {
+            using var conn = new MySqlConnection(GetConnectionString());
+            await conn.OpenAsync();
+            var sql = "DELETE FROM TIPOS_AUSENCIA WHERE ID = @ID";
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@ID", id);
+            await cmd.ExecuteNonQueryAsync();
+        }
     }
 }

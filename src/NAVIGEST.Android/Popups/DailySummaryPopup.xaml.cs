@@ -23,6 +23,12 @@ public partial class DailySummaryPopup : Popup
         // Setup Date Label
         DateLabel.Text = date.ToString("dd 'de' MMMM", new System.Globalization.CultureInfo("pt-PT"));
 
+        // Weekend Indicator
+        if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday)
+        {
+            WeekendLabel.IsVisible = true;
+        }
+
         // Setup List
         EntriesCollectionView.ItemsSource = entries;
 
@@ -42,5 +48,13 @@ public partial class DailySummaryPopup : Popup
     private void OnAddClicked(object sender, EventArgs e)
     {
         Close(_date);
+    }
+
+    private void OnEditClicked(object sender, EventArgs e)
+    {
+        if (sender is Button btn && btn.BindingContext is HoraColaborador hora)
+        {
+            Close(hora);
+        }
     }
 }

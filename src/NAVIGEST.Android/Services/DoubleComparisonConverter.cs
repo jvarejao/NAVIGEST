@@ -9,8 +9,18 @@ namespace NAVIGEST.Android.Converters
     {
         public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            if (value is not double d || parameter is not string param || string.IsNullOrWhiteSpace(param))
+            if (value == null || parameter is not string param || string.IsNullOrWhiteSpace(param))
                 return false;
+
+            double d;
+            try 
+            {
+                d = System.Convert.ToDouble(value, CultureInfo.InvariantCulture);
+            }
+            catch
+            {
+                return false;
+            }
 
             var parts = param.Split(':', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length != 2)

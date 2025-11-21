@@ -30,6 +30,49 @@
       <!-- Formulário -->
       <ScrollView Grid.Row="1">
         <VerticalStackLayout Spacing="16">
+          <!-- Tipo de Registo -->
+          <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
+            <Label Text="📋 Tipo de Registo"
+                   FontSize="14"
+                   FontAttributes="Bold"
+                   TextColor="{DynamicResource BodyTextColor}"/>
+            <Border Grid.Row="1"
+                    BackgroundColor="{DynamicResource PageBackgroundColor}"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 8">
+                <Picker x:Name="TipoRegistoPicker"
+                        SelectedIndexChanged="OnTipoRegistoChanged"
+                        TextColor="{DynamicResource BodyTextColor}"
+                        BackgroundColor="Transparent"
+                        Title="Selecione o tipo">
+                    <Picker.ItemsSource>
+                        <x:Array Type="{x:Type x:String}">
+                            <x:String>Trabalho</x:String>
+                            <x:String>Ausência / Férias</x:String>
+                        </x:Array>
+                    </Picker.ItemsSource>
+                </Picker>
+            </Border>
+          </Grid>
+
+          <!-- Motivo Ausência -->
+          <Grid x:Name="AbsenceReasonContainer" RowDefinitions="Auto,Auto" RowSpacing="6" IsVisible="False">
+            <Label Text="🏥 Motivo"
+                   FontSize="14"
+                   FontAttributes="Bold"
+                   TextColor="{DynamicResource BodyTextColor}"/>
+            <Border Grid.Row="1"
+                    BackgroundColor="{DynamicResource PageBackgroundColor}"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 8">
+                <Picker x:Name="AbsenceTypePicker"
+                        ItemDisplayBinding="{Binding Descricao}"
+                        TextColor="{DynamicResource BodyTextColor}"
+                        BackgroundColor="Transparent"
+                        Title="Selecione o motivo"/>
+            </Border>
+          </Grid>
+
           <!-- Colaborador -->
           <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
             <Label Text="👤 Colaborador"
@@ -64,7 +107,7 @@
           </Grid>
 
           <!-- Cliente -->
-          <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
+          <Grid x:Name="ClientContainer" RowDefinitions="Auto,Auto" RowSpacing="6">
             <Label Text="🏢 Cliente"
                    FontSize="14"
                    FontAttributes="Bold"
