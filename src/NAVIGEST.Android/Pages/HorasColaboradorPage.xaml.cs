@@ -10,6 +10,7 @@ using CommunityToolkit.Maui.Alerts;
 using NAVIGEST.Android.PageModels;
 using NAVIGEST.Android.Models;
 using NAVIGEST.Android.Popups;
+using NAVIGEST.Android.Services;
 
 namespace NAVIGEST.Android.Pages;
 
@@ -17,6 +18,8 @@ public partial class HorasColaboradorPage : ContentPage
 {
     private HorasColaboradorViewModel _vm => (HorasColaboradorViewModel)BindingContext;
     
+    private DateTime _dataCalendario = DateTime.Today;
+
     public HorasColaboradorPage()
     {
         InitializeComponent();
@@ -63,6 +66,7 @@ public partial class HorasColaboradorPage : ContentPage
 
     private void AtivarTab(int numeroTab)
     {
+        _vm.TabAtiva = numeroTab;
         Tab1Border.BackgroundColor = Colors.Transparent;
         Tab2Border.BackgroundColor = Colors.Transparent;
         Tab3Border.BackgroundColor = Colors.Transparent;
@@ -620,8 +624,45 @@ public partial class HorasColaboradorPage : ContentPage
             HorizontalTextAlignment = TextAlignment.Center 
         };
         mainStack.Add(lblTitulo);
+
+        // --- 1. Picker de Colaborador ---
+        var pickerContainer = new Border
+        {
+            Stroke = Color.FromArgb("#E5E5EA"),
+            StrokeThickness = 1,
+            StrokeShape = new RoundRectangle { CornerRadius = 8 },
+            Padding = new Thickness(12, 0),
+            Margin = new Thickness(0, 0, 0, 8)
+        };
+        // FIX: Cor de fundo adaptativa para o container do Picker
+        pickerContainer.SetAppThemeColor(Border.BackgroundColorProperty, Colors.White, Color.FromArgb("#111827"));
+        pickerContainer.SetAppThemeColor(Border.StrokeProperty, Color.FromArgb("#E5E5EA"), Color.FromArgb("#38383A"));
+
+        var picker = new Picker
+        {
+            Title = "Selecione Colaborador",
+            ItemsSource = _vm.Colaboradores,
+            ItemDisplayBinding = new Binding("Nome"),
+            SelectedItem = _vm.ColaboradorSelecionado,
+            BackgroundColor = Colors.Transparent
+        };
+        picker.SetAppThemeColor(Picker.TextColorProperty, Colors.Black, Colors.White);
+        picker.SetAppThemeColor(Picker.TitleColorProperty, Color.FromArgb("#8E8E93"), Color.FromArgb("#8E8E93"));
         
-        // Navegação do mês
+        picker.SelectedIndexChanged += async (s, e) => 
+        {
+            if (picker.SelectedItem is Colaborador c)
+            {
+                _vm.ColaboradorSelecionado = c;
+                // FIX: Usar o método otimizado de carregamento
+                await AtualizarFiltroCalendarioAsync();
+            }
+        };
+        
+        pickerContainer.Content = picker;
+        mainStack.Add(pickerContainer);
+        
+        // --- 2. Navegação do mês ---
         var navGrid = new Grid 
         { 
             ColumnDefinitions = new ColumnDefinitionCollection { new(GridLength.Auto), new(GridLength.Star), new(GridLength.Auto) },
@@ -637,6 +678,11 @@ public partial class HorasColaboradorPage : ContentPage
             WidthRequest = 40, 
             HeightRequest = 40 
         };
+        btnPrev.Clicked += async (s, e) => 
+        {
+            _dataCalendario = _dataCalendario.AddMonths(-1);
+            await AtualizarFiltroCalendarioAsync();
+        };
         
         var btnNext = new Button 
         { 
@@ -647,11 +693,16 @@ public partial class HorasColaboradorPage : ContentPage
             WidthRequest = 40, 
             HeightRequest = 40 
         };
+        btnNext.Clicked += async (s, e) => 
+        {
+            _dataCalendario = _dataCalendario.AddMonths(1);
+            await AtualizarFiltroCalendarioAsync();
+        };
         
         var lblMes = new Label 
         { 
-            Text = DateTime.Today.ToString("MMMM yyyy"), 
-            FontSize = 18, 
+            Text = _dataCalendario.ToString("MMMM yyyy").ToUpper(), 
+            FontSize = 16, 
             FontAttributes = FontAttributes.Bold,
             HorizontalTextAlignment = TextAlignment.Center,
             VerticalTextAlignment = TextAlignment.Center
@@ -662,7 +713,7 @@ public partial class HorasColaboradorPage : ContentPage
         navGrid.Add(btnNext, 2, 0);
         mainStack.Add(navGrid);
         
-        // Cabeçalhos dos dias da semana
+        // --- 3. Cabeçalhos dos dias da semana ---
         var diasSemanaGrid = new Grid 
         { 
             ColumnDefinitions = new ColumnDefinitionCollection 
@@ -672,7 +723,8 @@ public partial class HorasColaboradorPage : ContentPage
             }
         };
         
-        var diasSemana = new[] { "Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb" };
+        // Começando à Segunda-feira como pedido ("seg, etc...")
+        var diasSemana = new[] { "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom" };
         for (int i = 0; i < 7; i++)
         {
             var lbl = new Label 
@@ -688,7 +740,7 @@ public partial class HorasColaboradorPage : ContentPage
         }
         mainStack.Add(diasSemanaGrid);
         
-        // Grid do calendário
+        // --- 4. Grid do calendário ---
         var calendarGrid = new Grid 
         { 
             ColumnDefinitions = new ColumnDefinitionCollection 
@@ -705,65 +757,155 @@ public partial class HorasColaboradorPage : ContentPage
             ColumnSpacing = 4
         };
         
-        var hoje = DateTime.Today;
-        var primeiroDia = new DateTime(hoje.Year, hoje.Month, 1);
-        var ultimoDia = primeiroDia.AddMonths(1).AddDays(-1);
-        var diasMes = ultimoDia.Day;
-        var diaSemanaPrimeiro = (int)primeiroDia.DayOfWeek;
+        var primeiroDiaMes = new DateTime(_dataCalendario.Year, _dataCalendario.Month, 1);
+        var diasNoMes = DateTime.DaysInMonth(_dataCalendario.Year, _dataCalendario.Month);
         
+        // Ajuste para começar na Segunda (Monday = 1, Sunday = 7)
+        // DayOfWeek: Sunday=0, Monday=1... Saturday=6
+        // Se Monday(1) -> offset 0. Se Sunday(0) -> offset 6.
+        int diaSemanaPrimeiro = ((int)primeiroDiaMes.DayOfWeek == 0) ? 6 : (int)primeiroDiaMes.DayOfWeek - 1;
+        
+        // OTIMIZAÇÃO: Criar dicionário para acesso rápido (O(1)) em vez de Where (O(N)) dentro do loop
+        var horasDict = _vm.HorasList.ToLookup(h => h.DataTrabalho.Date);
+
         int diaAtual = 1;
         for (int semana = 0; semana < 6; semana++)
         {
-            for (int diaSemana = 0; diaSemana < 7; diaSemana++)
+            for (int col = 0; col < 7; col++)
             {
-                int celula = semana * 7 + diaSemana;
+                int celulaIndex = semana * 7 + col;
                 
-                if (celula >= diaSemanaPrimeiro && diaAtual <= diasMes)
+                if (celulaIndex >= diaSemanaPrimeiro && diaAtual <= diasNoMes)
                 {
-                    var data = new DateTime(hoje.Year, hoje.Month, diaAtual);
-                    var horasDia = _vm.HorasList.Where(h => h.DataTrabalho.Date == data).Sum(h => h.HorasTrab + h.HorasExtras);
+                    var data = new DateTime(_dataCalendario.Year, _dataCalendario.Month, diaAtual);
                     
+                    // Usar o dicionário otimizado
+                    var horasDoDia = horasDict[data].ToList();
+                    
+                    float totalNormais = horasDoDia.Sum(h => h.HorasTrab);
+                    float totalExtras = horasDoDia.Sum(h => h.HorasExtras);
+                    bool temHoras = totalNormais > 0 || totalExtras > 0;
+                    
+                    // --- 5. Cor de Fim de Semana ---
+                    bool isWeekend = data.DayOfWeek == DayOfWeek.Saturday || data.DayOfWeek == DayOfWeek.Sunday;
+                    
+                    // FIX: Cores adaptativas para Dark/Light Mode
+                    var bgColor = Colors.Transparent;
+                    if (isWeekend)
+                    {
+                        // Fim de semana: Cinza claro no Light, Cinza escuro no Dark
+                        bgColor = Application.Current?.RequestedTheme == AppTheme.Dark 
+                            ? Color.FromArgb("#1C1C1E") 
+                            : Color.FromArgb("#F2F2F7");
+                    }
+                    
+                    if (temHoras) bgColor = Color.FromArgb("#0A84FF").WithAlpha(0.1f);
+
+                    // --- CÉLULA CONTAINER ---
+                    // Usamos um Grid para sobrepor o conteúdo visual e a área de toque
+                    var cellGrid = new Grid();
+
+                    // 1. Conteúdo Visual
                     var diaBorder = new Border
                     {
-                        BackgroundColor = horasDia > 0 ? Color.FromArgb("#0A84FF").WithAlpha(0.2f) : Color.FromArgb("#F5F5F7"),
-                        StrokeThickness = data.Date == hoje ? 2 : 0,
+                        BackgroundColor = bgColor,
+                        StrokeThickness = data.Date == DateTime.Today ? 2 : 0,
                         Stroke = Color.FromArgb("#0A84FF"),
                         StrokeShape = new RoundRectangle { CornerRadius = 8 },
                         Padding = 4,
-                        HeightRequest = 60
+                        HeightRequest = 60,
+                        InputTransparent = true // O toque será capturado pelo BoxView Overlay
                     };
                     
-                    var diaStack = new VerticalStackLayout { Spacing = 2, VerticalOptions = LayoutOptions.Center };
+                    var diaStack = new VerticalStackLayout 
+                    { 
+                        Spacing = 0, 
+                        VerticalOptions = LayoutOptions.Center,
+                        InputTransparent = true
+                    };
+                    
+                    // Dia Label
                     var lblDia = new Label 
                     { 
                         Text = diaAtual.ToString(), 
                         FontSize = 14, 
                         FontAttributes = FontAttributes.Bold,
-                        TextColor = horasDia > 0 ? Color.FromArgb("#0A84FF") : Color.FromArgb("#000000"),
-                        HorizontalTextAlignment = TextAlignment.Center
+                        HorizontalTextAlignment = TextAlignment.Center,
+                        InputTransparent = true
                     };
+                    
+                    // FIX: Cor do texto adaptativa
+                    if (temHoras)
+                    {
+                        lblDia.TextColor = Color.FromArgb("#0A84FF");
+                    }
+                    else if (isWeekend)
+                    {
+                        lblDia.TextColor = Color.FromArgb("#8E8E93");
+                    }
+                    else
+                    {
+                        lblDia.SetAppThemeColor(Label.TextColorProperty, Colors.Black, Colors.White);
+                    }
+                    
                     diaStack.Add(lblDia);
                     
-                    if (horasDia > 0)
+                    // --- 7. Horas Normais (Verde) ---
+                    if (totalNormais > 0)
                     {
-                        var lblHoras = new Label 
+                        var lblNormais = new Label 
                         { 
-                            Text = $"{horasDia:0.0}h", 
+                            Text = $"{totalNormais:0.##}h", 
                             FontSize = 10, 
-                            TextColor = Color.FromArgb("#34C759"),
-                            HorizontalTextAlignment = TextAlignment.Center
+                            TextColor = Color.FromArgb("#34C759"), // Green
+                            HorizontalTextAlignment = TextAlignment.Center,
+                            InputTransparent = true
                         };
-                        diaStack.Add(lblHoras);
+                        diaStack.Add(lblNormais);
+                    }
+
+                    // --- 8. Horas Extras (Laranja) ---
+                    if (totalExtras > 0)
+                    {
+                        var lblExtras = new Label 
+                        { 
+                            Text = $"{totalExtras:0.##}h", 
+                            FontSize = 10, 
+                            TextColor = Color.FromArgb("#FF9500"), // Orange
+                            HorizontalTextAlignment = TextAlignment.Center,
+                            InputTransparent = true
+                        };
+                        diaStack.Add(lblExtras);
                     }
                     
                     diaBorder.Content = diaStack;
-                    calendarGrid.Add(diaBorder, diaSemana, semana);
+                    cellGrid.Add(diaBorder);
+
+                    // 2. Overlay de Toque (Button Transparente)
+                    // FIX: Usar Button transparente para garantir captura do clique em Android
+                    var btnOverlay = new Button 
+                    { 
+                        BackgroundColor = Colors.Transparent,
+                        BorderColor = Colors.Transparent,
+                        CornerRadius = 0,
+                        Margin = 0,
+                        Padding = 0,
+                        HorizontalOptions = LayoutOptions.Fill,
+                        VerticalOptions = LayoutOptions.Fill,
+                        Opacity = 0.01 // Truque para garantir hit-test em algumas versões
+                    };
+                    
+                    btnOverlay.Clicked += async (s, e) => await OnDiaCalendarioTapped(data, horasDoDia);
+                    
+                    cellGrid.Add(btnOverlay);
+                    
+                    calendarGrid.Add(cellGrid, col, semana);
                     
                     diaAtual++;
                 }
                 else
                 {
-                    calendarGrid.Add(new BoxView { BackgroundColor = Colors.Transparent }, diaSemana, semana);
+                    calendarGrid.Add(new BoxView { BackgroundColor = Colors.Transparent }, col, semana);
                 }
             }
         }
@@ -773,25 +915,109 @@ public partial class HorasColaboradorPage : ContentPage
         // Legenda
         var legendaStack = new HorizontalStackLayout 
         { 
-            Spacing = 16, 
+            Spacing = 12, 
             HorizontalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 16, 0, 0)
         };
         
-        var legendaBorder1 = new Border
-        {
-            BackgroundColor = Color.FromArgb("#0A84FF").WithAlpha(0.2f),
-            WidthRequest = 20,
-            HeightRequest = 20,
-            StrokeShape = new RoundRectangle { CornerRadius = 4 }
-        };
-        legendaStack.Add(legendaBorder1);
-        legendaStack.Add(new Label { Text = "Com horas registadas", FontSize = 12, VerticalTextAlignment = TextAlignment.Center });
+        legendaStack.Add(CriarItemLegenda("#34C759", "Normal"));
+        legendaStack.Add(CriarItemLegenda("#FF9500", "Extra"));
         
         mainStack.Add(legendaStack);
         
         scroll.Content = mainStack;
         return scroll;
+    }
+
+    private View CriarItemLegenda(string colorHex, string text)
+    {
+        var stack = new HorizontalStackLayout { Spacing = 4, VerticalOptions = LayoutOptions.Center };
+        stack.Add(new BoxView { Color = Color.FromArgb(colorHex), WidthRequest = 12, HeightRequest = 12, CornerRadius = 6, VerticalOptions = LayoutOptions.Center });
+        stack.Add(new Label { Text = text, FontSize = 12, VerticalTextAlignment = TextAlignment.Center });
+        return stack;
+    }
+
+    private async Task AtualizarFiltroCalendarioAsync()
+    {
+        var inicio = new DateTime(_dataCalendario.Year, _dataCalendario.Month, 1);
+        var fim = inicio.AddMonths(1).AddDays(-1);
+        
+        _vm.DataFiltroInicio = inicio;
+        _vm.DataFiltroFim = fim;
+        
+        // FIX: Carregamento direto para evitar bloqueios do ViewModel (IsBusy)
+        // e garantir que os dados são atualizados antes de desenhar o calendário
+        try 
+        {
+            int? idColaboradorFiltro = _vm.ColaboradorSelecionado?.ID == 0 ? null : _vm.ColaboradorSelecionado?.ID;
+            var horas = await DatabaseService.GetHorasColaboradorAsync(idColaboradorFiltro, inicio, fim);
+            
+            _vm.HorasList.Clear();
+            foreach (var hora in horas.OrderByDescending(h => h.DataTrabalho)) 
+            {
+                _vm.HorasList.Add(hora);
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Erro ao carregar calendário: {ex.Message}");
+        }
+        
+        CarregarTab3Calendario();
+    }
+
+    private async Task OnDiaCalendarioTapped(DateTime data, List<HoraColaborador> horasExistentes)
+    {
+        try
+        {
+            // Verificar se devemos mostrar o nome do colaborador (se "Todos" estiver selecionado)
+            bool showColabName = _vm.ColaboradorSelecionado == null || _vm.ColaboradorSelecionado.ID == 0;
+
+            var popup = new DailySummaryPopup(data, horasExistentes ?? new List<HoraColaborador>(), showColabName);
+            var page = Application.Current?.Windows[0]?.Page;
+            
+            if (page != null)
+            {
+                var result = await page.ShowPopupAsync(popup);
+
+                // Se o resultado for uma data, significa que o utilizador clicou em "+"
+                if (result is DateTime dateToAdd)
+                {
+                    var novaHora = new HoraColaborador
+                    {
+                        DataTrabalho = dateToAdd,
+                        HorasTrab = 0,
+                        HorasExtras = 0,
+                        IdColaborador = _vm.ColaboradorSelecionado?.ID ?? 0
+                    };
+                    await AbrirNovaHoraPopupAsync(novaHora);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            GlobalErro.TratarErro(ex, mostrarAlerta: true);
+        }
+    }
+
+    private void OnSwipedLeft(object sender, SwipedEventArgs e)
+    {
+        if (_vm.TabAtiva < 3)
+        {
+            int novaTab = _vm.TabAtiva + 1;
+            if (novaTab == 2) OnTab2Tapped(this, EventArgs.Empty);
+            else if (novaTab == 3) OnTab3Tapped(this, EventArgs.Empty);
+        }
+    }
+
+    private void OnSwipedRight(object sender, SwipedEventArgs e)
+    {
+        if (_vm.TabAtiva > 1)
+        {
+            int novaTab = _vm.TabAtiva - 1;
+            if (novaTab == 1) OnTab1Tapped(this, EventArgs.Empty);
+            else if (novaTab == 2) OnTab2Tapped(this, EventArgs.Empty);
+        }
     }
 
     // ==================== CONVERTERS ====================

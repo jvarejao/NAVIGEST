@@ -9,7 +9,7 @@
     <Size Width="400" Height="680" />
   </toolkit:Popup.Size>
 
-  <Border BackgroundColor="{AppThemeBinding Light=#FFFFFF Dark=#1C1C1E}"
+  <Border BackgroundColor="{DynamicResource CardBackgroundColor}"
           StrokeThickness="0"
           Padding="24"
           StrokeShape="RoundRectangle 18">
@@ -25,7 +25,7 @@
              FontSize="20"
              FontAttributes="Bold"
              HorizontalOptions="Center"
-             TextColor="{AppThemeBinding Light=#000000 Dark=#FFFFFF}"/>
+             TextColor="{DynamicResource BodyTextColor}"/>
 
       <!-- Formulário -->
       <ScrollView Grid.Row="1">
@@ -35,9 +35,9 @@
             <Label Text="👤 Colaborador"
                    FontSize="14"
                    FontAttributes="Bold"
-                   TextColor="{AppThemeBinding Light=#000000 Dark=#FFFFFF}"/>
+                   TextColor="{DynamicResource BodyTextColor}"/>
             <Border Grid.Row="1"
-                    BackgroundColor="{AppThemeBinding Light=#F2F2F7 Dark=#2C2C2E}"
+                    BackgroundColor="{DynamicResource PageBackgroundColor}"
                     StrokeThickness="0"
                     StrokeShape="RoundRectangle 8">
               <Grid ColumnDefinitions="*,Auto">
@@ -45,13 +45,13 @@
                        Text="Selecione colaborador"
                        Padding="12,10"
                        VerticalOptions="Center"
-                       TextColor="{AppThemeBinding Light=#000000 Dark=#FFFFFF}"/>
+                       TextColor="{DynamicResource BodyTextColor}"/>
                 <Button Grid.Column="1"
                         FontFamily="FA7Solid"
                         Text="&#xF002;"
                         FontSize="20"
                         BackgroundColor="Transparent"
-                        TextColor="{AppThemeBinding Light=#007AFF Dark=#0A84FF}"
+                        TextColor="{DynamicResource AppAccent}"
                         Clicked="OnSelecionarColaboradorClicked"
                         WidthRequest="50"/>
               </Grid>
@@ -59,8 +59,8 @@
             <Picker x:Name="ColaboradorPicker"
                     Grid.Row="1"
                     IsVisible="False"
-                    BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
-                    TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+                    BackgroundColor="{DynamicResource PageBackgroundColor}"
+                    TextColor="{DynamicResource BodyTextColor}"/>
           </Grid>
 
           <!-- Cliente -->
@@ -68,9 +68,9 @@
             <Label Text="🏢 Cliente"
                    FontSize="14"
                    FontAttributes="Bold"
-                   TextColor="{AppThemeBinding Light=#000000 Dark=#FFFFFF}"/>
+                   TextColor="{DynamicResource BodyTextColor}"/>
             <Border Grid.Row="1"
-                    BackgroundColor="{AppThemeBinding Light=#F2F2F7 Dark=#2C2C2E}"
+                    BackgroundColor="{DynamicResource PageBackgroundColor}"
                     StrokeThickness="0"
                     StrokeShape="RoundRectangle 8">
               <Grid ColumnDefinitions="*,Auto">
@@ -78,13 +78,13 @@
                        Text="Sem cliente"
                        Padding="12,10"
                        VerticalOptions="Center"
-                       TextColor="{AppThemeBinding Light=#000000 Dark=#FFFFFF}"/>
+                       TextColor="{DynamicResource BodyTextColor}"/>
                 <Button Grid.Column="1"
                         FontFamily="FA7Solid"
                         Text="&#xF002;"
                         FontSize="20"
                         BackgroundColor="Transparent"
-                        TextColor="{AppThemeBinding Light=#007AFF Dark=#0A84FF}"
+                        TextColor="{DynamicResource AppAccent}"
                         Clicked="OnPesquisarClienteClicked"
                         WidthRequest="50"/>
               </Grid>
@@ -92,8 +92,8 @@
             <Picker x:Name="ClientePicker"
                     Grid.Row="1"
                     IsVisible="False"
-                    BackgroundColor="{AppThemeBinding Light=#F2F2F7 Dark=#2C2C2E}"
-                    TextColor="{AppThemeBinding Light=#000000 Dark=#FFFFFF}"/>
+                    BackgroundColor="{DynamicResource PageBackgroundColor}"
+                    TextColor="{DynamicResource BodyTextColor}"/>
           </Grid>
 
           <!-- Data -->
@@ -101,11 +101,11 @@
             <Label Text="📅 Data"
                    FontSize="14"
                    FontAttributes="Bold"
-                   TextColor="{AppThemeBinding Light=#000000 Dark=#FFFFFF}"/>
+                   TextColor="{DynamicResource BodyTextColor}"/>
             <DatePicker x:Name="DataPicker"
                         Grid.Row="1"
-                        BackgroundColor="{AppThemeBinding Light=#F2F2F7 Dark=#2C2C2E}"
-                        TextColor="{AppThemeBinding Light=#000000 Dark=#FFFFFF}"/>
+                        BackgroundColor="{DynamicResource PageBackgroundColor}"
+                        TextColor="{DynamicResource BodyTextColor}"/>
           </Grid>
 
           <!-- Horas Normais -->
@@ -116,7 +116,7 @@
                    TextColor="{AppThemeBinding Light=#34C759 Dark=#30D158}"/>
             <Border x:Name="HorasNormaisBorder"
                     Grid.Row="1"
-                    BackgroundColor="{AppThemeBinding Light=#F2F2F7 Dark=#2C2C2E}"
+                    BackgroundColor="{DynamicResource PageBackgroundColor}"
                     StrokeThickness="2"
                     Stroke="Transparent"
                     StrokeShape="RoundRectangle 8">
@@ -124,8 +124,8 @@
                      Placeholder="Ex: 8 ou 8.5"
                      Keyboard="Numeric"
                      BackgroundColor="Transparent"
-                     TextColor="{AppThemeBinding Light=#000000 Dark=#FFFFFF}"
-                     PlaceholderColor="{AppThemeBinding Light=#8E8E93 Dark=#8E8E93}"
+                     TextColor="{DynamicResource EntryTextColor}"
+                     PlaceholderColor="{DynamicResource EntryPlaceholderColor}"
                      TextChanged="OnHorasChanged"/>
             </Border>
           </Grid>
@@ -138,7 +138,7 @@
                    TextColor="{AppThemeBinding Light=#FF9500 Dark=#FF9F0A}"/>
             <Border x:Name="HorasExtrasBorder"
                     Grid.Row="1"
-                    BackgroundColor="{AppThemeBinding Light=#F2F2F7 Dark=#2C2C2E}"
+                    BackgroundColor="{DynamicResource PageBackgroundColor}"
                     StrokeThickness="2"
                     Stroke="Transparent"
                     StrokeShape="RoundRectangle 8">
@@ -146,8 +146,8 @@
                      Placeholder="Ex: 2 ou 2.5"
                      Keyboard="Numeric"
                      BackgroundColor="Transparent"
-                     TextColor="{AppThemeBinding Light=#000000 Dark=#FFFFFF}"
-                     PlaceholderColor="{AppThemeBinding Light=#8E8E93 Dark=#8E8E93}"
+                     TextColor="{DynamicResource EntryTextColor}"
+                     PlaceholderColor="{DynamicResource EntryPlaceholderColor}"
                      TextChanged="OnHorasChanged"/>
             </Border>
           </Grid>
@@ -158,14 +158,14 @@
             <Label Text="📝 Observações"
                    FontSize="14"
                    FontAttributes="Bold"
-                   TextColor="{AppThemeBinding Light=#000000 Dark=#FFFFFF}"/>
+                   TextColor="{DynamicResource BodyTextColor}"/>
             <Editor x:Name="ObservacoesEditor"
                     Grid.Row="1"
                     Placeholder="Observações adicionais"
                     HeightRequest="80"
-                    BackgroundColor="{AppThemeBinding Light=#F2F2F7 Dark=#2C2C2E}"
-                    TextColor="{AppThemeBinding Light=#000000 Dark=#FFFFFF}"
-                    PlaceholderColor="{AppThemeBinding Light=#8E8E93 Dark=#8E8E93}"/>
+                    BackgroundColor="{DynamicResource PageBackgroundColor}"
+                    TextColor="{DynamicResource EntryTextColor}"
+                    PlaceholderColor="{DynamicResource EntryPlaceholderColor}"/>
           </Grid>
 
           <!-- Erro -->

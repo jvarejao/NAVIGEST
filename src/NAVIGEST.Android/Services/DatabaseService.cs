@@ -1349,7 +1349,7 @@ FROM OrderInfo";
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao gravar hora: {ex.Message}");
+                // System.Diagnostics.Debug.WriteLine($"Erro ao gravar hora: {ex.Message}");
                 throw;
             }
         }

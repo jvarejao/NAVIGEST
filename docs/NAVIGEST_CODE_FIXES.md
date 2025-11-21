@@ -733,6 +733,41 @@ namespace NAVIGEST.iOS
 
 ---
 
+## 2. DatabaseService.cs - CORREÇÃO DE INSERT (ANDROID)
+
+### ❌ PROBLEMA: Erro 'Field ID doesn't have a default value'
+
+**Ficheiro**: `src/NAVIGEST.Android/Services/DatabaseService.cs`
+
+**Problema**:
+Ao tentar gravar um novo registo de horas, ocorria o erro `MySqlException: Field 'ID' doesn't have a default value`.
+
+**Causa**:
+A tabela `HORASTRABALHADAS` na base de dados MySQL não tem a propriedade `AUTO_INCREMENT` definida na coluna `ID`. O código original esperava que a base de dados gerasse o ID automaticamente.
+
+**Solução**:
+Alterado o método `UpsertHoraColaboradorAsync` para calcular manualmente o próximo ID disponível (`MAX(ID) + 1`) antes de fazer o INSERT.
+
+---
+
+## 3. NovaHoraPopup.xaml - CORREÇÕES DE UI (ANDROID)
+
+### ❌ PROBLEMA: Teclado incorreto e Label desnecessária
+
+**Ficheiro**: `src/NAVIGEST.Android/Popups/NovaHoraPopup.xaml`
+
+**Problema**:
+1. O campo de horas abria o teclado de texto em vez do numérico.
+2. Havia uma label "TotalHorasLabel" que causava erro de compilação ou não era necessária.
+3. Erro de sintaxe no `AppThemeBinding` (`Light#...` em vez de `Light=#...`).
+
+**Solução**:
+1. Alterado `Keyboard="Text"` para `Keyboard="Numeric"` no `Entry` de horas.
+2. Removida a `Label` `TotalHorasLabel`.
+3. Corrigida a sintaxe do `AppThemeBinding`.
+
+---
+
 ## 📋 RESUMO DE CORREÇÕES
 
 | Ficheiro | Problema | Solução |
@@ -744,6 +779,8 @@ namespace NAVIGEST.iOS
 | `MauiProgram.cs` | Injeção de dependências misturada | Usar extension methods |
 | `GlobalErro.cs` | Namespace `AppLoginMaui` | Mudar para `NAVIGEST.Shared.Helpers` |
 | `GlobalToast.cs` | Namespace `AppLoginMaui` | Mudar para `NAVIGEST.Shared.Helpers` |
+| `DatabaseService.cs` | Erro 'Field ID doesn't have a default value' | Gerar ID manualmente (MAX+1) |
+| `NovaHoraPopup.xaml` | Teclado errado e erro XAML | Keyboard="Numeric" e fix AppThemeBinding |
 
 ---
 
@@ -754,4 +791,5 @@ namespace NAVIGEST.iOS
 3. Testar DatabaseService com conexão real
 4. Testar BiometricAuthService em device iOS
 5. Testar LoginViewModel com validação real
+6. ⚠️ IMPORTANTE: Portar correções de DatabaseService (geração de ID) e NovaHoraPopup (UI) para iOS e macOS.
 

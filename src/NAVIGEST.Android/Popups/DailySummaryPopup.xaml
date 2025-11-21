@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<toolkit:Popup x:Class="NAVIGEST.Android.Popups.DailySummaryPopup"
+               xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+               xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+               xmlns:models="clr-namespace:NAVIGEST.Android.Models"
+               xmlns:popups="clr-namespace:NAVIGEST.Android.Popups"
+               CanBeDismissedByTappingOutsideOfPopup="True">
+    <toolkit:Popup.Size>
+        <Size Width="380" Height="500" />
+    </toolkit:Popup.Size>
+
+    <Border BackgroundColor="{DynamicResource CardBackgroundColor}"
+            StrokeThickness="0"
+            Padding="20"
+            StrokeShape="RoundRectangle 18">
+        <Border.Shadow>
+            <Shadow Brush="Black" Opacity="0.25" Radius="12" Offset="0,4"/>
+        </Border.Shadow>
+
+        <Grid RowDefinitions="Auto,*,Auto" RowSpacing="15">
+            <!-- Header -->
+            <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                <VerticalStackLayout Grid.Column="0" Spacing="4">
+                    <Label x:Name="DateLabel"
+                           Text="21 de Novembro"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center"
+                           TextColor="{DynamicResource BodyTextColor}"/>
+                    <Label x:Name="TotalHoursLabel"
+                           Text="Total: 8h"
+                           FontSize="14"
+                           HorizontalOptions="Center"
+                           TextColor="{DynamicResource SecondaryTextColor}"/>
+                </VerticalStackLayout>
+                
+                <!-- Add Button -->
+                <Button Grid.Column="1"
+                        Text="+"
+                        FontSize="20"
+                        FontAttributes="Bold"
+                        BackgroundColor="Transparent"
+                        TextColor="{DynamicResource AppAccent}"
+                        Clicked="OnAddClicked"
+                        WidthRequest="40"
+                        HeightRequest="40"
+                        Padding="0"/>
+            </Grid>
+
+            <!-- List of Entries -->
+            <CollectionView Grid.Row="1"
+                            x:Name="EntriesCollectionView"
+                            SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Border StrokeThickness="0"
+                                BackgroundColor="{DynamicResource PageBackgroundColor}"
+                                StrokeShape="RoundRectangle 8"
+                                Padding="12"
+                                Margin="0,0,0,8">
+                            <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto">
+                                <!-- Row 0: Collaborator Name (Visible if showing all) -->
+                                <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
+                                       Text="{Binding NomeColaborador}"
+                                       FontAttributes="Bold"
+                                       FontSize="13"
+                                       TextColor="{DynamicResource AppAccent}"
+                                       IsVisible="{Binding Source={RelativeSource AncestorType={x:Type popups:DailySummaryPopup}}, Path=ShowCollaboratorName}"
+                                       Margin="0,0,0,4"/>
+
+                                <!-- Row 1: Client & Hours -->
+                                <Label Grid.Row="1" Grid.Column="0"
+                                       Text="{Binding ClienteInfo}"
+                                       FontAttributes="Bold"
+                                       FontSize="14"
+                                       LineBreakMode="TailTruncation"
+                                       TextColor="{DynamicResource BodyTextColor}"/>
+                                
+                                <Label Grid.Row="1" Grid.Column="1"
+                                       Text="{Binding HorasTotaisFormatted}"
+                                       FontSize="12"
+                                       HorizontalTextAlignment="End"
+                                       VerticalOptions="Center"
+                                       TextColor="{DynamicResource BodyTextColor}"/>
+
+                                <!-- Row 2: Description/Observations -->
+                                <Label Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                                       Text="{Binding Observacoes}"
+                                       FontSize="12"
+                                       TextColor="{DynamicResource SecondaryTextColor}"
+                                       LineBreakMode="TailTruncation"
+                                       MaxLines="2"
+                                       Margin="0,4,0,0"
+                                       IsVisible="{Binding Observacoes, Converter={toolkit:IsStringNotNullOrEmptyConverter}}"/>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+                <CollectionView.EmptyView>
+                    <Label Text="Sem registos para este dia."
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"
+                           TextColor="{DynamicResource SecondaryTextColor}"/>
+                </CollectionView.EmptyView>
+            </CollectionView>
+
+            <!-- Footer Buttons -->
+            <Button Grid.Row="2"
+                    Text="Fechar"
+                    BackgroundColor="{DynamicResource AppAccent}"
+                    TextColor="White"
+                    CornerRadius="8"
+                    Clicked="OnCloseClicked"/>
+        </Grid>
+    </Border>
+</toolkit:Popup>

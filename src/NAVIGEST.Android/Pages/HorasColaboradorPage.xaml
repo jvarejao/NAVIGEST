@@ -77,6 +77,10 @@
 
         <!-- TAB CONTENT -->
         <ContentView Grid.Row="1" x:Name="TabContentView">
+            <ContentView.GestureRecognizers>
+                <SwipeGestureRecognizer Direction="Left" Swiped="OnSwipedLeft"/>
+                <SwipeGestureRecognizer Direction="Right" Swiped="OnSwipedRight"/>
+            </ContentView.GestureRecognizers>
             <!-- O conteúdo será trocado dinamicamente -->
         </ContentView>
 

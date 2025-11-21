@@ -113,54 +113,43 @@ public partial class NovaHoraPopup : Popup
     {
         try
         {
-            await Shell.Current.DisplayAlert("DEBUG", "Botão GUARDAR clicado!", "OK");
-            
             // Validar colaborador
             if (_colaboradorSelecionado == null)
             {
-                await Shell.Current.DisplayAlert("DEBUG", "FALHOU: Colaborador não selecionado", "OK");
                 MostrarErro("Selecione um colaborador");
                 return;
             }
             
             var colab = _colaboradorSelecionado;
-            await Shell.Current.DisplayAlert("DEBUG", $"Colaborador OK: {colab.Nome} (ID={colab.ID})", "OK");
 
             // Validar campos de horas - aceitar vazio como 0
             string horasNormaisText = string.IsNullOrWhiteSpace(HorasNormaisEntry.Text) ? "0" : HorasNormaisEntry.Text.Replace(",", ".");
             string horasExtrasText = string.IsNullOrWhiteSpace(HorasExtrasEntry.Text) ? "0" : HorasExtrasEntry.Text.Replace(",", ".");
             
-            await Shell.Current.DisplayAlert("DEBUG", $"Horas: N={horasNormaisText}, E={horasExtrasText}", "OK");
-            
             if (!float.TryParse(horasNormaisText, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float horasNormais) || horasNormais < 0)
             {
-                await Shell.Current.DisplayAlert("DEBUG", "FALHOU: Parse horas normais", "OK");
                 MostrarErro("Insira horas normais válidas (0-24)");
                 return;
             }
 
             if (!float.TryParse(horasExtrasText, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float horasExtras) || horasExtras < 0)
             {
-                await Shell.Current.DisplayAlert("DEBUG", "FALHOU: Parse horas extras", "OK");
                 MostrarErro("Insira horas extras válidas (0-24)");
                 return;
             }
 
             if (horasNormais + horasExtras > 24)
             {
-                await Shell.Current.DisplayAlert("DEBUG", "FALHOU: Total > 24h", "OK");
                 MostrarErro("Total de horas não pode exceder 24h");
                 return;
             }
             
             if (horasNormais + horasExtras == 0)
             {
-                await Shell.Current.DisplayAlert("DEBUG", "FALHOU: Total = 0", "OK");
                 MostrarErro("Insira pelo menos 1 hora");
                 return;
             }
 
-            await Shell.Current.DisplayAlert("DEBUG", "Validações OK! Vai gravar...", "OK");
             SetBusy(true);
             EsconderErro();
 
@@ -188,9 +177,6 @@ public partial class NovaHoraPopup : Popup
             _hora.HorasExtras = horasExtras;
 
             // Gravar na BD
-            await Shell.Current.DisplayAlert("DEBUG", $"Cliente selecionado: {(_clienteSelecionado?.CLINOME ?? "Nenhum")}", "OK");
-            await Shell.Current.DisplayAlert("DEBUG", "Chamando UpsertHoraColaboradorAsync...", "OK");
-            
             int id;
             try
             {
@@ -198,18 +184,14 @@ public partial class NovaHoraPopup : Popup
             }
             catch (Exception exDb)
             {
-                await Shell.Current.DisplayAlert("ERRO NA BD", $"Exception: {exDb.Message}\n\n{exDb.InnerException?.Message}", "OK");
                 GlobalErro.TratarErro(exDb, mostrarAlerta: true);
                 throw;
             }
             
             _hora.Id = id;
-            await Shell.Current.DisplayAlert("DEBUG", $"Gravado! ID={id}. Vai fechar popup...", "OK");
 
             // Fechar popup com sucesso
-            await Shell.Current.DisplayAlert("DEBUG", $"Chamando Close() com objeto ID={_hora.Id}", "OK");
             Close(_hora);
-            await Shell.Current.DisplayAlert("DEBUG", "DEPOIS de Close() - NÃO DEVIA APARECER!", "OK");
         }
         catch (Exception ex)
         {
