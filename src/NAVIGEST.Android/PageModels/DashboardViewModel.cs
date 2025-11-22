@@ -62,6 +62,7 @@ namespace NAVIGEST.Android.PageModels
         public ICommand DrillDownCommand { get; }
         public ICommand ShowAbsenceDetailsCommand { get; }
         public ICommand DataPointerDownCommand { get; }
+        public ICommand OpenChartDetailCommand { get; }
 
         public DashboardViewModel()
         {
@@ -69,7 +70,18 @@ namespace NAVIGEST.Android.PageModels
             DrillDownCommand = new AsyncRelayCommand<MonthlyHoursData>(OnDrillDownAsync);
             ShowAbsenceDetailsCommand = new AsyncRelayCommand<AbsenceSummary>(OnShowAbsenceDetailsAsync);
             DataPointerDownCommand = new RelayCommand<IEnumerable<ChartPoint>>(OnDataPointerDown);
+            OpenChartDetailCommand = new AsyncRelayCommand(OnOpenChartDetailAsync);
         }
+
+        private async Task OnOpenChartDetailAsync()
+        {
+            if (!IsSingleSelected || SelectedColaborador == null) return;
+            
+            // Trigger event to open popup
+            RequestOpenChartDetail?.Invoke(this, (SelectedColaborador, MonthlyData.ToList(), SelectedYear));
+        }
+
+        public event EventHandler<(Colaborador Colab, List<MonthlyHoursData> Data, int Year)>? RequestOpenChartDetail;
 
         public async Task InitializeAsync()
         {

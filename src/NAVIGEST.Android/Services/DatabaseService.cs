@@ -1498,13 +1498,14 @@ FROM OrderInfo";
             if (colabId.HasValue) filter += " AND IDColaborador = @colabId";
 
             // 1. Totals
+            // Work days are those with actual hours recorded (not absences)
             string sqlTotals = $@"
                 SELECT 
                     SUM(HorasTrab) as Normais, 
                     SUM(HorasExtras) as Extras, 
                     COUNT(DISTINCT DataTrabalho) as DiasTrab
                 FROM HORASTRABALHADAS 
-                {filter}";
+                {filter} AND IDCentroCusto IS NULL";
 
             using (var cmd = new MySqlCommand(sqlTotals, conn))
             {
@@ -1523,14 +1524,20 @@ FROM OrderInfo";
             if (m.TotalDiasTrabalhados > 0)
                 m.MediaHorasDia = m.TotalHoras / m.TotalDiasTrabalhados;
 
-            // 2. Absences (Not supported yet in HORASTRABALHADAS, returning 0)
-            m.TotalAusencias = 0;
+            // 2. Absences (Records with IdCentroCusto NOT NULL)
+            string sqlAbs = $@"SELECT COUNT(*) FROM HORASTRABALHADAS {filter} AND IDCentroCusto IS NOT NULL";
+            using (var cmd = new MySqlCommand(sqlAbs, conn))
+            {
+                cmd.Parameters.AddWithValue("@year", year);
+                if (colabId.HasValue) cmd.Parameters.AddWithValue("@colabId", colabId.Value);
+                m.TotalAusencias = Convert.ToInt32(await cmd.ExecuteScalarAsync());
+            }
 
-            // 3. Top Client
+            // 3. Top Client (Exclude absences)
             string sqlTop = $@"
                 SELECT Cliente 
                 FROM HORASTRABALHADAS
-                {filter}
+                {filter} AND IDCentroCusto IS NULL
                 GROUP BY Cliente
                 ORDER BY SUM(HorasTrab + HorasExtras) DESC
                 LIMIT 1";
@@ -1671,20 +1678,17 @@ FROM OrderInfo";
         public static async Task<List<AbsenceSummary>> GetAbsenceStatsAsync(int? colabId, int year)
         {
             var list = new List<AbsenceSummary>();
-            // Absences not yet implemented in HORASTRABALHADAS
-            return await Task.FromResult(list);
-            /*
             using var conn = new MySqlConnection(GetConnectionString());
             await conn.OpenAsync();
 
-            string filter = "WHERE YEAR(Data) = @year AND TipoRegisto != 'Trabalho'";
-            if (colabId.HasValue) filter += " AND ColaboradorID = @colabId";
+            string filter = "WHERE YEAR(DataTrabalho) = @year AND IDCentroCusto IS NOT NULL";
+            if (colabId.HasValue) filter += " AND IDColaborador = @colabId";
 
             string sql = $@"
-                SELECT TipoRegisto, COUNT(*) as Qtd
-                FROM REGISTO_HORAS
+                SELECT DescCentroCusto, COUNT(*) as Qtd
+                FROM HORASTRABALHADAS
                 {filter}
-                GROUP BY TipoRegisto
+                GROUP BY DescCentroCusto
                 ORDER BY Qtd DESC";
 
             using (var cmd = new MySqlCommand(sql, conn))
@@ -1694,16 +1698,16 @@ FROM OrderInfo";
                 using var rd = await cmd.ExecuteReaderAsync();
                 while (await rd.ReadAsync())
                 {
+                    string tipo = rd.IsDBNull(0) ? "Outros" : rd.GetString(0);
                     list.Add(new AbsenceSummary
                     {
-                        Tipo = rd.GetString(0),
+                        Tipo = tipo,
                         Dias = rd.GetInt32(1),
-                        Cor = GetColorForAbsence(rd.GetString(0))
+                        Cor = GetColorForAbsence(tipo)
                     });
                 }
             }
             return list;
-            */
         }
 
         private static string GetColorForAbsence(string type)
@@ -1720,20 +1724,17 @@ FROM OrderInfo";
         public static async Task<List<string>> GetAbsenceDetailsAsync(int? colabId, string type, int year)
         {
             var list = new List<string>();
-            // Absences not yet implemented
-            return await Task.FromResult(list);
-            /*
             using var conn = new MySqlConnection(GetConnectionString());
             await conn.OpenAsync();
 
-            string filter = "WHERE YEAR(Data) = @year AND TipoRegisto = @type";
-            if (colabId.HasValue) filter += " AND ColaboradorID = @colabId";
+            string filter = "WHERE YEAR(DataTrabalho) = @year AND DescCentroCusto = @type AND IDCentroCusto IS NOT NULL";
+            if (colabId.HasValue) filter += " AND IDColaborador = @colabId";
 
             string sql = $@"
-                SELECT Data
-                FROM REGISTO_HORAS
+                SELECT DataTrabalho
+                FROM HORASTRABALHADAS
                 {filter}
-                ORDER BY Data";
+                ORDER BY DataTrabalho";
 
             using (var cmd = new MySqlCommand(sql, conn))
             {
@@ -1747,7 +1748,6 @@ FROM OrderInfo";
                 }
             }
             return list;
-            */
         }
 
         public static async Task<List<ClientHoursSummary>> GetClientHoursStatsAsync(int? colabId, int year)
