@@ -11,7 +11,7 @@
     <Grid RowDefinitions="Auto,*" Padding="20" WidthRequest="700" HeightRequest="400">
         
         <!-- HEADER -->
-        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,10">
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,10">
             <VerticalStackLayout Spacing="4">
                 <Label x:Name="TitleLabel" 
                        Text="Evolução Anual" 
@@ -25,6 +25,15 @@
             </VerticalStackLayout>
             
             <Button Grid.Column="1" 
+                    Text="&#xf188;" 
+                    FontFamily="FA7Solid"
+                    TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                    BackgroundColor="Transparent"
+                    FontSize="16"
+                    Margin="0,0,10,0"
+                    Clicked="OnDebugClicked"/>
+
+            <Button Grid.Column="2" 
                     Text="&#xf00d;" 
                     FontFamily="FA7Solid"
                     TextColor="{AppThemeBinding Light=Black, Dark=White}"
@@ -46,7 +55,11 @@
             </Grid>
 
             <!-- MONTHLY CHART -->
-            <Grid x:Name="MonthlyChartContainer" IsVisible="False" RowDefinitions="Auto,*">
+            <Grid x:Name="MonthlyChartContainer" IsVisible="False" RowDefinitions="Auto,*,Auto">
+                <Grid.GestureRecognizers>
+                    <SwipeGestureRecognizer Direction="Left" Swiped="OnSwipedLeft"/>
+                    <SwipeGestureRecognizer Direction="Right" Swiped="OnSwipedRight"/>
+                </Grid.GestureRecognizers>
                 
                 <!-- Month Selector -->
                 <CollectionView Grid.Row="0" 
@@ -55,7 +68,7 @@
                                 SelectionMode="Single"
                                 SelectionChanged="OnMonthSelectionChanged"
                                 HeightRequest="40"
-                                Margin="0,0,0,10">
+                                Margin="0,0,0,5">
                     <CollectionView.ItemsLayout>
                         <LinearItemsLayout Orientation="Horizontal" ItemSpacing="8"/>
                     </CollectionView.ItemsLayout>
@@ -77,16 +90,17 @@
                                     Series="{Binding MonthlySeries}"
                                     XAxes="{Binding MonthlyXAxes}"
                                     YAxes="{Binding MonthlyYAxes}"
+                                    Sections="{Binding MonthlySections}"
                                     LegendPosition="Bottom"/>
                 
-                <Button Grid.Row="1"
+                <Button Grid.Row="2"
                         Text="Voltar ao Anual"
                         HorizontalOptions="End"
                         VerticalOptions="Start"
                         FontSize="10"
                         HeightRequest="30"
                         Padding="8,0"
-                        Margin="0,10,10,0"
+                        Margin="0,5,10,0"
                         Clicked="OnBackToAnnualClicked"/>
             </Grid>
         </Grid>

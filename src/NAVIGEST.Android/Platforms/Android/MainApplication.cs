@@ -20,6 +20,17 @@ namespace NAVIGEST.Android
 #if ANDROID
             Log.Info(LogTag, "MainApplication ctor");
 #endif
+            AppDomain.CurrentDomain.UnhandledException += (s, e) =>
+            {
+                var ex = e.ExceptionObject as Exception;
+                GlobalErro.TratarErro(ex ?? new Exception("Unknown AppDomain exception"), false);
+            };
+
+            global::Android.Runtime.AndroidEnvironment.UnhandledExceptionRaiser += (s, e) =>
+            {
+                GlobalErro.TratarErro(e.Exception, false);
+                e.Handled = true; // Try to prevent crash if possible, or at least log it first
+            };
         }
 
         protected override MauiApp CreateMauiApp()
