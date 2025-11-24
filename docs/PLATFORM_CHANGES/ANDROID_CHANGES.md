@@ -449,7 +449,44 @@ CheckForUpdatesAsync()
 
 ---
 
-**Última Atualização**: 2025-11-09  
-**Próxima Revisão**: Quando próxima mudança for feita em Android
+## Session: Crash Fixes & Monthly Chart UI (2025-11-23)
 
-```
+### 1. MainApplication.cs - Global Exception Handler
+
+**Tipo**: Modificação de método existente
+
+**Arquivo**: `Platforms/Android/MainApplication.cs`
+
+**Propósito**: 
+Adicionar `AndroidEnvironment.UnhandledExceptionRaiser` para capturar crashes globais e registar logs para debug on-device.
+
+### 2. LogViewerPopup (NEW)
+
+**Tipo**: Novo Ficheiro (View + CodeBehind)
+
+**Arquivo**: `Popups/LogViewerPopup.xaml` / `.xaml.cs`
+
+**Propósito**: 
+Popup para visualizar os logs de erro capturados no dispositivo (`error_log.txt`).
+
+### 3. ChartDetailPopup.xaml - UI Updates
+
+**Tipo**: Modificação de UI
+
+**Arquivo**: `Popups/ChartDetailPopup.xaml`
+
+**Propósito**: 
+- Adicionar `SwipeGestureRecognizer` (Left/Right) para navegação entre meses.
+- Ajustar Grid RowDefinitions para maximizar espaço vertical do gráfico.
+- Adicionar Binding `Sections="{Binding MonthlySections}"` ao CartesianChart.
+
+### 4. ChartDetailPopup.xaml.cs - Logic Updates
+
+**Tipo**: Modificação de Lógica
+
+**Arquivo**: `Popups/ChartDetailPopup.xaml.cs`
+
+**Propósito**: 
+- **LineSeries**: Alterado de ColumnSeries para LineSeries (Verde=Real, Laranja=Extra, Cinza Tracejado=Ideal).
+- **Weekend Highlight**: Adicionado `RectangularSection` para destacar Sábados e Domingos.
+- **Swipe Navigation**: Implementados `OnSwipedLeft` e `OnSwipedRight` para mudar de mês.

@@ -16,7 +16,7 @@
     <ShellContent
         Title="Horas"
         Route="hours-entry"
-        ContentTemplate="{DataTemplate pages:HoursEntryPage}" />
+        ContentTemplate="{DataTemplate pages:HorasColaboradorPage}" />
 
     <!-- NOVO: Página de Teste SwipeView -->
     <ShellContent

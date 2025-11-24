@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Maui;assembly=LiveChartsCore.SkiaSharpView.Maui"
+             xmlns:vm="clr-namespace:NAVIGEST.iOS.ViewModels"
+             xmlns:models="clr-namespace:NAVIGEST.iOS.Models"
+             x:Class="NAVIGEST.iOS.Views.DashboardView"
+             x:DataType="vm:DashboardViewModel">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="16" Padding="16">
+
+                        <!-- 1. HEADER / PICKER -->
+            <Border StrokeShape="RoundRectangle 10"
+                    BackgroundColor="{AppThemeBinding Light=White, Dark=#1C1C1E}"
+                    StrokeThickness="0"
+                    Padding="0">
+                <Picker Title="Selecione um Colaborador"
+                        ItemsSource="{Binding Colaboradores}"
+                        ItemDisplayBinding="{Binding Nome}"
+                        SelectedItem="{Binding SelectedColaborador}"
+                        TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                        TitleColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
+                        BackgroundColor="Transparent"
+                        HorizontalOptions="FillAndExpand"/>
+            </Border>
+
+            <!-- 2. METRICS GRID (2x2) -->
+            <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,*" RowSpacing="10" ColumnSpacing="10">
+                
+                <!-- Total Hours (Blue) -->
+                <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource CardStyle}">
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="&#xf017;" FontFamily="FA7Solid" FontSize="20" TextColor="#0A84FF" HorizontalOptions="End"/>
+                        <Label Text="Total Horas" Style="{StaticResource LabelCaption}"/>
+                        <Label Text="{Binding Metrics.TotalHoras, StringFormat='{0:F1}h'}" 
+                               Style="{StaticResource LabelValue}" TextColor="#0A84FF"/>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Absences (Red) -->
+                <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource CardStyle}">
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="&#xf073;" FontFamily="FA7Solid" FontSize="20" TextColor="#FF2D55" HorizontalOptions="End"/>
+                        <Label Text="Ausências" Style="{StaticResource LabelCaption}"/>
+                        <Label Text="{Binding Metrics.TotalAusencias, StringFormat='{0} dias'}" 
+                               Style="{StaticResource LabelValue}" TextColor="#FF2D55"/>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Normal Hours (Green) -->
+                <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource CardStyle}">
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="&#xf00c;" FontFamily="FA7Solid" FontSize="20" TextColor="#30D158" HorizontalOptions="End"/>
+                        <Label Text="Horas Normais" Style="{StaticResource LabelCaption}"/>
+                        <Label Text="{Binding Metrics.TotalHorasNormais, StringFormat='{0:F1}h'}" 
+                               Style="{StaticResource LabelValue}" TextColor="#30D158"/>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Extra Hours (Orange) -->
+                <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource CardStyle}">
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="&#xf067;" FontFamily="FA7Solid" FontSize="20" TextColor="#FF9500" HorizontalOptions="End"/>
+                        <Label Text="Horas Extra" Style="{StaticResource LabelCaption}"/>
+                        <Label Text="{Binding Metrics.TotalHorasExtras, StringFormat='{0:F1}h'}" 
+                               Style="{StaticResource LabelValue}" TextColor="#FF9500"/>
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+
+            <!-- 3. CHART (Only Visible if Single Collaborator) -->
+            <Border IsVisible="{Binding IsSingleSelected}"
+                    Style="{StaticResource CardStyle}"
+                    HeightRequest="300">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding OpenChartDetailCommand}"/>
+                </Border.GestureRecognizers>
+                <Grid RowDefinitions="Auto,*">
+                    <Label Grid.Row="0" Text="Evolução Mensal (Toque para detalhe)" FontAttributes="Bold" HorizontalOptions="Center" Margin="0,0,0,10"/>
+                    <lvc:CartesianChart Grid.Row="1"
+                                        Series="{Binding Series}"
+                                        XAxes="{Binding XAxes}"
+                                        YAxes="{Binding YAxes}"
+                                        LegendPosition="Bottom"
+                                        InputTransparent="True">
+                    </lvc:CartesianChart>
+                </Grid>
+            </Border>
+
+            <!-- 4. ABSENCE SUMMARY -->
+            <Label Text="Resumo de Ausências" Style="{StaticResource SectionHeader}"/>
+            <CollectionView ItemsSource="{Binding AbsenceData}" HeightRequest="120">
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Horizontal" ItemSpacing="10"/>
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:AbsenceSummary">
+                        <Border StrokeShape="RoundRectangle 8"
+                                BackgroundColor="{Binding Cor}"
+                                Padding="12"
+                                WidthRequest="100">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:DashboardViewModel}}, Path=ShowAbsenceDetailsCommand}"
+                                                      CommandParameter="{Binding .}"/>
+                            </Border.GestureRecognizers>
+                            <VerticalStackLayout VerticalOptions="Center" Spacing="4">
+                                <Label Text="{Binding Tipo}" TextColor="White" FontAttributes="Bold" FontSize="12" LineBreakMode="TailTruncation"/>
+                                <Label Text="{Binding Dias, StringFormat='{0} dias'}" TextColor="White" FontSize="14"/>
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <!-- 5. CLIENT SUMMARY -->
+            <Label Text="Top Clientes (Horas)" Style="{StaticResource SectionHeader}"/>
+            <CollectionView ItemsSource="{Binding ClientData}" HeightRequest="200">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:ClientHoursSummary">
+                        <Grid ColumnDefinitions="*, Auto, Auto" Padding="0,8">
+                            <Label Grid.Column="0" Text="{Binding Cliente}" LineBreakMode="TailTruncation" VerticalOptions="Center"/>
+                            <ProgressBar Grid.Column="0" Progress="{Binding Percentagem}" ProgressColor="#0A84FF" VerticalOptions="End" ScaleY="0.2" Opacity="0.5"/>
+                            
+                            <Label Grid.Column="1" Text="{Binding Horas, StringFormat='{0:F1}h'}" FontAttributes="Bold" Margin="8,0" VerticalOptions="Center"/>
+                            <Label Grid.Column="2" Text="{Binding Percentagem, StringFormat='{0:P0}'}" TextColor="#8E8E93" FontSize="12" VerticalOptions="Center"/>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+    <ContentView.Resources>
+        <Style x:Key="CardStyle" TargetType="Border">
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=White, Dark=#2C2C2E}"/>
+            <Setter Property="StrokeShape" Value="RoundRectangle 12"/>
+            <Setter Property="StrokeThickness" Value="0"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="Shadow">
+                <Setter.Value>
+                    <Shadow Brush="Black" Offset="0,2" Radius="4" Opacity="0.1"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="LabelCaption" TargetType="Label">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="TextColor" Value="#8E8E93"/>
+        </Style>
+        <Style x:Key="LabelValue" TargetType="Label">
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontAttributes" Value="Bold"/>
+            <Setter Property="TextColor" Value="{AppThemeBinding Light=Black, Dark=White}"/>
+        </Style>
+        <Style x:Key="SectionHeader" TargetType="Label">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontAttributes" Value="Bold"/>
+            <Setter Property="Margin" Value="0,8,0,4"/>
+            <Setter Property="TextColor" Value="{AppThemeBinding Light=Black, Dark=White}"/>
+        </Style>
+    </ContentView.Resources>
+</ContentView>

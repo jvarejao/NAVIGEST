@@ -1,6 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <!-- Xcode Version Check Suppression -->
+    <_SuppressSdkXcodeVersionCheck>true</_SuppressSdkXcodeVersionCheck>
+    <EnableXcodeVersionCheck>false</EnableXcodeVersionCheck>
+    
     <!-- Apenas iOS -->
     <TargetFrameworks>net9.0-ios</TargetFrameworks>
     <OutputType>Exe</OutputType>
@@ -17,7 +21,7 @@
     <!-- App Info -->
     <ApplicationTitle>NAVIGEST</ApplicationTitle>
     <ApplicationDisplayName>NAVIGEST</ApplicationDisplayName>
-    <ApplicationId>com.navigatorcode.navigest</ApplicationId>
+    <ApplicationId>com.tuaempresa.apploginmaui</ApplicationId>
     <ApplicationDisplayVersion>1.0.2</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
     <ApplicationBuild>1</ApplicationBuild>
@@ -91,6 +95,7 @@
     <PackageReference Include="MySqlConnector" Version="2.4.0" />
     <PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.11" />
     <PackageReference Include="Syncfusion.Maui.Toolkit" Version="1.0.6" />
+    <PackageReference Include="LiveChartsCore.SkiaSharpView.Maui" Version="2.0.0-rc6.1" />
   </ItemGroup>
 
   <!-- XAMLs -->

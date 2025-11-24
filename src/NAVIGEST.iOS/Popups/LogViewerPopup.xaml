@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<toolkit:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Class="NAVIGEST.iOS.Popups.LogViewerPopup"
+             Color="{AppThemeBinding Light=White, Dark=#1C1C1E}"
+             CanBeDismissedByTappingOutsideOfPopup="True">
+
+    <Grid RowDefinitions="Auto,*,Auto" Padding="20" WidthRequest="600" HeightRequest="500">
+        
+        <Label Grid.Row="0" Text="Application Logs" FontAttributes="Bold" FontSize="18" Margin="0,0,0,10"/>
+        
+        <ScrollView Grid.Row="1" BackgroundColor="#F0F0F0">
+            <Label x:Name="LogLabel" 
+                   Text="Loading..." 
+                   FontSize="10" 
+                   FontFamily="Monospace"
+                   TextColor="Black"
+                   Padding="10"/>
+        </ScrollView>
+
+        <HorizontalStackLayout Grid.Row="2" Spacing="10" HorizontalOptions="End" Margin="0,10,0,0">
+            <Button Text="Refresh" Clicked="OnRefreshClicked"/>
+            <Button Text="Clear" Clicked="OnClearClicked" BackgroundColor="Red"/>
+            <Button Text="Close" Clicked="OnCloseClicked"/>
+        </HorizontalStackLayout>
+    </Grid>
+</toolkit:Popup>

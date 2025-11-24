@@ -338,12 +338,12 @@ namespace NAVIGEST.iOS.Pages
                                 {
                                     // Resolve a página via DI (respeita o teu construtor com VM)
                                     var services = this.Handler?.MauiContext?.Services;
-                                    var page = services?.GetService<HoursEntryPage>();
+                                    var page = services?.GetService<HorasColaboradorPage>();
 
                                     if (page == null)
                                     {
                                         // fallback defensivo (não deve acontecer se DI estiver correto)
-                                        page = new HoursEntryPage(new NAVIGEST.iOS.ViewModels.HoursEntryViewModel());
+                                        page = new HorasColaboradorPage();
                                     }
 
                                     var pageContent = page.Content;

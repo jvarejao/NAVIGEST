@@ -1,0 +1,8 @@
+<Project>
+  <PropertyGroup>
+    <_SuppressSdkXcodeVersionCheck>true</_SuppressSdkXcodeVersionCheck>
+    <EnableXcodeVersionCheck>false</EnableXcodeVersionCheck>
+    <IgnoreXcodeVersion>true</IgnoreXcodeVersion>
+    <_XcodeVersion>26.0</_XcodeVersion>
+  </PropertyGroup>
+</Project>

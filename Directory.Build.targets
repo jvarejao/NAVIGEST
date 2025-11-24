@@ -1,0 +1,8 @@
+<Project>
+  <Target Name="FixXcodeVersion" AfterTargets="_DetectSdkLocations" BeforeTargets="_ValidateXcodeVersion">
+    <PropertyGroup>
+      <_XcodeVersion>26.0</_XcodeVersion>
+    </PropertyGroup>
+    <Message Text="Fixed _XcodeVersion to 26.0" Importance="high" />
+  </Target>
+</Project>

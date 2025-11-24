@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<toolkit:Popup x:Class="NAVIGEST.iOS.Popups.NovaHoraPopup"
+               xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+               xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+               xmlns:models="clr-namespace:NAVIGEST.iOS.Models"
+               CanBeDismissedByTappingOutsideOfPopup="False">
+  <toolkit:Popup.Size>
+    <Size Width="400" Height="680" />
+  </toolkit:Popup.Size>
+
+  <Border BackgroundColor="{DynamicResource CardBackgroundColor}"
+          StrokeThickness="0"
+          Padding="24"
+          StrokeShape="RoundRectangle 18">
+    <Border.Shadow>
+      <Shadow Brush="Black" Opacity="0.25" Radius="12" Offset="0,4"/>
+    </Border.Shadow>
+    
+    <Grid RowDefinitions="Auto,*,Auto" RowSpacing="20">
+      <!-- Título -->
+      <Label Grid.Row="0"
+             x:Name="TituloLabel"
+             Text="➕ NOVO REGISTO DE HORAS"
+             FontSize="20"
+             FontAttributes="Bold"
+             HorizontalOptions="Center"
+             TextColor="{DynamicResource BodyTextColor}"/>
+
+      <!-- Formulário -->
+      <ScrollView Grid.Row="1">
+        <VerticalStackLayout Spacing="16">
+          <!-- Tipo de Registo -->
+          <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
+            <Label Text="📋 Tipo de Registo"
+                   FontSize="14"
+                   FontAttributes="Bold"
+                   TextColor="{DynamicResource BodyTextColor}"/>
+            <Border Grid.Row="1"
+                    BackgroundColor="{DynamicResource PageBackgroundColor}"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 8">
+                <Picker x:Name="TipoRegistoPicker"
+                        SelectedIndexChanged="OnTipoRegistoChanged"
+                        TextColor="{DynamicResource BodyTextColor}"
+                        BackgroundColor="Transparent"
+                        Title="Selecione o tipo">
+                    <Picker.ItemsSource>
+                        <x:Array Type="{x:Type x:String}">
+                            <x:String>Trabalho</x:String>
+                            <x:String>Ausência / Férias</x:String>
+                        </x:Array>
+                    </Picker.ItemsSource>
+                </Picker>
+            </Border>
+          </Grid>
+
+          <!-- Motivo Ausência -->
+          <Grid x:Name="AbsenceReasonContainer" RowDefinitions="Auto,Auto" RowSpacing="6" IsVisible="False">
+            <Label Text="🏥 Motivo"
+                   FontSize="14"
+                   FontAttributes="Bold"
+                   TextColor="{DynamicResource BodyTextColor}"/>
+            <Border Grid.Row="1"
+                    BackgroundColor="{DynamicResource PageBackgroundColor}"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 8">
+                <Picker x:Name="AbsenceTypePicker"
+                        ItemDisplayBinding="{Binding Descricao}"
+                        TextColor="{DynamicResource BodyTextColor}"
+                        BackgroundColor="Transparent"
+                        Title="Selecione o motivo"/>
+            </Border>
+          </Grid>
+
+          <!-- Colaborador -->
+          <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
+            <Label Text="👤 Colaborador"
+                   FontSize="14"
+                   FontAttributes="Bold"
+                   TextColor="{DynamicResource BodyTextColor}"/>
+            <Border Grid.Row="1"
+                    BackgroundColor="{DynamicResource PageBackgroundColor}"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 8">
+              <Grid ColumnDefinitions="*,Auto">
+                <Label x:Name="ColaboradorLabel"
+                       Text="Selecione colaborador"
+                       Padding="12,10"
+                       VerticalOptions="Center"
+                       TextColor="{DynamicResource BodyTextColor}"/>
+                <Button Grid.Column="1"
+                        FontFamily="FA7Solid"
+                        Text="&#xF002;"
+                        FontSize="20"
+                        BackgroundColor="Transparent"
+                        TextColor="{DynamicResource AppAccent}"
+                        Clicked="OnSelecionarColaboradorClicked"
+                        WidthRequest="50"/>
+              </Grid>
+            </Border>
+          </Grid>
+
+          <!-- Cliente -->
+          <Grid x:Name="ClienteContainer" RowDefinitions="Auto,Auto" RowSpacing="6">
+            <Label Text="🏢 Cliente"
+                   FontSize="14"
+                   FontAttributes="Bold"
+                   TextColor="{DynamicResource BodyTextColor}"/>
+            <Border Grid.Row="1"
+                    BackgroundColor="{DynamicResource PageBackgroundColor}"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 8">
+              <Grid ColumnDefinitions="*,Auto">
+                <Label x:Name="ClienteLabel"
+                       Text="Selecione cliente"
+                       Padding="12,10"
+                       VerticalOptions="Center"
+                       TextColor="{DynamicResource BodyTextColor}"/>
+                <Button Grid.Column="1"
+                        FontFamily="FA7Solid"
+                        Text="&#xF002;"
+                        FontSize="20"
+                        BackgroundColor="Transparent"
+                        TextColor="{DynamicResource AppAccent}"
+                        Clicked="OnSelecionarClienteClicked"
+                        WidthRequest="50"/>
+              </Grid>
+            </Border>
+          </Grid>
+
+          <!-- Data -->
+          <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
+            <Label Text="📅 Data"
+                   FontSize="14"
+                   FontAttributes="Bold"
+                   TextColor="{DynamicResource BodyTextColor}"/>
+            <Border Grid.Row="1"
+                    BackgroundColor="{DynamicResource PageBackgroundColor}"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 8">
+              <DatePicker x:Name="DataPicker"
+                          Format="dd/MM/yyyy"
+                          TextColor="{DynamicResource BodyTextColor}"
+                          BackgroundColor="Transparent"/>
+            </Border>
+          </Grid>
+
+          <!-- Horas Normais -->
+          <Grid x:Name="HorasNormaisContainer" RowDefinitions="Auto,Auto" RowSpacing="6">
+            <Label Text="⏱️ Horas Normais"
+                   FontSize="14"
+                   FontAttributes="Bold"
+                   TextColor="{DynamicResource BodyTextColor}"/>
+            <Border Grid.Row="1"
+                    BackgroundColor="{DynamicResource PageBackgroundColor}"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 8">
+              <Entry x:Name="HorasEntry"
+                     Keyboard="Numeric"
+                     Placeholder="0.0"
+                     TextColor="{DynamicResource BodyTextColor}"
+                     BackgroundColor="Transparent"/>
+            </Border>
+          </Grid>
+
+          <!-- Horas Extras -->
+          <Grid x:Name="HorasExtrasContainer" RowDefinitions="Auto,Auto" RowSpacing="6">
+            <Label Text="⚡ Horas Extras"
+                   FontSize="14"
+                   FontAttributes="Bold"
+                   TextColor="{DynamicResource BodyTextColor}"/>
+            <Border Grid.Row="1"
+                    BackgroundColor="{DynamicResource PageBackgroundColor}"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 8">
+              <Entry x:Name="HorasExtrasEntry"
+                     Keyboard="Numeric"
+                     Placeholder="0.0"
+                     TextColor="{DynamicResource BodyTextColor}"
+                     BackgroundColor="Transparent"/>
+            </Border>
+          </Grid>
+        </VerticalStackLayout>
+      </ScrollView>
+
+      <!-- Botões -->
+      <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="12">
+        <Button Text="Cancelar"
+                BackgroundColor="{DynamicResource PageBackgroundColor}"
+                TextColor="{DynamicResource BodyTextColor}"
+                Clicked="OnCancelarClicked"/>
+        
+        <Button Text="Guardar"
+                BackgroundColor="{DynamicResource AppAccent}"
+                TextColor="White"
+                FontAttributes="Bold"
+                Clicked="OnGuardarClicked"
+                Grid.Column="1"/>
+      </Grid>
+      
+      <!-- Botão Eliminar (Flutuante) -->
+      <Button x:Name="EliminarButton"
+              Grid.Row="2"
+              Text="🗑️"
+              BackgroundColor="#FF3B30"
+              TextColor="White"
+              WidthRequest="50"
+              HeightRequest="50"
+              CornerRadius="25"
+              HorizontalOptions="Center"
+              VerticalOptions="Center"
+              IsVisible="False"
+              Clicked="OnEliminarClicked"
+              TranslationY="60"/>
+    </Grid>
+  </Border>
+</toolkit:Popup>

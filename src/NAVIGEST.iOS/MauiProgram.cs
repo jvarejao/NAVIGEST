@@ -2,6 +2,8 @@
 using Microsoft.Extensions.Logging;
 using Syncfusion.Maui.Toolkit.Hosting;
 using UraniumUI;
+using SkiaSharp.Views.Maui.Controls.Hosting;
+using LiveChartsCore.SkiaSharpView.Maui;
 using NAVIGEST.iOS.Services.Icons; // <-- IIconProvider (namespace)
 using NAVIGEST.iOS.Pages;          // <-- ADICIONADO: HoursEntryPage
 using NAVIGEST.iOS.ViewModels;     // <-- ADICIONADO: HoursEntryViewModel
@@ -35,6 +37,8 @@ namespace NAVIGEST.iOS
                 .UseMauiCommunityToolkit()
                 .UseUraniumUI()
                 .UseUraniumUIMaterial()
+                .UseSkiaSharp()
+                .UseLiveCharts()
                 .ConfigureSyncfusionToolkit()
                 .ConfigureMauiHandlers(handlers =>
                 {
@@ -133,6 +137,11 @@ namespace NAVIGEST.iOS
             // ===== NOVO: Horas (layout — Passo 1) =====
             builder.Services.AddTransient<HoursEntryViewModel>();
             builder.Services.AddTransient<HoursEntryPage>();
+            
+            // ===== NOVO: Horas Colaborador (Portado do Android) =====
+            builder.Services.AddTransient<HorasColaboradorViewModel>();
+            builder.Services.AddTransient<HorasColaboradorPage>();
+            builder.Services.AddTransient<DashboardViewModel>();
             // (Mantive o padrão igual ao de Products: DI simples; a rota está no AppShell)
 
             // ===== Provider de Ícones por plataforma (mantido) =====
