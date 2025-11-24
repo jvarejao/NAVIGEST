@@ -43,7 +43,8 @@ namespace NAVIGEST.iOS.Pages
                 var pathsToTry = new[] 
                 { 
                     "Resources/Images/startup.gif",  // Path padrão do MAUI
-                    "startup.gif"                     // Fallback
+                    "Images/startup.gif",            // Path real no iOS Bundle (verificado via find)
+                    "startup.gif"                    // Fallback
                 };
                 
                 foreach (var path in pathsToTry)
@@ -70,6 +71,8 @@ namespace NAVIGEST.iOS.Pages
                 {
                     // Fallback imediato se o ficheiro não existir - não bloqueia o arranque
                     System.Diagnostics.Debug.WriteLine("[SplashIntroPage] ❌ GIF não encontrado em nenhum caminho");
+                    // DEBUG: Mostrar alerta se falhar
+                    await DisplayAlert("Erro GIF", "Não foi possível carregar o startup.gif. Verifique os logs.", "OK");
                     await Shell.Current.GoToAsync("//WelcomePage");
                     return;
                 }

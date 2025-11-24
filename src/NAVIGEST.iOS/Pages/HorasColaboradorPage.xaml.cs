@@ -667,7 +667,7 @@ public partial class HorasColaboradorPage : ContentPage
                     { 
                         Spacing = 0, 
                         VerticalOptions = LayoutOptions.Center,
-                        InputTransparent = false // Allow bubbling
+                        InputTransparent = true // Let touches pass to Border
                     };
                     
                     // Dia Label
@@ -677,7 +677,7 @@ public partial class HorasColaboradorPage : ContentPage
                         FontSize = 14, 
                         FontAttributes = FontAttributes.Bold,
                         HorizontalTextAlignment = TextAlignment.Center,
-                        InputTransparent = false // Allow bubbling
+                        InputTransparent = true // Let touches pass to Border
                     };
                     
                     if (temHoras)
@@ -704,7 +704,7 @@ public partial class HorasColaboradorPage : ContentPage
                             FontSize = 10, 
                             TextColor = Color.FromArgb("#34C759"),
                             HorizontalTextAlignment = TextAlignment.Center,
-                            InputTransparent = false
+                            InputTransparent = true
                         };
                         diaStack.Add(lblNormais);
                     }
@@ -718,14 +718,14 @@ public partial class HorasColaboradorPage : ContentPage
                             FontSize = 10, 
                             TextColor = Color.FromArgb("#FF9500"),
                             HorizontalTextAlignment = TextAlignment.Center,
-                            InputTransparent = false
+                            InputTransparent = true
                         };
                         diaStack.Add(lblExtras);
                     }
                     
                     diaBorder.Content = diaStack;
 
-                    // Captura de toque via GestureRecognizer aplicada ao Grid e ao Border para maximizar hit-test
+                    // Captura de toque via GestureRecognizer aplicada DIRETAMENTE ao Border (Elemento Visual)
                     async Task HandleTapAsync()
                     {
                         Console.WriteLine($"[CalendarioIOS] Tap detectado em {data:yyyy-MM-dd}");
@@ -744,7 +744,7 @@ public partial class HorasColaboradorPage : ContentPage
 
                     var tapGestureCell = new TapGestureRecognizer();
                     tapGestureCell.Tapped += async (s, e) => await HandleTapAsync();
-                    cellGrid.GestureRecognizers.Add(tapGestureCell);
+                    diaBorder.GestureRecognizers.Add(tapGestureCell);
 
                     cellGrid.Add(diaBorder);
                     
