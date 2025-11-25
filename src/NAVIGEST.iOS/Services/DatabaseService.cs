@@ -1820,19 +1820,16 @@ FROM OrderInfo";
             var list = new List<AbsenceType>();
             try
             {
-                await CreateAbsenceTypesTableAsync(); // Ensure table exists
-
                 using var conn = new MySqlConnection(GetConnectionString());
                 await conn.OpenAsync();
-                var sql = "SELECT ID, Descricao FROM TIPOS_AUSENCIA ORDER BY Descricao";
-                using var cmd = new MySqlCommand(sql, conn);
+                using var cmd = new MySqlCommand("SELECT ID, Descricao FROM TIPOS_AUSENCIA ORDER BY Descricao", conn);
                 using var reader = await cmd.ExecuteReaderAsync();
                 while (await reader.ReadAsync())
                 {
                     list.Add(new AbsenceType
                     {
-                        Id = reader.GetInt32("ID"),
-                        Descricao = reader.GetString("Descricao")
+                        Id = reader.GetInt32(0),
+                        Descricao = reader.GetString(1)
                     });
                 }
             }
@@ -1843,33 +1840,59 @@ FROM OrderInfo";
             return list;
         }
 
-        public static async Task SaveAbsenceTypeAsync(AbsenceType type)
+        public static async Task<bool> AddAbsenceTypeAsync(string descricao)
         {
-            using var conn = new MySqlConnection(GetConnectionString());
-            await conn.OpenAsync();
-            string sql;
-            if (type.Id > 0)
-                sql = "UPDATE TIPOS_AUSENCIA SET Descricao = @Desc WHERE ID = @ID";
-            else
-                sql = "INSERT INTO TIPOS_AUSENCIA (Descricao) VALUES (@Desc)";
-
-            using var cmd = new MySqlCommand(sql, conn);
-            cmd.Parameters.AddWithValue("@Desc", type.Descricao);
-            if (type.Id > 0)
-                cmd.Parameters.AddWithValue("@ID", type.Id);
-
-            await cmd.ExecuteNonQueryAsync();
+            try
+            {
+                using var conn = new MySqlConnection(GetConnectionString());
+                await conn.OpenAsync();
+                using var cmd = new MySqlCommand("INSERT INTO TIPOS_AUSENCIA (Descricao) VALUES (@Descricao)", conn);
+                cmd.Parameters.AddWithValue("@Descricao", descricao);
+                await cmd.ExecuteNonQueryAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao adicionar tipo de ausência: {ex.Message}");
+                return false;
+            }
         }
 
-        public static async Task DeleteAbsenceTypeAsync(int id)
+        public static async Task<bool> UpdateAbsenceTypeAsync(AbsenceType tipo)
         {
-            using var conn = new MySqlConnection(GetConnectionString());
-            await conn.OpenAsync();
+            try
+            {
+                using var conn = new MySqlConnection(GetConnectionString());
+                await conn.OpenAsync();
+                using var cmd = new MySqlCommand("UPDATE TIPOS_AUSENCIA SET Descricao = @Descricao WHERE ID = @Id", conn);
+                cmd.Parameters.AddWithValue("@Descricao", tipo.Descricao);
+                cmd.Parameters.AddWithValue("@Id", tipo.Id);
+                await cmd.ExecuteNonQueryAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao atualizar tipo de ausência: {ex.Message}");
+                return false;
+            }
+        }
 
-            var sql = "DELETE FROM TIPOS_AUSENCIA WHERE ID = @ID";
-            using var cmd = new MySqlCommand(sql, conn);
-            cmd.Parameters.AddWithValue("@ID", id);
-            await cmd.ExecuteNonQueryAsync();
+        public static async Task<bool> DeleteAbsenceTypeAsync(int id)
+        {
+            try
+            {
+                using var conn = new MySqlConnection(GetConnectionString());
+                await conn.OpenAsync();
+                using var cmd = new MySqlCommand("DELETE FROM TIPOS_AUSENCIA WHERE ID = @Id", conn);
+                cmd.Parameters.AddWithValue("@Id", id);
+                await cmd.ExecuteNonQueryAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao eliminar tipo de ausência: {ex.Message}");
+                return false;
+            }
         }
 
         // ================= HORAS COLABORADOR =================

@@ -19,6 +19,8 @@ public partial class NovaHoraPopup : Popup
     private Cliente? _clienteSelecionado;
     private Colaborador? _colaboradorSelecionado;
 
+    private AbsenceType? _absenceTypeSelecionado;
+
     public NovaHoraPopup(HoraColaborador hora, List<Colaborador> colaboradores)
     {
         InitializeComponent();
@@ -32,7 +34,7 @@ public partial class NovaHoraPopup : Popup
 
     private async Task InicializarFormAsync()
     {
-        TituloLabel.Text = _isEdit ? "✏️ EDITAR REGISTO DE HORAS" : "➕ NOVO REGISTO DE HORAS";
+        TituloLabel.Text = _isEdit ? "✏️ EDITAR REGISTO" : "➕ NOVO REGISTO";
         EliminarButton.IsVisible = _isEdit;
 
         try
@@ -89,8 +91,7 @@ public partial class NovaHoraPopup : Popup
         HorasExtrasEntry.Text = _hora.HorasExtras.ToString("0.00");
 
         _absenceTypes = await DatabaseService.GetAbsenceTypesAsync();
-        AbsenceTypePicker.ItemsSource = _absenceTypes;
-
+        
         bool isAbsence = false;
         if (_isEdit && _hora.IdCentroCusto.HasValue)
         {
@@ -98,18 +99,53 @@ public partial class NovaHoraPopup : Popup
             if (absence != null)
             {
                 isAbsence = true;
-                AbsenceTypePicker.SelectedItem = absence;
+                _absenceTypeSelecionado = absence;
+                AbsenceReasonLabel.Text = absence.Descricao;
             }
         }
 
-        TipoRegistoPicker.SelectedIndex = isAbsence ? 1 : 0;
+        TipoRegistoLabel.Text = isAbsence ? "Ausência / Férias" : "Trabalho";
         UpdateVisibility(isAbsence);
     }
 
-    private void OnTipoRegistoChanged(object sender, EventArgs e)
+    private async void OnSelecionarTipoRegistoTapped(object sender, EventArgs e)
     {
-        bool isAbsence = TipoRegistoPicker.SelectedIndex == 1;
-        UpdateVisibility(isAbsence);
+        var options = new List<string> { "Trabalho", "Ausência / Férias" };
+        var popup = new SelectionListPopup("Tipo de Registo", options);
+        
+        object? result = null;
+        if (Shell.Current != null)
+        {
+            result = await Shell.Current.ShowPopupAsync(popup);
+        }
+
+        if (result is string selected)
+        {
+            TipoRegistoLabel.Text = selected;
+            UpdateVisibility(selected == "Ausência / Férias");
+        }
+    }
+
+    private async void OnSelecionarMotivoAusenciaTapped(object sender, EventArgs e)
+    {
+        var options = _absenceTypes.Select(a => a.Descricao).ToList();
+        var popup = new SelectionListPopup("Motivo da Ausência", options);
+        
+        object? result = null;
+        if (Shell.Current != null)
+        {
+            result = await Shell.Current.ShowPopupAsync(popup);
+        }
+
+        if (result is string selected)
+        {
+            var absence = _absenceTypes.FirstOrDefault(a => a.Descricao == selected);
+            if (absence != null)
+            {
+                _absenceTypeSelecionado = absence;
+                AbsenceReasonLabel.Text = absence.Descricao;
+            }
+        }
     }
 
     private void UpdateVisibility(bool isAbsence)
@@ -131,7 +167,7 @@ public partial class NovaHoraPopup : Popup
             }
             
             var colab = _colaboradorSelecionado;
-            bool isAbsence = TipoRegistoPicker.SelectedIndex == 1;
+            bool isAbsence = TipoRegistoLabel.Text == "Ausência / Férias";
 
             string horasNormaisText = string.IsNullOrWhiteSpace(HorasEntry.Text) ? "0" : HorasEntry.Text.Replace(",", ".");
             string horasExtrasText = string.IsNullOrWhiteSpace(HorasExtrasEntry.Text) ? "0" : HorasExtrasEntry.Text.Replace(",", ".");
@@ -172,15 +208,15 @@ public partial class NovaHoraPopup : Popup
             
             if (isAbsence)
             {
-                if (AbsenceTypePicker.SelectedItem is not AbsenceType absence)
+                if (_absenceTypeSelecionado == null)
                 {
                     await Shell.Current.DisplayAlert("Erro", "Selecione o motivo da ausência", "OK");
                     return;
                 }
-                _hora.IdCentroCusto = absence.Id;
-                _hora.DescCentroCusto = absence.Descricao;
+                _hora.IdCentroCusto = _absenceTypeSelecionado.Id;
+                _hora.DescCentroCusto = _absenceTypeSelecionado.Descricao;
                 _hora.IdCliente = null;
-                _hora.Cliente = absence.Descricao.ToUpper();
+                _hora.Cliente = _absenceTypeSelecionado.Descricao.ToUpper();
             }
             else
             {
@@ -253,12 +289,18 @@ public partial class NovaHoraPopup : Popup
 
     private async void OnSelecionarClienteClicked(object sender, EventArgs e)
     {
-        var clientesDisplay = _clientes.Take(20).Select(c => c.CLINOME).ToArray();
-        var action = await Shell.Current.DisplayActionSheet("Selecione Cliente (Top 20)", "Cancelar", null, clientesDisplay);
+        var clientesDisplay = _clientes.Select(c => c.CLINOME).ToList();
+        var popup = new SelectionListPopup("Selecione Cliente", clientesDisplay);
         
-        if (action != null && action != "Cancelar")
+        object? result = null;
+        if (Shell.Current != null)
         {
-            var selecionado = _clientes.FirstOrDefault(c => c.CLINOME == action);
+            result = await Shell.Current.ShowPopupAsync(popup);
+        }
+
+        if (result is string selected)
+        {
+            var selecionado = _clientes.FirstOrDefault(c => c.CLINOME == selected);
             if (selecionado != null)
             {
                 _clienteSelecionado = selecionado;

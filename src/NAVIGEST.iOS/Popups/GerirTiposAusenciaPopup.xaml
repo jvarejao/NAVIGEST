@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<toolkit:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+               xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+               xmlns:models="clr-namespace:NAVIGEST.iOS.Models"
+               x:Class="NAVIGEST.iOS.Popups.GerirTiposAusenciaPopup"
+               Color="Transparent"
+               CanBeDismissedByTappingOutsideOfPopup="True">
+
+    <Border StrokeShape="RoundRectangle 16"
+            BackgroundColor="{AppThemeBinding Light=White, Dark=#1C1C1E}"
+            WidthRequest="340"
+            HeightRequest="500"
+            Padding="0">
+        
+        <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="10">
+            
+            <!-- Header -->
+            <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Padding="16,16,16,0">
+                <Label Text="Gerir Tipos de Ausência" 
+                       FontSize="18" 
+                       FontAttributes="Bold"
+                       VerticalOptions="Center"/>
+                
+                <ImageButton Grid.Column="1"
+                             Source="close_icon.png"
+                             HeightRequest="24"
+                             WidthRequest="24"
+                             Clicked="OnCloseClicked">
+                    <ImageButton.Source>
+                        <FontImageSource Glyph="✕" Color="{AppThemeBinding Light=Black, Dark=White}" Size="20"/>
+                    </ImageButton.Source>
+                </ImageButton>
+            </Grid>
+
+            <!-- Add New -->
+            <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Padding="16,0" ColumnSpacing="8">
+                <Entry x:Name="NewTypeEntry" 
+                       Placeholder="Novo tipo..." 
+                       ReturnType="Done"
+                       Completed="OnAddClicked"/>
+                <Button Grid.Column="1" 
+                        Text="Adicionar" 
+                        Clicked="OnAddClicked"
+                        HeightRequest="40"
+                        Padding="10,0"/>
+            </Grid>
+
+            <!-- List -->
+            <CollectionView Grid.Row="2" x:Name="TypesList" SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:AbsenceType">
+                        <SwipeView>
+                            <SwipeView.RightItems>
+                                <SwipeItems>
+                                    <SwipeItem Text="Eliminar"
+                                               BackgroundColor="#FF3B30"
+                                               Invoked="OnDeleteInvoked"
+                                               CommandParameter="{Binding .}"/>
+                                </SwipeItems>
+                            </SwipeView.RightItems>
+                            
+                            <Grid Padding="16,12" ColumnDefinitions="*,Auto">
+                                <Label Text="{Binding Descricao}" 
+                                       VerticalOptions="Center"
+                                       FontSize="16"/>
+                                <ImageButton Grid.Column="1"
+                                             Clicked="OnEditClicked"
+                                             CommandParameter="{Binding .}"
+                                             HeightRequest="30"
+                                             WidthRequest="30"
+                                             VerticalOptions="Center">
+                                    <ImageButton.Source>
+                                        <FontImageSource Glyph="✎" Color="#0A84FF" Size="18"/>
+                                    </ImageButton.Source>
+                                </ImageButton>
+                            </Grid>
+                        </SwipeView>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+                <CollectionView.EmptyView>
+                    <Label Text="Nenhum tipo definido" 
+                           HorizontalOptions="Center" 
+                           VerticalOptions="Center"
+                           TextColor="Gray"/>
+                </CollectionView.EmptyView>
+            </CollectionView>
+
+            <!-- Footer Info -->
+            <Label Grid.Row="3" 
+                   Text="Deslize para a esquerda para eliminar" 
+                   FontSize="12" 
+                   TextColor="Gray" 
+                   HorizontalOptions="Center"
+                   Padding="0,0,0,16"/>
+        </Grid>
+    </Border>
+</toolkit:Popup>

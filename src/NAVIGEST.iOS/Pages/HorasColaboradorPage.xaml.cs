@@ -12,6 +12,7 @@ using NAVIGEST.iOS.Models;
 using NAVIGEST.iOS.Services;
 using NAVIGEST.iOS.Converters;
 using Foundation;
+using NAVIGEST.iOS.Popups;
 
 namespace NAVIGEST.iOS.Pages;
 
@@ -88,6 +89,12 @@ public partial class HorasColaboradorPage : ContentPage
         CarregarTab3Calendario();
     }
 
+    private async void OnGerirTiposAusenciaClicked(object? sender, EventArgs e)
+    {
+        var popup = new GerirTiposAusenciaPopup();
+        await Shell.Current.ShowPopupAsync(popup);
+    }
+
     private void AtivarTab(int numeroTab)
     {
         _vm.TabAtiva = numeroTab;
@@ -162,10 +169,17 @@ public partial class HorasColaboradorPage : ContentPage
             Padding = 16
         };
         
+        // Botões de Ação
+        var buttonsGrid = new Grid
+        {
+            ColumnDefinitions = new ColumnDefinitionCollection { new(GridLength.Star), new(GridLength.Star) },
+            ColumnSpacing = 8
+        };
+
         // Botão Adicionar
         var btnAdicionar = new Button
         {
-            Text = "➕ Adicionar Horas Trab.",
+            Text = "➕ Horas",
             BackgroundColor = Color.FromArgb("#0A84FF"),
             TextColor = Colors.White,
             FontAttributes = FontAttributes.Bold,
@@ -173,7 +187,23 @@ public partial class HorasColaboradorPage : ContentPage
             Padding = 12
         };
         btnAdicionar.Clicked += async (s, e) => await AbrirNovaHoraPopupAsync(null);
-        mainGrid.Add(btnAdicionar, 0, 0);
+        
+        // Botão Gerir Tipos
+        var btnTipos = new Button
+        {
+            Text = "⚙️ Tipos Ausência",
+            BackgroundColor = Color.FromArgb("#E5E5EA"),
+            TextColor = Colors.Black,
+            FontAttributes = FontAttributes.Bold,
+            CornerRadius = 12,
+            Padding = 12
+        };
+        btnTipos.Clicked += OnGerirTiposAusenciaClicked;
+
+        buttonsGrid.Add(btnAdicionar, 0, 0);
+        buttonsGrid.Add(btnTipos, 1, 0);
+        
+        mainGrid.Add(buttonsGrid, 0, 0);
         
         // Filtros
         var filtrosStack = new VerticalStackLayout { Spacing = 12 };
@@ -722,13 +752,32 @@ public partial class HorasColaboradorPage : ContentPage
                         };
                         diaStack.Add(lblExtras);
                     }
+
+                    // Ausências
+                    var ausencias = horasDoDia.Where(h => h.IdCentroCusto.HasValue).ToList();
+                    if (ausencias.Any())
+                    {
+                        var primeiraAusencia = ausencias.First();
+                        var icon = GetAbsenceIcon(primeiraAusencia.DescCentroCusto, primeiraAusencia.Cliente);
+                        
+                        if (!string.IsNullOrEmpty(icon))
+                        {
+                            var lblAusencia = new Label 
+                            { 
+                                Text = icon, 
+                                FontSize = 12, 
+                                HorizontalTextAlignment = TextAlignment.Center,
+                                InputTransparent = true
+                            };
+                            diaStack.Add(lblAusencia);
+                        }
+                    }
                     
                     diaBorder.Content = diaStack;
 
                     // Captura de toque via GestureRecognizer aplicada DIRETAMENTE ao Border (Elemento Visual)
                     async Task HandleTapAsync()
                     {
-                        Console.WriteLine($"[CalendarioIOS] Tap detectado em {data:yyyy-MM-dd}");
                         try
                         {
                             await diaBorder.FadeTo(0.5, 50);
@@ -736,7 +785,7 @@ public partial class HorasColaboradorPage : ContentPage
                         }
                         catch
                         {
-                            // Ignorar efeitos de animação se a view já não estiver visível
+                            // Ignorar erros de animação
                         }
 
                         await OnDiaCalendarioTapped(data, horasDoDia);
@@ -766,13 +815,33 @@ public partial class HorasColaboradorPage : ContentPage
     {
         try
         {
-            // DEBUG: Verificar se o click chega aqui
-            await DisplayAlert("Debug Click", $"Dia clicado: {data:dd/MM/yyyy}", "OK");
-
             bool showColabName = _vm.ColaboradorSelecionado == null || _vm.ColaboradorSelecionado.ID == 0;
             var popup = new NAVIGEST.iOS.Popups.DailySummaryPopup(data, horasExistentes ?? new List<HoraColaborador>(), showColabName);
             
-            var result = await this.ShowPopupAsync(popup);
+            // FIX: Usar Shell.Current.ShowPopupAsync para garantir que o popup abre no contexto correto
+            // e adicionar try/catch específico
+            object? result = null;
+            try 
+            {
+                // Tentar via Shell.Current primeiro (mais seguro em navegação complexa)
+                if (Shell.Current != null)
+                {
+                    result = await Shell.Current.ShowPopupAsync(popup);
+                }
+                else
+                {
+                    result = await this.ShowPopupAsync(popup);
+                }
+            }
+            catch (Exception exPopup)
+            {
+                Console.WriteLine($"[CalendarioIOS] ERRO CRÍTICO ao abrir popup: {exPopup}");
+                // Fallback: DisplayAlert se o popup falhar
+                await DisplayAlert("Detalhes do Dia", $"Data: {data:dd/MM/yyyy}\n(Erro ao abrir popup visual)", "OK");
+                return;
+            }
+
+            Console.WriteLine($"[CalendarioIOS] Popup fechado. Resultado: {result}");
 
             if (result is DateTime dateToAdd)
             {
@@ -809,7 +878,16 @@ public partial class HorasColaboradorPage : ContentPage
             };
             
             var popup = new NAVIGEST.iOS.Popups.NovaHoraPopup(horaParaEditar, _vm.Colaboradores.ToList());
-            var result = await this.ShowPopupAsync(popup);
+            
+            object? result = null;
+            if (Shell.Current != null)
+            {
+                result = await Shell.Current.ShowPopupAsync(popup);
+            }
+            else
+            {
+                result = await this.ShowPopupAsync(popup);
+            }
             
             if (result is HoraColaborador horaResultado)
             {
@@ -851,5 +929,215 @@ public partial class HorasColaboradorPage : ContentPage
             if (_vm.TabAtiva == 3) OnTab2Tapped(this, EventArgs.Empty);
             else if (_vm.TabAtiva == 2) OnTab1Tapped(this, EventArgs.Empty);
         }
+    }
+
+    private string GetAbsenceIcon(string? description, string? clientName)
+    {
+        if (string.IsNullOrEmpty(description)) return string.Empty;
+        var desc = description.ToLower();
+        
+        // Specific icons
+        if (desc.Contains("férias") || desc.Contains("ferias")) return "🏖️";
+        if (desc.Contains("doença") || desc.Contains("doenca") || desc.Contains("médico") || desc.Contains("medico") || desc.Contains("hospital")) return "🏥";
+        if (desc.Contains("pai") || desc.Contains("mãe") || desc.Contains("parental") || desc.Contains("filho")) return "👶";
+        if (desc.Contains("luto") || desc.Contains("falecimento") || desc.Contains("funeral")) return "⚫";
+        if (desc.Contains("formação") || desc.Contains("formacao") || desc.Contains("curso")) return "🎓";
+        
+        // "Outros"
+        if (desc.Contains("outros")) return "⚠️";
+
+        return string.Empty;
+    }
+
+    private Grid CriarGridCalendario(DateTime dataBase, List<HoraColaborador> horasMes)
+    {
+        var grid = new Grid
+        {
+            ColumnDefinitions = new ColumnDefinitionCollection 
+            { 
+                new(GridLength.Star), new(GridLength.Star), new(GridLength.Star), new(GridLength.Star), 
+                new(GridLength.Star), new(GridLength.Star), new(GridLength.Star) 
+            },
+            RowDefinitions = new RowDefinitionCollection 
+            { 
+                new(GridLength.Star), new(GridLength.Star), new(GridLength.Star), 
+                new(GridLength.Star), new(GridLength.Star), new(GridLength.Star) 
+            },
+            RowSpacing = 4,
+            ColumnSpacing = 4
+        };
+
+        var primeiroDiaMes = new DateTime(dataBase.Year, dataBase.Month, 1);
+        int diasNoMes = DateTime.DaysInMonth(dataBase.Year, dataBase.Month);
+        
+        // Ajuste para começar na Segunda (Monday = 1, Sunday = 7)
+        int diaSemanaPrimeiro = ((int)primeiroDiaMes.DayOfWeek == 0) ? 6 : (int)primeiroDiaMes.DayOfWeek - 1;
+
+        // OTIMIZAÇÃO: Criar dicionário para acesso rápido
+        var horasDict = horasMes.ToLookup(h => h.DataTrabalho.Date);
+
+        int diaAtual = 1;
+        for (int semana = 0; semana < 6; semana++)
+        {
+            for (int col = 0; col < 7; col++)
+            {
+                int celulaIndex = semana * 7 + col;
+                
+                if (celulaIndex >= diaSemanaPrimeiro && diaAtual <= diasNoMes)
+                {
+                    var data = new DateTime(dataBase.Year, dataBase.Month, diaAtual);
+                    var horasDoDia = horasDict[data].ToList();
+                    
+                    float totalNormais = horasDoDia.Sum(h => h.HorasTrab);
+                    float totalExtras = horasDoDia.Sum(h => h.HorasExtras);
+                    bool temHoras = totalNormais > 0 || totalExtras > 0;
+                    
+                    bool isWeekend = data.DayOfWeek == DayOfWeek.Saturday || data.DayOfWeek == DayOfWeek.Sunday;
+                    
+                    var bgColor = Colors.Transparent;
+                    if (isWeekend)
+                    {
+                        bgColor = Application.Current?.RequestedTheme == AppTheme.Dark 
+                            ? Color.FromArgb("#1C1C1E") 
+                            : Color.FromArgb("#F2F2F7");
+                    }
+                    
+                    if (temHoras) bgColor = Color.FromArgb("#0A84FF").WithAlpha(0.1f);
+
+                    // Célula Container
+                    var cellGrid = new Grid
+                    {
+                        Padding = 2,
+                        BackgroundColor = Colors.Transparent // Ensure hit test works
+                    };
+
+                    // 1. Conteúdo Visual (Border)
+                    var diaBorder = new Border
+                    {
+                        BackgroundColor = bgColor,
+                        StrokeThickness = data.Date == DateTime.Today ? 2 : 0,
+                        Stroke = Color.FromArgb("#0A84FF"),
+                        StrokeShape = new RoundRectangle { CornerRadius = 8 },
+                        Padding = 4,
+                        HeightRequest = 60,
+                        InputTransparent = false // Allow bubbling
+                    };
+                    
+                    var diaStack = new VerticalStackLayout 
+                    { 
+                        Spacing = 0, 
+                        VerticalOptions = LayoutOptions.Center,
+                        InputTransparent = true // Let touches pass to Border
+                    };
+                    
+                    // Dia Label
+                    var lblDia = new Label 
+                    { 
+                        Text = diaAtual.ToString(), 
+                        FontSize = 14, 
+                        FontAttributes = FontAttributes.Bold,
+                        HorizontalTextAlignment = TextAlignment.Center,
+                        InputTransparent = true // Let touches pass to Border
+                    };
+                    
+                    if (temHoras)
+                    {
+                        lblDia.TextColor = Color.FromArgb("#0A84FF");
+                    }
+                    else if (isWeekend)
+                    {
+                        lblDia.TextColor = Color.FromArgb("#8E8E93");
+                    }
+                    else
+                    {
+                        lblDia.SetAppThemeColor(Label.TextColorProperty, Colors.Black, Colors.White);
+                    }
+                    
+                    diaStack.Add(lblDia);
+                    
+                    // Horas Normais (Verde)
+                    if (totalNormais > 0)
+                    {
+                        var lblNormais = new Label 
+                        { 
+                            Text = $"{totalNormais:0.##}h", 
+                            FontSize = 10, 
+                            TextColor = Color.FromArgb("#34C759"),
+                            HorizontalTextAlignment = TextAlignment.Center,
+                            InputTransparent = true
+                        };
+                        diaStack.Add(lblNormais);
+                    }
+
+                    // Horas Extras (Laranja)
+                    if (totalExtras > 0)
+                    {
+                        var lblExtras = new Label 
+                        { 
+                            Text = $"{totalExtras:0.##}h", 
+                            FontSize = 10, 
+                            TextColor = Color.FromArgb("#FF9500"),
+                            HorizontalTextAlignment = TextAlignment.Center,
+                            InputTransparent = true
+                        };
+                        diaStack.Add(lblExtras);
+                    }
+
+                    // Ausências
+                    var ausencias = horasDoDia.Where(h => h.IdCentroCusto.HasValue).ToList();
+                    if (ausencias.Any())
+                    {
+                        var primeiraAusencia = ausencias.First();
+                        var icon = GetAbsenceIcon(primeiraAusencia.DescCentroCusto, primeiraAusencia.Cliente);
+                        
+                        if (!string.IsNullOrEmpty(icon))
+                        {
+                            var lblAusencia = new Label 
+                            { 
+                                Text = icon, 
+                                FontSize = 12, 
+                                HorizontalTextAlignment = TextAlignment.Center,
+                                InputTransparent = true
+                            };
+                            diaStack.Add(lblAusencia);
+                        }
+                    }
+                    
+                    diaBorder.Content = diaStack;
+
+                    // Captura de toque via GestureRecognizer aplicada DIRETAMENTE ao Border (Elemento Visual)
+                    async Task HandleTapAsync()
+                    {
+                        try
+                        {
+                            await diaBorder.FadeTo(0.5, 50);
+                            await diaBorder.FadeTo(1.0, 50);
+                        }
+                        catch
+                        {
+                            // Ignorar erros de animação
+                        }
+
+                        await OnDiaCalendarioTapped(data, horasDoDia);
+                    }
+
+                    var tapGestureCell = new TapGestureRecognizer();
+                    tapGestureCell.Tapped += async (s, e) => await HandleTapAsync();
+                    diaBorder.GestureRecognizers.Add(tapGestureCell);
+
+                    cellGrid.Add(diaBorder);
+                    
+                    grid.Add(cellGrid, col, semana);
+                    
+                    diaAtual++;
+                }
+                else
+                {
+                    // Espaço vazio
+                }
+            }
+        }
+
+        return grid;
     }
 }

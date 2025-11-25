@@ -8,6 +8,10 @@
              BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#000000}"
              Title="⏱️ Horas de Colaborador">
 
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Tipos Ausência" Clicked="OnGerirTiposAusenciaClicked" Order="Primary"/>
+    </ContentPage.ToolbarItems>
+
     <Grid RowDefinitions="Auto,*" Padding="0" RowSpacing="0">
         
         <!-- TABS HEADER -->

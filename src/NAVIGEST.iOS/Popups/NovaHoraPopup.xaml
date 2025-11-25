@@ -18,14 +18,24 @@
     </Border.Shadow>
     
     <Grid RowDefinitions="Auto,*,Auto" RowSpacing="20">
-      <!-- Título -->
-      <Label Grid.Row="0"
-             x:Name="TituloLabel"
-             Text="➕ NOVO REGISTO DE HORAS"
-             FontSize="20"
-             FontAttributes="Bold"
-             HorizontalOptions="Center"
-             TextColor="{DynamicResource BodyTextColor}"/>
+      <!-- Título e Botão Eliminar -->
+      <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+          <Label Text="➕ NOVO REGISTO"
+                 x:Name="TituloLabel"
+                 FontSize="18"
+                 FontAttributes="Bold"
+                 VerticalOptions="Center"
+                 TextColor="{DynamicResource BodyTextColor}"/>
+          
+          <Button x:Name="EliminarButton"
+                  Grid.Column="1"
+                  Text="🗑️"
+                  BackgroundColor="Transparent"
+                  TextColor="#FF3B30"
+                  FontSize="20"
+                  Clicked="OnEliminarClicked"
+                  IsVisible="False"/>
+      </Grid>
 
       <!-- Formulário -->
       <ScrollView Grid.Row="1">
@@ -40,18 +50,22 @@
                     BackgroundColor="{DynamicResource PageBackgroundColor}"
                     StrokeThickness="0"
                     StrokeShape="RoundRectangle 8">
-                <Picker x:Name="TipoRegistoPicker"
-                        SelectedIndexChanged="OnTipoRegistoChanged"
-                        TextColor="{DynamicResource BodyTextColor}"
-                        BackgroundColor="Transparent"
-                        Title="Selecione o tipo">
-                    <Picker.ItemsSource>
-                        <x:Array Type="{x:Type x:String}">
-                            <x:String>Trabalho</x:String>
-                            <x:String>Ausência / Férias</x:String>
-                        </x:Array>
-                    </Picker.ItemsSource>
-                </Picker>
+                <Grid ColumnDefinitions="*,Auto">
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnSelecionarTipoRegistoTapped"/>
+                    </Grid.GestureRecognizers>
+                    <Label x:Name="TipoRegistoLabel"
+                           Text="Trabalho"
+                           Padding="12,10"
+                           VerticalOptions="Center"
+                           TextColor="{DynamicResource BodyTextColor}"/>
+                    <Label Grid.Column="1"
+                           Text="▼"
+                           FontSize="12"
+                           Padding="12,10"
+                           VerticalOptions="Center"
+                           TextColor="{DynamicResource BodyTextColor}"/>
+                </Grid>
             </Border>
           </Grid>
 
@@ -65,11 +79,22 @@
                     BackgroundColor="{DynamicResource PageBackgroundColor}"
                     StrokeThickness="0"
                     StrokeShape="RoundRectangle 8">
-                <Picker x:Name="AbsenceTypePicker"
-                        ItemDisplayBinding="{Binding Descricao}"
-                        TextColor="{DynamicResource BodyTextColor}"
-                        BackgroundColor="Transparent"
-                        Title="Selecione o motivo"/>
+                <Grid ColumnDefinitions="*,Auto">
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnSelecionarMotivoAusenciaTapped"/>
+                    </Grid.GestureRecognizers>
+                    <Label x:Name="AbsenceReasonLabel"
+                           Text="Selecione o motivo"
+                           Padding="12,10"
+                           VerticalOptions="Center"
+                           TextColor="{DynamicResource BodyTextColor}"/>
+                    <Label Grid.Column="1"
+                           Text="▼"
+                           FontSize="12"
+                           Padding="12,10"
+                           VerticalOptions="Center"
+                           TextColor="{DynamicResource BodyTextColor}"/>
+                </Grid>
             </Border>
           </Grid>
 
@@ -198,21 +223,6 @@
                 Clicked="OnGuardarClicked"
                 Grid.Column="1"/>
       </Grid>
-      
-      <!-- Botão Eliminar (Flutuante) -->
-      <Button x:Name="EliminarButton"
-              Grid.Row="2"
-              Text="🗑️"
-              BackgroundColor="#FF3B30"
-              TextColor="White"
-              WidthRequest="50"
-              HeightRequest="50"
-              CornerRadius="25"
-              HorizontalOptions="Center"
-              VerticalOptions="Center"
-              IsVisible="False"
-              Clicked="OnEliminarClicked"
-              TranslationY="60"/>
     </Grid>
   </Border>
 </toolkit:Popup>
