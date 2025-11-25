@@ -70,7 +70,7 @@
         <!-- TAB CONTENT -->
         <Grid Grid.Row="1" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}">
             <ContentView x:Name="TabContentView"
-                         MaximumWidthRequest="1000"
+                         MaximumWidthRequest="1920"
                          HorizontalOptions="Center"
                          VerticalOptions="Fill"/>
         </Grid>
