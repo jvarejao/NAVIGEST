@@ -68,9 +68,12 @@
         </Grid>
 
         <!-- TAB CONTENT -->
-        <ContentView Grid.Row="1" x:Name="TabContentView">
-            <!-- O conteúdo será trocado dinamicamente -->
-        </ContentView>
+        <Grid Grid.Row="1" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}">
+            <ContentView x:Name="TabContentView"
+                         MaximumWidthRequest="1000"
+                         HorizontalOptions="Center"
+                         VerticalOptions="Fill"/>
+        </Grid>
 
         <!-- LOADING OVERLAY -->
         <Grid Grid.RowSpan="2"

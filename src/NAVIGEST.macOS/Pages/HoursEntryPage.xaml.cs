@@ -532,7 +532,9 @@ public partial class HoursEntryPage : ContentPage
                 StrokeShape = new RoundRectangle { CornerRadius = 8 },
                 BackgroundColor = temHoras ? (temExtras ? Color.FromArgb("#FF9500") : Color.FromArgb("#34C759")) : Colors.Transparent,
                 HeightRequest = 40,
-                WidthRequest = 40
+                WidthRequest = 40,
+                HorizontalOptions = LayoutOptions.Center,
+                VerticalOptions = LayoutOptions.Center
             };
 
             var label = new Label
