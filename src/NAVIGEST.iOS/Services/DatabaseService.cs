@@ -1696,7 +1696,8 @@ FROM OrderInfo";
                     {
                         Tipo = tipo,
                         Dias = rd.GetInt32(1),
-                        Cor = GetColorForAbsence(tipo)
+                        Cor = GetColorForAbsence(tipo),
+                        Icon = GetIconForAbsence(tipo)
                     });
                 }
             }
@@ -1712,6 +1713,23 @@ FROM OrderInfo";
                 "feriado" => "#FF9500", // Orange
                 _ => "#8E8E93" // Gray
             };
+        }
+
+        private static string GetIconForAbsence(string type)
+        {
+            var desc = type.ToLower();
+            
+            // Specific icons matching Calendar logic
+            if (desc.Contains("férias") || desc.Contains("ferias")) return "🏖️";
+            if (desc.Contains("doença") || desc.Contains("doenca") || desc.Contains("médico") || desc.Contains("medico") || desc.Contains("hospital")) return "🏥";
+            if (desc.Contains("pai") || desc.Contains("mãe") || desc.Contains("parental") || desc.Contains("filho")) return "👶";
+            if (desc.Contains("luto") || desc.Contains("falecimento") || desc.Contains("funeral")) return "⚫";
+            if (desc.Contains("formação") || desc.Contains("formacao") || desc.Contains("curso")) return "🎓";
+            
+            // "Outros"
+            if (desc.Contains("outros")) return "⚠️";
+
+            return "\uf073"; // Default calendar icon
         }
 
         public static async Task<List<string>> GetAbsenceDetailsAsync(int? colabId, string type, int year)

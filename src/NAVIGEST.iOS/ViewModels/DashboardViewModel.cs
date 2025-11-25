@@ -148,10 +148,10 @@ namespace NAVIGEST.iOS.ViewModels
                 AbsenceData.Clear();
                 foreach (var a in absences) AbsenceData.Add(a);
 
-                // 4. Clients (Top 5?)
-                // Need a service method for this list if not just top 1
-                // For now, let's assume we implement GetClientStatsAsync later or reuse existing logic
-                // ClientData = ...
+                // 4. Clients (Top 5)
+                var clients = await DatabaseService.GetClientHoursStatsAsync(colabId, SelectedYear);
+                ClientData.Clear();
+                foreach (var c in clients) ClientData.Add(c);
             }
             catch (Exception ex)
             {
@@ -169,19 +169,31 @@ namespace NAVIGEST.iOS.ViewModels
             
             Series = new ISeries[]
             {
-                new ColumnSeries<double>
+                new LineSeries<double>
                 {
                     Values = MonthlyData.Select(m => m.HorasNormais).ToArray(),
-                    Name = "Normais",
-                    Fill = new SolidColorPaint(SKColors.Green),
-                    MaxBarWidth = 30
+                    Name = "Reais",
+                    Fill = null,
+                    GeometrySize = 10,
+                    Stroke = new SolidColorPaint(SKColors.Green) { StrokeThickness = 3 },
+                    GeometryStroke = new SolidColorPaint(SKColors.Green) { StrokeThickness = 3 }
                 },
-                new ColumnSeries<double>
+                new LineSeries<double>
+                {
+                    Values = MonthlyData.Select(m => m.HorasIdeais).ToArray(),
+                    Name = "Ideais",
+                    Fill = null,
+                    GeometrySize = 0, 
+                    Stroke = new SolidColorPaint(SKColors.Gray) { StrokeThickness = 2, PathEffect = new DashEffect(new float[] { 6, 6 }) }
+                },
+                new LineSeries<double>
                 {
                     Values = MonthlyData.Select(m => m.HorasExtras).ToArray(),
-                    Name = "Extras",
-                    Fill = new SolidColorPaint(SKColors.Orange),
-                    MaxBarWidth = 30
+                    Name = "Extra",
+                    Fill = null,
+                    GeometrySize = 5,
+                    Stroke = new SolidColorPaint(SKColors.Orange) { StrokeThickness = 2 },
+                    GeometryStroke = new SolidColorPaint(SKColors.Orange) { StrokeThickness = 2 }
                 }
             };
 

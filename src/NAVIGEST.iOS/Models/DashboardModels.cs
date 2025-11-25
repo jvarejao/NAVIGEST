@@ -38,6 +38,7 @@ namespace NAVIGEST.iOS.Models
         public string Tipo { get; set; } = string.Empty;
         public int Dias { get; set; }
         public string Cor { get; set; } = "#8E8E93"; // Hex color
+        public string Icon { get; set; } = "\uf073"; // Default calendar icon
     }
 
     public class ClientHoursSummary

@@ -5,7 +5,8 @@
              xmlns:vm="clr-namespace:NAVIGEST.iOS.ViewModels"
              xmlns:models="clr-namespace:NAVIGEST.iOS.Models"
              x:Class="NAVIGEST.iOS.Views.DashboardView"
-             x:DataType="vm:DashboardViewModel">
+             x:DataType="vm:DashboardViewModel"
+             x:Name="dashboardView">
 
     <ScrollView>
         <VerticalStackLayout Spacing="16" Padding="16">
@@ -101,12 +102,14 @@
                                 Padding="12"
                                 WidthRequest="100">
                             <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:DashboardViewModel}}, Path=ShowAbsenceDetailsCommand}"
+                                <TapGestureRecognizer x:DataType="{x:Null}"
+                                                      Command="{Binding Source={x:Reference dashboardView}, Path=BindingContext.ShowAbsenceDetailsCommand}"
                                                       CommandParameter="{Binding .}"/>
                             </Border.GestureRecognizers>
                             <VerticalStackLayout VerticalOptions="Center" Spacing="4">
-                                <Label Text="{Binding Tipo}" TextColor="White" FontAttributes="Bold" FontSize="12" LineBreakMode="TailTruncation"/>
-                                <Label Text="{Binding Dias, StringFormat='{0} dias'}" TextColor="White" FontSize="14"/>
+                                <Label Text="{Binding Icon}" FontSize="24" TextColor="White" HorizontalOptions="Center"/>
+                                <Label Text="{Binding Tipo}" TextColor="White" FontAttributes="Bold" FontSize="12" LineBreakMode="TailTruncation" HorizontalOptions="Center"/>
+                                <Label Text="{Binding Dias, StringFormat='{0} dias'}" TextColor="White" FontSize="14" HorizontalOptions="Center"/>
                             </VerticalStackLayout>
                         </Border>
                     </DataTemplate>

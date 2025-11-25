@@ -4,11 +4,17 @@
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Maui;assembly=LiveChartsCore.SkiaSharpView.Maui"
              xmlns:models="clr-namespace:NAVIGEST.iOS.Models"
+             xmlns:converters="clr-namespace:NAVIGEST.iOS.Converters"
              x:Class="NAVIGEST.iOS.Popups.ChartDetailPopup"
              Color="{AppThemeBinding Light=White, Dark=#1C1C1E}"
              CanBeDismissedByTappingOutsideOfPopup="False">
 
-    <Grid RowDefinitions="Auto,*" Padding="20" WidthRequest="700" HeightRequest="400">
+    <toolkit:Popup.Resources>
+        <converters:BoolToColorConverter x:Key="BoolToColorConverter" TrueColor="#007AFF" FalseColor="Transparent" />
+        <converters:BoolToColorConverter x:Key="BoolToTextColorConverter" TrueColor="White" FalseColor="{AppThemeBinding Light=Black, Dark=White}" />
+    </toolkit:Popup.Resources>
+
+    <Grid RowDefinitions="Auto,*" Padding="20">
         
         <!-- HEADER -->
         <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,10">

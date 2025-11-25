@@ -44,6 +44,19 @@ public partial class ChartDetailPopup : Popup
     public ChartDetailPopup(Colaborador colab, List<MonthlyHoursData> annualData, int year)
     {
         InitializeComponent();
+        
+        // Adjust size for Landscape (maximize width)
+        var displayInfo = DeviceDisplay.MainDisplayInfo;
+        var width = displayInfo.Width / displayInfo.Density;
+        var height = displayInfo.Height / displayInfo.Density;
+        
+        // Ensure we use landscape dimensions
+        var landscapeWidth = Math.Max(width, height);
+        var landscapeHeight = Math.Min(width, height);
+        
+        // Use 95% of width and 90% of height
+        Size = new Size(landscapeWidth * 0.95, landscapeHeight * 0.9);
+
         _colaborador = colab;
         _annualData = annualData;
         _year = year;
@@ -55,6 +68,9 @@ public partial class ChartDetailPopup : Popup
         SetupMonthsList();
         
         BindingContext = this;
+
+        // Show rotation warning
+        CommunityToolkit.Maui.Alerts.Toast.Make("Rode o ecrã para ver melhor o gráfico", CommunityToolkit.Maui.Core.ToastDuration.Long).Show();
     }
 
     private void SetupAnnualChart()
