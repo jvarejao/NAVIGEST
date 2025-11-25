@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<toolkit:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Maui;assembly=LiveChartsCore.SkiaSharpView.Maui"
+             xmlns:models="clr-namespace:NAVIGEST.macOS.Models"
+             xmlns:converters="clr-namespace:NAVIGEST.macOS.Converters"
+             x:Class="NAVIGEST.macOS.Popups.ChartDetailPopup"
+             CanBeDismissedByTappingOutsideOfPopup="False">
+
+    <toolkit:Popup.Resources>
+        <converters:BoolToColorConverter x:Key="BoolToColorConverter" TrueColor="#007AFF" FalseColor="Transparent" />
+        <converters:BoolToColorConverter x:Key="BoolToTextColorConverter" TrueColor="White" FalseColor="{AppThemeBinding Light=Black, Dark=White}" />
+    </toolkit:Popup.Resources>
+
+    <Grid RowDefinitions="Auto,*" Padding="20">
+        
+        <!-- HEADER -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,10">
+            <VerticalStackLayout Spacing="4">
+                <Label x:Name="TitleLabel" 
+                       Text="Evolução Anual" 
+                       FontAttributes="Bold" 
+                       FontSize="18"
+                       TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                <Label x:Name="SubtitleLabel" 
+                       Text="Toque num mês para ver detalhes" 
+                       FontSize="12" 
+                       TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"/>
+            </VerticalStackLayout>
+            
+            <Button Grid.Column="1" 
+                    Text="&#xf188;" 
+                    FontFamily="FA7Solid"
+                    TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                    BackgroundColor="Transparent"
+                    FontSize="16"
+                    Margin="0,0,10,0"
+                    Clicked="OnDebugClicked"/>
+
+            <Button Grid.Column="2" 
+                    Text="&#xf00d;" 
+                    FontFamily="FA7Solid"
+                    TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                    BackgroundColor="Transparent"
+                    FontSize="20"
+                    Clicked="OnCloseClicked"/>
+        </Grid>
+
+        <!-- CONTENT -->
+        <Grid Grid.Row="1">
+            
+            <!-- ANNUAL CHART -->
+            <Grid x:Name="AnnualChartContainer" IsVisible="True">
+                <lvc:CartesianChart Series="{Binding AnnualSeries}"
+                                    XAxes="{Binding AnnualXAxes}"
+                                    YAxes="{Binding AnnualYAxes}"
+                                    LegendPosition="Bottom"
+                                    DataPointerDownCommand="{Binding AnnualChartClickCommand}"/>
+            </Grid>
+
+            <!-- MONTHLY CHART -->
+            <Grid x:Name="MonthlyChartContainer" IsVisible="False" RowDefinitions="Auto,*,Auto">
+                <Grid.GestureRecognizers>
+                    <SwipeGestureRecognizer Direction="Left" Swiped="OnSwipedLeft"/>
+                    <SwipeGestureRecognizer Direction="Right" Swiped="OnSwipedRight"/>
+                </Grid.GestureRecognizers>
+                
+                <!-- Month Selector -->
+                <CollectionView Grid.Row="0" 
+                                ItemsSource="{Binding Months}" 
+                                SelectedItem="{Binding SelectedMonth}"
+                                SelectionMode="Single"
+                                SelectionChanged="OnMonthSelectionChanged"
+                                HeightRequest="40"
+                                Margin="0,0,0,5">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Horizontal" ItemSpacing="8"/>
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border StrokeShape="RoundRectangle 8"
+                                    BackgroundColor="{Binding IsSelected, Converter={StaticResource BoolToColorConverter}}"
+                                    Padding="12,8">
+                                <Label Text="{Binding Name}" 
+                                       TextColor="{Binding IsSelected, Converter={StaticResource BoolToTextColorConverter}}"
+                                       FontSize="12"
+                                       FontAttributes="Bold"/>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <lvc:CartesianChart Grid.Row="1"
+                                    Series="{Binding MonthlySeries}"
+                                    XAxes="{Binding MonthlyXAxes}"
+                                    YAxes="{Binding MonthlyYAxes}"
+                                    Sections="{Binding MonthlySections}"
+                                    LegendPosition="Bottom"/>
+            </Grid>
+        </Grid>
+    </Grid>
+</toolkit:Popup>

@@ -48,12 +48,27 @@ namespace NAVIGEST.macOS.ViewModels
         [ObservableProperty] private ObservableCollection<CostCenter> costCenters = new();
 
         // Totais
+        [ObservableProperty] private double totalHours;
+        [ObservableProperty] private double totalDays;
+        [ObservableProperty] private double totalValue;
+
         public string TotalHoursText => $"Horas: {Rows.Sum(r => r.Hours):0.##}";
-        public string TotalOvertimeText => $"Extras: {Rows.Sum(r => r.Overtime):0.##}";
-        public string TotalCostText => $"Custo Estimado: {((Rows.Sum(r => r.Hours) + Rows.Sum(r => r.Overtime)) * GetHourRate()):0.##} €";
+        public string TotalOvertimeText => $"Extra: {Rows.Sum(r => r.Overtime):0.##}";
+        public string TotalCostText => $"Custo: {Rows.Sum(r => (r.Hours + r.Overtime) * 100):C}"; // Mock calculation
+
+        // Dashboard Integration
+        [ObservableProperty] private DashboardViewModel dashboardVM;
+        [ObservableProperty] private string selectedTab = "Dashboard"; // "Dashboard" or "Entry"
+
+        public ICommand SwitchTabCommand => new RelayCommand<string>((tab) =>
+        {
+            if (tab != null)
+                SelectedTab = tab;
+        });
 
         public HoursEntryViewModel()
         {
+            DashboardVM = new DashboardViewModel();
             try
             {
                 // MOCKS (layout)
@@ -145,6 +160,24 @@ namespace NAVIGEST.macOS.ViewModels
             catch (System.Exception ex) { TratarErro(ex); }
         });
 
+        public ICommand ExportMonthCommand => new RelayCommand(() =>
+        {
+            try
+            {
+                InlineMessage = "Exportar Mês (layout).";
+            }
+            catch (System.Exception ex) { TratarErro(ex); }
+        });
+
+        public ICommand ExportYearCommand => new RelayCommand(() =>
+        {
+            try
+            {
+                InlineMessage = "Exportar Ano (layout).";
+            }
+            catch (System.Exception ex) { TratarErro(ex); }
+        });
+
         public IRelayCommand<TimeEntry> AddDelCommand => new RelayCommand<TimeEntry>(item =>
         {
             try
@@ -206,6 +239,12 @@ namespace NAVIGEST.macOS.ViewModels
             }
             catch (System.Exception ex) { TratarErro(ex); }
         });
+
+        // [RelayCommand]
+        // private void SwitchTab(string tabIndex)
+        // {
+        //     // Removed in favor of SwitchTabCommand
+        // }
 
         // ===== Utilitários =====
 

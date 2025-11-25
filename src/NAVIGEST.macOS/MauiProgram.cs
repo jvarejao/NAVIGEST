@@ -1,6 +1,9 @@
 ﻿using CommunityToolkit.Maui; // Toolkit base
 using Microsoft.Extensions.Logging;
 using Syncfusion.Maui.Toolkit.Hosting;
+using SkiaSharp.Views.Maui.Controls.Hosting;
+using LiveChartsCore.SkiaSharpView.Maui;
+using LiveChartsCore; // Try adding this
 using NAVIGEST.macOS.Services.Icons; // <-- IIconProvider (namespace)
 using NAVIGEST.macOS.Pages;          // <-- ADICIONADO: HoursEntryPage
 using NAVIGEST.macOS.ViewModels;     // <-- ADICIONADO: HoursEntryViewModel
@@ -40,6 +43,8 @@ namespace NAVIGEST.macOS
             builder
                 .UseMauiApp<App>()
                 .UseMauiCommunityToolkit()
+                .UseSkiaSharp()
+                .UseLiveCharts()
                 .ConfigureSyncfusionToolkit()
                 .ConfigureMauiHandlers(handlers =>
                 {
@@ -227,7 +232,7 @@ namespace NAVIGEST.macOS
             builder.Services.AddTransient<NAVIGEST.macOS.PageModels.LoginPageModel>();
 
             // ===== NOVO: Horas (layout — Passo 1) =====
-            builder.Services.AddTransient<HoursEntryViewModel>();
+            builder.Services.AddTransient<HorasColaboradorViewModel>();
             builder.Services.AddTransient<HoursEntryPage>();
             // (Mantive o padrão igual ao de Products: DI simples; a rota está no AppShell)
 

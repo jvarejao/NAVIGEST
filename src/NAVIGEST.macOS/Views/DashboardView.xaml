@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Maui;assembly=LiveChartsCore.SkiaSharpView.Maui"
+             xmlns:vm="clr-namespace:NAVIGEST.macOS.ViewModels"
+             xmlns:models="clr-namespace:NAVIGEST.macOS.Models"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Class="NAVIGEST.macOS.Views.DashboardView"
+             x:DataType="vm:DashboardViewModel"
+             x:Name="dashboardView">
+
+    <ContentView.Resources>
+        <Style TargetType="Border" x:Key="CardStyle">
+            <Setter Property="StrokeShape" Value="RoundRectangle 10"/>
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=White, Dark=#1C1C1E}"/>
+            <Setter Property="StrokeThickness" Value="0"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="Shadow">
+                <Setter.Value>
+                    <Shadow Brush="Black" Offset="0,2" Radius="5" Opacity="0.1"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style TargetType="Label" x:Key="LabelCaption">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="TextColor" Value="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"/>
+        </Style>
+        <Style TargetType="Label" x:Key="LabelValue">
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontAttributes" Value="Bold"/>
+        </Style>
+    </ContentView.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="16" Padding="16">
+
+            <!-- 1. HEADER / PICKER -->
+            <Border StrokeShape="RoundRectangle 10"
+                    BackgroundColor="{AppThemeBinding Light=White, Dark=#1C1C1E}"
+                    StrokeThickness="0"
+                    Padding="0">
+                <Picker Title="Selecione um Colaborador"
+                        ItemsSource="{Binding Colaboradores}"
+                        ItemDisplayBinding="{Binding Nome}"
+                        SelectedItem="{Binding SelectedColaborador}"
+                        TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                        TitleColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
+                        BackgroundColor="Transparent"
+                        HorizontalOptions="FillAndExpand"/>
+            </Border>
+
+            <!-- 2. METRICS GRID (2x2) -->
+            <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,*" RowSpacing="10" ColumnSpacing="10">
+                
+                <!-- Total Hours (Blue) -->
+                <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource CardStyle}">
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="&#xf017;" FontFamily="FA7Solid" FontSize="20" TextColor="#0A84FF" HorizontalOptions="End"/>
+                        <Label Text="Total Horas" Style="{StaticResource LabelCaption}"/>
+                        <Label Text="{Binding Metrics.TotalHoras, StringFormat='{0:F1}h'}" 
+                               Style="{StaticResource LabelValue}" TextColor="#0A84FF"/>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Absences (Red) -->
+                <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource CardStyle}">
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="&#xf073;" FontFamily="FA7Solid" FontSize="20" TextColor="#FF2D55" HorizontalOptions="End"/>
+                        <Label Text="Ausências" Style="{StaticResource LabelCaption}"/>
+                        <Label Text="{Binding Metrics.TotalAusencias, StringFormat='{0} dias'}" 
+                               Style="{StaticResource LabelValue}" TextColor="#FF2D55"/>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Top Client (Purple) -->
+                <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource CardStyle}">
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="&#xf007;" FontFamily="FA7Solid" FontSize="20" TextColor="#AF52DE" HorizontalOptions="End"/>
+                        <Label Text="Top Cliente" Style="{StaticResource LabelCaption}"/>
+                        <Label Text="{Binding Metrics.TopCliente}" 
+                               Style="{StaticResource LabelValue}" TextColor="#AF52DE" LineBreakMode="TailTruncation"/>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Work Days (Green) -->
+                <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource CardStyle}">
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="&#xf073;" FontFamily="FA7Solid" FontSize="20" TextColor="#34C759" HorizontalOptions="End"/>
+                        <Label Text="Dias Trab." Style="{StaticResource LabelCaption}"/>
+                        <Label Text="{Binding Metrics.TotalDiasTrabalhados, StringFormat='{0} dias'}" 
+                               Style="{StaticResource LabelValue}" TextColor="#34C759"/>
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+
+            <!-- 3. CHART -->
+            <Border Style="{StaticResource CardStyle}" HeightRequest="300">
+                <Grid RowDefinitions="Auto,*">
+                    <Label Grid.Row="0" Text="Evolução Anual" FontAttributes="Bold" FontSize="16" Margin="0,0,0,10"/>
+                    <lvc:CartesianChart Grid.Row="1"
+                                        Series="{Binding Series}"
+                                        XAxes="{Binding XAxes}"
+                                        YAxes="{Binding YAxes}"
+                                        LegendPosition="Bottom"
+                                        DataPointerDownCommand="{Binding OpenChartDetailCommand}"/>
+                </Grid>
+            </Border>
+
+            <!-- 4. ABSENCES LIST -->
+            <Border Style="{StaticResource CardStyle}" IsVisible="{Binding AbsenceData, Converter={toolkit:IsListNotNullOrEmptyConverter}}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Resumo de Ausências" FontAttributes="Bold" FontSize="16"/>
+                    <CollectionView ItemsSource="{Binding AbsenceData}" HeightRequest="150">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:AbsenceSummary">
+                                <Grid ColumnDefinitions="Auto,*,Auto" Padding="0,8">
+                                    <Label Grid.Column="0" Text="{Binding Icon}" FontSize="20" VerticalOptions="Center" Margin="0,0,10,0"/>
+                                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                                        <Label Text="{Binding Tipo}" FontAttributes="Bold"/>
+                                        <Label Text="{Binding Dias, StringFormat='{0} dias'}" FontSize="12" TextColor="#8E8E93"/>
+                                    </VerticalStackLayout>
+                                    <Label Grid.Column="2" Text="&#xf054;" FontFamily="FA7Solid" TextColor="#C7C7CC" VerticalOptions="Center"/>
+                                    
+                                    <Grid.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding Source={x:Reference dashboardView}, Path=BindingContext.ShowAbsenceDetailsCommand}"
+                                                              CommandParameter="{Binding .}"/>
+                                    </Grid.GestureRecognizers>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- 5. CLIENTS LIST -->
+            <Border Style="{StaticResource CardStyle}" IsVisible="{Binding ClientData, Converter={toolkit:IsListNotNullOrEmptyConverter}}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Top 5 Clientes" FontAttributes="Bold" FontSize="16"/>
+                    <CollectionView ItemsSource="{Binding ClientData}" HeightRequest="200">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:ClientHoursSummary">
+                                <Grid RowDefinitions="Auto,Auto" Padding="0,8">
+                                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                                        <Label Grid.Column="0" Text="{Binding Cliente}" FontAttributes="Bold" LineBreakMode="TailTruncation"/>
+                                        <Label Grid.Column="1" Text="{Binding Horas, StringFormat='{0:F1}h'}" TextColor="#8E8E93"/>
+                                    </Grid>
+                                    <ProgressBar Grid.Row="1" Progress="{Binding Percentagem}" ProgressColor="#007AFF" ScaleY="0.5" Margin="0,4,0,0"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentView>

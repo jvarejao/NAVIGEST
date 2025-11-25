@@ -464,7 +464,7 @@ namespace NAVIGEST.macOS.Pages
                                     if (page == null)
                                     {
                                         // fallback defensivo (não deve acontecer se DI estiver correto)
-                                        page = new HoursEntryPage(new NAVIGEST.macOS.ViewModels.HoursEntryViewModel());
+                                        page = new HoursEntryPage(new NAVIGEST.macOS.ViewModels.HorasColaboradorViewModel());
                                     }
 
                                     var pageContent = page.Content;
