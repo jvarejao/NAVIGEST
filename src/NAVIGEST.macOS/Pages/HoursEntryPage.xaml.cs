@@ -11,6 +11,7 @@ using NAVIGEST.macOS.ViewModels;
 using NAVIGEST.macOS.Models;
 using NAVIGEST.macOS.Services;
 using NAVIGEST.macOS.Views;
+using NAVIGEST.macOS.Popups;
 
 namespace NAVIGEST.macOS.Pages;
 
@@ -19,6 +20,30 @@ public partial class HoursEntryPage : ContentPage
     private HorasColaboradorViewModel _vm => (HorasColaboradorViewModel)BindingContext;
     
     private DateTime _dataCalendario = DateTime.Today;
+    private DateTime _overlayDate;
+
+    // Edit Overlay State
+    private HoraColaborador _currentEditingHora;
+    private bool _isEditMode;
+    private List<Cliente> _clientes = new();
+    private List<AbsenceType> _absenceTypes = new();
+    private Cliente? _selectedClient;
+    private Colaborador? _selectedCollaborator;
+    private AbsenceType? _selectedAbsenceType;
+    private bool _isAbsenceMode;
+
+    // List Picker State
+    private TaskCompletionSource<object?>? _pickerTcs;
+    private bool _isPickerActive;
+
+    public static readonly BindableProperty ShowCollaboratorNameProperty =
+        BindableProperty.Create(nameof(ShowCollaboratorName), typeof(bool), typeof(HoursEntryPage), false);
+
+    public bool ShowCollaboratorName
+    {
+        get => (bool)GetValue(ShowCollaboratorNameProperty);
+        set => SetValue(ShowCollaboratorNameProperty, value);
+    }
 
     public HoursEntryPage()
     {
@@ -112,6 +137,11 @@ public partial class HoursEntryPage : ContentPage
     private void CarregarTab3Calendario()
     {
         TabContentView.Content = CriarConteudoTab3();
+    }
+
+    private void OnCloseDailySummaryClicked(object sender, EventArgs e)
+    {
+        DailySummaryOverlay.IsVisible = false;
     }
 
     // ==================== TAB 1: RESUMO ====================
@@ -240,61 +270,90 @@ public partial class HoursEntryPage : ContentPage
         {
             BackgroundColor = Application.Current?.RequestedTheme == AppTheme.Dark ? Color.FromArgb("#1C1C1E") : Colors.White,
             StrokeThickness = 0,
-            Padding = 12,
-            Margin = new Thickness(0, 0, 0, 8),
-            StrokeShape = new RoundRectangle { CornerRadius = 8 }
+            Padding = 16,
+            Margin = new Thickness(0, 0, 0, 12),
+            StrokeShape = new RoundRectangle { CornerRadius = 12 }
         };
         
         var itemGrid = new Grid 
         { 
-            ColumnDefinitions = new ColumnDefinitionCollection { new(GridLength.Star), new(GridLength.Auto), new(GridLength.Auto) },
-            RowDefinitions = new RowDefinitionCollection { new(GridLength.Auto), new(GridLength.Auto), new(GridLength.Auto) }
+            ColumnDefinitions = new ColumnDefinitionCollection 
+            { 
+                new(GridLength.Star), // Info
+                new(GridLength.Auto), // Hours
+                new(GridLength.Auto)  // Actions
+            },
+            RowDefinitions = new RowDefinitionCollection 
+            { 
+                new(GridLength.Auto), 
+                new(GridLength.Auto) 
+            },
+            ColumnSpacing = 16
         };
         
-        var lblData = new Label { FontSize = 14, FontAttributes = FontAttributes.Bold };
+        // Col 0: Info
+        var infoStack = new VerticalStackLayout { Spacing = 4 };
+        
+        var lblData = new Label { FontSize = 16, FontAttributes = FontAttributes.Bold };
         lblData.SetBinding(Label.TextProperty, new Binding("DataTrabalho", stringFormat: "{0:dd/MM/yyyy - ddd}"));
-        itemGrid.Add(lblData, 0, 0);
+        infoStack.Add(lblData);
         
-        var lblNome = new Label { FontSize = 12, TextColor = Color.FromArgb("#8E8E93") };
+        var lblNome = new Label { FontSize = 14, TextColor = Color.FromArgb("#8E8E93") };
         lblNome.SetBinding(Label.TextProperty, new Binding("NomeColaborador"));
-        itemGrid.Add(lblNome, 0, 1);
+        infoStack.Add(lblNome);
         
-        var lblCliente = new Label { FontSize = 11, TextColor = Color.FromArgb("#8E8E93") };
+        var lblCliente = new Label { FontSize = 13, TextColor = Color.FromArgb("#8E8E93") };
         lblCliente.SetBinding(Label.TextProperty, new Binding("Cliente", stringFormat: "🏢 {0}"));
-        itemGrid.Add(lblCliente, 0, 2);
+        infoStack.Add(lblCliente);
         
+        itemGrid.Add(infoStack, 0, 0);
+        Grid.SetRowSpan(infoStack, 2);
+        
+        // Col 1: Hours
         var horasStack = new VerticalStackLayout 
         { 
-            Spacing = 2,
+            Spacing = 4,
             VerticalOptions = LayoutOptions.Center,
             HorizontalOptions = LayoutOptions.End
         };
         
         var lblHorasNormais = new Label 
         { 
-            FontSize = 16, 
+            FontSize = 18, 
             FontAttributes = FontAttributes.Bold, 
             TextColor = Color.FromArgb("#34C759"),
             HorizontalTextAlignment = TextAlignment.End
         };
-        lblHorasNormais.SetBinding(Label.TextProperty, new Binding("HorasTrab", stringFormat: "✓ {0:0.0}h"));
+        lblHorasNormais.SetBinding(Label.TextProperty, new Binding("HorasTrab", stringFormat: "✓ {0:0.##}h"));
         horasStack.Add(lblHorasNormais);
         
         var lblHorasExtra = new Label 
         { 
-            FontSize = 14, 
+            FontSize = 16, 
             FontAttributes = FontAttributes.Bold, 
             TextColor = Color.FromArgb("#FF9500"),
             HorizontalTextAlignment = TextAlignment.End
         };
-        lblHorasExtra.SetBinding(Label.TextProperty, new Binding("HorasExtras", stringFormat: "⚡ {0:0.0}h"));
+        lblHorasExtra.SetBinding(Label.TextProperty, new Binding("HorasExtras", stringFormat: "⚡ {0:0.##}h"));
         horasStack.Add(lblHorasExtra);
         
         itemGrid.Add(horasStack, 1, 0);
-        Grid.SetRowSpan(horasStack, 3);
+        Grid.SetRowSpan(horasStack, 2);
 
-        var actionsStack = new HorizontalStackLayout { Spacing = 8, VerticalOptions = LayoutOptions.Center };
-        var btnEdit = new Button { Text = "✎", BackgroundColor = Colors.Transparent, TextColor = Color.FromArgb("#0A84FF") };
+        // Col 2: Actions
+        var actionsStack = new HorizontalStackLayout { Spacing = 12, VerticalOptions = LayoutOptions.Center };
+        
+        var btnEdit = new Button 
+        { 
+            Text = "\uf044", // fa-pencil-alt
+            FontFamily = "FA7Solid",
+            BackgroundColor = Color.FromArgb("#0A84FF").WithAlpha(0.1f), 
+            TextColor = Color.FromArgb("#0A84FF"),
+            CornerRadius = 8,
+            WidthRequest = 44,
+            HeightRequest = 44,
+            FontSize = 18
+        };
         btnEdit.Clicked += async (s, e) => 
         {
              if ((s as Button)?.BindingContext is HoraColaborador hora)
@@ -302,7 +361,17 @@ public partial class HoursEntryPage : ContentPage
         };
         actionsStack.Add(btnEdit);
 
-        var btnDelete = new Button { Text = "🗑️", BackgroundColor = Colors.Transparent, TextColor = Color.FromArgb("#FF3B30") };
+        var btnDelete = new Button 
+        { 
+            Text = "\uf2ed", // fa-trash-alt
+            FontFamily = "FA7Solid",
+            BackgroundColor = Color.FromArgb("#FF3B30").WithAlpha(0.1f), 
+            TextColor = Color.FromArgb("#FF3B30"),
+            CornerRadius = 8,
+            WidthRequest = 44,
+            HeightRequest = 44,
+            FontSize = 18
+        };
         btnDelete.Clicked += async (s, e) => 
         {
              if ((s as Button)?.BindingContext is HoraColaborador hora)
@@ -311,42 +380,287 @@ public partial class HoursEntryPage : ContentPage
         actionsStack.Add(btnDelete);
 
         itemGrid.Add(actionsStack, 2, 0);
-        Grid.SetRowSpan(actionsStack, 3);
+        Grid.SetRowSpan(actionsStack, 2);
         
         itemBorder.Content = itemGrid;
         
         return itemBorder;
     }
-    
+       
     private async Task MostrarMenuPeriodoAsync()
     {
-        var page = Application.Current?.Windows[0]?.Page;
-        if (page == null) return;
+        var result = await ShowListPickerAsync("Selecionar Período", new List<string> { "Hoje", "Esta Semana", "Este Mês", "Últimos 30 dias" });
         
-        var action = await page.DisplayActionSheet("Selecionar Período", "Cancelar", null, 
-            "Hoje", "Esta Semana", "Este Mês", "Últimos 30 dias");
-        
-        if (action == "Hoje") _vm.SelecionarHojeCommand.Execute(null);
-        else if (action == "Esta Semana") _vm.SelecionarEstaSemanaCommand.Execute(null);
-        else if (action == "Este Mês") _vm.SelecionarEsteMesCommand.Execute(null);
-        else if (action == "Últimos 30 dias") _vm.SelecionarUltimos30DiasCommand.Execute(null);
+        if (result is string action)
+        {
+            if (action == "Hoje") _vm.SelecionarHojeCommand.Execute(null);
+            else if (action == "Esta Semana") _vm.SelecionarEstaSemanaCommand.Execute(null);
+            else if (action == "Este Mês") _vm.SelecionarEsteMesCommand.Execute(null);
+            else if (action == "Últimos 30 dias") _vm.SelecionarUltimos30DiasCommand.Execute(null);
+        }
     }
 
     private async Task AbrirNovaHoraPopupAsync(HoraColaborador? hora)
     {
-        await DisplayAlert("Info", "Funcionalidade de popup em desenvolvimento", "OK");
+        try
+        {
+            _currentEditingHora = hora ?? new HoraColaborador
+            {
+                DataTrabalho = DateTime.Today,
+                HorasTrab = 0,
+                HorasExtras = 0,
+                IdColaborador = _vm.ColaboradorSelecionado?.ID ?? 0
+            };
+            _isEditMode = hora != null;
+
+            // Load data if needed
+            if (_clientes.Count == 0)
+            {
+                var clientesDb = await DatabaseService.GetClientesAsync(null);
+                _clientes = clientesDb.OrderBy(c => c.CLINOME).ToList();
+                _clientes.Insert(0, new Cliente { CLICODIGO = "0", CLINOME = "Sem cliente" });
+            }
+
+            if (_absenceTypes.Count == 0)
+            {
+                _absenceTypes = await DatabaseService.GetAbsenceTypesAsync();
+            }
+
+            // Setup UI
+            EditOverlayTitleLabel.Text = _isEditMode ? "✏️ EDITAR REGISTO" : "➕ NOVO REGISTO";
+            EditOverlayDeleteButton.IsVisible = _isEditMode;
+            
+            EditOverlayDatePicker.Date = _currentEditingHora.DataTrabalho;
+            EditOverlayHoursEntry.Text = _currentEditingHora.HorasTrab > 0 ? _currentEditingHora.HorasTrab.ToString("0.00") : "";
+            EditOverlayExtrasEntry.Text = _currentEditingHora.HorasExtras > 0 ? _currentEditingHora.HorasExtras.ToString("0.00") : "";
+
+            // Setup Collaborator
+            if (_currentEditingHora.IdColaborador > 0)
+            {
+                _selectedCollaborator = _vm.Colaboradores.FirstOrDefault(c => c.ID == _currentEditingHora.IdColaborador);
+            }
+            else
+            {
+                _selectedCollaborator = _vm.ColaboradorSelecionado;
+            }
+            EditOverlayCollaboratorLabel.Text = _selectedCollaborator?.Nome ?? "Selecione colaborador";
+
+            // Setup Type/Client/Absence
+            if (_isEditMode && _currentEditingHora.IdCentroCusto.HasValue)
+            {
+                // Absence
+                _isAbsenceMode = true;
+                _selectedAbsenceType = _absenceTypes.FirstOrDefault(a => a.Id == _currentEditingHora.IdCentroCusto.Value);
+                EditOverlayTypeLabel.Text = "Ausência";
+                EditOverlayAbsenceLabel.Text = _selectedAbsenceType?.Description ?? "Selecione o motivo";
+                
+                // Reset Client
+                _selectedClient = _clientes.FirstOrDefault();
+                EditOverlayClientLabel.Text = "Sem cliente";
+            }
+            else
+            {
+                // Work
+                _isAbsenceMode = false;
+                EditOverlayTypeLabel.Text = "Trabalho";
+                
+                if (!string.IsNullOrEmpty(_currentEditingHora.IdCliente))
+                {
+                    var idClienteTrim = _currentEditingHora.IdCliente.Trim();
+                    _selectedClient = _clientes.FirstOrDefault(c => c.CLICODIGO?.Trim() == idClienteTrim) ?? _clientes.FirstOrDefault();
+                }
+                else
+                {
+                    _selectedClient = _clientes.FirstOrDefault();
+                }
+                EditOverlayClientLabel.Text = _selectedClient?.CLINOME ?? "Sem cliente";
+            }
+
+            UpdateEditOverlayUI();
+            EditHourOverlay.IsVisible = true;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Erro ao abrir popup nova hora: {ex.Message}");
+            await DisplayAlert("Erro", $"Erro ao abrir popup: {ex.Message}", "OK");
+        }
+    }
+
+    private void UpdateEditOverlayUI()
+    {
+        EditOverlayClientContainer.IsVisible = !_isAbsenceMode;
+        EditOverlayHoursContainer.IsVisible = !_isAbsenceMode;
+        EditOverlayExtrasContainer.IsVisible = !_isAbsenceMode;
+        EditOverlayAbsenceContainer.IsVisible = _isAbsenceMode;
+    }
+
+    private void OnCloseEditOverlayClicked(object sender, EventArgs e)
+    {
+        EditHourOverlay.IsVisible = false;
+    }
+
+    private async void OnEditOverlaySaveClicked(object sender, EventArgs e)
+    {
+        try
+        {
+            if (_selectedCollaborator == null)
+            {
+                await DisplayAlert("Erro", "Selecione um colaborador.", "OK");
+                return;
+            }
+
+            if (_isAbsenceMode)
+            {
+                if (_selectedAbsenceType == null)
+                {
+                    await DisplayAlert("Erro", "Selecione o motivo da ausência.", "OK");
+                    return;
+                }
+                
+                _currentEditingHora.IdCentroCusto = _selectedAbsenceType.Id;
+                _currentEditingHora.IdCliente = "";
+                _currentEditingHora.HorasTrab = 0;
+                _currentEditingHora.HorasExtras = 0;
+            }
+            else
+            {
+                if (!double.TryParse(EditOverlayHoursEntry.Text, out double horas)) horas = 0;
+                if (!double.TryParse(EditOverlayExtrasEntry.Text, out double extras)) extras = 0;
+
+                if (horas == 0 && extras == 0)
+                {
+                    await DisplayAlert("Erro", "Insira horas normais ou extras.", "OK");
+                    return;
+                }
+
+                _currentEditingHora.IdCentroCusto = null;
+                _currentEditingHora.IdCliente = _selectedClient?.CLICODIGO ?? "";
+                _currentEditingHora.HorasTrab = (float)horas;
+                _currentEditingHora.HorasExtras = (float)extras;
+            }
+
+            _currentEditingHora.DataTrabalho = EditOverlayDatePicker.Date;
+            _currentEditingHora.IdColaborador = _selectedCollaborator.ID;
+
+            // Save
+            await DatabaseService.UpsertHoraColaboradorAsync(_currentEditingHora);
+            
+            EditHourOverlay.IsVisible = false;
+            
+            // Refresh
+            await _vm.CarregarHorasCommand.ExecuteAsync(null);
+            if (_vm.TabAtiva == 3) CarregarTab3Calendario();
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Erro", $"Erro ao guardar: {ex.Message}", "OK");
+        }
+    }
+
+    private async void OnEditOverlayDeleteClicked(object sender, EventArgs e)
+    {
+        bool confirm = await DisplayAlert("Confirmar", "Tem a certeza que deseja eliminar este registo?", "Sim", "Não");
+        if (confirm)
+        {
+            await _vm.EliminarHoraCommand.ExecuteAsync(_currentEditingHora);
+            EditHourOverlay.IsVisible = false;
+        }
+    }
+
+    // --- Pickers Logic ---
+
+    private async void OnEditOverlayTypeTapped(object sender, EventArgs e)
+    {
+        var result = await ShowListPickerAsync("Tipo de Registo", new List<string> { "Trabalho", "Ausência" });
+        if (result is string type)
+        {
+            _isAbsenceMode = type == "Ausência";
+            EditOverlayTypeLabel.Text = type;
+            UpdateEditOverlayUI();
+        }
+    }
+
+    private async void OnEditOverlayCollaboratorTapped(object sender, EventArgs e)
+    {
+        var result = await ShowListPickerAsync("Selecione Colaborador", _vm.Colaboradores.Select(c => c.Nome).ToList());
+        if (result is string name)
+        {
+            var colab = _vm.Colaboradores.FirstOrDefault(c => c.Nome == name);
+            if (colab != null)
+            {
+                _selectedCollaborator = colab;
+                EditOverlayCollaboratorLabel.Text = colab.Nome;
+            }
+        }
+    }
+
+    private async void OnEditOverlayClientTapped(object sender, EventArgs e)
+    {
+        var result = await ShowListPickerAsync("Selecione Cliente", _clientes.Select(c => c.CLINOME).ToList());
+        if (result is string name)
+        {
+            var client = _clientes.FirstOrDefault(c => c.CLINOME == name);
+            if (client != null)
+            {
+                _selectedClient = client;
+                EditOverlayClientLabel.Text = client.CLINOME;
+            }
+        }
+    }
+
+    private async void OnEditOverlayAbsenceTapped(object sender, EventArgs e)
+    {
+        var result = await ShowListPickerAsync("Selecione Motivo", _absenceTypes.Select(a => a.Description).ToList());
+        if (result is string desc)
+        {
+            var absence = _absenceTypes.FirstOrDefault(a => a.Description == desc);
+            if (absence != null)
+            {
+                _selectedAbsenceType = absence;
+                EditOverlayAbsenceLabel.Text = absence.Description;
+            }
+        }
+    }
+
+    // --- Generic List Picker ---
+
+    private Task<object?> ShowListPickerAsync(string title, List<string> items)
+    {
+        _pickerTcs = new TaskCompletionSource<object?>();
+        
+        ListPickerTitleLabel.Text = title;
+        ListPickerCollectionView.ItemsSource = items;
+        ListPickerOverlay.IsVisible = true;
+        
+        return _pickerTcs.Task;
+    }
+
+    private void OnCloseListPickerClicked(object sender, EventArgs e)
+    {
+        ListPickerOverlay.IsVisible = false;
+        _pickerTcs?.TrySetResult(null);
+    }
+
+    private void OnListPickerSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (e.CurrentSelection.FirstOrDefault() is string selectedItem)
+        {
+            ListPickerOverlay.IsVisible = false;
+            _pickerTcs?.TrySetResult(selectedItem);
+            ListPickerCollectionView.SelectedItem = null;
+        }
     }
 
     // ==================== TAB 3: CALENDÁRIO ====================
     private View CriarConteudoTab3()
     {
         var scroll = new ScrollView();
-        var mainStack = new VerticalStackLayout { Spacing = 16, Padding = 16 };
+        var mainStack = new VerticalStackLayout { Spacing = 24, Padding = 24 };
         
         var lblTitulo = new Label 
         { 
             Text = "📅 Calendário do Mês", 
-            FontSize = 20, 
+            FontSize = 24, 
             FontAttributes = FontAttributes.Bold,
             HorizontalTextAlignment = TextAlignment.Center 
         };
@@ -357,40 +671,64 @@ public partial class HoursEntryPage : ContentPage
             Stroke = Color.FromArgb("#E5E5EA"),
             StrokeThickness = 1,
             StrokeShape = new RoundRectangle { CornerRadius = 8 },
-            Padding = new Thickness(12, 0),
-            Margin = new Thickness(0, 0, 0, 8)
+            Padding = new Thickness(12, 8),
+            Margin = new Thickness(0, 0, 0, 16),
+            HeightRequest = 44
         };
         
         pickerContainer.SetAppThemeColor(Border.BackgroundColorProperty, Colors.White, Color.FromArgb("#111827"));
         pickerContainer.SetAppThemeColor(Border.StrokeProperty, Color.FromArgb("#E5E5EA"), Color.FromArgb("#38383A"));
 
-        var picker = new Picker
+        var pickerGrid = new Grid
         {
-            Title = "Selecione Colaborador",
-            ItemsSource = _vm.Colaboradores,
-            ItemDisplayBinding = new Binding("Nome"),
-            SelectedItem = _vm.ColaboradorSelecionado,
-            BackgroundColor = Colors.Transparent
+            ColumnDefinitions = new ColumnDefinitionCollection { new(GridLength.Star), new(GridLength.Auto) }
         };
-        picker.SetAppThemeColor(Picker.TextColorProperty, Colors.Black, Colors.White);
-        picker.SetAppThemeColor(Picker.TitleColorProperty, Color.FromArgb("#8E8E93"), Color.FromArgb("#8E8E93"));
-        
-        picker.SelectedIndexChanged += async (s, e) => 
+
+        var lblPicker = new Label
         {
-            if (picker.SelectedItem is Colaborador c)
+            Text = _vm.ColaboradorSelecionado?.Nome ?? "Selecione Colaborador",
+            FontSize = 16,
+            VerticalTextAlignment = TextAlignment.Center
+        };
+        lblPicker.SetAppThemeColor(Label.TextColorProperty, Colors.Black, Colors.White);
+
+        var iconPicker = new Label
+        {
+            Text = "▼",
+            FontSize = 12,
+            TextColor = Color.FromArgb("#8E8E93"),
+            VerticalTextAlignment = TextAlignment.Center,
+            Margin = new Thickness(8, 0, 0, 0)
+        };
+
+        pickerGrid.Add(lblPicker, 0, 0);
+        pickerGrid.Add(iconPicker, 1, 0);
+        pickerContainer.Content = pickerGrid;
+
+        var tapPicker = new TapGestureRecognizer();
+        tapPicker.Tapped += async (s, e) => 
+        {
+            var result = await ShowListPickerAsync("Selecione Colaborador", _vm.Colaboradores.Select(c => c.Nome).ToList());
+            
+            if (result is string action)
             {
-                _vm.ColaboradorSelecionado = c;
-                await AtualizarFiltroCalendarioAsync();
+                var selected = _vm.Colaboradores.FirstOrDefault(c => c.Nome == action);
+                if (selected != null)
+                {
+                    _vm.ColaboradorSelecionado = selected;
+                    lblPicker.Text = selected.Nome;
+                    await AtualizarFiltroCalendarioAsync();
+                }
             }
         };
+        pickerContainer.GestureRecognizers.Add(tapPicker);
         
-        pickerContainer.Content = picker;
         mainStack.Add(pickerContainer);
         
         var navGrid = new Grid 
         { 
             ColumnDefinitions = new ColumnDefinitionCollection { new(GridLength.Auto), new(GridLength.Star), new(GridLength.Auto) },
-            Margin = new Thickness(0, 0, 0, 16)
+            Margin = new Thickness(0, 0, 0, 24)
         };
         
         var btnPrev = new Button 
@@ -399,8 +737,9 @@ public partial class HoursEntryPage : ContentPage
             BackgroundColor = Color.FromArgb("#0A84FF"), 
             TextColor = Colors.White, 
             CornerRadius = 20, 
-            WidthRequest = 40, 
-            HeightRequest = 40 
+            WidthRequest = 44, 
+            HeightRequest = 44,
+            FontSize = 18
         };
         btnPrev.Clicked += (s, e) => MudarMes(-1);
         
@@ -410,19 +749,21 @@ public partial class HoursEntryPage : ContentPage
             BackgroundColor = Color.FromArgb("#0A84FF"), 
             TextColor = Colors.White, 
             CornerRadius = 20, 
-            WidthRequest = 40, 
-            HeightRequest = 40 
+            WidthRequest = 44, 
+            HeightRequest = 44,
+            FontSize = 18
         };
         btnNext.Clicked += (s, e) => MudarMes(1);
         
         var lblMes = new Label 
         { 
             Text = _dataCalendario.ToString("MMMM yyyy").ToUpper(), 
-            FontSize = 16, 
+            FontSize = 20, 
             FontAttributes = FontAttributes.Bold,
             HorizontalTextAlignment = TextAlignment.Center,
             VerticalTextAlignment = TextAlignment.Center
         };
+        lblMes.SetAppThemeColor(Label.TextColorProperty, Colors.Black, Colors.White);
         
         navGrid.Add(btnPrev, 0, 0);
         navGrid.Add(lblMes, 1, 0);
@@ -435,20 +776,22 @@ public partial class HoursEntryPage : ContentPage
             { 
                 new(GridLength.Star), new(GridLength.Star), new(GridLength.Star), new(GridLength.Star), 
                 new(GridLength.Star), new(GridLength.Star), new(GridLength.Star) 
-            }
+            },
+            Margin = new Thickness(0,0,0,8)
         };
         
         string[] diasSemana = { "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom" };
         for (int i = 0; i < 7; i++)
         {
-            gridDiasSemana.Add(new Label 
+            var lblDiaSemana = new Label 
             { 
                 Text = diasSemana[i], 
-                FontSize = 12, 
+                FontSize = 14, 
                 FontAttributes = FontAttributes.Bold,
-                TextColor = Color.FromArgb("#8E8E93"), 
                 HorizontalTextAlignment = TextAlignment.Center 
-            }, i, 0);
+            };
+            lblDiaSemana.SetAppThemeColor(Label.TextColorProperty, Color.FromArgb("#3A3A3C"), Color.FromArgb("#8E8E93"));
+            gridDiasSemana.Add(lblDiaSemana, i, 0);
         }
         mainStack.Add(gridDiasSemana);
         
@@ -457,13 +800,14 @@ public partial class HoursEntryPage : ContentPage
         
         var legendaStack = new HorizontalStackLayout 
         { 
-            Spacing = 12, 
+            Spacing = 16, 
             HorizontalOptions = LayoutOptions.Center,
-            Margin = new Thickness(0, 16, 0, 0)
+            Margin = new Thickness(0, 24, 0, 0)
         };
         
         legendaStack.Add(CriarItemLegenda("#34C759", "Normal"));
         legendaStack.Add(CriarItemLegenda("#FF9500", "Extra"));
+        legendaStack.Add(CriarItemLegenda("#8E8E93", "Fim de Semana"));
         
         mainStack.Add(legendaStack);
         
@@ -483,7 +827,6 @@ public partial class HoursEntryPage : ContentPage
     {
         _dataCalendario = _dataCalendario.AddMonths(meses);
         await AtualizarFiltroCalendarioAsync();
-        CarregarTab3Calendario();
     }
 
     private async Task AtualizarFiltroCalendarioAsync()
@@ -494,7 +837,23 @@ public partial class HoursEntryPage : ContentPage
         _vm.DataFiltroInicio = inicio;
         _vm.DataFiltroFim = fim;
         
-        await _vm.CarregarHorasCommand.ExecuteAsync(null);
+        try 
+        {
+            int? idColaboradorFiltro = _vm.ColaboradorSelecionado?.ID == 0 ? null : _vm.ColaboradorSelecionado?.ID;
+            var horas = await NAVIGEST.macOS.Services.DatabaseService.GetHorasColaboradorAsync(idColaboradorFiltro, inicio, fim);
+            
+            _vm.HorasList.Clear();
+            foreach (var hora in horas.OrderByDescending(h => h.DataTrabalho)) 
+            {
+                _vm.HorasList.Add(hora);
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Erro ao carregar calendário: {ex.Message}");
+        }
+        
+        CarregarTab3Calendario();
     }
 
     private Grid ConstruirGridCalendario()
@@ -506,59 +865,301 @@ public partial class HoursEntryPage : ContentPage
                 new(GridLength.Star), new(GridLength.Star), new(GridLength.Star), new(GridLength.Star), 
                 new(GridLength.Star), new(GridLength.Star), new(GridLength.Star) 
             },
+            RowDefinitions = new RowDefinitionCollection 
+            { 
+                new(GridLength.Auto), new(GridLength.Auto), new(GridLength.Auto), 
+                new(GridLength.Auto), new(GridLength.Auto), new(GridLength.Auto) 
+            },
             RowSpacing = 8,
             ColumnSpacing = 8
         };
 
         var primeiroDiaMes = new DateTime(_dataCalendario.Year, _dataCalendario.Month, 1);
         int diasNoMes = DateTime.DaysInMonth(_dataCalendario.Year, _dataCalendario.Month);
-        int diaSemanaInicio = (int)primeiroDiaMes.DayOfWeek;
-        int offset = diaSemanaInicio == 0 ? 6 : diaSemanaInicio - 1;
+        
+        // Monday = 1, Sunday = 7. Adjust so Monday is 0 index.
+        int diaSemanaPrimeiro = ((int)primeiroDiaMes.DayOfWeek == 0) ? 6 : (int)primeiroDiaMes.DayOfWeek - 1;
 
-        int row = 0;
-        int col = offset;
+        var horasDict = _vm.HorasList.ToLookup(h => h.DataTrabalho.Date);
 
-        for (int dia = 1; dia <= diasNoMes; dia++)
+        int diaAtual = 1;
+        for (int semana = 0; semana < 6; semana++)
         {
-            var dataAtual = new DateTime(_dataCalendario.Year, _dataCalendario.Month, dia);
-            
-            var horasDia = _vm.HorasList.Where(h => h.DataTrabalho.Date == dataAtual.Date).ToList();
-            bool temHoras = horasDia.Any();
-            bool temExtras = horasDia.Sum(h => h.HorasExtras) > 0;
-
-            var border = new Border
+            for (int col = 0; col < 7; col++)
             {
-                StrokeThickness = 0,
-                StrokeShape = new RoundRectangle { CornerRadius = 8 },
-                BackgroundColor = temHoras ? (temExtras ? Color.FromArgb("#FF9500") : Color.FromArgb("#34C759")) : Colors.Transparent,
-                HeightRequest = 40,
-                WidthRequest = 40,
-                HorizontalOptions = LayoutOptions.Center,
-                VerticalOptions = LayoutOptions.Center
-            };
+                int celulaIndex = semana * 7 + col;
+                
+                if (celulaIndex >= diaSemanaPrimeiro && diaAtual <= diasNoMes)
+                {
+                    var data = new DateTime(_dataCalendario.Year, _dataCalendario.Month, diaAtual);
+                    var horasDoDia = horasDict[data].ToList();
+                    
+                    float totalNormais = horasDoDia.Sum(h => h.HorasTrab);
+                    float totalExtras = horasDoDia.Sum(h => h.HorasExtras);
+                    bool temHoras = totalNormais > 0 || totalExtras > 0;
+                    
+                    bool isWeekend = data.DayOfWeek == DayOfWeek.Saturday || data.DayOfWeek == DayOfWeek.Sunday;
+                    
+                    
+                    // Cell Container
+                    var cellGrid = new Grid
+                    {
+                        Padding = 0,
+                        BackgroundColor = Colors.Transparent
+                    };
 
-            var label = new Label
-            {
-                Text = dia.ToString(),
-                HorizontalOptions = LayoutOptions.Center,
-                VerticalOptions = LayoutOptions.Center,
-                TextColor = temHoras ? Colors.White : (Application.Current?.RequestedTheme == AppTheme.Dark ? Colors.White : Colors.Black)
-            };
+                    var ausencias = horasDoDia.Where(h => h.IdCentroCusto.HasValue).ToList();
+                    bool temAusencias = ausencias.Any();
 
-            border.Content = label;
-            grid.Add(border, col, row);
+                    // Visual Border
+                    var diaBorder = new Border
+                    {
+                        StrokeThickness = 0, // Default
+                        Stroke = Colors.Transparent, // Default
+                        StrokeShape = new RoundRectangle { CornerRadius = 12 },
+                        Padding = 8,
+                        HeightRequest = 120, // DOUBLE SIZE requested
+                        InputTransparent = false // IMPORTANT: Border must capture input
+                    };
 
-            col++;
-            if (col > 6)
-            {
-                col = 0;
-                row++;
-                grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+                    // Background Color & Border Logic with AppTheme Support
+                    if (data.Date == DateTime.Today)
+                    {
+                        diaBorder.StrokeThickness = 2;
+                        diaBorder.Stroke = Color.FromArgb("#0A84FF");
+                    }
+
+                    if (temHoras)
+                    {
+                        diaBorder.BackgroundColor = Color.FromArgb("#0A84FF").WithAlpha(0.1f);
+                    }
+                    else if (temAusencias)
+                    {
+                        // Absences but no hours: Light Orange/Yellow background
+                        diaBorder.SetAppThemeColor(Border.BackgroundColorProperty, 
+                            Color.FromArgb("#FF9F0A").WithAlpha(0.15f), // Light Mode
+                            Color.FromArgb("#6c6151ff").WithAlpha(0.25f)); // Dark Mode
+                    }
+                    else if (isWeekend)
+                    {
+                        // Darker grey for Light Mode to be visible
+                        diaBorder.SetAppThemeColor(Border.BackgroundColorProperty, Color.FromArgb("#E5E5EA"), Color.FromArgb("#1C1C1E"));
+                    }
+                    else
+                    {
+                        // Empty Day: Transparent background but THIN BORDER
+                        diaBorder.BackgroundColor = Colors.Transparent;
+                        
+                        if (data.Date != DateTime.Today) // Don't override Today's border
+                        {
+                            diaBorder.StrokeThickness = 1;
+                            diaBorder.SetAppThemeColor(Border.StrokeProperty, 
+                                Color.FromArgb("#E5E5EA"), // Light Mode: SystemGrey5
+                                Color.FromArgb("#38383A")); // Dark Mode: SystemGrey5
+                        }
+                    }
+                    
+                    var diaStack = new VerticalStackLayout 
+                    { 
+                        Spacing = 2, 
+                        VerticalOptions = LayoutOptions.Start,
+                        InputTransparent = true // Let touches pass
+                    };
+                    
+                    // Day Label
+                    var lblDia = new Label 
+                    { 
+                        Text = diaAtual.ToString(), 
+                        FontSize = 24, 
+                        FontAttributes = FontAttributes.Bold,
+                        HorizontalTextAlignment = TextAlignment.Start,
+                        InputTransparent = true
+                    };
+                    
+                    if (temHoras)
+                    {
+                        lblDia.TextColor = Color.FromArgb("#0A84FF");
+                    }
+                    else if (isWeekend)
+                    {
+                        lblDia.TextColor = Color.FromArgb("#8E8E93");
+                    }
+                    else
+                    {
+                        lblDia.SetAppThemeColor(Label.TextColorProperty, Colors.Black, Colors.White);
+                    }
+                    
+                    diaStack.Add(lblDia);
+                    
+                    // Content Stack (Centered)
+                    var contentStack = new VerticalStackLayout
+                    {
+                        Spacing = 2,
+                        VerticalOptions = LayoutOptions.Center,
+                        HorizontalOptions = LayoutOptions.Center,
+                        InputTransparent = true
+                    };
+
+                    // Normal Hours
+                    if (totalNormais > 0)
+                    {
+                        var lblNormais = new Label 
+                        { 
+                            Text = $"{totalNormais:0.##}h", 
+                            FontSize = 18, 
+                            TextColor = Color.FromArgb("#34C759"),
+                            HorizontalTextAlignment = TextAlignment.Center,
+                            FontAttributes = FontAttributes.Bold,
+                            InputTransparent = true
+                        };
+                        contentStack.Add(lblNormais);
+                    }
+
+                    // Extra Hours
+                    if (totalExtras > 0)
+                    {
+                        var lblExtras = new Label 
+                        { 
+                            Text = $"{totalExtras:0.##}h", 
+                            FontSize = 18, 
+                            TextColor = Color.FromArgb("#FF9500"),
+                            HorizontalTextAlignment = TextAlignment.Center,
+                            FontAttributes = FontAttributes.Bold,
+                            InputTransparent = true
+                        };
+                        contentStack.Add(lblExtras);
+                    }
+
+                    // Absences / Icons
+                    // var ausencias = ... (Already calculated above)
+                    if (ausencias.Any())
+                    {
+                        var primeiraAusencia = ausencias.First();
+                        var icon = GetAbsenceIcon(primeiraAusencia.DescCentroCusto, primeiraAusencia.Cliente);
+                        
+                        if (!string.IsNullOrEmpty(icon))
+                        {
+                            var lblAusencia = new Label 
+                            { 
+                                Text = icon, 
+                                FontSize = 32, // Large icon
+                                HorizontalTextAlignment = TextAlignment.Center,
+                                InputTransparent = true
+                            };
+                            contentStack.Add(lblAusencia);
+                        }
+                    }
+                    
+                    diaStack.Add(contentStack);
+                    diaBorder.Content = diaStack;
+
+                    cellGrid.Add(diaBorder);
+
+                    // CLICK FIX: Transparent Button Overlay
+                    // This is the most robust way to handle clicks in MacCatalyst grids
+                    var btnOverlay = new Button
+                    {
+                        BackgroundColor = Colors.Transparent, 
+                        BorderColor = Colors.Transparent,
+                        CornerRadius = 0,
+                        ZIndex = 100,
+                        Margin = 0,
+                        Padding = 0,
+                        InputTransparent = false, // Explicitly capture input
+                        HorizontalOptions = LayoutOptions.Fill,
+                        VerticalOptions = LayoutOptions.Fill
+                    };
+                    
+                    btnOverlay.Clicked += async (s, e) => 
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[Calendar] Button Clicked on day {data:dd/MM}");
+                        try
+                        {
+                            await diaBorder.FadeTo(0.5, 50);
+                            await diaBorder.FadeTo(1.0, 50);
+                        }
+                        catch { }
+                        await OnDiaCalendarioTapped(data, horasDoDia);
+                    };
+                    
+                    cellGrid.Add(btnOverlay);
+
+                    grid.Add(cellGrid, col, semana);
+                    
+                    diaAtual++;
+                }
             }
         }
-        
-        if (grid.RowDefinitions.Count == 0) grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
 
         return grid;
+    }
+
+    private async Task OnDiaCalendarioTapped(DateTime data, List<HoraColaborador> horasExistentes)
+    {
+        _overlayDate = data;
+        
+        // Update Header
+        OverlayDateLabel.Text = data.ToString("dd 'de' MMMM", new System.Globalization.CultureInfo("pt-PT"));
+        
+        bool isWeekend = data.DayOfWeek == DayOfWeek.Saturday || data.DayOfWeek == DayOfWeek.Sunday;
+        OverlayWeekendLabel.IsVisible = isWeekend;
+        
+        // Calculate Totals (Match iOS Logic)
+        double totalNormal = horasExistentes?.Sum(h => h.HorasTrab) ?? 0;
+        double totalExtra = horasExistentes?.Sum(h => h.HorasExtras) ?? 0;
+        double total = totalNormal + totalExtra;
+        
+        OverlayTotalHoursLabel.Text = $"Total: {total:0.00}h ({totalNormal:0.00}h + {totalExtra:0.00}h extra)";
+
+        // Update List
+        OverlayEntriesCollectionView.ItemsSource = horasExistentes;
+
+        // Update Collaborator Name Visibility
+        ShowCollaboratorName = _vm.ColaboradorSelecionado == null || _vm.ColaboradorSelecionado.ID == 0;
+
+        // Show Overlay
+        DailySummaryOverlay.IsVisible = true;
+        
+        // Animate
+        DailySummaryOverlay.Opacity = 0;
+        await DailySummaryOverlay.FadeTo(1, 250);
+    }
+
+    private async void OnOverlayAddClicked(object sender, EventArgs e)
+    {
+        DailySummaryOverlay.IsVisible = false;
+        
+        var novaHora = new HoraColaborador
+        {
+            DataTrabalho = _overlayDate,
+            HorasTrab = 0,
+            HorasExtras = 0,
+            IdColaborador = _vm.ColaboradorSelecionado?.ID ?? 0
+        };
+        await AbrirNovaHoraPopupAsync(novaHora);
+    }
+
+    private async void OnOverlayEditClicked(object sender, EventArgs e)
+    {
+        if (sender is Button btn && btn.CommandParameter is HoraColaborador hora)
+        {
+            DailySummaryOverlay.IsVisible = false;
+            await AbrirNovaHoraPopupAsync(hora);
+        }
+    }
+
+    private string GetAbsenceIcon(string? description, string? clientName)
+    {
+        if (string.IsNullOrEmpty(description)) return string.Empty;
+        var desc = description.ToLower();
+        
+        if (desc.Contains("férias") || desc.Contains("ferias")) return "🏖️";
+        if (desc.Contains("doença") || desc.Contains("doenca") || desc.Contains("médico") || desc.Contains("medico") || desc.Contains("hospital")) return "🏥";
+        if (desc.Contains("pai") || desc.Contains("mãe") || desc.Contains("parental") || desc.Contains("filho")) return "👶";
+        if (desc.Contains("luto") || desc.Contains("falecimento") || desc.Contains("funeral")) return "⚫";
+        if (desc.Contains("formação") || desc.Contains("formacao") || desc.Contains("curso")) return "🎓";
+        if (desc.Contains("outros")) return "⚠️";
+
+        return string.Empty;
     }
 }

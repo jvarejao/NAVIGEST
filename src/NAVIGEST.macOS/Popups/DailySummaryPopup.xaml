@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<toolkit:Popup x:Class="NAVIGEST.macOS.Popups.DailySummaryPopup"
+               xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+               xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+               xmlns:models="clr-namespace:NAVIGEST.macOS.Models"
+               xmlns:popups="clr-namespace:NAVIGEST.macOS.Popups"
+               xmlns:converters="clr-namespace:NAVIGEST.macOS.Converters"
+               CanBeDismissedByTappingOutsideOfPopup="False">
+    
+    <Border BackgroundColor="White" 
+            Stroke="Black"
+            StrokeThickness="1"
+            StrokeShape="RoundRectangle 10"
+            WidthRequest="300"
+            HeightRequest="200">
+        
+        <VerticalStackLayout Padding="20" Spacing="20" VerticalOptions="Center">
+            <Label Text="TESTE DE POPUP" 
+                   TextColor="Black" 
+                   FontSize="24" 
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center" />
+            
+            <Label Text="Se vês isto, o crash era no conteúdo!" 
+                   TextColor="Gray" 
+                   HorizontalOptions="Center" />
+
+            <Button Text="Fechar" 
+                    Clicked="OnCloseClicked" 
+                    BackgroundColor="Black"
+                    TextColor="White" />
+        </VerticalStackLayout>
+    </Border>
+
+</toolkit:Popup>

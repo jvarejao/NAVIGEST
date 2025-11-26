@@ -4,9 +4,17 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:NAVIGEST.macOS.ViewModels"
              xmlns:models="clr-namespace:NAVIGEST.macOS.Models"
+             xmlns:converters="clr-namespace:NAVIGEST.macOS.Converters"
+             xmlns:pages="clr-namespace:NAVIGEST.macOS.Pages"
              x:DataType="vm:HorasColaboradorViewModel"
              BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#000000}"
              Title="⏱️ Horas de Colaborador">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:DoubleComparisonConverter x:Key="DoubleComparisonConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
 
     <Grid RowDefinitions="Auto,*" Padding="0" RowSpacing="0">
         
@@ -70,7 +78,8 @@
         <!-- TAB CONTENT -->
         <Grid Grid.Row="1" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}">
             <ContentView x:Name="TabContentView"
-                         MaximumWidthRequest="1920"
+                         MaximumWidthRequest="1800"
+                         MinimumWidthRequest="1000"
                          HorizontalOptions="Center"
                          VerticalOptions="Fill"/>
         </Grid>
@@ -83,6 +92,326 @@
                                Color="{AppThemeBinding Light=#0A84FF, Dark=#0A84FF}"
                                WidthRequest="48"
                                HeightRequest="48"/>
+        </Grid>
+
+        <!-- DAILY SUMMARY OVERLAY (Fake Popup) -->
+        <Grid x:Name="DailySummaryOverlay"
+              Grid.RowSpan="2"
+              IsVisible="False"
+              BackgroundColor="#80000000"
+              IgnoreSafeArea="True"
+              ZIndex="999">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnCloseDailySummaryClicked"/>
+            </Grid.GestureRecognizers>
+
+            <Border BackgroundColor="{DynamicResource CardBackgroundColor}"
+                    StrokeThickness="0"
+                    Padding="20"
+                    StrokeShape="RoundRectangle 18"
+                    VerticalOptions="Center"
+                    HorizontalOptions="Center"
+                    WidthRequest="760"
+                    HeightRequest="1000">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer /> <!-- Prevent close when tapping inside -->
+                </Border.GestureRecognizers>
+                <Border.Shadow>
+                    <Shadow Brush="Black" Opacity="0.25" Radius="12" Offset="0,4"/>
+                </Border.Shadow>
+
+                <Grid RowDefinitions="Auto,*,Auto" RowSpacing="15">
+                    <!-- Header -->
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                        <VerticalStackLayout Grid.Column="0" Spacing="4">
+                            <Label x:Name="OverlayDateLabel"
+                                   Text="21 de Novembro"
+                                   FontSize="18"
+                                   FontAttributes="Bold"
+                                   HorizontalOptions="Center"
+                                   TextColor="{DynamicResource BodyTextColor}"/>
+                            <Label x:Name="OverlayWeekendLabel"
+                                   Text="🎉 Fim de Semana"
+                                   FontSize="12"
+                                   TextColor="#FF9500"
+                                   HorizontalOptions="Center"
+                                   IsVisible="False"/>
+                            <Label x:Name="OverlayTotalHoursLabel"
+                                   Text="Total: 8h"
+                                   FontSize="14"
+                                   HorizontalOptions="Center"
+                                   TextColor="{DynamicResource BodyTextColor}"/>
+                        </VerticalStackLayout>
+                        
+                        <!-- Add Button -->
+                        <Button Grid.Column="1"
+                                Text="+"
+                                FontSize="32"
+                                FontAttributes="Bold"
+                                BackgroundColor="Transparent"
+                                TextColor="{DynamicResource AppAccent}"
+                                Clicked="OnOverlayAddClicked"
+                                WidthRequest="40"
+                                HeightRequest="40"
+                                Padding="0"/>
+                    </Grid>
+
+                    <!-- List of Entries -->
+                    <CollectionView Grid.Row="1"
+                                    x:Name="OverlayEntriesCollectionView"
+                                    SelectionMode="None">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:HoraColaborador">
+                                <Border StrokeThickness="0"
+                                        BackgroundColor="{DynamicResource PageBackgroundColor}"
+                                        StrokeShape="RoundRectangle 8"
+                                        Padding="12"
+                                        Margin="0,0,0,8">
+                                    <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                                        <!-- Row 0: Collaborator Name (Visible if showing all) -->
+                                        <Label Grid.Row="0" Grid.Column="0"
+                                               Text="{Binding NomeColaborador}"
+                                               FontAttributes="Bold"
+                                               FontSize="13"
+                                               TextColor="{DynamicResource AppAccent}"
+                                               IsVisible="{Binding Source={RelativeSource AncestorType={x:Type pages:HoursEntryPage}}, Path=ShowCollaboratorName}" 
+                                               Margin="0,0,0,4"/>
+
+                                        <!-- Row 0: Hours (Green/Orange) -->
+                                        <HorizontalStackLayout Grid.Row="0" Grid.Column="1" VerticalOptions="Center" Spacing="4">
+                                            <Label Text="{Binding HorasTrab, StringFormat='{0:0.##}h'}" 
+                                                   TextColor="#4CD964" 
+                                                   FontAttributes="Bold"
+                                                   FontSize="12"/>
+                                            <Label Text="{Binding HorasExtras, StringFormat='(+{0:0.##}h)'}" 
+                                                   TextColor="#FF9500" 
+                                                   FontAttributes="Bold"
+                                                   FontSize="12"
+                                                   IsVisible="{Binding HorasExtras, Converter={StaticResource DoubleComparisonConverter}, ConverterParameter='gt:0'}"/>
+                                        </HorizontalStackLayout>
+                                        
+                                        <!-- Row 1: Client -->
+                                        <Label Grid.Row="1" Grid.Column="0"
+                                               Text="{Binding ClienteInfo}"
+                                               FontAttributes="Bold"
+                                               FontSize="14"
+                                               LineBreakMode="TailTruncation"
+                                               VerticalOptions="Center"
+                                               TextColor="{DynamicResource BodyTextColor}"/>
+
+                                        <!-- Edit Button -->
+                                        <Button Grid.Row="0" Grid.RowSpan="2" Grid.Column="2"
+                                                Text="✎"
+                                                FontSize="32"
+                                                BackgroundColor="Transparent"
+                                                TextColor="{DynamicResource AppAccent}"
+                                                Clicked="OnOverlayEditClicked"
+                                                CommandParameter="{Binding .}"
+                                                WidthRequest="40"
+                                                HeightRequest="40"
+                                                Padding="0"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                    <!-- Close Button -->
+                    <Button Grid.Row="2"
+                            Text="Fechar"
+                            BackgroundColor="#0A84FF"
+                            TextColor="White"
+                            CornerRadius="8"
+                            Clicked="OnCloseDailySummaryClicked"/>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- EDIT HOUR OVERLAY -->
+        <Grid x:Name="EditHourOverlay"
+              Grid.RowSpan="2"
+              IsVisible="False"
+              BackgroundColor="#80000000"
+              IgnoreSafeArea="True"
+              ZIndex="1000">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnCloseEditOverlayClicked"/>
+            </Grid.GestureRecognizers>
+
+            <Border BackgroundColor="{AppThemeBinding Light=White, Dark=#1C1C1E}"
+                    StrokeThickness="0"
+                    Padding="24"
+                    StrokeShape="RoundRectangle 18"
+                    VerticalOptions="Center"
+                    HorizontalOptions="Center"
+                    WidthRequest="500"
+                    HeightRequest="700">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer />
+                </Border.GestureRecognizers>
+                <Border.Shadow>
+                    <Shadow Brush="Black" Opacity="0.25" Radius="12" Offset="0,4"/>
+                </Border.Shadow>
+
+                <Grid RowDefinitions="Auto,*,Auto" RowSpacing="20">
+                    <!-- Header -->
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                        <Label x:Name="EditOverlayTitleLabel"
+                               Text="➕ NOVO REGISTO"
+                               FontSize="20"
+                               FontAttributes="Bold"
+                               VerticalOptions="Center"
+                               TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                        
+                        <Button x:Name="EditOverlayDeleteButton"
+                                Grid.Column="1"
+                                Text="🗑️"
+                                BackgroundColor="Transparent"
+                                TextColor="#FF3B30"
+                                FontSize="24"
+                                Clicked="OnEditOverlayDeleteClicked"
+                                IsVisible="False"/>
+                    </Grid>
+
+                    <!-- Form -->
+                    <ScrollView Grid.Row="1">
+                        <VerticalStackLayout Spacing="16">
+                            <!-- Type -->
+                            <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
+                                <Label Text="📋 Tipo de Registo" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                                <Border Grid.Row="1" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" StrokeThickness="0" StrokeShape="RoundRectangle 8">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnEditOverlayTypeTapped"/>
+                                        </Grid.GestureRecognizers>
+                                        <Label x:Name="EditOverlayTypeLabel" Text="Trabalho" Padding="12,10" VerticalOptions="Center" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                                        <Label Grid.Column="1" Text="▼" FontSize="12" Padding="12,10" VerticalOptions="Center" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+
+                            <!-- Absence Reason -->
+                            <Grid x:Name="EditOverlayAbsenceContainer" RowDefinitions="Auto,Auto" RowSpacing="6" IsVisible="False">
+                                <Label Text="🏥 Motivo" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                                <Border Grid.Row="1" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" StrokeThickness="0" StrokeShape="RoundRectangle 8">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnEditOverlayAbsenceTapped"/>
+                                        </Grid.GestureRecognizers>
+                                        <Label x:Name="EditOverlayAbsenceLabel" Text="Selecione o motivo" Padding="12,10" VerticalOptions="Center" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                                        <Label Grid.Column="1" Text="▼" FontSize="12" Padding="12,10" VerticalOptions="Center" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+
+                            <!-- Collaborator -->
+                            <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
+                                <Label Text="👤 Colaborador" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                                <Border Grid.Row="1" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" StrokeThickness="0" StrokeShape="RoundRectangle 8">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnEditOverlayCollaboratorTapped"/>
+                                        </Grid.GestureRecognizers>
+                                        <Label x:Name="EditOverlayCollaboratorLabel" Text="Selecione colaborador" Padding="12,10" VerticalOptions="Center" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                                        <Label Grid.Column="1" Text="▼" FontSize="12" Padding="12,10" VerticalOptions="Center" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+
+                            <!-- Client -->
+                            <Grid x:Name="EditOverlayClientContainer" RowDefinitions="Auto,Auto" RowSpacing="6">
+                                <Label Text="🏢 Cliente" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                                <Border Grid.Row="1" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" StrokeThickness="0" StrokeShape="RoundRectangle 8">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnEditOverlayClientTapped"/>
+                                        </Grid.GestureRecognizers>
+                                        <Label x:Name="EditOverlayClientLabel" Text="Selecione cliente" Padding="12,10" VerticalOptions="Center" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                                        <Label Grid.Column="1" Text="▼" FontSize="12" Padding="12,10" VerticalOptions="Center" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+
+                            <!-- Date -->
+                            <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
+                                <Label Text="📅 Data" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                                <Border Grid.Row="1" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" StrokeThickness="0" StrokeShape="RoundRectangle 8">
+                                    <DatePicker x:Name="EditOverlayDatePicker" Format="dd/MM/yyyy" TextColor="{AppThemeBinding Light=Black, Dark=White}" BackgroundColor="Transparent"/>
+                                </Border>
+                            </Grid>
+
+                            <!-- Hours -->
+                            <Grid x:Name="EditOverlayHoursContainer" RowDefinitions="Auto,Auto" RowSpacing="6">
+                                <Label Text="⏱️ Horas Normais" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                                <Border Grid.Row="1" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" StrokeThickness="0" StrokeShape="RoundRectangle 8">
+                                    <Entry x:Name="EditOverlayHoursEntry" Keyboard="Numeric" Placeholder="0.0" TextColor="{AppThemeBinding Light=Black, Dark=White}" BackgroundColor="Transparent"/>
+                                </Border>
+                            </Grid>
+
+                            <!-- Extra Hours -->
+                            <Grid x:Name="EditOverlayExtrasContainer" RowDefinitions="Auto,Auto" RowSpacing="6">
+                                <Label Text="⚡ Horas Extras" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                                <Border Grid.Row="1" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" StrokeThickness="0" StrokeShape="RoundRectangle 8">
+                                    <Entry x:Name="EditOverlayExtrasEntry" Keyboard="Numeric" Placeholder="0.0" TextColor="{AppThemeBinding Light=Black, Dark=White}" BackgroundColor="Transparent"/>
+                                </Border>
+                            </Grid>
+                        </VerticalStackLayout>
+                    </ScrollView>
+
+                    <!-- Buttons -->
+                    <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="12">
+                        <Button Text="Cancelar" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" TextColor="{AppThemeBinding Light=Black, Dark=White}" Clicked="OnCloseEditOverlayClicked"/>
+                        <Button Text="Guardar" BackgroundColor="#0A84FF" TextColor="White" FontAttributes="Bold" Clicked="OnEditOverlaySaveClicked" Grid.Column="1"/>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- LIST PICKER OVERLAY -->
+        <Grid x:Name="ListPickerOverlay"
+              Grid.RowSpan="2"
+              IsVisible="False"
+              BackgroundColor="#80000000"
+              IgnoreSafeArea="True"
+              ZIndex="1001">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnCloseListPickerClicked"/>
+            </Grid.GestureRecognizers>
+
+            <Border BackgroundColor="{AppThemeBinding Light=White, Dark=#1C1C1E}"
+                    StrokeThickness="0"
+                    Padding="20"
+                    StrokeShape="RoundRectangle 18"
+                    VerticalOptions="Center"
+                    HorizontalOptions="Center"
+                    WidthRequest="400"
+                    HeightRequest="600">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer />
+                </Border.GestureRecognizers>
+                <Border.Shadow>
+                    <Shadow Brush="Black" Opacity="0.25" Radius="12" Offset="0,4"/>
+                </Border.Shadow>
+
+                <Grid RowDefinitions="Auto,*" RowSpacing="15">
+                    <Label x:Name="ListPickerTitleLabel"
+                           Text="Selecione"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center"
+                           TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+
+                    <CollectionView Grid.Row="1" x:Name="ListPickerCollectionView" SelectionMode="Single" SelectionChanged="OnListPickerSelectionChanged">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Border StrokeThickness="0" BackgroundColor="Transparent" Padding="12">
+                                    <Label Text="{Binding .}" FontSize="16" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Grid>
+            </Border>
         </Grid>
     </Grid>
 </ContentPage>

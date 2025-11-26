@@ -1433,5 +1433,139 @@ FROM OrderInfo";
                 throw;
             }
         }
+
+        // ================= TIPOS DE AUSÊNCIA =================
+        public static async Task CreateAbsenceTypesTableAsync()
+        {
+            try
+            {
+                using var conn = new MySqlConnection(GetConnectionString());
+                await conn.OpenAsync();
+                using var cmd = new MySqlCommand(@"
+                    CREATE TABLE IF NOT EXISTS TIPOS_AUSENCIA (
+                        ID INT AUTO_INCREMENT PRIMARY KEY,
+                        Descricao VARCHAR(100) NOT NULL
+                    )", conn);
+                await cmd.ExecuteNonQueryAsync();
+
+                // Inserir alguns tipos padrão se a tabela estiver vazia
+                using var cmdCount = new MySqlCommand("SELECT COUNT(*) FROM TIPOS_AUSENCIA", conn);
+                var count = Convert.ToInt32(await cmdCount.ExecuteScalarAsync());
+                if (count == 0)
+                {
+                    var defaults = new[] { "Férias", "Doença", "Feriado", "Outro" };
+                    foreach (var d in defaults)
+                    {
+                        using var cmdInsert = new MySqlCommand("INSERT INTO TIPOS_AUSENCIA (Descricao) VALUES (@desc)", conn);
+                        cmdInsert.Parameters.AddWithValue("@desc", d);
+                        await cmdInsert.ExecuteNonQueryAsync();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao criar tabela de ausências: {ex.Message}");
+            }
+        }
+
+        public static async Task<List<AbsenceType>> GetAbsenceTypesAsync()
+        {
+            var list = new List<AbsenceType>();
+            try
+            {
+                using var conn = new MySqlConnection(GetConnectionString());
+                await conn.OpenAsync();
+                using var cmd = new MySqlCommand("SELECT ID, Descricao FROM TIPOS_AUSENCIA ORDER BY Descricao", conn);
+                using var reader = await cmd.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                {
+                    list.Add(new AbsenceType
+                    {
+                        Id = reader.GetInt32(0),
+                        Description = reader.GetString(1)
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao obter tipos de ausência: {ex.Message}");
+            }
+            return list;
+        }
+
+        public static async Task<int> UpsertHoraColaboradorAsync(HoraColaborador hora)
+        {
+            try
+            {
+                using var conn = new MySqlConnection(GetConnectionString());
+                await conn.OpenAsync();
+
+                if (hora.Id == 0)
+                {
+                    // FIX: Manually generate ID because the table does not have AUTO_INCREMENT
+                    var maxIdSql = "SELECT COALESCE(MAX(ID), 0) FROM HORASTRABALHADAS";
+                    using (var maxIdCmd = new MySqlCommand(maxIdSql, conn))
+                    {
+                        var maxId = Convert.ToInt32(await maxIdCmd.ExecuteScalarAsync());
+                        var newId = maxId + 1;
+
+                        // INSERT with explicit ID
+                        var sql = @"INSERT INTO HORASTRABALHADAS 
+                                    (ID, DataTrabalho, IDColaborador, NomeColaborador, IDCliente, Cliente, 
+                                     IDCentroCusto, DescCentroCusto, HorasTrab, HorasExtras, Observacoes)
+                                    VALUES 
+                                    (@ID, @DataTrabalho, @IDColaborador, @NomeColaborador, @IDCliente, @Cliente,
+                                     @IDCentroCusto, @DescCentroCusto, @HorasTrab, @HorasExtras, @Observacoes)";
+
+                        using var cmd = new MySqlCommand(sql, conn);
+                        cmd.Parameters.AddWithValue("@ID", newId);
+                        cmd.Parameters.AddWithValue("@DataTrabalho", hora.DataTrabalho);
+                        cmd.Parameters.AddWithValue("@IDColaborador", hora.IdColaborador);
+                        cmd.Parameters.AddWithValue("@NomeColaborador", hora.NomeColaborador);
+                        cmd.Parameters.AddWithValue("@IDCliente", hora.IdCliente ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Cliente", hora.Cliente ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@IDCentroCusto", hora.IdCentroCusto ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@DescCentroCusto", hora.DescCentroCusto ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@HorasTrab", hora.HorasTrab);
+                        cmd.Parameters.AddWithValue("@HorasExtras", hora.HorasExtras);
+                        cmd.Parameters.AddWithValue("@Observacoes", hora.Observacoes ?? (object)DBNull.Value);
+
+                        await cmd.ExecuteNonQueryAsync();
+                        return newId;
+                    }
+                }
+                else
+                {
+                    // UPDATE
+                    var sql = @"UPDATE HORASTRABALHADAS 
+                                SET DataTrabalho=@DataTrabalho, IDColaborador=@IDColaborador, 
+                                    NomeColaborador=@NomeColaborador, IDCliente=@IDCliente, Cliente=@Cliente,
+                                    IDCentroCusto=@IDCentroCusto, DescCentroCusto=@DescCentroCusto,
+                                    HorasTrab=@HorasTrab, HorasExtras=@HorasExtras, Observacoes=@Observacoes
+                                WHERE ID=@Id";
+
+                    using var cmd = new MySqlCommand(sql, conn);
+                    cmd.Parameters.AddWithValue("@Id", hora.Id);
+                    cmd.Parameters.AddWithValue("@DataTrabalho", hora.DataTrabalho);
+                    cmd.Parameters.AddWithValue("@IDColaborador", hora.IdColaborador);
+                    cmd.Parameters.AddWithValue("@NomeColaborador", hora.NomeColaborador);
+                    cmd.Parameters.AddWithValue("@IDCliente", hora.IdCliente ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Cliente", hora.Cliente ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@IDCentroCusto", hora.IdCentroCusto ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@DescCentroCusto", hora.DescCentroCusto ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@HorasTrab", hora.HorasTrab);
+                    cmd.Parameters.AddWithValue("@HorasExtras", hora.HorasExtras);
+                    cmd.Parameters.AddWithValue("@Observacoes", hora.Observacoes ?? (object)DBNull.Value);
+
+                    await cmd.ExecuteNonQueryAsync();
+                    return hora.Id;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao guardar hora: {ex.Message}");
+                throw;
+            }
+        }
     }
 }
