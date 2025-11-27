@@ -481,6 +481,7 @@ public partial class HoursEntryPage : ContentPage
             EditOverlayDatePicker.Date = _currentEditingHora.DataTrabalho;
             EditOverlayHoursEntry.Text = _currentEditingHora.HorasTrab > 0 ? _currentEditingHora.HorasTrab.ToString("0.00") : "";
             EditOverlayExtrasEntry.Text = _currentEditingHora.HorasExtras > 0 ? _currentEditingHora.HorasExtras.ToString("0.00") : "";
+            EditOverlayObservationsEntry.Text = _currentEditingHora.Observacoes ?? "";
 
             // Setup Collaborator
             if (_currentEditingHora.IdColaborador > 0)
@@ -591,6 +592,8 @@ public partial class HoursEntryPage : ContentPage
 
             _currentEditingHora.DataTrabalho = EditOverlayDatePicker.Date;
             _currentEditingHora.IdColaborador = _selectedCollaborator.ID;
+            _currentEditingHora.NomeColaborador = _selectedCollaborator.Nome;
+            _currentEditingHora.Observacoes = EditOverlayObservationsEntry.Text;
 
             // Save
             await DatabaseService.UpsertHoraColaboradorAsync(_currentEditingHora);
@@ -600,7 +603,12 @@ public partial class HoursEntryPage : ContentPage
             
             // Refresh
             await _vm.CarregarHorasCommand.ExecuteAsync(null);
-            if (_vm.TabAtiva == 3) CarregarTab3Calendario();
+            
+            // Force Calendar Refresh
+            if (_vm.TabAtiva == 3) 
+            {
+                MainThread.BeginInvokeOnMainThread(() => CarregarTab3Calendario());
+            }
         }
         catch (Exception ex)
         {
@@ -620,7 +628,12 @@ public partial class HoursEntryPage : ContentPage
             
             // Refresh
             await _vm.CarregarHorasCommand.ExecuteAsync(null);
-            if (_vm.TabAtiva == 3) CarregarTab3Calendario();
+            
+            // Force Calendar Refresh
+            if (_vm.TabAtiva == 3) 
+            {
+                MainThread.BeginInvokeOnMainThread(() => CarregarTab3Calendario());
+            }
         }
     }
 
