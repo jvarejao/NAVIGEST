@@ -619,21 +619,31 @@ public partial class HoursEntryPage : ContentPage
     private async void OnEditOverlayDeleteClicked(object sender, EventArgs e)
     {
         Console.WriteLine("DEBUG: OnEditOverlayDeleteClicked called");
-        bool confirm = await DisplayAlert("Confirmar", "Tem a certeza que deseja eliminar este registo?", "Sim", "Não");
-        if (confirm)
+        try
         {
-            await _vm.EliminarHoraCommand.ExecuteAsync(_currentEditingHora);
-            EditHourOverlay.IsVisible = false;
-            await AppShell.DisplayToastAsync("Registo eliminado com sucesso!");
-            
-            // Refresh
-            await _vm.CarregarHorasCommand.ExecuteAsync(null);
-            
-            // Force Calendar Refresh
-            if (_vm.TabAtiva == 3) 
+            bool confirm = await DisplayAlert("Confirmar", "Tem a certeza que deseja eliminar este registo?", "Sim", "Não");
+            if (confirm)
             {
-                MainThread.BeginInvokeOnMainThread(() => CarregarTab3Calendario());
+                // Call Service directly to avoid double confirmation from ViewModel
+                await DatabaseService.DeleteHoraColaboradorAsync(_currentEditingHora.Id);
+                
+                EditHourOverlay.IsVisible = false;
+                await AppShell.DisplayToastAsync("Registo eliminado com sucesso!");
+                
+                // Refresh
+                await _vm.CarregarHorasCommand.ExecuteAsync(null);
+                
+                // Force Calendar Refresh
+                if (_vm.TabAtiva == 3) 
+                {
+                    MainThread.BeginInvokeOnMainThread(() => CarregarTab3Calendario());
+                }
             }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Erro ao eliminar: {ex.Message}");
+            await DisplayAlert("Erro", $"Erro ao eliminar: {ex.Message}", "OK");
         }
     }
 
