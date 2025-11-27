@@ -146,7 +146,7 @@
                         <!-- Add Button -->
                         <Button Grid.Column="1"
                                 Text="+"
-                                FontSize="32"
+                                FontSize="38"
                                 FontAttributes="Bold"
                                 BackgroundColor="Transparent"
                                 TextColor="{DynamicResource AppAccent}"
@@ -182,11 +182,11 @@
                                             <Label Text="{Binding HorasTrab, StringFormat='{0:0.##}h'}" 
                                                    TextColor="#4CD964" 
                                                    FontAttributes="Bold"
-                                                   FontSize="12"/>
+                                                   FontSize="18"/>
                                             <Label Text="{Binding HorasExtras, StringFormat='(+{0:0.##}h)'}" 
                                                    TextColor="#FF9500" 
                                                    FontAttributes="Bold"
-                                                   FontSize="12"
+                                                   FontSize="18"
                                                    IsVisible="{Binding HorasExtras, Converter={StaticResource DoubleComparisonConverter}, ConverterParameter='gt:0'}"/>
                                         </HorizontalStackLayout>
                                         
@@ -244,8 +244,8 @@
                     StrokeShape="RoundRectangle 18"
                     VerticalOptions="Center"
                     HorizontalOptions="Center"
-                    WidthRequest="500"
-                    HeightRequest="700">
+                    WidthRequest="760"
+                    MaximumHeightRequest="800">
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer />
                 </Border.GestureRecognizers>
@@ -263,14 +263,18 @@
                                VerticalOptions="Center"
                                TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
                         
-                        <Button x:Name="EditOverlayDeleteButton"
-                                Grid.Column="1"
-                                Text="🗑️"
-                                BackgroundColor="Transparent"
-                                TextColor="#FF3B30"
-                                FontSize="24"
-                                Clicked="OnEditOverlayDeleteClicked"
-                                IsVisible="False"/>
+                        <Label x:Name="EditOverlayDeleteButton"
+                               Grid.Column="1"
+                               Text="🗑️"
+                               TextColor="#FF3B30"
+                               FontSize="24"
+                               IsVisible="False"
+                               HorizontalOptions="End"
+                               VerticalOptions="Center">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnEditOverlayDeleteClicked"/>
+                            </Label.GestureRecognizers>
+                        </Label>
                     </Grid>
 
                     <!-- Form -->
@@ -279,7 +283,7 @@
                             <!-- Type -->
                             <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
                                 <Label Text="📋 Tipo de Registo" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
-                                <Border Grid.Row="1" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" StrokeThickness="0" StrokeShape="RoundRectangle 8">
+                                <Border Grid.Row="1" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" StrokeThickness="0" StrokeShape="RoundRectangle 8" HeightRequest="50">
                                     <Grid ColumnDefinitions="*,Auto">
                                         <Grid.GestureRecognizers>
                                             <TapGestureRecognizer Tapped="OnEditOverlayTypeTapped"/>
@@ -293,7 +297,7 @@
                             <!-- Absence Reason -->
                             <Grid x:Name="EditOverlayAbsenceContainer" RowDefinitions="Auto,Auto" RowSpacing="6" IsVisible="False">
                                 <Label Text="🏥 Motivo" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
-                                <Border Grid.Row="1" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" StrokeThickness="0" StrokeShape="RoundRectangle 8">
+                                <Border Grid.Row="1" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" StrokeThickness="0" StrokeShape="RoundRectangle 8" HeightRequest="50">
                                     <Grid ColumnDefinitions="*,Auto">
                                         <Grid.GestureRecognizers>
                                             <TapGestureRecognizer Tapped="OnEditOverlayAbsenceTapped"/>
@@ -307,7 +311,7 @@
                             <!-- Collaborator -->
                             <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
                                 <Label Text="👤 Colaborador" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
-                                <Border Grid.Row="1" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" StrokeThickness="0" StrokeShape="RoundRectangle 8">
+                                <Border Grid.Row="1" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" StrokeThickness="0" StrokeShape="RoundRectangle 8" HeightRequest="50">
                                     <Grid ColumnDefinitions="*,Auto">
                                         <Grid.GestureRecognizers>
                                             <TapGestureRecognizer Tapped="OnEditOverlayCollaboratorTapped"/>
@@ -321,7 +325,7 @@
                             <!-- Client -->
                             <Grid x:Name="EditOverlayClientContainer" RowDefinitions="Auto,Auto" RowSpacing="6">
                                 <Label Text="🏢 Cliente" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
-                                <Border Grid.Row="1" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" StrokeThickness="0" StrokeShape="RoundRectangle 8">
+                                <Border Grid.Row="1" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" StrokeThickness="0" StrokeShape="RoundRectangle 8" HeightRequest="50">
                                     <Grid ColumnDefinitions="*,Auto">
                                         <Grid.GestureRecognizers>
                                             <TapGestureRecognizer Tapped="OnEditOverlayClientTapped"/>
@@ -335,24 +339,24 @@
                             <!-- Date -->
                             <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
                                 <Label Text="📅 Data" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
-                                <Border Grid.Row="1" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" StrokeThickness="0" StrokeShape="RoundRectangle 8">
-                                    <DatePicker x:Name="EditOverlayDatePicker" Format="dd/MM/yyyy" TextColor="{AppThemeBinding Light=Black, Dark=White}" BackgroundColor="Transparent"/>
+                                <Border Grid.Row="1" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" StrokeThickness="0" StrokeShape="RoundRectangle 8" HeightRequest="50">
+                                    <DatePicker x:Name="EditOverlayDatePicker" Format="dd/MM/yyyy" TextColor="{AppThemeBinding Light=Black, Dark=White}" BackgroundColor="Transparent" VerticalOptions="Fill" HorizontalOptions="Fill"/>
                                 </Border>
                             </Grid>
 
                             <!-- Hours -->
                             <Grid x:Name="EditOverlayHoursContainer" RowDefinitions="Auto,Auto" RowSpacing="6">
                                 <Label Text="⏱️ Horas Normais" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
-                                <Border Grid.Row="1" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" StrokeThickness="0" StrokeShape="RoundRectangle 8">
-                                    <Entry x:Name="EditOverlayHoursEntry" Keyboard="Numeric" Placeholder="0.0" TextColor="{AppThemeBinding Light=Black, Dark=White}" BackgroundColor="Transparent"/>
+                                <Border Grid.Row="1" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" StrokeThickness="0" StrokeShape="RoundRectangle 8" HeightRequest="50">
+                                    <Entry x:Name="EditOverlayHoursEntry" Keyboard="Numeric" Placeholder="0.0" TextColor="{AppThemeBinding Light=Black, Dark=White}" BackgroundColor="Transparent" VerticalOptions="Fill" VerticalTextAlignment="Center"/>
                                 </Border>
                             </Grid>
 
                             <!-- Extra Hours -->
                             <Grid x:Name="EditOverlayExtrasContainer" RowDefinitions="Auto,Auto" RowSpacing="6">
                                 <Label Text="⚡ Horas Extras" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
-                                <Border Grid.Row="1" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" StrokeThickness="0" StrokeShape="RoundRectangle 8">
-                                    <Entry x:Name="EditOverlayExtrasEntry" Keyboard="Numeric" Placeholder="0.0" TextColor="{AppThemeBinding Light=Black, Dark=White}" BackgroundColor="Transparent"/>
+                                <Border Grid.Row="1" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" StrokeThickness="0" StrokeShape="RoundRectangle 8" HeightRequest="50">
+                                    <Entry x:Name="EditOverlayExtrasEntry" Keyboard="Numeric" Placeholder="0.0" TextColor="{AppThemeBinding Light=Black, Dark=White}" BackgroundColor="Transparent" VerticalOptions="Fill" VerticalTextAlignment="Center"/>
                                 </Border>
                             </Grid>
                         </VerticalStackLayout>
@@ -360,8 +364,19 @@
 
                     <!-- Buttons -->
                     <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="12">
-                        <Button Text="Cancelar" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" TextColor="{AppThemeBinding Light=Black, Dark=White}" Clicked="OnCloseEditOverlayClicked"/>
-                        <Button Text="Guardar" BackgroundColor="#0A84FF" TextColor="White" FontAttributes="Bold" Clicked="OnEditOverlaySaveClicked" Grid.Column="1"/>
+                        <Button Text="Cancelar" 
+                                BackgroundColor="#FF3B30" 
+                                TextColor="White" 
+                                FontAttributes="Bold"
+                                CornerRadius="8"
+                                Clicked="OnCloseEditOverlayClicked"/>
+                        <Button Text="Guardar" 
+                                BackgroundColor="#0A84FF" 
+                                TextColor="White" 
+                                FontAttributes="Bold" 
+                                CornerRadius="8"
+                                Clicked="OnEditOverlaySaveClicked" 
+                                Grid.Column="1"/>
                     </Grid>
                 </Grid>
             </Border>
@@ -393,7 +408,7 @@
                     <Shadow Brush="Black" Opacity="0.25" Radius="12" Offset="0,4"/>
                 </Border.Shadow>
 
-                <Grid RowDefinitions="Auto,*" RowSpacing="15">
+                <Grid RowDefinitions="Auto,*,Auto" RowSpacing="15">
                     <Label x:Name="ListPickerTitleLabel"
                            Text="Selecione"
                            FontSize="18"
@@ -401,15 +416,36 @@
                            HorizontalOptions="Center"
                            TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
 
-                    <CollectionView Grid.Row="1" x:Name="ListPickerCollectionView" SelectionMode="Single" SelectionChanged="OnListPickerSelectionChanged">
+                    <CollectionView Grid.Row="1" x:Name="ListPickerCollectionView" SelectionMode="None">
                         <CollectionView.ItemTemplate>
-                            <DataTemplate>
+                            <DataTemplate x:DataType="x:String">
                                 <Border StrokeThickness="0" BackgroundColor="Transparent" Padding="12">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnListPickerItemTapped" CommandParameter="{Binding .}"/>
+                                    </Border.GestureRecognizers>
                                     <Label Text="{Binding .}" FontSize="16" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroupList>
+                                            <VisualStateGroup x:Name="CommonStates">
+                                                <VisualState x:Name="Normal" />
+                                                <VisualState x:Name="PointerOver">
+                                                    <VisualState.Setters>
+                                                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" />
+                                                    </VisualState.Setters>
+                                                </VisualState>
+                                            </VisualStateGroup>
+                                        </VisualStateGroupList>
+                                    </VisualStateManager.VisualStateGroups>
                                 </Border>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
+
+                    <Button Grid.Row="2" 
+                            Text="Cancelar" 
+                            TextColor="{AppThemeBinding Light=#0A84FF, Dark=#0A84FF}"
+                            BackgroundColor="Transparent"
+                            Clicked="OnCloseListPickerClicked"/>
                 </Grid>
             </Border>
         </Grid>

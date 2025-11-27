@@ -43,6 +43,27 @@ public partial class HorasColaboradorViewModel : ObservableObject
     // Flag para prevenir recarregos durante inicialização
     private bool _isInitializing = true;
 
+    partial void OnColaboradorSelecionadoChanged(Colaborador? value)
+    {
+        if (!_isInitializing)
+            CarregarHorasCommand.Execute(null);
+        OnPropertyChanged(nameof(ColaboradorDisplay));
+    }
+
+    partial void OnDataFiltroInicioChanged(DateTime value)
+    {
+        if (!_isInitializing)
+            CarregarHorasCommand.Execute(null);
+        OnPropertyChanged(nameof(PeriodoSelecionado));
+    }
+
+    partial void OnDataFiltroFimChanged(DateTime value)
+    {
+        if (!_isInitializing)
+            CarregarHorasCommand.Execute(null);
+        OnPropertyChanged(nameof(PeriodoSelecionado));
+    }
+
     // Totais simples
     public string TotalHorasNormais => $"{HorasList.Sum(h => h.HorasTrab):0.00}h";
     public string TotalHorasExtra => $"{HorasList.Sum(h => h.HorasExtras):0.00}h";
@@ -126,7 +147,7 @@ public partial class HorasColaboradorViewModel : ObservableObject
         }
     }
 
-    private async Task CarregarColaboradoresAsync()
+    public async Task CarregarColaboradoresAsync()
     {
         try
         {
@@ -145,6 +166,7 @@ public partial class HorasColaboradorViewModel : ObservableObject
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"Erro ao carregar colaboradores: {ex.Message}");
+            Console.WriteLine($"ERROR: CarregarColaboradoresAsync failed: {ex.Message}");
         }
     }
 
@@ -205,33 +227,6 @@ public partial class HorasColaboradorViewModel : ObservableObject
         {
             System.Diagnostics.Debug.WriteLine($"Erro ao eliminar registo: {ex.Message}");
             await Shell.Current.DisplayAlert("Erro", "Erro ao eliminar registo", "OK");
-        }
-    }
-
-    partial void OnColaboradorSelecionadoChanged(Colaborador? value)
-    {
-        // Só recarrega se a inicialização terminou
-        if (!_isInitializing && value != null)
-        {
-            _ = CarregarHorasAsync();
-        }
-    }
-
-    partial void OnDataFiltroInicioChanged(DateTime value)
-    {
-        // Só recarrega se a inicialização terminou
-        if (!_isInitializing)
-        {
-            _ = CarregarHorasAsync();
-        }
-    }
-
-    partial void OnDataFiltroFimChanged(DateTime value)
-    {
-        // Só recarrega se a inicialização terminou
-        if (!_isInitializing)
-        {
-            _ = CarregarHorasAsync();
         }
     }
 

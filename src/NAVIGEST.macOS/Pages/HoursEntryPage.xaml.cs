@@ -71,6 +71,32 @@ public partial class HoursEntryPage : ContentPage
         CarregarTab1Resumo();
     }
 
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        if (_vm != null)
+        {
+            _vm.HorasList.CollectionChanged += OnHorasListCollectionChanged;
+        }
+    }
+
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        if (_vm != null)
+        {
+            _vm.HorasList.CollectionChanged -= OnHorasListCollectionChanged;
+        }
+    }
+
+    private void OnHorasListCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    {
+        if (_vm.TabAtiva == 3)
+        {
+            MainThread.BeginInvokeOnMainThread(() => CarregarTab3Calendario());
+        }
+    }
+
     private void OnTab1Tapped(object sender, EventArgs e)
     {
         AtivarTab(1);
@@ -414,16 +440,38 @@ public partial class HoursEntryPage : ContentPage
             _isEditMode = hora != null;
 
             // Load data if needed
+            if (_vm.Colaboradores.Count == 0)
+            {
+                Console.WriteLine("DEBUG: Colaboradores list is empty. Loading...");
+                await _vm.CarregarColaboradoresAsync();
+                Console.WriteLine($"DEBUG: Loaded {_vm.Colaboradores.Count} colaboradores.");
+            }
+            else
+            {
+                Console.WriteLine($"DEBUG: Colaboradores list has {_vm.Colaboradores.Count} items.");
+            }
+
             if (_clientes.Count == 0)
             {
+                Console.WriteLine("DEBUG: Clientes list is empty. Loading...");
                 var clientesDb = await DatabaseService.GetClientesAsync(null);
-                _clientes = clientesDb.OrderBy(c => c.CLINOME).ToList();
-                _clientes.Insert(0, new Cliente { CLICODIGO = "0", CLINOME = "Sem cliente" });
+                if (clientesDb != null && clientesDb.Any())
+                {
+                    _clientes = clientesDb.OrderBy(c => c.CLINOME).ToList();
+                    _clientes.Insert(0, new Cliente { CLICODIGO = "0", CLINOME = "Sem cliente" });
+                }
+                else
+                {
+                     _clientes = new List<Cliente> { new Cliente { CLICODIGO = "0", CLINOME = "Sem cliente" } };
+                }
+                Console.WriteLine($"DEBUG: Loaded {_clientes.Count} clientes.");
             }
 
             if (_absenceTypes.Count == 0)
             {
+                Console.WriteLine("DEBUG: AbsenceTypes list is empty. Loading...");
                 _absenceTypes = await DatabaseService.GetAbsenceTypesAsync();
+                Console.WriteLine($"DEBUG: Loaded {_absenceTypes.Count} absence types.");
             }
 
             // Setup UI
@@ -501,6 +549,7 @@ public partial class HoursEntryPage : ContentPage
 
     private async void OnEditOverlaySaveClicked(object sender, EventArgs e)
     {
+        Console.WriteLine("DEBUG: OnEditOverlaySaveClicked called");
         try
         {
             if (_selectedCollaborator == null)
@@ -535,6 +584,7 @@ public partial class HoursEntryPage : ContentPage
 
                 _currentEditingHora.IdCentroCusto = null;
                 _currentEditingHora.IdCliente = _selectedClient?.CLICODIGO ?? "";
+                _currentEditingHora.Cliente = _selectedClient?.CLINOME ?? "";
                 _currentEditingHora.HorasTrab = (float)horas;
                 _currentEditingHora.HorasExtras = (float)extras;
             }
@@ -546,6 +596,7 @@ public partial class HoursEntryPage : ContentPage
             await DatabaseService.UpsertHoraColaboradorAsync(_currentEditingHora);
             
             EditHourOverlay.IsVisible = false;
+            await AppShell.DisplayToastAsync("Registo guardado com sucesso!");
             
             // Refresh
             await _vm.CarregarHorasCommand.ExecuteAsync(null);
@@ -559,11 +610,17 @@ public partial class HoursEntryPage : ContentPage
 
     private async void OnEditOverlayDeleteClicked(object sender, EventArgs e)
     {
+        Console.WriteLine("DEBUG: OnEditOverlayDeleteClicked called");
         bool confirm = await DisplayAlert("Confirmar", "Tem a certeza que deseja eliminar este registo?", "Sim", "Não");
         if (confirm)
         {
             await _vm.EliminarHoraCommand.ExecuteAsync(_currentEditingHora);
             EditHourOverlay.IsVisible = false;
+            await AppShell.DisplayToastAsync("Registo eliminado com sucesso!");
+            
+            // Refresh
+            await _vm.CarregarHorasCommand.ExecuteAsync(null);
+            if (_vm.TabAtiva == 3) CarregarTab3Calendario();
         }
     }
 
@@ -582,7 +639,9 @@ public partial class HoursEntryPage : ContentPage
 
     private async void OnEditOverlayCollaboratorTapped(object sender, EventArgs e)
     {
-        var result = await ShowListPickerAsync("Selecione Colaborador", _vm.Colaboradores.Select(c => c.Nome).ToList());
+        var names = _vm.Colaboradores.Select(c => c.Nome ?? "").ToList();
+        Console.WriteLine($"DEBUG: Opening Collaborator Picker with {names.Count} items.");
+        var result = await ShowListPickerAsync("Selecione Colaborador", names);
         if (result is string name)
         {
             var colab = _vm.Colaboradores.FirstOrDefault(c => c.Nome == name);
@@ -596,7 +655,7 @@ public partial class HoursEntryPage : ContentPage
 
     private async void OnEditOverlayClientTapped(object sender, EventArgs e)
     {
-        var result = await ShowListPickerAsync("Selecione Cliente", _clientes.Select(c => c.CLINOME).ToList());
+        var result = await ShowListPickerAsync("Selecione Cliente", _clientes.Select(c => c.CLINOME ?? "").ToList());
         if (result is string name)
         {
             var client = _clientes.FirstOrDefault(c => c.CLINOME == name);
@@ -610,7 +669,7 @@ public partial class HoursEntryPage : ContentPage
 
     private async void OnEditOverlayAbsenceTapped(object sender, EventArgs e)
     {
-        var result = await ShowListPickerAsync("Selecione Motivo", _absenceTypes.Select(a => a.Description).ToList());
+        var result = await ShowListPickerAsync("Selecione Motivo", _absenceTypes.Select(a => a.Description ?? "").ToList());
         if (result is string desc)
         {
             var absence = _absenceTypes.FirstOrDefault(a => a.Description == desc);
@@ -645,15 +704,31 @@ public partial class HoursEntryPage : ContentPage
     {
         if (e.CurrentSelection.FirstOrDefault() is string selectedItem)
         {
+            Console.WriteLine($"DEBUG: ListPicker selected item: {selectedItem}");
             ListPickerOverlay.IsVisible = false;
             _pickerTcs?.TrySetResult(selectedItem);
             ListPickerCollectionView.SelectedItem = null;
         }
     }
 
+    private void OnListPickerItemTapped(object sender, EventArgs e)
+    {
+        if (sender is Element element && element.BindingContext is string selectedItem)
+        {
+            Console.WriteLine($"DEBUG: ListPicker item tapped: {selectedItem}");
+            ListPickerOverlay.IsVisible = false;
+            _pickerTcs?.TrySetResult(selectedItem);
+        }
+    }
+
     // ==================== TAB 3: CALENDÁRIO ====================
     private View CriarConteudoTab3()
     {
+        if (_vm.Colaboradores.Count == 0)
+        {
+             _ = _vm.CarregarColaboradoresAsync();
+        }
+
         var scroll = new ScrollView();
         var mainStack = new VerticalStackLayout { Spacing = 24, Padding = 24 };
         

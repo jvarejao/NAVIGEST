@@ -1217,6 +1217,7 @@ FROM OrderInfo";
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Erro ao obter colaboradores: {ex.Message}");
+                Console.WriteLine($"ERROR: GetColaboradoresAsync failed: {ex.Message}");
             }
             return list;
         }
