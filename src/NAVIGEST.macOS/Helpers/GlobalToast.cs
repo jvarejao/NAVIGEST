@@ -19,9 +19,9 @@ namespace NAVIGEST.macOS
     /// </summary>
     public static class GlobalToast
     {
-        private const double MaxWidthPhone = 360;
-        private const double MaxWidthLarge = 480;
-        private const double MinWidth      = 180;
+        private const double MaxWidthPhone = 380;
+        private const double MaxWidthLarge = 520;
+        private const double MinWidth      = 220;
         private const int    MaxQueue      = 4;
 
         private static readonly SemaphoreSlim _queueSem = new(1, 1);
@@ -30,7 +30,7 @@ namespace NAVIGEST.macOS
 
         public static WarningHue AvisoHue { get; set; } = WarningHue.Orange;
 
-        public static Task ShowAsync(string mensagem, ToastTipo tipo, int ms = 2600)
+        public static Task ShowAsync(string mensagem, ToastTipo tipo, int ms = 3000)
             => ShowAsync(mensagem, tipo, ms, ToastPos.Bottom);
 
         public static async Task ShowAsync(string mensagem, ToastTipo tipo, int ms, ToastPos pos)
@@ -77,93 +77,139 @@ namespace NAVIGEST.macOS
                 if (rootGrid == null) return;
 
                 var overlay = GetOrCreateOverlay(rootGrid);
-                CleanupOldToasts(overlay);
+                overlay.Children.Clear(); // Clear old toasts for clean look
 
                 var theme = Application.Current?.RequestedTheme ?? AppTheme.Light;
-                var (bg, borderColor, textColor, iconCode) = GetColorsAndIcon(tipo, theme);
+                var (bg, accentColor, textColor, iconCode) = GetColorsAndIcon(tipo, theme);
 
+                // --- PREMIUM UI CONSTRUCTION ---
+                
+                var toastBorder = new Border
+                {
+                    StrokeShape = new RoundRectangle { CornerRadius = 18 },
+                    StrokeThickness = 2,
+                    Stroke = accentColor,
+                    BackgroundColor = bg,
+                    Padding = new Thickness(20, 16),
+                    HorizontalOptions = LayoutOptions.Center,
+                    VerticalOptions = pos == ToastPos.Top ? LayoutOptions.Start : (pos == ToastPos.Center ? LayoutOptions.Center : LayoutOptions.End),
+                    Margin = new Thickness(20, pos == ToastPos.Top ? 60 : 20, 20, pos == ToastPos.Bottom ? 40 : 20),
+                    Opacity = 0,
+                    TranslationY = pos == ToastPos.Top ? -50 : 50, // Start offset for animation
+                    WidthRequest = DeviceInfo.Idiom == DeviceIdiom.Phone ? MaxWidthPhone : MaxWidthLarge,
+                    Shadow = new Shadow
+                    {
+                        Brush = Brush.Black,
+                        Opacity = 0.25f,
+                        Radius = 12,
+                        Offset = new Point(0, 6)
+                    },
+                    InputTransparent = false // Ensure the toast itself is interactive (for close button)
+                };
+
+                var grid = new Grid
+                {
+                    ColumnDefinitions = new ColumnDefinitionCollection
+                    {
+                        new ColumnDefinition { Width = GridLength.Auto }, // Icon
+                        new ColumnDefinition { Width = GridLength.Star }, // Message
+                        new ColumnDefinition { Width = GridLength.Auto }  // Close
+                    },
+                    ColumnSpacing = 16
+                };
+
+                // 1. Icon Container (Circle background)
+                var iconContainer = new Border
+                {
+                    StrokeShape = new RoundRectangle { CornerRadius = 24 },
+                    StrokeThickness = 0,
+                    BackgroundColor = accentColor.WithAlpha(0.15f),
+                    HeightRequest = 48,
+                    WidthRequest = 48,
+                    VerticalOptions = LayoutOptions.Center
+                };
+                
                 var iconLabel = new Label
                 {
                     Text = iconCode,
                     FontFamily = "FA7Solid",
-                    FontSize = 24, // ligeiro aumento para destaque centrado
-                    TextColor = borderColor,
-                    HorizontalOptions = LayoutOptions.Center,
-                    VerticalOptions = LayoutOptions.Center,
-                    Margin = new Thickness(0, 0, 0, 4)
-                };
-
-                var textLabel = new Label
-                {
-                    Text = mensagem,
-                    TextColor = textColor,
-                    FontSize = 15,
-                    LineBreakMode = LineBreakMode.WordWrap,
-                    HorizontalTextAlignment = TextAlignment.Center,
+                    FontSize = 24,
+                    TextColor = accentColor,
                     HorizontalOptions = LayoutOptions.Center,
                     VerticalOptions = LayoutOptions.Center
                 };
+                iconContainer.Content = iconLabel;
 
-                // Conteúdo agora empilhado verticalmente e centrado
-                var content = new VerticalStackLayout
+                // 2. Message
+                var msgLabel = new Label
                 {
-                    Spacing = 6,
-                    HorizontalOptions = LayoutOptions.Center,
+                    Text = mensagem,
+                    TextColor = textColor,
+                    FontSize = 16,
+                    FontAttributes = FontAttributes.Bold,
                     VerticalOptions = LayoutOptions.Center,
-                    Children = { iconLabel, textLabel }
+                    LineBreakMode = LineBreakMode.WordWrap
                 };
 
-                var toast = new Border
+                // 3. Close Button
+                var closeBtn = new Label
                 {
-                    Stroke = borderColor,
-                    StrokeThickness = 2,
-                    Background = new SolidColorBrush(bg),
-                    StrokeShape = new RoundRectangle { CornerRadius = 18 },
-                    Padding = new Thickness(18, 20),
-                    Opacity = 0,
-                    Content = content,
-                    HorizontalOptions = LayoutOptions.Center,
-                    InputTransparent = true,
-                    AutomationId = "__toast_item",
-                    Shadow = new Shadow { Radius = 12, Opacity = (theme == AppTheme.Dark ? 0.5f : 0.25f) }
+                    Text = "✕",
+                    TextColor = textColor.WithAlpha(0.5f),
+                    FontSize = 16,
+                    VerticalOptions = LayoutOptions.Center,
+                    HorizontalOptions = LayoutOptions.End,
+                    Padding = new Thickness(4) // Hit target
                 };
+                var closeTap = new TapGestureRecognizer();
+                closeBtn.GestureRecognizers.Add(closeTap);
 
-                double availableWidth = rootGrid.Width > 0 ? rootGrid.Width :
-                                        cp.Width > 0 ? cp.Width :
-                                        Application.Current?.Windows?.FirstOrDefault()?.Page?.Width ?? 400;
+                grid.Add(iconContainer, 0, 0);
+                grid.Add(msgLabel, 1, 0);
+                grid.Add(closeBtn, 2, 0);
 
-                toast.WidthRequest = GetResponsiveWidth(availableWidth);
+                toastBorder.Content = grid;
+                overlay.Add(toastBorder);
 
-                int row = pos switch
+                // --- ANIMATION ---
+                
+                // Slide In & Fade In
+                await Task.WhenAll(
+                    toastBorder.FadeTo(1, 250, Easing.CubicOut),
+                    toastBorder.TranslateTo(0, 0, 250, Easing.CubicOut)
+                );
+
+                // Wait or Close
+                var tcs = new TaskCompletionSource<bool>();
+                using var cts = new CancellationTokenSource();
+                
+                // Auto dismiss timer
+                var timerTask = Task.Delay(ms, cts.Token);
+                
+                // Manual dismiss
+                closeTap.Tapped += (s, e) => tcs.TrySetResult(true);
+
+                var completedTask = await Task.WhenAny(timerTask, tcs.Task);
+
+                if (completedTask == tcs.Task)
                 {
-                    ToastPos.Top => 0,
-                    ToastPos.Center => 1,
-                    _ => 2
-                };
-                Grid.SetRow(toast, row);
+                    cts.Cancel(); // Cancel timer if manually closed
+                }
 
-                var (safeTop, safeBottom) = GetSafeOffsets();
-                toast.Margin = row switch
+                // Slide Out & Fade Out
+                await Task.WhenAll(
+                    toastBorder.FadeTo(0, 200, Easing.CubicIn),
+                    toastBorder.TranslateTo(0, pos == ToastPos.Top ? -20 : 20, 200, Easing.CubicIn)
+                );
+
+                overlay.Children.Remove(toastBorder);
+                
+                // Cleanup overlay if empty to ensure no Z-Index blocking issues
+                if (overlay.Children.Count == 0)
                 {
-                    0 => new Thickness(0, 24 + safeTop, 0, 0),
-                    2 => new Thickness(0, 0, 0, 24 + safeBottom),
-                    _ => new Thickness(0)
-                };
-
-                overlay.ZIndex = 9999;
-                toast.ZIndex   = 10000;
-
-                overlay.Children.Add(toast);
-
-                const double slide = 30;
-                toast.TranslationY = row == 0 ? -slide : (row == 2 ? slide : 0);
-                await toast.FadeTo(1, 160, Easing.CubicOut);
-                await toast.TranslateTo(toast.TranslationX, 0, 180, Easing.CubicOut);
-
-                try { await Task.Delay(ms); } catch { }
-
-                await toast.FadeTo(0, 160, Easing.CubicIn);
-                overlay.Children.Remove(toast);
+                    var parent = overlay.Parent as Grid;
+                    parent?.Children.Remove(overlay);
+                }
             });
         }
 
@@ -215,7 +261,8 @@ namespace NAVIGEST.macOS
             var overlay = new Grid
             {
                 AutomationId = "__toast_overlay_grid",
-                InputTransparent = true,
+                InputTransparent = true, // Allow clicks to pass through empty areas
+                CascadeInputTransparent = false, // IMPORTANT: Allow children (toasts) to be interactive
                 HorizontalOptions = LayoutOptions.Fill,
                 VerticalOptions = LayoutOptions.Fill
             };
@@ -239,27 +286,21 @@ namespace NAVIGEST.macOS
             catch { }
         }
 
-        private static (Color BG, Color Border, Color Text, string IconCode)
-            GetColorsAndIcon(ToastTipo tipo, AppTheme theme)
+        private static (Color bg, Color accent, Color text, string icon) GetColorsAndIcon(ToastTipo tipo, AppTheme theme)
         {
-            Color border = tipo switch
+            bool isDark = theme == AppTheme.Dark;
+            
+            // Background: White vs Dark Grey
+            Color bg = isDark ? Color.FromArgb("#2C2C2E") : Colors.White;
+            Color text = isDark ? Colors.White : Color.FromArgb("#1C1C1E");
+
+            return tipo switch
             {
-                ToastTipo.Erro    => Color.FromArgb("#EF4444"),
-                ToastTipo.Sucesso => Color.FromArgb("#22C55E"),
-                ToastTipo.Aviso   => (AvisoHue == WarningHue.Yellow ? Color.FromArgb("#FACC15") : Color.FromArgb("#F59E0B")),
-                _                 => Color.FromArgb("#2563EB"),
+                ToastTipo.Sucesso => (bg, Color.FromArgb("#34C759"), text, "\uf00c"), // Check
+                ToastTipo.Erro    => (bg, Color.FromArgb("#FF3B30"), text, "\uf00d"), // X
+                ToastTipo.Aviso   => (bg, Color.FromArgb("#FF9500"), text, "\uf12a"), // !
+                _                 => (bg, Color.FromArgb("#0A84FF"), text, "\uf05a")  // i
             };
-            float alpha = (theme == AppTheme.Dark) ? 0.45f : 0.55f;
-            Color bg = border.WithAlpha(alpha);
-            Color text = (theme == AppTheme.Dark) ? Colors.White : Colors.Black;
-            string icon = tipo switch
-            {
-                ToastTipo.Erro    => "\uf057",
-                ToastTipo.Sucesso => "\uf058",
-                ToastTipo.Aviso   => "\uf071",
-                _                 => "\uf05a"
-            };
-            return (bg, border, text, icon);
         }
     }
 }

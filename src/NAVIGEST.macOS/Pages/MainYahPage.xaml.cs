@@ -183,19 +183,42 @@ namespace NAVIGEST.macOS.Pages
             {
                 var app = (App?)Application.Current;
                 var theme = Application.Current?.UserAppTheme;
-                var pickerObj = this.FindByName("ThemeModePicker");
-                if (pickerObj is Picker picker && !_initThemePicker)
+
+                // --- DESKTOP BUTTONS ---
+                var btnAuto = this.FindByName("ThemeBtnAuto") as Border;
+                var btnLight = this.FindByName("ThemeBtnLight") as Border;
+                var btnDark = this.FindByName("ThemeBtnDark") as Border;
+
+                if (btnAuto != null && btnLight != null && btnDark != null)
                 {
-                    _initThemePicker = true;
-                    if (app?.IsAutoTheme == true) picker.SelectedIndex = 0; else if (theme == AppTheme.Light) picker.SelectedIndex = 1; else picker.SelectedIndex = 2;
+                    // Cores
+                    var activeColor = Color.FromArgb("#FF9500"); // Orange
+                    var inactiveColor = Colors.Transparent; // Ou SidebarItem se acessível via código, mas Transparent funciona bem no sidebar
+                    
+                    // Estados
+                    bool isAuto = app?.IsAutoTheme == true;
+                    bool isLight = !isAuto && theme == AppTheme.Light;
+                    bool isDark = !isAuto && theme == AppTheme.Dark;
+
+                    btnAuto.BackgroundColor = isAuto ? activeColor : inactiveColor;
+                    btnLight.BackgroundColor = isLight ? activeColor : inactiveColor;
+                    btnDark.BackgroundColor = isDark ? activeColor : inactiveColor;
+                    
+                    // Ajustar cor do ícone para contraste se ativo
+                    if (btnAuto.Content is Label lA) lA.TextColor = isAuto ? Colors.White : (Color)Application.Current.Resources["SidebarAccent"];
+                    if (btnLight.Content is Label lL) lL.TextColor = isLight ? Colors.White : (Color)Application.Current.Resources["SidebarAccent"];
+                    if (btnDark.Content is Label lD) lD.TextColor = isDark ? Colors.White : (Color)Application.Current.Resources["SidebarAccent"];
                 }
+
+                // Ícone Geral
                 var iconObj = this.FindByName("ThemeModeIcon");
                 if (iconObj is Label icon)
                 {
                     string glyph = app?.IsAutoTheme == true ? "\uf042" : (theme == AppTheme.Dark ? "\uf185" : "\uf186");
                     icon.Text = glyph;
                 }
-                // Atualiza picker e ícone do tema no sidebar overlay mobile
+
+                // --- MOBILE PICKER ---
                 var pickerMobile = this.FindByName("ThemeModePickerMobile") as Picker;
                 if (pickerMobile != null)
                 {
@@ -213,22 +236,51 @@ namespace NAVIGEST.macOS.Pages
             catch { }
         }
 
-        private void OnThemeModeChanged(object sender, EventArgs e)
+        private void OnThemeButtonTapped(object sender, EventArgs e)
         {
-            var pickerObj = this.FindByName("ThemeModePicker");
-            if (pickerObj is not Picker picker) return;
             try
             {
-                var app = (App)Application.Current;
-                switch (picker.SelectedIndex)
+                string? mode = null;
+
+                // 1. Try TappedEventArgs
+                if (e is TappedEventArgs tappedArgs && tappedArgs.Parameter is string p)
                 {
-                    case 0: app.EnableAutoTheme(); break;
-                    case 1: app.DisableAutoTheme(); app.SetTheme(AppTheme.Light); break;
-                    case 2: app.DisableAutoTheme(); app.SetTheme(AppTheme.Dark); break;
+                    mode = p;
                 }
-                SyncThemeVisual();
+                // 2. Fallback: Check GestureRecognizers on sender
+                else if (sender is View v)
+                {
+                    foreach (var g in v.GestureRecognizers)
+                    {
+                        if (g is TapGestureRecognizer tap && tap.CommandParameter is string cmdParam)
+                        {
+                            mode = cmdParam;
+                            break;
+                        }
+                    }
+                }
+
+                if (mode != null)
+                {
+                    var app = (App)Application.Current;
+                    if (app != null)
+                    {
+                        switch (mode)
+                        {
+                            case "Auto": app.EnableAutoTheme(); break;
+                            case "Light": app.DisableAutoTheme(); app.SetTheme(AppTheme.Light); break;
+                            case "Dark": app.DisableAutoTheme(); app.SetTheme(AppTheme.Dark); break;
+                        }
+                        SyncThemeVisual();
+                    }
+                }
             }
             catch (Exception ex) { TratarErro(ex); }
+        }
+
+        private void OnThemeModeChanged(object sender, EventArgs e)
+        {
+            // Mantido apenas se houver referências legadas, mas o Desktop agora usa OnThemeButtonTapped
         }
 
         private void OnThemeModeChangedMobile(object sender, EventArgs e)

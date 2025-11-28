@@ -167,7 +167,7 @@
                                         StrokeShape="RoundRectangle 8"
                                         Padding="12"
                                         Margin="0,0,0,8">
-                                    <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                                    <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
                                         <!-- Row 0: Collaborator Name (Visible if showing all) -->
                                         <Label Grid.Row="0" Grid.Column="0"
                                                Text="{Binding NomeColaborador}"
@@ -201,14 +201,30 @@
 
                                         <!-- Edit Button -->
                                         <Button Grid.Row="0" Grid.RowSpan="2" Grid.Column="2"
-                                                Text="✎"
-                                                FontSize="32"
-                                                BackgroundColor="Transparent"
-                                                TextColor="{DynamicResource AppAccent}"
+                                                Text="&#xf044;"
+                                                FontFamily="FA7Solid"
+                                                FontSize="18"
+                                                BackgroundColor="#190A84FF"
+                                                TextColor="#0A84FF"
+                                                CornerRadius="8"
                                                 Clicked="OnOverlayEditClicked"
                                                 CommandParameter="{Binding .}"
-                                                WidthRequest="40"
-                                                HeightRequest="40"
+                                                WidthRequest="44"
+                                                HeightRequest="44"
+                                                Padding="0"/>
+
+                                        <!-- Delete Button -->
+                                        <Button Grid.Row="0" Grid.RowSpan="2" Grid.Column="3"
+                                                Text="&#xf2ed;"
+                                                FontFamily="FA7Solid"
+                                                FontSize="18"
+                                                BackgroundColor="#19FF3B30"
+                                                TextColor="#FF3B30"
+                                                CornerRadius="8"
+                                                Clicked="OnOverlayDeleteClicked"
+                                                CommandParameter="{Binding .}"
+                                                WidthRequest="44"
+                                                HeightRequest="44"
                                                 Padding="0"/>
                                     </Grid>
                                 </Border>
@@ -389,6 +405,7 @@
                                 HeightRequest="44"/>
                         
                         <Button Grid.Column="3"
+                                x:Name="EditOverlaySaveButton"
                                 Text="Guardar" 
                                 BackgroundColor="#0A84FF" 
                                 TextColor="White" 

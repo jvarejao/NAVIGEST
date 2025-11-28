@@ -21,9 +21,13 @@ public partial class HoursEntryPage : ContentPage
     
     private DateTime _dataCalendario = DateTime.Today;
     private DateTime _overlayDate;
+    
+    // Filter State
+    private int _selectedYear = DateTime.Today.Year;
+    private int _selectedMonth = DateTime.Today.Month;
 
     // Edit Overlay State
-    private HoraColaborador _currentEditingHora;
+    private HoraColaborador? _currentEditingHora;
     private bool _isEditMode;
     private List<Cliente> _clientes = new();
     private List<AbsenceType> _absenceTypes = new();
@@ -184,19 +188,24 @@ public partial class HoursEntryPage : ContentPage
     {
         var mainGrid = new Grid 
         { 
-            RowDefinitions = new RowDefinitionCollection { new(GridLength.Auto), new(GridLength.Auto), new(GridLength.Star) },
+            RowDefinitions = new RowDefinitionCollection 
+            { 
+                new(GridLength.Auto), // Buttons
+                new(GridLength.Auto), // Colab Picker
+                new(GridLength.Auto), // Date Selector
+                new(GridLength.Star)  // List
+            },
             RowSpacing = 12,
             Padding = 16
         };
         
-        // Botões de Ação
+        // 1. Botões de Ação
         var buttonsGrid = new Grid
         {
             ColumnDefinitions = new ColumnDefinitionCollection { new(GridLength.Star), new(GridLength.Star) },
             ColumnSpacing = 8
         };
 
-        // Botão Adicionar
         var btnAdicionar = new Button
         {
             Text = "➕ Horas",
@@ -208,7 +217,6 @@ public partial class HoursEntryPage : ContentPage
         };
         btnAdicionar.Clicked += async (s, e) => await AbrirNovaHoraPopupAsync(null);
         
-        // Botão Gerir Tipos
         var btnTipos = new Button
         {
             Text = "⚙️ Tipos Ausência",
@@ -224,16 +232,7 @@ public partial class HoursEntryPage : ContentPage
         
         mainGrid.Add(buttonsGrid, 0, 0);
         
-        // Filtros
-        var filtrosStack = new VerticalStackLayout { Spacing = 12 };
-        
-        var filtrosGrid = new Grid 
-        { 
-            ColumnDefinitions = new ColumnDefinitionCollection { new(GridLength.Star), new(GridLength.Star) },
-            ColumnSpacing = 8
-        };
-        
-        // Picker Colaborador
+        // 2. Picker Colaborador
         var colabPicker = new Picker
         {
             Title = "Colaborador",
@@ -251,24 +250,12 @@ public partial class HoursEntryPage : ContentPage
                 _ = _vm.CarregarHorasCommand.ExecuteAsync(null);
             }
         };
-        filtrosGrid.Add(colabPicker, 0, 0);
+        mainGrid.Add(colabPicker, 0, 1);
+
+        // 3. Seletor de Data (Ano + Meses)
+        mainGrid.Add(CriarSeletorData(), 0, 2);
         
-        // Botão Período (ActionSheet)
-        var btnPeriodo = new Button
-        {
-            Text = "📅 Período",
-            BackgroundColor = Application.Current?.RequestedTheme == AppTheme.Dark ? Color.FromArgb("#2C2C2E") : Color.FromArgb("#F5F5F7"),
-            TextColor = Color.FromArgb("#0A84FF"),
-            CornerRadius = 8,
-            FontSize = 14
-        };
-        btnPeriodo.Clicked += async (s, e) => await MostrarMenuPeriodoAsync();
-        filtrosGrid.Add(btnPeriodo, 1, 0);
-        
-        filtrosStack.Add(filtrosGrid);
-        mainGrid.Add(filtrosStack, 0, 1);
-        
-        // Lista de Horas
+        // 4. Lista de Horas
         var listaCollection = new CollectionView
         {
             ItemsSource = _vm.HorasList,
@@ -285,7 +272,10 @@ public partial class HoursEntryPage : ContentPage
         emptyView.Add(new Label { Text = "Sem registos neste período", FontSize = 16, TextColor = Color.FromArgb("#8E8E93"), HorizontalTextAlignment = TextAlignment.Center });
         listaCollection.EmptyView = emptyView;
         
-        mainGrid.Add(listaCollection, 0, 2);
+        mainGrid.Add(listaCollection, 0, 3);
+        
+        // Trigger initial load
+        MainThread.BeginInvokeOnMainThread(async () => await AtualizarFiltroListaAsync());
         
         return mainGrid;
     }
@@ -437,7 +427,7 @@ public partial class HoursEntryPage : ContentPage
                 HorasExtras = 0,
                 IdColaborador = _vm.ColaboradorSelecionado?.ID ?? 0
             };
-            _isEditMode = hora != null;
+            _isEditMode = hora != null && hora.Id > 0;
 
             // Load data if needed
             if (_vm.Colaboradores.Count == 0)
@@ -477,6 +467,7 @@ public partial class HoursEntryPage : ContentPage
             // Setup UI
             EditOverlayTitleLabel.Text = _isEditMode ? "✏️ EDITAR REGISTO" : "➕ NOVO REGISTO";
             EditOverlayDeleteButton.IsVisible = _isEditMode;
+            EditOverlaySaveButton.Text = _isEditMode ? "Atualizar" : "Guardar";
             
             EditOverlayDatePicker.Date = _currentEditingHora.DataTrabalho;
             EditOverlayHoursEntry.Text = _currentEditingHora.HorasTrab > 0 ? _currentEditingHora.HorasTrab.ToString("0.00") : "";
@@ -551,6 +542,8 @@ public partial class HoursEntryPage : ContentPage
     private async void OnEditOverlaySaveClicked(object sender, EventArgs e)
     {
         Console.WriteLine("DEBUG: OnEditOverlaySaveClicked called");
+        if (_currentEditingHora == null) return;
+
         try
         {
             if (_selectedCollaborator == null)
@@ -568,6 +561,7 @@ public partial class HoursEntryPage : ContentPage
                 }
                 
                 _currentEditingHora.IdCentroCusto = _selectedAbsenceType.Id;
+                _currentEditingHora.DescCentroCusto = _selectedAbsenceType.Description;
                 _currentEditingHora.IdCliente = "";
                 _currentEditingHora.HorasTrab = 0;
                 _currentEditingHora.HorasExtras = 0;
@@ -619,31 +613,24 @@ public partial class HoursEntryPage : ContentPage
     private async void OnEditOverlayDeleteClicked(object sender, EventArgs e)
     {
         Console.WriteLine("DEBUG: OnEditOverlayDeleteClicked called");
-        try
+        
+        if (_currentEditingHora == null) return;
+
+        // Use the ViewModel command as requested, to match the behavior of the List button.
+        // The Command handles the confirmation dialog and the deletion from the DB and List.
+        await _vm.EliminarHoraCommand.ExecuteAsync(_currentEditingHora);
+
+        // If the item was successfully removed from the list, close the overlay.
+        // If the user cancelled, the item will still be in the list.
+        if (!_vm.HorasList.Contains(_currentEditingHora))
         {
-            bool confirm = await DisplayAlert("Confirmar", "Tem a certeza que deseja eliminar este registo?", "Sim", "Não");
-            if (confirm)
+            EditHourOverlay.IsVisible = false;
+            
+            // Force Calendar Refresh
+            if (_vm.TabAtiva == 3) 
             {
-                // Call Service directly to avoid double confirmation from ViewModel
-                await DatabaseService.DeleteHoraColaboradorAsync(_currentEditingHora.Id);
-                
-                EditHourOverlay.IsVisible = false;
-                await AppShell.DisplayToastAsync("Registo eliminado com sucesso!");
-                
-                // Refresh
-                await _vm.CarregarHorasCommand.ExecuteAsync(null);
-                
-                // Force Calendar Refresh
-                if (_vm.TabAtiva == 3) 
-                {
-                    MainThread.BeginInvokeOnMainThread(() => CarregarTab3Calendario());
-                }
+                MainThread.BeginInvokeOnMainThread(() => CarregarTab3Calendario());
             }
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Erro ao eliminar: {ex.Message}");
-            await DisplayAlert("Erro", $"Erro ao eliminar: {ex.Message}", "OK");
         }
     }
 
@@ -1159,6 +1146,7 @@ public partial class HoursEntryPage : ContentPage
                     {
                         BackgroundColor = Colors.Transparent, 
                         BorderColor = Colors.Transparent,
+                        BorderWidth = 0,
                         CornerRadius = 0,
                         ZIndex = 100,
                         Margin = 0,
@@ -1246,6 +1234,38 @@ public partial class HoursEntryPage : ContentPage
         }
     }
 
+    private async void OnOverlayDeleteClicked(object sender, EventArgs e)
+    {
+        if (sender is Button btn && btn.CommandParameter is HoraColaborador hora)
+        {
+            await _vm.EliminarHoraCommand.ExecuteAsync(hora);
+
+            if (!_vm.HorasList.Contains(hora))
+            {
+                var updatedList = _vm.HorasList.Where(h => h.DataTrabalho.Date == _overlayDate.Date).ToList();
+                
+                if (updatedList.Any())
+                {
+                    OverlayEntriesCollectionView.ItemsSource = updatedList;
+                    
+                    double totalNormal = updatedList.Sum(h => h.HorasTrab);
+                    double totalExtra = updatedList.Sum(h => h.HorasExtras);
+                    double total = totalNormal + totalExtra;
+                    OverlayTotalHoursLabel.Text = $"Total: {total:0.00}h ({totalNormal:0.00}h + {totalExtra:0.00}h extra)";
+                }
+                else
+                {
+                    DailySummaryOverlay.IsVisible = false;
+                }
+                
+                if (_vm.TabAtiva == 3) 
+                {
+                    MainThread.BeginInvokeOnMainThread(() => CarregarTab3Calendario());
+                }
+            }
+        }
+    }
+
     private string GetAbsenceIcon(string? description, string? clientName)
     {
         if (string.IsNullOrEmpty(description)) return string.Empty;
@@ -1259,5 +1279,101 @@ public partial class HoursEntryPage : ContentPage
         if (desc.Contains("outros")) return "⚠️";
 
         return string.Empty;
+    }
+
+    private List<Button> _monthButtons = new();
+
+    private async Task AtualizarFiltroListaAsync()
+    {
+        var inicio = new DateTime(_selectedYear, _selectedMonth, 1);
+        var fim = inicio.AddMonths(1).AddDays(-1);
+        
+        _vm.DataFiltroInicio = inicio;
+        _vm.DataFiltroFim = fim;
+        
+        await _vm.CarregarHorasCommand.ExecuteAsync(null);
+        AtualizarEstiloBotoesMes();
+    }
+
+    private void AtualizarEstiloBotoesMes()
+    {
+        for (int i = 0; i < _monthButtons.Count; i++)
+        {
+            var btn = _monthButtons[i];
+            bool isSelected = (i + 1) == _selectedMonth;
+            
+            btn.BackgroundColor = isSelected ? Color.FromArgb("#0A84FF") : Colors.Transparent;
+            btn.TextColor = isSelected ? Colors.White : (Application.Current?.RequestedTheme == AppTheme.Dark ? Colors.White : Colors.Black);
+        }
+    }
+
+    private View CriarSeletorData()
+    {
+        var container = new Grid
+        {
+            ColumnDefinitions = new ColumnDefinitionCollection { new(GridLength.Auto), new(GridLength.Star) },
+            ColumnSpacing = 12,
+            HeightRequest = 44
+        };
+
+        // Year Selector
+        var yearGrid = new Grid
+        {
+            ColumnDefinitions = new ColumnDefinitionCollection { new(GridLength.Auto), new(GridLength.Auto), new(GridLength.Auto) },
+            ColumnSpacing = 4,
+            VerticalOptions = LayoutOptions.Center
+        };
+
+        var lblYear = new Label { Text = _selectedYear.ToString(), FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center, FontSize = 16 };
+        lblYear.SetAppThemeColor(Label.TextColorProperty, Colors.Black, Colors.White);
+
+        var btnPrevYear = new Button { Text = "◀", BackgroundColor = Colors.Transparent, TextColor = Color.FromArgb("#0A84FF"), Padding = 0, WidthRequest = 30 };
+        btnPrevYear.Clicked += async (s, e) => { _selectedYear--; lblYear.Text = _selectedYear.ToString(); await AtualizarFiltroListaAsync(); };
+
+        var btnNextYear = new Button { Text = "▶", BackgroundColor = Colors.Transparent, TextColor = Color.FromArgb("#0A84FF"), Padding = 0, WidthRequest = 30 };
+        btnNextYear.Clicked += async (s, e) => { _selectedYear++; lblYear.Text = _selectedYear.ToString(); await AtualizarFiltroListaAsync(); };
+
+        yearGrid.Add(btnPrevYear, 0, 0);
+        yearGrid.Add(lblYear, 1, 0);
+        yearGrid.Add(btnNextYear, 2, 0);
+
+        container.Add(yearGrid, 0, 0);
+
+        // Month Selector
+        var scroll = new ScrollView { Orientation = ScrollOrientation.Horizontal, HorizontalScrollBarVisibility = ScrollBarVisibility.Never };
+        var stack = new HorizontalStackLayout { Spacing = 8 };
+        
+        _monthButtons.Clear();
+        string[] months = { "JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ" };
+        
+        for (int i = 0; i < 12; i++)
+        {
+            int monthIndex = i + 1;
+            var btn = new Button
+            {
+                Text = months[i],
+                FontSize = 12,
+                CornerRadius = 8,
+                Padding = new Thickness(12, 0),
+                HeightRequest = 36,
+                MinimumWidthRequest = 60
+            };
+            
+            btn.Clicked += async (s, e) => 
+            {
+                _selectedMonth = monthIndex;
+                await AtualizarFiltroListaAsync();
+            };
+            
+            _monthButtons.Add(btn);
+            stack.Add(btn);
+        }
+        
+        AtualizarEstiloBotoesMes();
+        
+        scroll.Content = stack;
+        container.Add(scroll, 1, 0);
+
+        return container;
     }
 }
