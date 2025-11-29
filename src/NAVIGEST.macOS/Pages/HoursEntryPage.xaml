@@ -129,7 +129,7 @@
                                    FontSize="18"
                                    FontAttributes="Bold"
                                    HorizontalOptions="Center"
-                                   TextColor="{DynamicResource BodyTextColor}"/>
+                                   TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
                             <Label x:Name="OverlayWeekendLabel"
                                    Text="🎉 Fim de Semana"
                                    FontSize="12"
@@ -140,7 +140,7 @@
                                    Text="Total: 8h"
                                    FontSize="14"
                                    HorizontalOptions="Center"
-                                   TextColor="{DynamicResource BodyTextColor}"/>
+                                   TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
                         </VerticalStackLayout>
                         
                         <!-- Add Button -->
@@ -163,7 +163,7 @@
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="models:HoraColaborador">
                                 <Border StrokeThickness="0"
-                                        BackgroundColor="{DynamicResource PageBackgroundColor}"
+                                        BackgroundColor="{AppThemeBinding Light=White, Dark=#1C1C1E}"
                                         StrokeShape="RoundRectangle 8"
                                         Padding="12"
                                         Margin="0,0,0,8">
@@ -192,12 +192,12 @@
                                         
                                         <!-- Row 1: Client -->
                                         <Label Grid.Row="1" Grid.Column="0"
-                                               Text="{Binding ClienteInfo}"
+                                               Text="{Binding DisplayInfo}"
                                                FontAttributes="Bold"
                                                FontSize="14"
                                                LineBreakMode="TailTruncation"
                                                VerticalOptions="Center"
-                                               TextColor="{DynamicResource BodyTextColor}"/>
+                                               TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
 
                                         <!-- Edit Button -->
                                         <Button Grid.Row="0" Grid.RowSpan="2" Grid.Column="2"
@@ -444,7 +444,7 @@
                     <Shadow Brush="Black" Opacity="0.25" Radius="12" Offset="0,4"/>
                 </Border.Shadow>
 
-                <Grid RowDefinitions="Auto,*,Auto" RowSpacing="15">
+                <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="15">
                     <Label x:Name="ListPickerTitleLabel"
                            Text="Selecione"
                            FontSize="18"
@@ -452,7 +452,34 @@
                            HorizontalOptions="Center"
                            TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
 
-                    <CollectionView Grid.Row="1" x:Name="ListPickerCollectionView" SelectionMode="None">
+                    <!-- Search Bar -->
+                    <Border Grid.Row="1" 
+                            StrokeShape="RoundRectangle 10" 
+                            BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
+                            StrokeThickness="0"
+                            Padding="8,0">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Entry x:Name="ListPickerSearchEntry"
+                                   Placeholder="Pesquisar..."
+                                   TextChanged="OnListPickerSearchTextChanged"
+                                   BackgroundColor="Transparent"
+                                   TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                                   HeightRequest="36"/>
+                            
+                            <Button Grid.Column="1"
+                                    x:Name="ListPickerClearButton"
+                                    Text="✕"
+                                    TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
+                                    BackgroundColor="Transparent"
+                                    Clicked="OnListPickerClearSearchClicked"
+                                    IsVisible="False"
+                                    WidthRequest="30"
+                                    HeightRequest="30"
+                                    Padding="0"/>
+                        </Grid>
+                    </Border>
+
+                    <CollectionView Grid.Row="2" x:Name="ListPickerCollectionView" SelectionMode="None">
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="x:String">
                                 <Border StrokeThickness="0" BackgroundColor="Transparent" Padding="12">
@@ -477,7 +504,7 @@
                         </CollectionView.ItemTemplate>
                     </CollectionView>
 
-                    <Button Grid.Row="2" 
+                    <Button Grid.Row="3" 
                             Text="Cancelar" 
                             TextColor="{AppThemeBinding Light=#0A84FF, Dark=#0A84FF}"
                             BackgroundColor="Transparent"

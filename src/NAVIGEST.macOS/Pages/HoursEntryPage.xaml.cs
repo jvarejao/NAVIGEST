@@ -39,6 +39,7 @@ public partial class HoursEntryPage : ContentPage
     // List Picker State
     private TaskCompletionSource<object?>? _pickerTcs;
     private bool _isPickerActive;
+    private List<string> _allItems = new();
 
     public static readonly BindableProperty ShowCollaboratorNameProperty =
         BindableProperty.Create(nameof(ShowCollaboratorName), typeof(bool), typeof(HoursEntryPage), false);
@@ -232,25 +233,62 @@ public partial class HoursEntryPage : ContentPage
         
         mainGrid.Add(buttonsGrid, 0, 0);
         
-        // 2. Picker Colaborador
-        var colabPicker = new Picker
+        // 2. Picker Colaborador (Custom)
+        var pickerContainer = new Border
         {
-            Title = "Colaborador",
-            ItemsSource = _vm.Colaboradores,
-            ItemDisplayBinding = new Binding("Nome"),
-            SelectedItem = _vm.ColaboradorSelecionado,
-            BackgroundColor = Application.Current?.RequestedTheme == AppTheme.Dark ? Color.FromArgb("#2C2C2E") : Color.FromArgb("#F5F5F7"),
+            Stroke = Color.FromArgb("#E5E5EA"),
+            StrokeThickness = 1,
+            StrokeShape = new RoundRectangle { CornerRadius = 8 },
+            Padding = new Thickness(12, 8),
+            HeightRequest = 44,
+            BackgroundColor = Application.Current?.RequestedTheme == AppTheme.Dark ? Color.FromArgb("#2C2C2E") : Color.FromArgb("#F5F5F7")
+        };
+        
+        var pickerGrid = new Grid
+        {
+            ColumnDefinitions = new ColumnDefinitionCollection { new(GridLength.Star), new(GridLength.Auto) }
+        };
+
+        var lblPicker = new Label
+        {
+            FontSize = 16,
+            VerticalTextAlignment = TextAlignment.Center,
             TextColor = Application.Current?.RequestedTheme == AppTheme.Dark ? Colors.White : Colors.Black
         };
-        colabPicker.SelectedIndexChanged += (s, e) =>
+        lblPicker.SetBinding(Label.TextProperty, new Binding("ColaboradorSelecionado.Nome", source: _vm) { TargetNullValue = "Selecione Colaborador" });
+
+        var iconPicker = new Label
         {
-            if (colabPicker.SelectedItem is Colaborador colab)
+            Text = "▼",
+            FontSize = 12,
+            TextColor = Color.FromArgb("#8E8E93"),
+            VerticalTextAlignment = TextAlignment.Center,
+            Margin = new Thickness(8, 0, 0, 0)
+        };
+
+        pickerGrid.Add(lblPicker, 0, 0);
+        pickerGrid.Add(iconPicker, 1, 0);
+        pickerContainer.Content = pickerGrid;
+
+        var tapPicker = new TapGestureRecognizer();
+        tapPicker.Tapped += async (s, e) => 
+        {
+            var names = _vm.Colaboradores.Select(c => c.Nome).ToList();
+            var result = await ShowListPickerAsync("Selecione Colaborador", names);
+            
+            if (result is string action)
             {
-                _vm.ColaboradorSelecionado = colab;
-                _ = _vm.CarregarHorasCommand.ExecuteAsync(null);
+                var selected = _vm.Colaboradores.FirstOrDefault(c => c.Nome == action);
+                if (selected != null)
+                {
+                    _vm.ColaboradorSelecionado = selected;
+                    _ = _vm.CarregarHorasCommand.ExecuteAsync(null);
+                }
             }
         };
-        mainGrid.Add(colabPicker, 0, 1);
+        pickerContainer.GestureRecognizers.Add(tapPicker);
+        
+        mainGrid.Add(pickerContainer, 0, 1);
 
         // 3. Seletor de Data (Ano + Meses)
         mainGrid.Add(CriarSeletorData(), 0, 2);
@@ -284,12 +322,12 @@ public partial class HoursEntryPage : ContentPage
     {
         var itemBorder = new Border
         {
-            BackgroundColor = Application.Current?.RequestedTheme == AppTheme.Dark ? Color.FromArgb("#1C1C1E") : Colors.White,
             StrokeThickness = 0,
             Padding = 16,
             Margin = new Thickness(0, 0, 0, 12),
             StrokeShape = new RoundRectangle { CornerRadius = 12 }
         };
+        itemBorder.SetAppThemeColor(Border.BackgroundColorProperty, Colors.White, Color.FromArgb("#1C1C1E"));
         
         var itemGrid = new Grid 
         { 
@@ -312,6 +350,7 @@ public partial class HoursEntryPage : ContentPage
         
         var lblData = new Label { FontSize = 16, FontAttributes = FontAttributes.Bold };
         lblData.SetBinding(Label.TextProperty, new Binding("DataTrabalho", stringFormat: "{0:dd/MM/yyyy - ddd}"));
+        lblData.SetAppThemeColor(Label.TextColorProperty, Colors.Black, Colors.White);
         infoStack.Add(lblData);
         
         var lblNome = new Label { FontSize = 14, TextColor = Color.FromArgb("#8E8E93") };
@@ -319,7 +358,7 @@ public partial class HoursEntryPage : ContentPage
         infoStack.Add(lblNome);
         
         var lblCliente = new Label { FontSize = 13, TextColor = Color.FromArgb("#8E8E93") };
-        lblCliente.SetBinding(Label.TextProperty, new Binding("Cliente", stringFormat: "🏢 {0}"));
+        lblCliente.SetBinding(Label.TextProperty, new Binding("DisplayInfo"));
         infoStack.Add(lblCliente);
         
         itemGrid.Add(infoStack, 0, 0);
@@ -696,12 +735,41 @@ public partial class HoursEntryPage : ContentPage
     private Task<object?> ShowListPickerAsync(string title, List<string> items)
     {
         _pickerTcs = new TaskCompletionSource<object?>();
+        _allItems = items; // Store original list
         
         ListPickerTitleLabel.Text = title;
         ListPickerCollectionView.ItemsSource = items;
+        
+        // Reset Search
+        ListPickerSearchEntry.Text = string.Empty;
+        ListPickerClearButton.IsVisible = false;
+        
         ListPickerOverlay.IsVisible = true;
         
         return _pickerTcs.Task;
+    }
+
+    private void OnListPickerSearchTextChanged(object sender, TextChangedEventArgs e)
+    {
+        var searchText = e.NewTextValue;
+        ListPickerClearButton.IsVisible = !string.IsNullOrEmpty(searchText);
+
+        if (string.IsNullOrWhiteSpace(searchText))
+        {
+            ListPickerCollectionView.ItemsSource = _allItems;
+        }
+        else
+        {
+            ListPickerCollectionView.ItemsSource = _allItems
+                .Where(i => i.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0)
+                .ToList();
+        }
+    }
+
+    private void OnListPickerClearSearchClicked(object sender, EventArgs e)
+    {
+        ListPickerSearchEntry.Text = string.Empty;
+        // TextChanged event will handle resetting the list
     }
 
     private void OnCloseListPickerClicked(object sender, EventArgs e)
@@ -1303,7 +1371,15 @@ public partial class HoursEntryPage : ContentPage
             bool isSelected = (i + 1) == _selectedMonth;
             
             btn.BackgroundColor = isSelected ? Color.FromArgb("#0A84FF") : Colors.Transparent;
-            btn.TextColor = isSelected ? Colors.White : (Application.Current?.RequestedTheme == AppTheme.Dark ? Colors.White : Colors.Black);
+            
+            if (isSelected)
+            {
+                btn.TextColor = Colors.White;
+            }
+            else
+            {
+                btn.SetAppThemeColor(Button.TextColorProperty, Colors.Black, Colors.White);
+            }
         }
     }
 
