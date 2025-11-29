@@ -100,6 +100,7 @@ public partial class NovaHoraPopup : Popup
             {
                 _absenceTypeSelecionado = absence;
                 AbsenceReasonLabel.Text = absence.Description;
+                AbsenceIconLabel.Text = absence.Icon;
                 isAbsence = true;
             }
         }
@@ -166,6 +167,7 @@ public partial class NovaHoraPopup : Popup
             {
                 _absenceTypeSelecionado = selected;
                 AbsenceReasonLabel.Text = selected.Description;
+                AbsenceIconLabel.Text = selected.Icon;
             }
         }
     }

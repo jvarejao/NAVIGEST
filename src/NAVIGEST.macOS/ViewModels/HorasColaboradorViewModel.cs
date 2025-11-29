@@ -64,6 +64,16 @@ public partial class HorasColaboradorViewModel : ObservableObject
         OnPropertyChanged(nameof(PeriodoSelecionado));
     }
 
+    public void DefinirPeriodo(DateTime inicio, DateTime fim)
+    {
+        _isInitializing = true;
+        DataFiltroInicio = inicio;
+        DataFiltroFim = fim;
+        _isInitializing = false;
+        CarregarHorasCommand.Execute(null);
+        OnPropertyChanged(nameof(PeriodoSelecionado));
+    }
+
     // Totais simples
     public string TotalHorasNormais => $"{HorasList.Sum(h => h.HorasTrab):0.00}h";
     public string TotalHorasExtra => $"{HorasList.Sum(h => h.HorasExtras):0.00}h";

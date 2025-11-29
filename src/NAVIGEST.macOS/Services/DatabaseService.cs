@@ -1376,14 +1376,17 @@ FROM OrderInfo";
                 using var conn = new MySqlConnection(GetConnectionString());
                 await conn.OpenAsync();
 
-                var sql = @"SELECT ID, DataTrabalho, IDColaborador, NomeColaborador, 
-                                   IDCliente, Cliente, IDCentroCusto, DescCentroCusto,
-                                   HorasTrab, HorasExtras, Observacoes
-                            FROM HORASTRABALHADAS 
-                            WHERE (@IDColaborador IS NULL OR IDColaborador = @IDColaborador)
-                              AND (@DataInicio IS NULL OR DataTrabalho >= @DataInicio)
-                              AND (@DataFim IS NULL OR DataTrabalho <= @DataFim)
-                            ORDER BY DataTrabalho DESC";
+                // Join with TIPOS_AUSENCIA to get the Icon
+                var sql = @"SELECT h.ID, h.DataTrabalho, h.IDColaborador, h.NomeColaborador, 
+                                   h.IDCliente, h.Cliente, h.IDCentroCusto, h.DescCentroCusto,
+                                   h.HorasTrab, h.HorasExtras, h.Observacoes,
+                                   t.Icon
+                            FROM HORASTRABALHADAS h
+                            LEFT JOIN TIPOS_AUSENCIA t ON h.IDCentroCusto = t.ID
+                            WHERE (@IDColaborador IS NULL OR h.IDColaborador = @IDColaborador)
+                              AND (@DataInicio IS NULL OR h.DataTrabalho >= @DataInicio)
+                              AND (@DataFim IS NULL OR h.DataTrabalho <= @DataFim)
+                            ORDER BY h.DataTrabalho DESC";
 
                 using var cmd = new MySqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@IDColaborador", idColaborador.HasValue ? idColaborador.Value : DBNull.Value);
@@ -1405,7 +1408,8 @@ FROM OrderInfo";
                         DescCentroCusto = rd.IsDBNull(7) ? null : rd.GetString(7),
                         HorasTrab = rd.GetFloat(8),
                         HorasExtras = rd.GetFloat(9),
-                        Observacoes = rd.IsDBNull(10) ? null : rd.GetString(10)
+                        Observacoes = rd.IsDBNull(10) ? null : rd.GetString(10),
+                        Icon = rd.IsDBNull(11) ? null : rd.GetString(11)
                     });
                 }
             }
@@ -1445,20 +1449,69 @@ FROM OrderInfo";
                 using var cmd = new MySqlCommand(@"
                     CREATE TABLE IF NOT EXISTS TIPOS_AUSENCIA (
                         ID INT AUTO_INCREMENT PRIMARY KEY,
-                        Descricao VARCHAR(100) NOT NULL
+                        Descricao VARCHAR(100) NOT NULL,
+                        Icon VARCHAR(20) DEFAULT '\uf073'
                     )", conn);
                 await cmd.ExecuteNonQueryAsync();
+
+                // Migration: Add Icon column if it doesn't exist
+                try 
+                {
+                    // Note: In SQL, backslash might be consumed. We use a parameter or hex if possible, 
+                    // but for simplicity here we just add the column. The default might end up as literal text if not careful.
+                    // We will fix the values below anyway.
+                    using var cmdAlter = new MySqlCommand("ALTER TABLE TIPOS_AUSENCIA ADD COLUMN Icon VARCHAR(20) DEFAULT '';", conn);
+                    await cmdAlter.ExecuteNonQueryAsync();
+                }
+                catch { /* Column likely exists */ }
+
+                // FIX: Corrigir ícones que ficaram como texto literal "uf073" ou vazios
+                try
+                {
+                    // 1. Fix known types based on description
+                    var updates = new[] 
+                    { 
+                        ("Férias", "\uf5ca"), 
+                        ("Doença", "\uf236"), 
+                        ("Feriado", "\uf79f"),
+                        ("Outro", "\uf073")
+                    };
+
+                    foreach (var (desc, icon) in updates)
+                    {
+                        using var cmdFix = new MySqlCommand("UPDATE TIPOS_AUSENCIA SET Icon = @icon WHERE Descricao = @desc AND (Icon IS NULL OR CHAR_LENGTH(Icon) > 1)", conn);
+                        cmdFix.Parameters.AddWithValue("@icon", icon);
+                        cmdFix.Parameters.AddWithValue("@desc", desc);
+                        await cmdFix.ExecuteNonQueryAsync();
+                    }
+
+                    // 2. Fix any remaining "uf073" literals to the actual calendar icon
+                    using var cmdGeneralFix = new MySqlCommand("UPDATE TIPOS_AUSENCIA SET Icon = @icon WHERE Icon LIKE '%uf073%' AND CHAR_LENGTH(Icon) > 1", conn);
+                    cmdGeneralFix.Parameters.AddWithValue("@icon", "\uf073");
+                    await cmdGeneralFix.ExecuteNonQueryAsync();
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Erro ao corrigir ícones: {ex.Message}");
+                }
 
                 // Inserir alguns tipos padrão se a tabela estiver vazia
                 using var cmdCount = new MySqlCommand("SELECT COUNT(*) FROM TIPOS_AUSENCIA", conn);
                 var count = Convert.ToInt32(await cmdCount.ExecuteScalarAsync());
                 if (count == 0)
                 {
-                    var defaults = new[] { "Férias", "Doença", "Feriado", "Outro" };
-                    foreach (var d in defaults)
+                    var defaults = new[] 
+                    { 
+                        ("Férias", "\uf5ca"), // plane-departure
+                        ("Doença", "\uf236"), // bed
+                        ("Feriado", "\uf79f"), // umbrella-beach
+                        ("Outro", "\uf073")   // calendar-alt
+                    };
+                    foreach (var (desc, icon) in defaults)
                     {
-                        using var cmdInsert = new MySqlCommand("INSERT INTO TIPOS_AUSENCIA (Descricao) VALUES (@desc)", conn);
-                        cmdInsert.Parameters.AddWithValue("@desc", d);
+                        using var cmdInsert = new MySqlCommand("INSERT INTO TIPOS_AUSENCIA (Descricao, Icon) VALUES (@desc, @icon)", conn);
+                        cmdInsert.Parameters.AddWithValue("@desc", desc);
+                        cmdInsert.Parameters.AddWithValue("@icon", icon);
                         await cmdInsert.ExecuteNonQueryAsync();
                     }
                 }
@@ -1476,14 +1529,15 @@ FROM OrderInfo";
             {
                 using var conn = new MySqlConnection(GetConnectionString());
                 await conn.OpenAsync();
-                using var cmd = new MySqlCommand("SELECT ID, Descricao FROM TIPOS_AUSENCIA ORDER BY Descricao", conn);
+                using var cmd = new MySqlCommand("SELECT ID, Descricao, Icon FROM TIPOS_AUSENCIA ORDER BY Descricao", conn);
                 using var reader = await cmd.ExecuteReaderAsync();
                 while (await reader.ReadAsync())
                 {
                     list.Add(new AbsenceType
                     {
                         Id = reader.GetInt32(0),
-                        Description = reader.GetString(1)
+                        Description = reader.GetString(1),
+                        Icon = reader.IsDBNull(2) ? "\uf073" : reader.GetString(2)
                     });
                 }
             }
@@ -1492,6 +1546,63 @@ FROM OrderInfo";
                 System.Diagnostics.Debug.WriteLine($"Erro ao obter tipos de ausência: {ex.Message}");
             }
             return list;
+        }
+
+        public static async Task<bool> AddAbsenceTypeAsync(string description, string icon)
+        {
+            try
+            {
+                using var conn = new MySqlConnection(GetConnectionString());
+                await conn.OpenAsync();
+                using var cmd = new MySqlCommand("INSERT INTO TIPOS_AUSENCIA (Descricao, Icon) VALUES (@desc, @icon)", conn);
+                cmd.Parameters.AddWithValue("@desc", description);
+                cmd.Parameters.AddWithValue("@icon", icon);
+                var rows = await cmd.ExecuteNonQueryAsync();
+                return rows > 0;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao adicionar tipo de ausência: {ex.Message}");
+                return false;
+            }
+        }
+
+        public static async Task<bool> DeleteAbsenceTypeAsync(int id)
+        {
+            try
+            {
+                using var conn = new MySqlConnection(GetConnectionString());
+                await conn.OpenAsync();
+                using var cmd = new MySqlCommand("DELETE FROM TIPOS_AUSENCIA WHERE ID = @id", conn);
+                cmd.Parameters.AddWithValue("@id", id);
+                var rows = await cmd.ExecuteNonQueryAsync();
+                return rows > 0;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao apagar tipo de ausência: {ex.Message}");
+                return false;
+            }
+        }
+
+        public static async Task<bool> UpdateAbsenceTypeAsync(AbsenceType type)
+        {
+            try
+            {
+                using var conn = new MySqlConnection(GetConnectionString());
+                await conn.OpenAsync();
+                using var cmd = new MySqlCommand("UPDATE TIPOS_AUSENCIA SET Descricao = @desc, Icon = @icon WHERE ID = @id", conn);
+                cmd.Parameters.AddWithValue("@desc", type.Description);
+                cmd.Parameters.AddWithValue("@icon", type.Icon);
+                cmd.Parameters.AddWithValue("@id", type.Id);
+                var rows = await cmd.ExecuteNonQueryAsync();
+                return rows > 0;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao atualizar tipo de ausência: {ex.Message}");
+                return false;
+            }
         }
 
         public static async Task<int> UpsertHoraColaboradorAsync(HoraColaborador hora)

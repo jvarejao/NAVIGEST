@@ -117,7 +117,8 @@ public partial class HoursEntryPage : ContentPage
     private void OnTab3Tapped(object sender, EventArgs e)
     {
         AtivarTab(3);
-        CarregarTab3Calendario();
+        _dataCalendario = new DateTime(_selectedYear, _selectedMonth, 1);
+        _ = AtualizarFiltroCalendarioAsync();
     }
 
     private void AtivarTab(int numeroTab)
@@ -226,6 +227,23 @@ public partial class HoursEntryPage : ContentPage
             FontAttributes = FontAttributes.Bold,
             CornerRadius = 12,
             Padding = 12
+        };
+        btnTipos.Clicked += async (s, e) => 
+        {
+            try
+            {
+                // Usar Shell.Current.Navigation para garantir o contexto correto
+                if (Shell.Current != null)
+                {
+                    await Shell.Current.Navigation.PushModalAsync(new NAVIGEST.macOS.Popups.GerirTiposAusenciaPopup());
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao abrir pagina: {ex}");
+                if (Shell.Current != null)
+                    await Shell.Current.DisplayAlert("Erro", $"Falha ao abrir gestão de tipos: {ex.Message}", "OK");
+            }
         };
 
         buttonsGrid.Add(btnAdicionar, 0, 0);
@@ -357,9 +375,28 @@ public partial class HoursEntryPage : ContentPage
         lblNome.SetBinding(Label.TextProperty, new Binding("NomeColaborador"));
         infoStack.Add(lblNome);
         
-        var lblCliente = new Label { FontSize = 13, TextColor = Color.FromArgb("#8E8E93") };
-        lblCliente.SetBinding(Label.TextProperty, new Binding("DisplayInfo"));
-        infoStack.Add(lblCliente);
+        var clientStack = new HorizontalStackLayout { Spacing = 6, VerticalOptions = LayoutOptions.Center };
+
+        var lblIcon = new Label 
+        { 
+            FontFamily = "FA7Solid",
+            FontSize = 14,
+            TextColor = Color.FromArgb("#FF2D55"),
+            VerticalTextAlignment = TextAlignment.Center
+        };
+        lblIcon.SetBinding(Label.TextProperty, new Binding("DisplayIcon"));
+        clientStack.Add(lblIcon);
+
+        var lblCliente = new Label 
+        { 
+            FontSize = 13, 
+            TextColor = Color.FromArgb("#8E8E93"),
+            VerticalTextAlignment = TextAlignment.Center
+        };
+        lblCliente.SetBinding(Label.TextProperty, new Binding("DisplayText"));
+        clientStack.Add(lblCliente);
+
+        infoStack.Add(clientStack);
         
         itemGrid.Add(infoStack, 0, 0);
         Grid.SetRowSpan(infoStack, 2);
@@ -1188,16 +1225,18 @@ public partial class HoursEntryPage : ContentPage
                     if (ausencias.Any())
                     {
                         var primeiraAusencia = ausencias.First();
-                        var icon = GetAbsenceIcon(primeiraAusencia.DescCentroCusto, primeiraAusencia.Cliente);
+                        var icon = primeiraAusencia.Icon; // Use the Icon from DB
                         
                         if (!string.IsNullOrEmpty(icon))
                         {
                             var lblAusencia = new Label 
                             { 
                                 Text = icon, 
-                                FontSize = 32, // Large icon
+                                FontFamily = "FA7Solid", // Use FontAwesome
+                                FontSize = 24, // Large icon
                                 HorizontalTextAlignment = TextAlignment.Center,
-                                InputTransparent = true
+                                InputTransparent = true,
+                                TextColor = Color.FromArgb("#FF2D55") // Red color for absences
                             };
                             contentStack.Add(lblAusencia);
                         }
@@ -1356,10 +1395,8 @@ public partial class HoursEntryPage : ContentPage
         var inicio = new DateTime(_selectedYear, _selectedMonth, 1);
         var fim = inicio.AddMonths(1).AddDays(-1);
         
-        _vm.DataFiltroInicio = inicio;
-        _vm.DataFiltroFim = fim;
+        _vm.DefinirPeriodo(inicio, fim);
         
-        await _vm.CarregarHorasCommand.ExecuteAsync(null);
         AtualizarEstiloBotoesMes();
     }
 

@@ -190,14 +190,20 @@
                                                    IsVisible="{Binding HorasExtras, Converter={StaticResource DoubleComparisonConverter}, ConverterParameter='gt:0'}"/>
                                         </HorizontalStackLayout>
                                         
-                                        <!-- Row 1: Client -->
-                                        <Label Grid.Row="1" Grid.Column="0"
-                                               Text="{Binding DisplayInfo}"
-                                               FontAttributes="Bold"
-                                               FontSize="14"
-                                               LineBreakMode="TailTruncation"
-                                               VerticalOptions="Center"
-                                               TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                                        <!-- Row 1: Client/Absence with Icon -->
+                                        <HorizontalStackLayout Grid.Row="1" Grid.Column="0" Spacing="6" VerticalOptions="Center">
+                                            <Label Text="{Binding DisplayIcon}"
+                                                   FontFamily="FA7Solid"
+                                                   FontSize="16"
+                                                   TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                                                   VerticalOptions="Center"/>
+                                            <Label Text="{Binding DisplayText}"
+                                                   FontAttributes="Bold"
+                                                   FontSize="14"
+                                                   LineBreakMode="TailTruncation"
+                                                   VerticalOptions="Center"
+                                                   TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                                        </HorizontalStackLayout>
 
                                         <!-- Edit Button -->
                                         <Button Grid.Row="0" Grid.RowSpan="2" Grid.Column="2"

@@ -79,16 +79,23 @@
                     BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
                     StrokeThickness="0"
                     StrokeShape="RoundRectangle 8">
-                <Grid ColumnDefinitions="*,Auto">
+                <Grid ColumnDefinitions="Auto,*,Auto">
                     <Grid.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnSelecionarMotivoAusenciaTapped"/>
                     </Grid.GestureRecognizers>
-                    <Label x:Name="AbsenceReasonLabel"
-                           Text="Selecione o motivo"
-                           Padding="12,10"
+                    <Label x:Name="AbsenceIconLabel"
+                           Text=""
+                           FontFamily="FA7Solid"
+                           Padding="12,10,0,10"
                            VerticalOptions="Center"
                            TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
                     <Label Grid.Column="1"
+                           x:Name="AbsenceReasonLabel"
+                           Text="Selecione o motivo"
+                           Padding="5,10,12,10"
+                           VerticalOptions="Center"
+                           TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
+                    <Label Grid.Column="2"
                            Text="▼"
                            FontSize="12"
                            Padding="12,10"

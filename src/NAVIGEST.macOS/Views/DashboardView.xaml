@@ -112,7 +112,7 @@
                     <Label Text="Resumo de Ausências" FontAttributes="Bold" FontSize="16"/>
                     <CollectionView ItemsSource="{Binding AbsenceData}" HeightRequest="150">
                         <CollectionView.ItemTemplate>
-                            <DataTemplate x:DataType="models:AbsenceSummary">
+                            <DataTemplate>
                                 <Grid ColumnDefinitions="Auto,*,Auto" Padding="0,8">
                                     <Label Grid.Column="0" Text="{Binding Icon}" FontSize="20" VerticalOptions="Center" Margin="0,0,10,0"/>
                                     <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
@@ -122,7 +122,7 @@
                                     <Label Grid.Column="2" Text="&#xf054;" FontFamily="FA7Solid" TextColor="#C7C7CC" VerticalOptions="Center"/>
                                     
                                     <Grid.GestureRecognizers>
-                                        <TapGestureRecognizer Command="{Binding Source={x:Reference dashboardView}, Path=BindingContext.ShowAbsenceDetailsCommand}"
+                                        <TapGestureRecognizer Command="{Binding BindingContext.ShowAbsenceDetailsCommand, Source={RelativeSource AncestorType={x:Type ContentView}}}"
                                                               CommandParameter="{Binding .}"/>
                                     </Grid.GestureRecognizers>
                                 </Grid>

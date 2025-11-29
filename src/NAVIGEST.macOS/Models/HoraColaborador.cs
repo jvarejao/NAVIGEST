@@ -38,6 +38,9 @@ public partial class HoraColaborador : ObservableObject
     [ObservableProperty]
     private string? observacoes;
 
+    [ObservableProperty]
+    private string? icon; // Icon from AbsenceType
+
     // Computed properties for display
     public string DataFormatted => DataTrabalho.ToString("dd/MM/yyyy");
     public float HorasTotais => HorasTrab + HorasExtras;
@@ -46,31 +49,42 @@ public partial class HoraColaborador : ObservableObject
     public string ClienteInfo => !string.IsNullOrEmpty(Cliente) ? Cliente : "Sem cliente";
     public string CentroCustoInfo => !string.IsNullOrEmpty(DescCentroCusto) ? DescCentroCusto : "Sem centro de custo";
 
+    public string DisplayIcon
+    {
+        get
+        {
+            if (IdCentroCusto.HasValue && IdCentroCusto.Value > 0)
+            {
+                return !string.IsNullOrEmpty(Icon) ? Icon : "\uf071"; // Warning icon
+            }
+            return "\uf1ad"; // Building icon
+        }
+    }
+
+    public string DisplayText
+    {
+        get
+        {
+            if (IdCentroCusto.HasValue && IdCentroCusto.Value > 0)
+            {
+                return DescCentroCusto ?? "Sem descrição";
+            }
+            return !string.IsNullOrEmpty(Cliente) ? Cliente : "Sem cliente";
+        }
+    }
+
     public string DisplayInfo 
     {
         get 
         {
             if (IdCentroCusto.HasValue && IdCentroCusto.Value > 0)
             {
-                var icon = GetAbsenceIcon(DescCentroCusto);
-                return $"{icon} {DescCentroCusto}";
+                // Use the Icon property if available, otherwise fallback or empty
+                var displayIcon = !string.IsNullOrEmpty(Icon) ? Icon : "⚠️";
+                return $"{displayIcon} {DescCentroCusto}";
             }
             return !string.IsNullOrEmpty(Cliente) ? $"🏢 {Cliente}" : "🏢 Sem cliente";
         }
-    }
-
-    private string GetAbsenceIcon(string? description)
-    {
-        if (string.IsNullOrEmpty(description)) return "⚠️";
-        var desc = description.ToLower();
-        
-        if (desc.Contains("férias") || desc.Contains("ferias")) return "🏖️";
-        if (desc.Contains("doença") || desc.Contains("doenca") || desc.Contains("médico") || desc.Contains("medico") || desc.Contains("hospital")) return "🏥";
-        if (desc.Contains("pai") || desc.Contains("mãe") || desc.Contains("parental") || desc.Contains("filho")) return "👶";
-        if (desc.Contains("luto") || desc.Contains("falecimento") || desc.Contains("funeral")) return "⚫";
-        if (desc.Contains("formação") || desc.Contains("formacao") || desc.Contains("curso")) return "🎓";
-        
-        return "⚠️";
     }
 
     // Calcula automaticamente as horas (considera máximo 8h normais)
