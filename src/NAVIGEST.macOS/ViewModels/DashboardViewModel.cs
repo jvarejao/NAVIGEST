@@ -33,7 +33,13 @@ namespace NAVIGEST.macOS.ViewModels
         private ObservableCollection<Colaborador> _colaboradores = new();
 
         [ObservableProperty]
+        private ObservableCollection<Colaborador> _filteredColaboradores = new();
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(SelectedCollaboratorName))]
         private Colaborador? _selectedColaborador;
+
+        public string SelectedCollaboratorName => SelectedColaborador?.Nome ?? "Todos";
 
         [ObservableProperty]
         private bool _isAllSelected;
@@ -59,32 +65,61 @@ namespace NAVIGEST.macOS.ViewModels
         [ObservableProperty]
         private int _selectedYear = DateTime.Now.Year;
 
+        // UI State Properties
+        [ObservableProperty]
+        private bool _isCollaboratorPickerVisible;
+
+        [ObservableProperty]
+        private string _collaboratorSearchText = string.Empty;
+
+        [ObservableProperty]
+        private bool _isChartDetailVisible;
+
+        [ObservableProperty]
+        private string _selectedMonthDetailTitle = string.Empty;
+
+        [ObservableProperty]
+        private ObservableCollection<DailyHoursData> _selectedMonthDailyData = new();
+
+        [ObservableProperty]
+        private bool _isAbsenceDetailVisible;
+
+        [ObservableProperty]
+        private string _selectedAbsenceDetailTitle = string.Empty;
+
+        [ObservableProperty]
+        private AbsenceSummary? _selectedAbsenceSummary;
+
+        [ObservableProperty]
+        private ObservableCollection<string> _selectedAbsenceDetails = new();
+
+
+        [ObservableProperty]
+        private ISeries[] _detailSeries = Array.Empty<ISeries>();
+
+        [ObservableProperty]
+        private Axis[] _detailXAxes = Array.Empty<Axis>();
+
+        [ObservableProperty]
+        private Axis[] _detailYAxes = Array.Empty<Axis>();
+
+        [ObservableProperty]
+        private MonthlyHoursData? _selectedDetailMonth;
+
         public ICommand RefreshCommand { get; }
         public ICommand DrillDownCommand { get; }
+        public ICommand SelectDetailMonthCommand { get; }
         public ICommand ShowAbsenceDetailsCommand { get; }
         public ICommand DataPointerDownCommand { get; }
-        public ICommand OpenChartDetailCommand { get; }
-
+        
         public DashboardViewModel()
         {
             RefreshCommand = new AsyncRelayCommand(LoadDataAsync);
             DrillDownCommand = new AsyncRelayCommand<MonthlyHoursData>(OnDrillDownAsync);
+            SelectDetailMonthCommand = new AsyncRelayCommand<MonthlyHoursData>(OnDrillDownAsync);
             ShowAbsenceDetailsCommand = new AsyncRelayCommand<AbsenceSummary>(OnShowAbsenceDetailsAsync);
-            DataPointerDownCommand = new RelayCommand<IEnumerable<ChartPoint>>(OnDataPointerDown);
-            OpenChartDetailCommand = new AsyncRelayCommand(OnOpenChartDetailAsync);
+            DataPointerDownCommand = new AsyncRelayCommand<IEnumerable<ChartPoint>>(OnDataPointerDownAsync);
         }
-
-        private async Task OnOpenChartDetailAsync()
-        {
-            if (!IsSingleSelected || SelectedColaborador == null) return;
-            
-            // Trigger event to open popup
-            RequestOpenChartDetail?.Invoke(this, (SelectedColaborador, MonthlyData.ToList(), SelectedYear));
-        }
-
-        public event EventHandler<(Colaborador Colab, List<MonthlyHoursData> Data, int Year)>? RequestOpenChartDetail;
-        public event EventHandler<(MonthlyHoursData Month, List<DailyHoursData> Days)>? RequestOpenDailyPopup;
-        public event EventHandler<(AbsenceSummary Summary, List<string> Details)>? RequestOpenAbsencePopup;
 
         public async Task InitializeAsync()
         {
@@ -106,6 +141,7 @@ namespace NAVIGEST.macOS.ViewModels
                 foreach (var c in list) Colaboradores.Add(c);
 
                 SelectedColaborador = all; // Default to ALL
+                FilteredColaboradores = new ObservableCollection<Colaborador>(Colaboradores);
             }
             catch (Exception ex)
             {
@@ -123,6 +159,19 @@ namespace NAVIGEST.macOS.ViewModels
             IsAllSelected = value.ID == -1;
             IsSingleSelected = !IsAllSelected;
             _ = LoadDataAsync();
+        }
+
+        partial void OnCollaboratorSearchTextChanged(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                FilteredColaboradores = new ObservableCollection<Colaborador>(Colaboradores);
+            }
+            else
+            {
+                var filtered = Colaboradores.Where(c => c.Nome.Contains(value, StringComparison.OrdinalIgnoreCase));
+                FilteredColaboradores = new ObservableCollection<Colaborador>(filtered);
+            }
         }
 
         private async Task LoadDataAsync()
@@ -203,7 +252,8 @@ namespace NAVIGEST.macOS.ViewModels
                 {
                     Labels = labels,
                     LabelsRotation = 0,
-                    TextSize = 12
+                    TextSize = 12,
+                    MinStep = 1
                 }
             };
 
@@ -219,13 +269,88 @@ namespace NAVIGEST.macOS.ViewModels
 
             try
             {
+                // Update selection state
+                foreach (var m in MonthlyData)
+                {
+                    m.IsSelected = (m == month);
+                }
+
+                SelectedDetailMonth = month; // Update selection for UI
                 var days = await DatabaseService.GetDailyHoursStatsAsync(SelectedColaborador.ID, month.MesNumero, SelectedYear);
-                RequestOpenDailyPopup?.Invoke(this, (month, days));
+                
+                SelectedMonthDetailTitle = $"{month.Mes} {month.Ano} - Detalhes";
+                SelectedMonthDailyData.Clear();
+                foreach(var d in days) SelectedMonthDailyData.Add(d);
+                
+                UpdateDetailChart(days);
+
+                IsChartDetailVisible = true;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
             }
+        }
+
+        private void UpdateDetailChart(List<DailyHoursData> days)
+        {
+            var labels = days.Select(d => d.Data.Day.ToString()).ToArray();
+
+            DetailSeries = new ISeries[]
+            {
+                new LineSeries<double>
+                {
+                    Values = days.Select(d => d.HorasNormais).ToArray(),
+                    Name = "Reais",
+                    Fill = null,
+                    GeometrySize = 8,
+                    Stroke = new SolidColorPaint(SKColors.Green) { StrokeThickness = 2 },
+                    GeometryStroke = new SolidColorPaint(SKColors.Green) { StrokeThickness = 2 }
+                },
+                new LineSeries<double>
+                {
+                    Values = days.Select(d => 8.0).ToArray(), // Assuming 8h ideal per day
+                    Name = "Ideais",
+                    Fill = null,
+                    GeometrySize = 0, 
+                    Stroke = new SolidColorPaint(SKColors.Gray) { StrokeThickness = 1, PathEffect = new DashEffect(new float[] { 4, 4 }) }
+                },
+                new LineSeries<double>
+                {
+                    Values = days.Select(d => d.HorasExtras).ToArray(),
+                    Name = "Extra",
+                    Fill = null,
+                    GeometrySize = 4,
+                    Stroke = new SolidColorPaint(SKColors.Orange) { StrokeThickness = 2 },
+                    GeometryStroke = new SolidColorPaint(SKColors.Orange) { StrokeThickness = 2 }
+                },
+                new ColumnSeries<double>
+                {
+                    Values = days.Select(d => d.IsAbsent ? 8.0 : 0).ToArray(),
+                    Name = "Ausência",
+                    Fill = new SolidColorPaint(SKColors.Red.WithAlpha(100)), // Semi-transparent red
+                    Stroke = null,
+                    MaxBarWidth = 20
+                }
+            };
+
+            DetailXAxes = new Axis[]
+            {
+                new Axis
+                {
+                    Labels = labels,
+                    LabelsRotation = 0,
+                    TextSize = 12,
+                    MinStep = 1,
+                    ForceStepToMin = true,
+                    SeparatorsPaint = new SolidColorPaint(SKColors.LightGray.WithAlpha(50)) { StrokeThickness = 1 }
+                }
+            };
+
+            DetailYAxes = new Axis[]
+            {
+                new Axis { Labeler = value => $"{value}h" }
+            };
         }
 
         private async Task OnShowAbsenceDetailsAsync(AbsenceSummary? summary)
@@ -235,7 +360,13 @@ namespace NAVIGEST.macOS.ViewModels
             {
                 int? colabId = IsAllSelected ? null : SelectedColaborador?.ID;
                 var details = await DatabaseService.GetAbsenceDetailsAsync(colabId, summary.Tipo, SelectedYear);
-                RequestOpenAbsencePopup?.Invoke(this, (summary, details));
+                
+                SelectedAbsenceSummary = summary;
+                SelectedAbsenceDetailTitle = $"{summary.Tipo} - Detalhes";
+                SelectedAbsenceDetails.Clear();
+                foreach(var d in details) SelectedAbsenceDetails.Add(d);
+                
+                IsAbsenceDetailVisible = true;
             }
             catch (Exception ex)
             {
@@ -243,9 +374,51 @@ namespace NAVIGEST.macOS.ViewModels
             }
         }
 
-        private void OnDataPointerDown(IEnumerable<ChartPoint>? points)
+        private async Task OnDataPointerDownAsync(IEnumerable<ChartPoint>? points)
         {
-            // Handle chart click if needed
+            if (points == null || !points.Any()) return;
+            
+            var point = points.First();
+            var index = point.Index;
+            
+            if (index >= 0 && index < MonthlyData.Count)
+            {
+                var monthData = MonthlyData[index];
+                await OnDrillDownAsync(monthData);
+            }
+        }
+
+        [RelayCommand]
+        private void OpenCollaboratorPicker()
+        {
+            FilteredColaboradores = new ObservableCollection<Colaborador>(Colaboradores);
+            CollaboratorSearchText = string.Empty;
+            IsCollaboratorPickerVisible = true;
+        }
+
+        [RelayCommand]
+        private void CloseCollaboratorPicker()
+        {
+            IsCollaboratorPickerVisible = false;
+        }
+
+        [RelayCommand]
+        private void SelectCollaborator(Colaborador colab)
+        {
+            SelectedColaborador = colab;
+            IsCollaboratorPickerVisible = false;
+        }
+
+        [RelayCommand]
+        private void CloseChartDetail()
+        {
+            IsChartDetailVisible = false;
+        }
+
+        [RelayCommand]
+        private void CloseAbsenceDetail()
+        {
+            IsAbsenceDetailVisible = false;
         }
     }
 }

@@ -40,7 +40,7 @@
         <ScrollView x:Name="MainScrollView">
             <HorizontalStackLayout HorizontalOptions="Center" VerticalOptions="Fill">
                 <VerticalStackLayout Spacing="18" Padding="24,24,24,60" HorizontalOptions="Fill"
-                                     MaximumWidthRequest="1920">
+                                     MaximumWidthRequest="1400">
                 <!-- Botão abrir picker (mobile/tablet) -->
                 <Button Text="Selecionar Produto" IsVisible="{OnIdiom Phone=true, Tablet=true, Desktop=false}" Style="{StaticResource AppleTintedButton}" Clicked="OnOpenProductPicker" />
 

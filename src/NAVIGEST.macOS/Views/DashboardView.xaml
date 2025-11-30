@@ -31,127 +31,313 @@
         </Style>
     </ContentView.Resources>
 
-    <ScrollView>
-        <VerticalStackLayout Spacing="16" Padding="16">
+    <Grid>
+        <ScrollView VerticalScrollBarVisibility="Always">
+            <Grid x:Name="ContentContainer">
+                <VerticalStackLayout Spacing="16" Padding="16,16,16,100" MaximumWidthRequest="1400" HorizontalOptions="Center">
 
-            <!-- 1. HEADER / PICKER -->
-            <Border StrokeShape="RoundRectangle 10"
-                    BackgroundColor="{AppThemeBinding Light=White, Dark=#1C1C1E}"
-                    StrokeThickness="0"
-                    Padding="0">
-                <Picker Title="Selecione um Colaborador"
-                        ItemsSource="{Binding Colaboradores}"
-                        ItemDisplayBinding="{Binding Nome}"
-                        SelectedItem="{Binding SelectedColaborador}"
-                        TextColor="{AppThemeBinding Light=Black, Dark=White}"
-                        TitleColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
-                        BackgroundColor="Transparent"
-                        HorizontalOptions="FillAndExpand"/>
-            </Border>
-
-            <!-- 2. METRICS GRID (2x2) -->
-            <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,*" RowSpacing="10" ColumnSpacing="10">
-                
-                <!-- Total Hours (Blue) -->
-                <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource CardStyle}">
-                    <VerticalStackLayout Spacing="4">
-                        <Label Text="&#xf017;" FontFamily="FA7Solid" FontSize="20" TextColor="#0A84FF" HorizontalOptions="End"/>
-                        <Label Text="Total Horas" Style="{StaticResource LabelCaption}"/>
-                        <Label Text="{Binding Metrics.TotalHoras, StringFormat='{0:F1}h'}" 
-                               Style="{StaticResource LabelValue}" TextColor="#0A84FF"/>
-                    </VerticalStackLayout>
-                </Border>
-
-                <!-- Absences (Red) -->
-                <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource CardStyle}">
-                    <VerticalStackLayout Spacing="4">
-                        <Label Text="&#xf073;" FontFamily="FA7Solid" FontSize="20" TextColor="#FF2D55" HorizontalOptions="End"/>
-                        <Label Text="Ausências" Style="{StaticResource LabelCaption}"/>
-                        <Label Text="{Binding Metrics.TotalAusencias, StringFormat='{0} dias'}" 
-                               Style="{StaticResource LabelValue}" TextColor="#FF2D55"/>
-                    </VerticalStackLayout>
-                </Border>
-
-                <!-- Top Client (Purple) -->
-                <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource CardStyle}">
-                    <VerticalStackLayout Spacing="4">
-                        <Label Text="&#xf007;" FontFamily="FA7Solid" FontSize="20" TextColor="#AF52DE" HorizontalOptions="End"/>
-                        <Label Text="Top Cliente" Style="{StaticResource LabelCaption}"/>
-                        <Label Text="{Binding Metrics.TopCliente}" 
-                               Style="{StaticResource LabelValue}" TextColor="#AF52DE" LineBreakMode="TailTruncation"/>
-                    </VerticalStackLayout>
-                </Border>
-
-                <!-- Work Days (Green) -->
-                <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource CardStyle}">
-                    <VerticalStackLayout Spacing="4">
-                        <Label Text="&#xf073;" FontFamily="FA7Solid" FontSize="20" TextColor="#34C759" HorizontalOptions="End"/>
-                        <Label Text="Dias Trab." Style="{StaticResource LabelCaption}"/>
-                        <Label Text="{Binding Metrics.TotalDiasTrabalhados, StringFormat='{0} dias'}" 
-                               Style="{StaticResource LabelValue}" TextColor="#34C759"/>
-                    </VerticalStackLayout>
-                </Border>
-            </Grid>
-
-            <!-- 3. CHART -->
-            <Border Style="{StaticResource CardStyle}" HeightRequest="300">
-                <Grid RowDefinitions="Auto,*">
-                    <Label Grid.Row="0" Text="Evolução Anual" FontAttributes="Bold" FontSize="16" Margin="0,0,0,10"/>
-                    <lvc:CartesianChart Grid.Row="1"
-                                        Series="{Binding Series}"
-                                        XAxes="{Binding XAxes}"
-                                        YAxes="{Binding YAxes}"
-                                        LegendPosition="Bottom"
-                                        DataPointerDownCommand="{Binding OpenChartDetailCommand}"/>
+                <!-- 1. HEADER / PICKER (Custom Style like Tab 2) -->
+                <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
+                    <Label Text="👤 Colaborador" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                    <Border Grid.Row="1" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" StrokeThickness="0" StrokeShape="RoundRectangle 8" HeightRequest="50">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding OpenCollaboratorPickerCommand}"/>
+                        </Border.GestureRecognizers>
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Text="{Binding SelectedColaborador.Nome, TargetNullValue='Selecione colaborador'}" Padding="12,10" VerticalOptions="Center" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                            <Label Grid.Column="1" Text="▼" FontSize="12" Padding="12,10" VerticalOptions="Center" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                        </Grid>
+                    </Border>
                 </Grid>
-            </Border>
 
-            <!-- 4. ABSENCES LIST -->
-            <Border Style="{StaticResource CardStyle}" IsVisible="{Binding AbsenceData, Converter={toolkit:IsListNotNullOrEmptyConverter}}">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="Resumo de Ausências" FontAttributes="Bold" FontSize="16"/>
-                    <CollectionView ItemsSource="{Binding AbsenceData}" HeightRequest="150">
+                <!-- 2. METRICS GRID (2x2) -->
+                <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,*" RowSpacing="10" ColumnSpacing="10">
+                    
+                    <!-- Total Hours (Blue) -->
+                    <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource CardStyle}">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="&#xf017;" FontFamily="FA7Solid" FontSize="20" TextColor="#0A84FF" HorizontalOptions="End"/>
+                            <Label Text="Total Horas" Style="{StaticResource LabelCaption}"/>
+                            <Label Text="{Binding Metrics.TotalHoras, StringFormat='{0:F1}h'}" 
+                                   Style="{StaticResource LabelValue}" TextColor="#0A84FF"/>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- Absences (Red) -->
+                    <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource CardStyle}">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="&#xf073;" FontFamily="FA7Solid" FontSize="20" TextColor="#FF2D55" HorizontalOptions="End"/>
+                            <Label Text="Ausências" Style="{StaticResource LabelCaption}"/>
+                            <Label Text="{Binding Metrics.TotalAusencias, StringFormat='{0} dias'}" 
+                                   Style="{StaticResource LabelValue}" TextColor="#FF2D55"/>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- Top Client (Purple) -->
+                    <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource CardStyle}">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="&#xf007;" FontFamily="FA7Solid" FontSize="20" TextColor="#AF52DE" HorizontalOptions="End"/>
+                            <Label Text="Top Cliente" Style="{StaticResource LabelCaption}"/>
+                            <Label Text="{Binding Metrics.TopCliente}" 
+                                   Style="{StaticResource LabelValue}" TextColor="#AF52DE" LineBreakMode="TailTruncation"/>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- Work Days (Green) -->
+                    <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource CardStyle}">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="&#xf073;" FontFamily="FA7Solid" FontSize="20" TextColor="#34C759" HorizontalOptions="End"/>
+                            <Label Text="Dias Trab." Style="{StaticResource LabelCaption}"/>
+                            <Label Text="{Binding Metrics.TotalDiasTrabalhados, StringFormat='{0} dias'}" 
+                                   Style="{StaticResource LabelValue}" TextColor="#34C759"/>
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
+
+                <!-- 3. CHART -->
+                <Border Style="{StaticResource CardStyle}" HeightRequest="500">
+                    <Grid RowDefinitions="Auto,*">
+                        <Label Grid.Row="0" Text="Evolução Anual" FontAttributes="Bold" FontSize="16" Margin="0,0,0,10"/>
+                        <lvc:CartesianChart Grid.Row="1"
+                                            Series="{Binding Series}"
+                                            XAxes="{Binding XAxes}"
+                                            YAxes="{Binding YAxes}"
+                                            DataPointerDownCommand="{Binding DataPointerDownCommand}"
+                                            TooltipPosition="Top">
+                        </lvc:CartesianChart>
+                    </Grid>
+                </Border>
+
+                <!-- 4. ACCUMULATIVE ABSENCES -->
+                <Label Text="Acumulado de Ausências" FontAttributes="Bold" FontSize="16" Margin="0,10,0,0"/>
+                <CollectionView ItemsSource="{Binding AbsenceData}" SelectionMode="None">
+                    <CollectionView.ItemsLayout>
+                        <GridItemsLayout Orientation="Vertical" Span="3" HorizontalItemSpacing="10" VerticalItemSpacing="10"/>
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border x:DataType="{x:Null}" StrokeShape="RoundRectangle 10"
+                                    BackgroundColor="{AppThemeBinding Light=White, Dark=#1C1C1E}"
+                                    StrokeThickness="0"
+                                    Padding="10"
+                                    HeightRequest="100">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding BindingContext.ShowAbsenceDetailsCommand, Source={x:Reference dashboardView}}"
+                                                          CommandParameter="{Binding .}"/>
+                                </Border.GestureRecognizers>
+                                <Border.Shadow>
+                                    <Shadow Brush="Black" Offset="0,2" Radius="3" Opacity="0.1"/>
+                                </Border.Shadow>
+                                <VerticalStackLayout Spacing="5" VerticalOptions="Center" HorizontalOptions="Center">
+                                    <Label Text="{Binding Icon}" FontFamily="FA7Solid" FontSize="24" TextColor="{Binding Cor}" HorizontalOptions="Center"/>
+                                    <Label Text="{Binding Tipo}" FontSize="12" HorizontalOptions="Center" LineBreakMode="TailTruncation" MaxLines="1"/>
+                                    <Label Text="{Binding Dias, StringFormat='{0} dias'}" FontAttributes="Bold" FontSize="14" HorizontalOptions="Center"/>
+                                </VerticalStackLayout>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                </VerticalStackLayout>
+            </Grid>
+        </ScrollView>
+
+        <!-- COLLABORATOR PICKER OVERLAY -->
+        <Grid x:Name="CollaboratorPickerOverlay"
+              IsVisible="{Binding IsCollaboratorPickerVisible}"
+              BackgroundColor="#80000000"
+              IgnoreSafeArea="True"
+              ZIndex="1001">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding CloseCollaboratorPickerCommand}"/>
+            </Grid.GestureRecognizers>
+
+            <Border BackgroundColor="{AppThemeBinding Light=White, Dark=#1C1C1E}"
+                    StrokeThickness="0"
+                    Padding="20"
+                    StrokeShape="RoundRectangle 18"
+                    VerticalOptions="Center"
+                    HorizontalOptions="Center"
+                    WidthRequest="400"
+                    HeightRequest="600">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer />
+                </Border.GestureRecognizers>
+                <Border.Shadow>
+                    <Shadow Brush="Black" Opacity="0.25" Radius="12" Offset="0,4"/>
+                </Border.Shadow>
+
+                <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="15">
+                    <Label Text="Selecione Colaborador"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center"
+                           TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+
+                    <!-- Search Bar -->
+                    <Border Grid.Row="1" 
+                            StrokeShape="RoundRectangle 10" 
+                            BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
+                            StrokeThickness="0"
+                            Padding="8,0">
+                        <Entry Placeholder="Pesquisar..."
+                               Text="{Binding CollaboratorSearchText}"
+                               BackgroundColor="Transparent"
+                               TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                               HeightRequest="36"/>
+                    </Border>
+
+                    <CollectionView Grid.Row="2" ItemsSource="{Binding FilteredColaboradores}" SelectionMode="None">
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
-                                <Grid ColumnDefinitions="Auto,*,Auto" Padding="0,8">
-                                    <Label Grid.Column="0" Text="{Binding Icon}" FontSize="20" VerticalOptions="Center" Margin="0,0,10,0"/>
-                                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
-                                        <Label Text="{Binding Tipo}" FontAttributes="Bold"/>
-                                        <Label Text="{Binding Dias, StringFormat='{0} dias'}" FontSize="12" TextColor="#8E8E93"/>
-                                    </VerticalStackLayout>
-                                    <Label Grid.Column="2" Text="&#xf054;" FontFamily="FA7Solid" TextColor="#C7C7CC" VerticalOptions="Center"/>
-                                    
-                                    <Grid.GestureRecognizers>
-                                        <TapGestureRecognizer Command="{Binding BindingContext.ShowAbsenceDetailsCommand, Source={RelativeSource AncestorType={x:Type ContentView}}}"
+                                <Border x:DataType="{x:Null}" StrokeThickness="0" BackgroundColor="Transparent" Padding="12">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding BindingContext.SelectCollaboratorCommand, Source={x:Reference dashboardView}}"
                                                               CommandParameter="{Binding .}"/>
-                                    </Grid.GestureRecognizers>
-                                </Grid>
+                                    </Border.GestureRecognizers>
+                                    <Label Text="{Binding Nome}" FontSize="16" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                                </Border>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
-                </VerticalStackLayout>
-            </Border>
 
-            <!-- 5. CLIENTS LIST -->
-            <Border Style="{StaticResource CardStyle}" IsVisible="{Binding ClientData, Converter={toolkit:IsListNotNullOrEmptyConverter}}">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="Top 5 Clientes" FontAttributes="Bold" FontSize="16"/>
-                    <CollectionView ItemsSource="{Binding ClientData}" HeightRequest="200">
+                    <Button Grid.Row="3" 
+                            Text="Cancelar" 
+                            TextColor="{AppThemeBinding Light=#0A84FF, Dark=#0A84FF}"
+                            BackgroundColor="Transparent"
+                            Command="{Binding CloseCollaboratorPickerCommand}"/>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- CHART DETAIL OVERLAY (Daily Breakdown) -->
+        <Grid x:Name="ChartDetailOverlay"
+              IsVisible="{Binding IsChartDetailVisible}"
+              BackgroundColor="#80000000"
+              IgnoreSafeArea="True"
+              ZIndex="1002">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding CloseChartDetailCommand}"/>
+            </Grid.GestureRecognizers>
+
+            <Border BackgroundColor="{AppThemeBinding Light=White, Dark=#1C1C1E}"
+                    StrokeThickness="0"
+                    Padding="20"
+                    StrokeShape="RoundRectangle 18"
+                    VerticalOptions="Fill"
+                    HorizontalOptions="Fill"
+                    MaximumWidthRequest="1000"
+                    MaximumHeightRequest="600"
+                    Margin="40">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer />
+                </Border.GestureRecognizers>
+                
+                <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="10">
+                    <Label Text="{Binding SelectedMonthDetailTitle}" FontAttributes="Bold" FontSize="18" HorizontalOptions="Center"/>
+                    
+                    <!-- Month Selector -->
+                    <ScrollView Grid.Row="1" Orientation="Horizontal" HorizontalScrollBarVisibility="Never" HeightRequest="40">
+                        <HorizontalStackLayout BindableLayout.ItemsSource="{Binding MonthlyData}" Spacing="8">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="models:MonthlyHoursData">
+                                    <Border StrokeShape="RoundRectangle 8"
+                                            StrokeThickness="0"
+                                            BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
+                                            Padding="12,8">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding BindingContext.SelectDetailMonthCommand, Source={x:Reference dashboardView}}"
+                                                                  CommandParameter="{Binding .}"
+                                                                  x:DataType="{x:Null}"/>
+                                        </Border.GestureRecognizers>
+                                        <Border.Triggers>
+                                            <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                                <Setter Property="BackgroundColor" Value="#0A84FF" />
+                                            </DataTrigger>
+                                        </Border.Triggers>
+                                        <Label Text="{Binding Mes}" 
+                                               TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                                               HorizontalOptions="Center" 
+                                               VerticalOptions="Center">
+                                            <Label.Triggers>
+                                                <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                                    <Setter Property="TextColor" Value="White" />
+                                                </DataTrigger>
+                                            </Label.Triggers>
+                                        </Label>
+                                    </Border>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </HorizontalStackLayout>
+                    </ScrollView>
+
+                    <lvc:CartesianChart Grid.Row="2"
+                                        Series="{Binding DetailSeries}"
+                                        XAxes="{Binding DetailXAxes}"
+                                        YAxes="{Binding DetailYAxes}"
+                                        LegendPosition="Bottom"
+                                        TooltipPosition="Top">
+                    </lvc:CartesianChart>
+
+                    <Button Grid.Row="3" Text="Fechar" Command="{Binding CloseChartDetailCommand}" BackgroundColor="Transparent" TextColor="#0A84FF"/>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ABSENCE DETAIL OVERLAY -->
+        <Grid x:Name="AbsenceDetailOverlay"
+              IsVisible="{Binding IsAbsenceDetailVisible}"
+              BackgroundColor="#80000000"
+              IgnoreSafeArea="True"
+              ZIndex="1002">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding CloseAbsenceDetailCommand}"/>
+            </Grid.GestureRecognizers>
+
+            <Border BackgroundColor="{AppThemeBinding Light=White, Dark=#1C1C1E}"
+                    StrokeThickness="0"
+                    Padding="20"
+                    StrokeShape="RoundRectangle 18"
+                    VerticalOptions="Center"
+                    HorizontalOptions="Center"
+                    WidthRequest="300"
+                    HeightRequest="400">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer />
+                </Border.GestureRecognizers>
+
+                <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="15">
+                    <!-- 1. Collaborator Name -->
+                    <Label Text="{Binding SelectedCollaboratorName}" 
+                           FontAttributes="Bold" 
+                           FontSize="20" 
+                           HorizontalOptions="Center"
+                           TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+
+                    <!-- 2. Icon + Type -->
+                    <StackLayout Grid.Row="1" Orientation="Horizontal" HorizontalOptions="Center" Spacing="10">
+                        <Label Text="{Binding SelectedAbsenceSummary.Icon}" 
+                               FontSize="24"
+                               FontFamily="FA7Solid"
+                               TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                        <Label Text="{Binding SelectedAbsenceSummary.Tipo}" 
+                               FontSize="18" 
+                               VerticalOptions="Center"
+                               TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                    </StackLayout>
+
+                    <!-- 3. List of days -->
+                    <CollectionView Grid.Row="2" ItemsSource="{Binding SelectedAbsenceDetails}">
                         <CollectionView.ItemTemplate>
-                            <DataTemplate x:DataType="models:ClientHoursSummary">
-                                <Grid RowDefinitions="Auto,Auto" Padding="0,8">
-                                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
-                                        <Label Grid.Column="0" Text="{Binding Cliente}" FontAttributes="Bold" LineBreakMode="TailTruncation"/>
-                                        <Label Grid.Column="1" Text="{Binding Horas, StringFormat='{0:F1}h'}" TextColor="#8E8E93"/>
-                                    </Grid>
-                                    <ProgressBar Grid.Row="1" Progress="{Binding Percentagem}" ProgressColor="#007AFF" ScaleY="0.5" Margin="0,4,0,0"/>
-                                </Grid>
+                            <DataTemplate x:DataType="x:String">
+                                <Label Text="{Binding .}" Padding="0,8" HorizontalOptions="Center" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
-                </VerticalStackLayout>
-            </Border>
 
-        </VerticalStackLayout>
-    </ScrollView>
+                    <Button Grid.Row="3" Text="Fechar" Command="{Binding CloseAbsenceDetailCommand}" BackgroundColor="Transparent" TextColor="#0A84FF"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
 </ContentView>

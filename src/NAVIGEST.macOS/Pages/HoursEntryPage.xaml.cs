@@ -198,7 +198,9 @@ public partial class HoursEntryPage : ContentPage
                 new(GridLength.Star)  // List
             },
             RowSpacing = 12,
-            Padding = 16
+            Padding = 16,
+            MaximumWidthRequest = 1400,
+            HorizontalOptions = LayoutOptions.Center
         };
         
         // 1. Botões de Ação
@@ -845,7 +847,13 @@ public partial class HoursEntryPage : ContentPage
         }
 
         var scroll = new ScrollView();
-        var mainStack = new VerticalStackLayout { Spacing = 24, Padding = 24 };
+        var mainStack = new VerticalStackLayout 
+        { 
+            Spacing = 24, 
+            Padding = 24,
+            MaximumWidthRequest = 1400,
+            HorizontalOptions = LayoutOptions.Center
+        };
         
         var lblTitulo = new Label 
         { 
@@ -967,7 +975,8 @@ public partial class HoursEntryPage : ContentPage
                 new(GridLength.Star), new(GridLength.Star), new(GridLength.Star), new(GridLength.Star), 
                 new(GridLength.Star), new(GridLength.Star), new(GridLength.Star) 
             },
-            Margin = new Thickness(0,0,0,8)
+            Margin = new Thickness(0,0,0,8),
+            HorizontalOptions = LayoutOptions.Fill
         };
         
         string[] diasSemana = { "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom" };
@@ -1061,7 +1070,8 @@ public partial class HoursEntryPage : ContentPage
                 new(GridLength.Auto), new(GridLength.Auto), new(GridLength.Auto) 
             },
             RowSpacing = 8,
-            ColumnSpacing = 8
+            ColumnSpacing = 8,
+            HorizontalOptions = LayoutOptions.Fill
         };
 
         var primeiroDiaMes = new DateTime(_dataCalendario.Year, _dataCalendario.Month, 1);
@@ -1109,6 +1119,7 @@ public partial class HoursEntryPage : ContentPage
                         StrokeShape = new RoundRectangle { CornerRadius = 12 },
                         Padding = 8,
                         HeightRequest = 120, // DOUBLE SIZE requested
+                        MinimumWidthRequest = 110,
                         InputTransparent = false // IMPORTANT: Border must capture input
                     };
 

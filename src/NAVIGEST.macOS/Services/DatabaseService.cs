@@ -1081,13 +1081,14 @@ FROM OrderInfo";
                 SELECT 
                     DAY(DataTrabalho) as Dia,
                     SUM(HorasTrab) as Normais,
-                    SUM(HorasExtras) as Extras
+                    SUM(HorasExtras) as Extras,
+                    MAX(DescCentroCusto) as AbsenceType
                 FROM HORASTRABALHADAS
                 {filter}
                 GROUP BY DAY(DataTrabalho)
                 ORDER BY DAY(DataTrabalho)";
 
-            var dataMap = new Dictionary<int, (double N, double E)>();
+            var dataMap = new Dictionary<int, (double N, double E, string A)>();
 
             using (var cmd = new MySqlCommand(sql, conn))
             {
@@ -1100,7 +1101,8 @@ FROM OrderInfo";
                     int d = rd.GetInt32(0);
                     double n = rd.GetDouble(1);
                     double e = rd.GetDouble(2);
-                    dataMap[d] = (n, e);
+                    string a = rd.IsDBNull(3) ? string.Empty : rd.GetString(3);
+                    dataMap[d] = (n, e, a);
                 }
             }
 
@@ -1110,13 +1112,17 @@ FROM OrderInfo";
                 var date = new DateTime(year, month, d);
                 bool isWorkDay = date.DayOfWeek != DayOfWeek.Saturday && date.DayOfWeek != DayOfWeek.Sunday;
                 
+                string absence = dataMap.ContainsKey(d) ? dataMap[d].A : string.Empty;
+
                 list.Add(new DailyHoursData
                 {
                     Dia = d,
                     Data = date,
                     HorasNormais = dataMap.ContainsKey(d) ? dataMap[d].N : 0,
                     HorasExtras = dataMap.ContainsKey(d) ? dataMap[d].E : 0,
-                    HorasIdeais = isWorkDay ? 8.0 : 0
+                    HorasIdeais = isWorkDay ? 8.0 : 0,
+                    IsAbsent = !string.IsNullOrEmpty(absence),
+                    AbsenceType = absence
                 });
             }
 
@@ -1228,14 +1234,15 @@ FROM OrderInfo";
             using var conn = new MySqlConnection(GetConnectionString());
             await conn.OpenAsync();
 
-            string filter = "WHERE YEAR(DataTrabalho) = @year AND IDCentroCusto IS NOT NULL";
-            if (colabId.HasValue) filter += " AND IDColaborador = @colabId";
+            string filter = "WHERE YEAR(h.DataTrabalho) = @year AND h.IDCentroCusto IS NOT NULL";
+            if (colabId.HasValue) filter += " AND h.IDColaborador = @colabId";
 
             string sql = $@"
-                SELECT DescCentroCusto, COUNT(*) as Qtd
-                FROM HORASTRABALHADAS
+                SELECT h.DescCentroCusto, COUNT(*) as Qtd, MAX(t.Icon) as Icon
+                FROM HORASTRABALHADAS h
+                LEFT JOIN TIPOS_AUSENCIA t ON h.IDCentroCusto = t.ID
                 {filter}
-                GROUP BY DescCentroCusto
+                GROUP BY h.DescCentroCusto
                 ORDER BY Qtd DESC";
 
             using (var cmd = new MySqlCommand(sql, conn))
@@ -1246,16 +1253,41 @@ FROM OrderInfo";
                 while (await rd.ReadAsync())
                 {
                     string tipo = rd.IsDBNull(0) ? "Outros" : rd.GetString(0);
+                    string iconCode = rd.IsDBNull(2) ? "uf073" : rd.GetString(2);
+
                     list.Add(new AbsenceSummary
                     {
                         Tipo = tipo,
                         Dias = rd.GetInt32(1),
                         Cor = GetColorForAbsence(tipo),
-                        Icon = GetIconForAbsence(tipo)
+                        Icon = ParseIconCode(iconCode)
                     });
                 }
             }
             return list;
+        }
+
+        private static string ParseIconCode(string code)
+        {
+            if (string.IsNullOrWhiteSpace(code)) return "\uf073";
+            
+            // If it's already a single character (the icon itself), return it
+            if (code.Length == 1) return code;
+
+            // Otherwise, try to parse as hex code (e.g. "uf073" or "\uf073")
+            var cleanCode = code.TrimStart('\\', 'u', 'U');
+            try
+            {
+                int charCode = int.Parse(cleanCode, System.Globalization.NumberStyles.HexNumber);
+                return ((char)charCode).ToString();
+            }
+            catch
+            {
+                // If parsing fails, return the original code (it might be a valid string that just failed hex parsing)
+                // or return default if it looks garbage. 
+                // For now, let's assume if it's not hex, it might be the icon itself but maybe with some whitespace?
+                return code.Trim(); 
+            }
         }
 
         private static string GetColorForAbsence(string type)
@@ -1269,22 +1301,7 @@ FROM OrderInfo";
             };
         }
 
-        private static string GetIconForAbsence(string type)
-        {
-            var desc = type.ToLower();
-            
-            // Specific icons matching Calendar logic
-            if (desc.Contains("férias") || desc.Contains("ferias")) return "🏖️";
-            if (desc.Contains("doença") || desc.Contains("doenca") || desc.Contains("médico") || desc.Contains("medico") || desc.Contains("hospital")) return "🏥";
-            if (desc.Contains("pai") || desc.Contains("mãe") || desc.Contains("parental") || desc.Contains("filho")) return "👶";
-            if (desc.Contains("luto") || desc.Contains("falecimento") || desc.Contains("funeral")) return "⚫";
-            if (desc.Contains("formação") || desc.Contains("formacao") || desc.Contains("curso")) return "🎓";
-            
-            // "Outros"
-            if (desc.Contains("outros")) return "⚠️";
 
-            return "\uf073"; // Default calendar icon
-        }
 
         public static async Task<List<string>> GetAbsenceDetailsAsync(int? colabId, string type, int year)
         {
@@ -1409,7 +1426,7 @@ FROM OrderInfo";
                         HorasTrab = rd.GetFloat(8),
                         HorasExtras = rd.GetFloat(9),
                         Observacoes = rd.IsDBNull(10) ? null : rd.GetString(10),
-                        Icon = rd.IsDBNull(11) ? null : rd.GetString(11)
+                        Icon = rd.IsDBNull(11) ? null : ParseIconCode(rd.GetString(11))
                     });
                 }
             }

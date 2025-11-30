@@ -11,7 +11,7 @@
         <ScrollView HorizontalOptions="Fill" VerticalOptions="Fill">
             <HorizontalStackLayout HorizontalOptions="Center" VerticalOptions="Fill">
                 <VerticalStackLayout Spacing="14" Padding="16" HorizontalOptions="Fill"
-                                     MaximumWidthRequest="1920">
+                                     MaximumWidthRequest="1400">
 
             <!-- Topo: Botão Novo (direita) + ícone -->
             <Grid ColumnDefinitions="*,Auto">

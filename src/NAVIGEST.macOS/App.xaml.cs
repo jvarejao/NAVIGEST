@@ -38,7 +38,20 @@ namespace NAVIGEST.macOS
         }
 
         protected override Window CreateWindow(IActivationState? activationState)
-            => new(new AppShell());
+        {
+            var window = new Window(new AppShell());
+
+            // Set initial size and constraints
+            window.Width = 1280;
+            window.Height = 900;
+            window.MinimumWidth = 1024;
+            window.MinimumHeight = 700;
+            
+            // Optional: Set maximum size if desired, but layout constraints should handle it
+            // window.MaximumWidth = 1600; 
+
+            return window;
+        }
 
         public void EnableAutoTheme(bool persist = true)
         {

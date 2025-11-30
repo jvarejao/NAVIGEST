@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace NAVIGEST.macOS.Models
 {
@@ -14,7 +15,7 @@ namespace NAVIGEST.macOS.Models
         public string TopCliente { get; set; } = string.Empty;
     }
 
-    public class MonthlyHoursData
+    public partial class MonthlyHoursData : ObservableObject
     {
         public string Mes { get; set; } = string.Empty; // "Jan", "Fev", etc.
         public int MesNumero { get; set; }
@@ -22,6 +23,9 @@ namespace NAVIGEST.macOS.Models
         public double HorasNormais { get; set; }
         public double HorasExtras { get; set; }
         public double HorasIdeais { get; set; } // Dias úteis * 8
+
+        [ObservableProperty]
+        private bool _isSelected;
     }
 
     public class DailyHoursData
@@ -31,6 +35,8 @@ namespace NAVIGEST.macOS.Models
         public double HorasNormais { get; set; }
         public double HorasExtras { get; set; }
         public double HorasIdeais { get; set; } // 8 se dia útil, 0 se fds/feriado
+        public bool IsAbsent { get; set; }
+        public string AbsenceType { get; set; } = string.Empty;
     }
 
     public class AbsenceSummary
