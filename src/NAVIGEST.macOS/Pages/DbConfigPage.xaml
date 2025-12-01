@@ -6,14 +6,18 @@
              Shell.FlyoutBehavior="Disabled"
              Shell.NavBarIsVisible="False">
 
-    <Grid Padding="24" BackgroundColor="{DynamicResource PageBackgroundColor}">
+    <!-- Fundo adaptável ao tema -->
+    <Grid Padding="24" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}">
         <ScrollView>
             <HorizontalStackLayout HorizontalOptions="Center" VerticalOptions="Center">
                 <Grid MaximumWidthRequest="600">
-                    <!-- Cartão sem sombra -->
+                    <!-- Cartão Adaptável (Estilo Popup) -->
                     <Border x:Name="Card" Padding="32" StrokeThickness="0" 
                             StrokeShape="RoundRectangle 18"
-                            BackgroundColor="{DynamicResource CardBackgroundColor}">
+                            BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Opacity="0.25" Radius="12" Offset="0,4"/>
+                        </Border.Shadow>
                     <VerticalStackLayout Spacing="14">
 
                         <!-- Cabeçalho simples -->
@@ -21,126 +25,150 @@
                             <Label Text="&#xF233;" FontFamily="FA7Solid" FontSize="28"
                      TextColor="{StaticResource Color.Primary}" />
                             <Label Text="Configuração da Base de Dados"
-                     FontSize="20" FontAttributes="Bold" />
+                     FontSize="20" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
                         </HorizontalStackLayout>
 
                         <!-- Servidor -->
                         <VerticalStackLayout>
-                            <Label Text="Servidor" FontAttributes="Bold"/>
-                            <Border x:Name="ServerBorder" Style="{StaticResource FieldBorder}">
+                            <Label Text="Servidor" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                            <Border x:Name="ServerBorder" 
+                                    BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
+                                    StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 8">
                                 <Entry x:Name="ServerEntry"
-                       Placeholder="ex.: 100.81.152.95"
-                       Text="{Binding Server}"
-                       Style="{StaticResource AppleEntry}"
-                       BackgroundColor="{AppThemeBinding Light=White, Dark=#333333}"
-                       TextColor="{AppThemeBinding Light=Black, Dark=White}"
-                       HeightRequest="44"
-                       FontSize="16"
-                       Completed="OnEntryCompleted"
-                       Focused="OnEntryFocused"
-                       Unfocused="OnEntryUnfocused"
-                       TextChanged="OnEntryTextChanged" />
+                                       Placeholder="ex.: 100.81.152.95"
+                                       Text="{Binding Server}"
+                                       BackgroundColor="Transparent"
+                                       TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                                       PlaceholderColor="{AppThemeBinding Light=#999999, Dark=#8E8E93}"
+                                       HeightRequest="44"
+                                       FontSize="16"
+                                       VerticalTextAlignment="Center"
+                                       Completed="OnEntryCompleted"
+                                       Focused="OnEntryFocused"
+                                       Unfocused="OnEntryUnfocused"
+                                       TextChanged="OnEntryTextChanged" />
                             </Border>
                             <Label x:Name="ServerError" Text="Servidor obrigatório." TextColor="#FFA500" IsVisible="False" FontSize="12"/>
                         </VerticalStackLayout>
 
                         <!-- Porta -->
                         <VerticalStackLayout>
-                            <Label Text="Porta" FontAttributes="Bold"/>
-                            <Border x:Name="PortBorder" Style="{StaticResource FieldBorder}">
+                            <Label Text="Porta" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                            <Border x:Name="PortBorder" 
+                                    BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
+                                    StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 8">
                                 <Entry x:Name="PortEntry"
-                       Placeholder="3307"
-                       Keyboard="Numeric"
-                       Text="{Binding Port}"
-                       Style="{StaticResource AppleEntry}"
-                       BackgroundColor="{AppThemeBinding Light=White, Dark=#333333}"
-                       TextColor="{AppThemeBinding Light=Black, Dark=White}"
-                       HeightRequest="44"
-                       FontSize="16"
-                       Completed="OnEntryCompleted"
-                       Focused="OnEntryFocused"
-                       Unfocused="OnEntryUnfocused"
-                       TextChanged="OnEntryTextChanged" />
+                                       Placeholder="3307"
+                                       Keyboard="Numeric"
+                                       Text="{Binding Port}"
+                                       BackgroundColor="Transparent"
+                                       TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                                       PlaceholderColor="{AppThemeBinding Light=#999999, Dark=#8E8E93}"
+                                       HeightRequest="44"
+                                       FontSize="16"
+                                       VerticalTextAlignment="Center"
+                                       Completed="OnEntryCompleted"
+                                       Focused="OnEntryFocused"
+                                       Unfocused="OnEntryUnfocused"
+                                       TextChanged="OnEntryTextChanged" />
                             </Border>
                             <Label x:Name="PortError" Text="Porta inválida (1–65535)." TextColor="#FFA500" IsVisible="False" FontSize="12"/>
                         </VerticalStackLayout>
 
                         <!-- Base de Dados -->
                         <VerticalStackLayout>
-                            <Label Text="Base de Dados" FontAttributes="Bold"/>
-                            <Border x:Name="DbBorder" Style="{StaticResource FieldBorder}">
+                            <Label Text="Base de Dados" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                            <Border x:Name="DbBorder" 
+                                    BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
+                                    StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 8">
                                 <Entry x:Name="DbEntry"
-                       Placeholder="YAHPUBLICIDADE2025"
-                       Text="{Binding Database}"
-                       Style="{StaticResource AppleEntry}"
-                       BackgroundColor="{AppThemeBinding Light=White, Dark=#333333}"
-                       TextColor="{AppThemeBinding Light=Black, Dark=White}"
-                       HeightRequest="44"
-                       FontSize="16"
-                       Completed="OnEntryCompleted"
-                       Focused="OnEntryFocused"
-                       Unfocused="OnEntryUnfocused"
-                       TextChanged="OnEntryTextChanged" />
+                                       Placeholder="YAHPUBLICIDADE2025"
+                                       Text="{Binding Database}"
+                                       BackgroundColor="Transparent"
+                                       TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                                       PlaceholderColor="{AppThemeBinding Light=#999999, Dark=#8E8E93}"
+                                       HeightRequest="44"
+                                       FontSize="16"
+                                       VerticalTextAlignment="Center"
+                                       Completed="OnEntryCompleted"
+                                       Focused="OnEntryFocused"
+                                       Unfocused="OnEntryUnfocused"
+                                       TextChanged="OnEntryTextChanged" />
                             </Border>
                             <Label x:Name="DbError" Text="Nome da base de dados obrigatório." TextColor="#FFA500" IsVisible="False" FontSize="12"/>
                         </VerticalStackLayout>
 
                         <!-- Utilizador -->
                         <VerticalStackLayout>
-                            <Label Text="Utilizador" FontAttributes="Bold"/>
-                            <Border x:Name="UserBorder" Style="{StaticResource FieldBorder}">
+                            <Label Text="Utilizador" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                            <Border x:Name="UserBorder" 
+                                    BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
+                                    StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 8">
                                 <Entry x:Name="UserEntry"
-                       Placeholder="YAH"
-                       Text="{Binding UserId}"
-                       Style="{StaticResource AppleEntry}"
-                       BackgroundColor="{AppThemeBinding Light=White, Dark=#333333}"
-                       TextColor="{AppThemeBinding Light=Black, Dark=White}"
-                       HeightRequest="44"
-                       FontSize="16"
-                       Completed="OnEntryCompleted"
-                       Focused="OnEntryFocused"
-                       Unfocused="OnEntryUnfocused"
-                       TextChanged="OnEntryTextChanged" />
+                                       Placeholder="YAH"
+                                       Text="{Binding UserId}"
+                                       BackgroundColor="Transparent"
+                                       TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                                       PlaceholderColor="{AppThemeBinding Light=#999999, Dark=#8E8E93}"
+                                       HeightRequest="44"
+                                       FontSize="16"
+                                       VerticalTextAlignment="Center"
+                                       Completed="OnEntryCompleted"
+                                       Focused="OnEntryFocused"
+                                       Unfocused="OnEntryUnfocused"
+                                       TextChanged="OnEntryTextChanged" />
                             </Border>
                             <Label x:Name="UserError" Text="Utilizador obrigatório." TextColor="#FFA500" IsVisible="False" FontSize="12"/>
                         </VerticalStackLayout>
 
                         <!-- Password -->
                         <VerticalStackLayout>
-                            <Label Text="Password" FontAttributes="Bold"/>
-                            <Border x:Name="PasswordBorder" Style="{StaticResource FieldBorder}">
+                            <Label Text="Password" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                            <Border x:Name="PasswordBorder" 
+                                    BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
+                                    StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 8">
                                 <Entry x:Name="PasswordEntry"
-                       Placeholder="Password"
-                       IsPassword="True"
-                       Text="{Binding Password}"
-                       Style="{StaticResource AppleEntry}"
-                       BackgroundColor="{AppThemeBinding Light=White, Dark=#333333}"
-                       TextColor="{AppThemeBinding Light=Black, Dark=White}"
-                       HeightRequest="44"
-                       FontSize="16"
-                       Completed="OnEntryCompleted"
-                       Focused="OnEntryFocused"
-                       Unfocused="OnEntryUnfocused"
-                       TextChanged="OnEntryTextChanged" />
+                                       Placeholder="Password"
+                                       IsPassword="True"
+                                       Text="{Binding Password}"
+                                       BackgroundColor="Transparent"
+                                       TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                                       PlaceholderColor="{AppThemeBinding Light=#999999, Dark=#8E8E93}"
+                                       HeightRequest="44"
+                                       FontSize="16"
+                                       VerticalTextAlignment="Center"
+                                       Completed="OnEntryCompleted"
+                                       Focused="OnEntryFocused"
+                                       Unfocused="OnEntryUnfocused"
+                                       TextChanged="OnEntryTextChanged" />
                             </Border>
                             <Label x:Name="PasswordError" Text="Password obrigatória." TextColor="#FFA500" IsVisible="False" FontSize="12"/>
                         </VerticalStackLayout>
 
                         <!-- Email (opcional) -->
                         <VerticalStackLayout>
-                            <Label Text="Email de contacto (opcional)" FontAttributes="Bold"/>
-                            <Border x:Name="EmailBorder" Style="{StaticResource FieldBorder}">
+                            <Label Text="Email de contacto (opcional)" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                            <Border x:Name="EmailBorder" 
+                                    BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
+                                    StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 8">
                                 <Entry x:Name="EmailEntry"
-                       Placeholder="ex.: admin@yah.pt"
-                       Style="{StaticResource AppleEntry}"
-                       BackgroundColor="{AppThemeBinding Light=White, Dark=#333333}"
-                       TextColor="{AppThemeBinding Light=Black, Dark=White}"
-                       HeightRequest="44"
-                       FontSize="16"
-                       Completed="OnEntryCompleted"
-                       Focused="OnEntryFocused"
-                       Unfocused="OnEntryUnfocused"
-                       TextChanged="OnEntryTextChanged" />
+                                       Placeholder="ex.: admin@yah.pt"
+                                       BackgroundColor="Transparent"
+                                       TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                                       PlaceholderColor="{AppThemeBinding Light=#999999, Dark=#8E8E93}"
+                                       HeightRequest="44"
+                                       FontSize="16"
+                                       VerticalTextAlignment="Center"
+                                       Completed="OnEntryCompleted"
+                                       Focused="OnEntryFocused"
+                                       Unfocused="OnEntryUnfocused"
+                                       TextChanged="OnEntryTextChanged" />
                             </Border>
                             <Label x:Name="EmailErrorLabel" Text="Formato de email inválido." TextColor="#FF3B30" IsVisible="False" FontSize="12"/>
                         </VerticalStackLayout>

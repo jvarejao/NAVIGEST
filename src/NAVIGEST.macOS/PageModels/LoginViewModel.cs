@@ -30,6 +30,7 @@ namespace NAVIGEST.macOS.PageModels
             BiometricLoginCommand = new Command(async () => await BiometricLoginAsync());
             ToggleBiometricCommand = new Command(async () => await ToggleBiometricAsync());
             InitCommand = new Command(async () => await InitAsync());
+            BackCommand = new Command(async () => await BackAsync());
         }
 
         // ======= PROPRIEDADES =======
@@ -62,6 +63,7 @@ namespace NAVIGEST.macOS.PageModels
         public ICommand BiometricLoginCommand { get; }
         public ICommand ToggleBiometricCommand { get; }
         public ICommand InitCommand { get; }
+        public ICommand BackCommand { get; }
 
         private bool CanLogin() =>
             !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password);
@@ -71,6 +73,9 @@ namespace NAVIGEST.macOS.PageModels
         {
             try
             {
+                // 1. Limpar password ao entrar na página (para não ficar memorizada da sessão anterior)
+                Password = string.Empty;
+
                 BiometricAvailable = await _bio.IsAvailableAsync();
                 
                 // 🔧 DEBUG: Force true for testing if it returns false
@@ -86,8 +91,8 @@ namespace NAVIGEST.macOS.PageModels
                 if (bioEnabled)
                 {
                     BiometricEnabled = true;
-                    // Aguarda um tick para estabilizar a UI
-                    await Task.Delay(200);
+                    // Aguarda um tempo maior para garantir que a navegação terminou e a UI estabilizou
+                    await Task.Delay(800);
                     // ✅ Dispara Face ID automaticamente
                     await BiometricAutoLoginAsync();
                 }
@@ -316,6 +321,12 @@ namespace NAVIGEST.macOS.PageModels
                 Preferences.Default.Remove(KeyBioPassword);
             }
             OnPropertyChanged(nameof(BiometricEnabled));
+        }
+
+        private async Task BackAsync()
+        {
+            if (Shell.Current is not null)
+                await Shell.Current.GoToAsync("//WelcomePage");
         }
     }
 }

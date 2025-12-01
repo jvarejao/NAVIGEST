@@ -10,6 +10,7 @@
     <!-- Rotas/páginas já existentes -->
     <ShellContent ContentTemplate="{DataTemplate pages:SplashIntroPage}" Route="SplashIntroPage" />
     <ShellContent ContentTemplate="{DataTemplate pages:WelcomePage}" Route="WelcomePage" />
+    <ShellContent ContentTemplate="{DataTemplate pages:LoginPage}" Route="Login" />
     <ShellContent ContentTemplate="{DataTemplate pages:MainYahPage}" Route="mainpage" />
 
     <!-- NOVO: Página de Horas (layout do Passo 1) -->

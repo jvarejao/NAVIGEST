@@ -49,6 +49,7 @@ public class ClientsPageModel : INotifyPropertyChanged
             Debug.WriteLine($"[SELECT] {_selectedCliente?.CLICODIGO}");
             OnPropertyChanged();
             OnPropertyChanged(nameof(IsNew));
+            OnPropertyChanged(nameof(CanDelete));
             _codigoPreview = false;
             EditModel = _selectedCliente?.Clone() ?? NewClienteTemplate();
             if (EditModel != null)
@@ -96,6 +97,7 @@ public class ClientsPageModel : INotifyPropertyChanged
     }
 
     public bool IsNew => SelectedCliente == null;
+    public bool CanDelete => !IsNew && IsFinancial;
 
     private string _searchText = string.Empty;
     public string SearchText
@@ -164,6 +166,8 @@ public class ClientsPageModel : INotifyPropertyChanged
         get => _isBusy;
         set { if (_isBusy != value) { _isBusy = value; OnPropertyChanged(); } }
     }
+
+    public bool IsFinancial => UserSession.Current.User.IsFinancial;
 
     // Flag para saber se o código mostrado é apenas pré-visualização
     private bool _codigoPreview;

@@ -1096,7 +1096,7 @@ FROM OrderInfo";
                 {
                     MesNumero = i,
                     Ano = year,
-                    Mes = culture.DateTimeFormat.GetAbbreviatedMonthName(i).ToUpper(),
+                    Mes = culture.DateTimeFormat.GetAbbreviatedMonthName(i).Replace(".", "").ToUpper(),
                     HorasNormais = dataMap.ContainsKey(i) ? dataMap[i].N : 0,
                     HorasExtras = dataMap.ContainsKey(i) ? dataMap[i].E : 0,
                     HorasIdeais = CalculateIdealHours(i, year)

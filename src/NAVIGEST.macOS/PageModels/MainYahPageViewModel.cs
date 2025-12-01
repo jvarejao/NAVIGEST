@@ -16,6 +16,7 @@ namespace NAVIGEST.macOS.Pages
         private bool _isConfigExpanded = false;
         private bool _isSidebarVisible;
         private bool _isAdminUnlocked;
+        private bool _isFinancialUnlocked;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -29,12 +30,20 @@ namespace NAVIGEST.macOS.Pages
         {
             get
             {
-                // Se existir logo personalizado, usar sempre
-                if (UserSession.Current.User.CompanyLogo != null)
-                    return ImageSource.FromStream(() => new MemoryStream(UserSession.Current.User.CompanyLogo));
+                var logo = UserSession.Current.User.CompanyLogo;
+                if (logo != null && logo.Length > 0)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[MainYahPageViewModel] Returning custom logo ({logo.Length} bytes)");
+                    Console.WriteLine($"[MainYahPageViewModel] Returning custom logo ({logo.Length} bytes)");
+                    return ImageSource.FromStream(() => new MemoryStream(logo));
+                }
+                
                 // Alterna entre yahcores.png (claro) e yahcorbranco.png (escuro)
                 var theme = Application.Current?.RequestedTheme ?? AppTheme.Light;
-                return theme == AppTheme.Dark ? "yahcorbranco.png" : "yahcores.png";
+                var defaultLogo = theme == AppTheme.Dark ? "yahcorbranco.png" : "yahcores.png";
+                System.Diagnostics.Debug.WriteLine($"[MainYahPageViewModel] Returning default logo: {defaultLogo}");
+                Console.WriteLine($"[MainYahPageViewModel] Returning default logo: {defaultLogo}");
+                return defaultLogo;
             }
         }
         public string CompanyName => UserSession.Current.User.CompanyName;
@@ -44,7 +53,8 @@ namespace NAVIGEST.macOS.Pages
             try
             {
                 // Desbloqueia automaticamente se já for ADMIN
-                _isAdminUnlocked = string.Equals(UserRole, "ADMIN", StringComparison.OrdinalIgnoreCase);
+                _isAdminUnlocked = UserSession.Current.User.IsAdmin;
+                _isFinancialUnlocked = UserSession.Current.User.IsFinancial;
             }
             catch (Exception ex) { TratarErro(ex); }
         }
@@ -78,6 +88,29 @@ namespace NAVIGEST.macOS.Pages
         {
             get => _isAdminUnlocked;
             set { if (_isAdminUnlocked != value) { _isAdminUnlocked = value; OnPropertyChanged(); } }
+        }
+
+        public bool IsFinancialUnlocked
+        {
+            get => _isFinancialUnlocked;
+            set { if (_isFinancialUnlocked != value) { _isFinancialUnlocked = value; OnPropertyChanged(); } }
+        }
+
+        public bool IsHoursVisible => UserSession.Current.User.IsFinancial || UserSession.Current.User.IsGeneralSupervisor;
+
+        public void Refresh()
+        {
+            System.Diagnostics.Debug.WriteLine($"[MainYahPageViewModel] Refresh called. Company: {CompanyName}, Logo bytes: {UserSession.Current.User.CompanyLogo?.Length ?? 0}");
+            Console.WriteLine($"[MainYahPageViewModel] Refresh called. Company: {CompanyName}, Logo bytes: {UserSession.Current.User.CompanyLogo?.Length ?? 0}");
+            OnPropertyChanged(nameof(UserName));
+            OnPropertyChanged(nameof(UserRole));
+            OnPropertyChanged(nameof(UserPhoto));
+            OnPropertyChanged(nameof(CompanyLogo));
+            OnPropertyChanged(nameof(CompanyName));
+            OnPropertyChanged(nameof(IsHoursVisible));
+
+            IsAdminUnlocked = UserSession.Current.User.IsAdmin;
+            IsFinancialUnlocked = UserSession.Current.User.IsFinancial;
         }
 
         public void ToggleSidebar()

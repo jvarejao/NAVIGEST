@@ -74,7 +74,8 @@
                     <VerticalStackLayout Spacing="10">
 
                         <!-- Guardar -->
-                        <Button Style="{StaticResource Button.PrimaryIcon}" Text="Guardar" Command="{Binding SaveCommand}">
+                        <Button Style="{StaticResource Button.PrimaryIcon}" Text="Guardar" Command="{Binding SaveCommand}"
+                                IsVisible="{Binding BindingContext.IsFinancial, Source={x:Reference ProductsPageRoot}}">
                             <Button.ImageSource>
                                 <FontImageSource Glyph="&#xF0C7;" FontFamily="FA7Solid" Size="{StaticResource BtnIconSize}"
                          Color="{StaticResource BtnPrimaryIconColor}" />
@@ -85,7 +86,8 @@
                         </Button>
 
                         <!-- Novo Produto -->
-                        <Button Style="{StaticResource Button.Outline}" Text="Novo" Command="{Binding NewCommand}">
+                        <Button Style="{StaticResource Button.Outline}" Text="Novo" Command="{Binding NewCommand}"
+                                IsVisible="{Binding BindingContext.IsFinancial, Source={x:Reference ProductsPageRoot}}">
                             <Button.ImageSource>
                                 <FontImageSource Glyph="&#xF067;" FontFamily="FA7Solid" Size="{StaticResource BtnIconSize}"
                          Color="{StaticResource BtnAltIconColor}" />
@@ -96,7 +98,8 @@
                         </Button>
 
                         <!-- Eliminar -->
-                        <Button Style="{StaticResource Button.Outline}" Text="Eliminar" Command="{Binding DeleteCommand}">
+                        <Button Style="{StaticResource Button.Outline}" Text="Eliminar" Command="{Binding DeleteCommand}"
+                                IsVisible="{Binding BindingContext.IsFinancial, Source={x:Reference ProductsPageRoot}}">
                             <Button.ImageSource>
                                 <FontImageSource Glyph="&#xF1F8;" FontFamily="FA7Solid" Size="{StaticResource BtnIconSize}"
                          Color="{StaticResource BtnAltIconColor}" />

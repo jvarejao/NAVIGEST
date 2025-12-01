@@ -18,6 +18,8 @@ public class ProductsPageModel : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    public bool IsFinancial => UserSession.Current.User.IsFinancial;
+
     // Cache completo
     private readonly List<Product> _all = new();
 

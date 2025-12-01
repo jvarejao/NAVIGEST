@@ -20,6 +20,36 @@ namespace NAVIGEST.macOS.Pages
         private TaskCompletionSource<bool>? _adminTcs;
         private bool _adminPwdShown;
 
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+            if (BindingContext is MainYahPageViewModel vm)
+            {
+                vm.Refresh();
+                
+                // Forçar atualização manual da imagem para garantir que o logo carregado no login apareça
+                try
+                {
+                    var logoBytes = UserSession.Current?.User?.CompanyLogo;
+                    if (logoBytes != null && logoBytes.Length > 0)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[MainYahPage] Manually setting logo source. Bytes: {logoBytes.Length}");
+                        CompanyLogoImage.Source = ImageSource.FromStream(() => new System.IO.MemoryStream(logoBytes));
+                    }
+                    else
+                    {
+                        // Fallback para o logo padrão se não houver customizado
+                        var theme = Application.Current?.RequestedTheme ?? AppTheme.Light;
+                        CompanyLogoImage.Source = theme == AppTheme.Dark ? "yahcorbranco.png" : "yahcores.png";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[MainYahPage] Error setting logo: {ex.Message}");
+                }
+            }
+        }
+
         public MainYahPage()
         {
             try
@@ -589,7 +619,16 @@ namespace NAVIGEST.macOS.Pages
 
         private async void OnLogoutTapped(object sender, EventArgs e)
         {
-            try { await DisplayActionSheet("Terminar sessão", "Cancelar", null, "Confirmar logout"); CloseSidebarMobileIfNeeded(); }
+            try
+            {
+                bool confirm = await DisplayAlert("Terminar Sessão", "Tem a certeza que deseja sair da aplicação?", "Sair", "Cancelar");
+                if (confirm)
+                {
+                    CloseSidebarMobileIfNeeded();
+                    // Navegar para a página de Login e limpar a pilha de navegação
+                    await Shell.Current.GoToAsync("//Login");
+                }
+            }
             catch (Exception ex) { TratarErro(ex); }
         }
 

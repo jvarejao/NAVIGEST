@@ -258,6 +258,19 @@
                                     </Button.Behaviors>
                                 </Button>
 
+                                <!-- Voltar / Escolher Empresa -->
+                                <Button x:Name="btnBack"
+                                        Text="Voltar"
+                                        Command="{Binding BackCommand}"
+                                        HorizontalOptions="Fill"
+                                        FontSize="16"
+                                        HeightRequest="40"
+                                        BackgroundColor="Transparent"
+                                        TextColor="#6B7280"
+                                        FontFamily="Inter"
+                                        Margin="0,4,0,0">
+                                </Button>
+
                                 <!-- Loading + Mensagem -->
                                 <ActivityIndicator x:Name="loading"
                                                    IsVisible="False"

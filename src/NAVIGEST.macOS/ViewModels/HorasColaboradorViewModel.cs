@@ -43,6 +43,8 @@ public partial class HorasColaboradorViewModel : ObservableObject
     // Flag para prevenir recarregos durante inicialização
     private bool _isInitializing = true;
 
+    public bool IsFinancial => UserSession.Current.User.IsFinancial;
+
     partial void OnColaboradorSelecionadoChanged(Colaborador? value)
     {
         if (!_isInitializing)
@@ -164,14 +166,33 @@ public partial class HorasColaboradorViewModel : ObservableObject
             var colaboradoresDb = await DatabaseService.GetColaboradoresAsync();
             
             Colaboradores.Clear();
-            Colaboradores.Add(new Colaborador { ID = 0, Nome = "Todos" });
-            
-            foreach (var colab in colaboradoresDb.OrderBy(c => c.Nome))
-            {
-                Colaboradores.Add(colab);
-            }
 
-            ColaboradorSelecionado = Colaboradores.FirstOrDefault();
+            if (IsFinancial)
+            {
+                Colaboradores.Add(new Colaborador { ID = 0, Nome = "Todos" });
+                foreach (var colab in colaboradoresDb.OrderBy(c => c.Nome))
+                {
+                    Colaboradores.Add(colab);
+                }
+                ColaboradorSelecionado = Colaboradores.FirstOrDefault();
+            }
+            else
+            {
+                // Tenta encontrar o colaborador correspondente ao utilizador logado
+                var myName = UserSession.Current.User.Name;
+                var me = colaboradoresDb.FirstOrDefault(c => string.Equals(c.Nome, myName, StringComparison.OrdinalIgnoreCase));
+                
+                if (me != null)
+                {
+                    Colaboradores.Add(me);
+                    ColaboradorSelecionado = me;
+                }
+                else
+                {
+                    // Fallback se não encontrar (mostra vazio ou avisa)
+                    // Para já, não adiciona nada, o que vai resultar em lista vazia
+                }
+            }
         }
         catch (Exception ex)
         {

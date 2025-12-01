@@ -265,7 +265,7 @@
                 <TapGestureRecognizer Tapped="OnCloseEditOverlayClicked"/>
             </Grid.GestureRecognizers>
 
-            <Border BackgroundColor="{AppThemeBinding Light=White, Dark=#1C1C1E}"
+            <Border BackgroundColor="{DynamicResource CardBackgroundColor}"
                     StrokeThickness="0"
                     Padding="24"
                     StrokeShape="RoundRectangle 18"
@@ -284,113 +284,103 @@
                     <!-- Header -->
                     <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
                         <Label x:Name="EditOverlayTitleLabel"
-                               Text="➕ NOVO REGISTO"
+                               Text="Novo Registo"
                                FontSize="20"
                                FontAttributes="Bold"
                                VerticalOptions="Center"
-                               TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                               TextColor="{DynamicResource BodyTextColor}"/>
                     </Grid>
 
                     <!-- Form -->
                     <ScrollView Grid.Row="1">
                         <VerticalStackLayout Spacing="16">
                             <!-- Type -->
-                            <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
-                                <Label Text="📋 Tipo de Registo" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
-                                <Border Grid.Row="1" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" StrokeThickness="0" StrokeShape="RoundRectangle 8" HeightRequest="50">
+                            <VerticalStackLayout Spacing="6">
+                                <Label Text="Tipo de Registo" FontSize="13" TextColor="{DynamicResource EntryPlaceholderColor}" Margin="2,0,0,0"/>
+                                <Border BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceLight}, Dark={StaticResource SurfaceDark}}" StrokeThickness="1" Stroke="{AppThemeBinding Light={StaticResource BorderLight}, Dark={StaticResource BorderDark}}" StrokeShape="RoundRectangle 8" HeightRequest="44">
                                     <Grid ColumnDefinitions="*,Auto">
                                         <Grid.GestureRecognizers>
                                             <TapGestureRecognizer Tapped="OnEditOverlayTypeTapped"/>
                                         </Grid.GestureRecognizers>
-                                        <Label x:Name="EditOverlayTypeLabel" Text="Trabalho" Padding="12,10" VerticalOptions="Center" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
-                                        <Label Grid.Column="1" Text="▼" FontSize="12" Padding="12,10" VerticalOptions="Center" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                                        <Label x:Name="EditOverlayTypeLabel" Text="Trabalho" Padding="12,0" VerticalOptions="Center" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"/>
+                                        <Label Grid.Column="1" Text="▼" FontSize="12" Padding="12,0" VerticalOptions="Center" TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}"/>
                                     </Grid>
                                 </Border>
-                            </Grid>
+                            </VerticalStackLayout>
 
                             <!-- Absence Reason -->
-                            <Grid x:Name="EditOverlayAbsenceContainer" RowDefinitions="Auto,Auto" RowSpacing="6" IsVisible="False">
-                                <Label Text="🏥 Motivo" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
-                                <Border Grid.Row="1" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" StrokeThickness="0" StrokeShape="RoundRectangle 8" HeightRequest="50">
+                            <VerticalStackLayout x:Name="EditOverlayAbsenceContainer" Spacing="6" IsVisible="False">
+                                <Label Text="Motivo" FontSize="13" TextColor="{DynamicResource EntryPlaceholderColor}" Margin="2,0,0,0"/>
+                                <Border BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceLight}, Dark={StaticResource SurfaceDark}}" StrokeThickness="1" Stroke="{AppThemeBinding Light={StaticResource BorderLight}, Dark={StaticResource BorderDark}}" StrokeShape="RoundRectangle 8" HeightRequest="44">
                                     <Grid ColumnDefinitions="*,Auto">
                                         <Grid.GestureRecognizers>
                                             <TapGestureRecognizer Tapped="OnEditOverlayAbsenceTapped"/>
                                         </Grid.GestureRecognizers>
-                                        <Label x:Name="EditOverlayAbsenceLabel" Text="Selecione o motivo" Padding="12,10" VerticalOptions="Center" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
-                                        <Label Grid.Column="1" Text="▼" FontSize="12" Padding="12,10" VerticalOptions="Center" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                                        <Label x:Name="EditOverlayAbsenceLabel" Text="Selecione o motivo" Padding="12,0" VerticalOptions="Center" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"/>
+                                        <Label Grid.Column="1" Text="▼" FontSize="12" Padding="12,0" VerticalOptions="Center" TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}"/>
                                     </Grid>
                                 </Border>
-                            </Grid>
+                            </VerticalStackLayout>
 
                             <!-- Collaborator -->
-                            <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
-                                <Label Text="👤 Colaborador" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
-                                <Border Grid.Row="1" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" StrokeThickness="0" StrokeShape="RoundRectangle 8" HeightRequest="50">
+                            <VerticalStackLayout Spacing="6">
+                                <Label Text="Colaborador" FontSize="13" TextColor="{DynamicResource EntryPlaceholderColor}" Margin="2,0,0,0"/>
+                                <Border BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceLight}, Dark={StaticResource SurfaceDark}}" StrokeThickness="1" Stroke="{AppThemeBinding Light={StaticResource BorderLight}, Dark={StaticResource BorderDark}}" StrokeShape="RoundRectangle 8" HeightRequest="44">
                                     <Grid ColumnDefinitions="*,Auto">
                                         <Grid.GestureRecognizers>
                                             <TapGestureRecognizer Tapped="OnEditOverlayCollaboratorTapped"/>
                                         </Grid.GestureRecognizers>
-                                        <Label x:Name="EditOverlayCollaboratorLabel" Text="Selecione colaborador" Padding="12,10" VerticalOptions="Center" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
-                                        <Label Grid.Column="1" Text="▼" FontSize="12" Padding="12,10" VerticalOptions="Center" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                                        <Label x:Name="EditOverlayCollaboratorLabel" Text="Selecione colaborador" Padding="12,0" VerticalOptions="Center" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"/>
+                                        <Label Grid.Column="1" Text="▼" FontSize="12" Padding="12,0" VerticalOptions="Center" TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}"/>
                                     </Grid>
                                 </Border>
-                            </Grid>
+                            </VerticalStackLayout>
 
                             <!-- Client -->
-                            <Grid x:Name="EditOverlayClientContainer" RowDefinitions="Auto,Auto" RowSpacing="6">
-                                <Label Text="🏢 Cliente" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
-                                <Border Grid.Row="1" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" StrokeThickness="0" StrokeShape="RoundRectangle 8" HeightRequest="50">
+                            <VerticalStackLayout x:Name="EditOverlayClientContainer" Spacing="6">
+                                <Label Text="Cliente" FontSize="13" TextColor="{DynamicResource EntryPlaceholderColor}" Margin="2,0,0,0"/>
+                                <Border BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceLight}, Dark={StaticResource SurfaceDark}}" StrokeThickness="1" Stroke="{AppThemeBinding Light={StaticResource BorderLight}, Dark={StaticResource BorderDark}}" StrokeShape="RoundRectangle 8" HeightRequest="44">
                                     <Grid ColumnDefinitions="*,Auto">
                                         <Grid.GestureRecognizers>
                                             <TapGestureRecognizer Tapped="OnEditOverlayClientTapped"/>
                                         </Grid.GestureRecognizers>
-                                        <Label x:Name="EditOverlayClientLabel" Text="Selecione cliente" Padding="12,10" VerticalOptions="Center" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
-                                        <Label Grid.Column="1" Text="▼" FontSize="12" Padding="12,10" VerticalOptions="Center" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                                        <Label x:Name="EditOverlayClientLabel" Text="Selecione cliente" Padding="12,0" VerticalOptions="Center" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"/>
+                                        <Label Grid.Column="1" Text="▼" FontSize="12" Padding="12,0" VerticalOptions="Center" TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}"/>
                                     </Grid>
                                 </Border>
-                            </Grid>
+                            </VerticalStackLayout>
 
                             <!-- Date -->
-                            <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
-                                <Label Text="📅 Data" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
-                                <Border Grid.Row="1" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" StrokeThickness="0" StrokeShape="RoundRectangle 8" HeightRequest="50">
-                                    <DatePicker x:Name="EditOverlayDatePicker" Format="dd/MM/yyyy" TextColor="{AppThemeBinding Light=Black, Dark=White}" BackgroundColor="Transparent" VerticalOptions="Fill" HorizontalOptions="Fill"/>
+                            <VerticalStackLayout Spacing="6">
+                                <Label Text="Data" FontSize="13" TextColor="{DynamicResource EntryPlaceholderColor}" Margin="2,0,0,0"/>
+                                <Border BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceLight}, Dark={StaticResource SurfaceDark}}" StrokeThickness="1" Stroke="{AppThemeBinding Light={StaticResource BorderLight}, Dark={StaticResource BorderDark}}" StrokeShape="RoundRectangle 8" HeightRequest="44">
+                                    <DatePicker x:Name="EditOverlayDatePicker" Format="dd/MM/yyyy" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" BackgroundColor="Transparent" VerticalOptions="Fill" HorizontalOptions="Fill"/>
                                 </Border>
-                            </Grid>
+                            </VerticalStackLayout>
 
                             <!-- Hours -->
-                            <Grid x:Name="EditOverlayHoursContainer" RowDefinitions="Auto,Auto" RowSpacing="6">
-                                <Label Text="⏱️ Horas Normais" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
-                                <Border Grid.Row="1" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" StrokeThickness="0" StrokeShape="RoundRectangle 8" HeightRequest="50">
-                                    <Entry x:Name="EditOverlayHoursEntry" Keyboard="Numeric" Placeholder="0.0" TextColor="{AppThemeBinding Light=Black, Dark=White}" BackgroundColor="Transparent" VerticalOptions="Fill" VerticalTextAlignment="Center"/>
-                                </Border>
-                            </Grid>
+                            <VerticalStackLayout x:Name="EditOverlayHoursContainer" Spacing="6">
+                                <Label Text="Horas Normais" FontSize="13" TextColor="{DynamicResource EntryPlaceholderColor}" Margin="2,0,0,0"/>
+                                <Entry x:Name="EditOverlayHoursEntry" Style="{StaticResource AppleEntry}" Keyboard="Numeric" Placeholder="0.0" />
+                            </VerticalStackLayout>
 
                             <!-- Extra Hours -->
-                            <Grid x:Name="EditOverlayExtrasContainer" RowDefinitions="Auto,Auto" RowSpacing="6">
-                                <Label Text="⚡ Horas Extras" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
-                                <Border Grid.Row="1" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" StrokeThickness="0" StrokeShape="RoundRectangle 8" HeightRequest="50">
-                                    <Entry x:Name="EditOverlayExtrasEntry" Keyboard="Numeric" Placeholder="0.0" TextColor="{AppThemeBinding Light=Black, Dark=White}" BackgroundColor="Transparent" VerticalOptions="Fill" VerticalTextAlignment="Center"/>
-                                </Border>
-                            </Grid>
+                            <VerticalStackLayout x:Name="EditOverlayExtrasContainer" Spacing="6">
+                                <Label Text="Horas Extras" FontSize="13" TextColor="{DynamicResource EntryPlaceholderColor}" Margin="2,0,0,0"/>
+                                <Entry x:Name="EditOverlayExtrasEntry" Style="{StaticResource AppleEntry}" Keyboard="Numeric" Placeholder="0.0" />
+                            </VerticalStackLayout>
 
                             <!-- Observations -->
-                            <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
-                                <Label Text="📝 Observações" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
-                                <Border Grid.Row="1" 
-                                        BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" 
-                                        StrokeThickness="2"
-                                        Stroke="Transparent"
+                            <VerticalStackLayout Spacing="6">
+                                <Label Text="Observações" FontSize="13" TextColor="{DynamicResource EntryPlaceholderColor}" Margin="2,0,0,0"/>
+                                <Border BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceLight}, Dark={StaticResource SurfaceDark}}" 
+                                        StrokeThickness="1"
+                                        Stroke="{AppThemeBinding Light={StaticResource BorderLight}, Dark={StaticResource BorderDark}}"
                                         StrokeShape="RoundRectangle 8" 
                                         HeightRequest="80">
-                                    <Border.Triggers>
-                                        <DataTrigger TargetType="Border" Binding="{Binding Source={x:Reference EditOverlayObservationsEntry}, Path=IsFocused}" Value="True">
-                                            <Setter Property="Stroke" Value="#0A84FF"/>
-                                        </DataTrigger>
-                                    </Border.Triggers>
-                                    <Editor x:Name="EditOverlayObservationsEntry" Placeholder="Escreva aqui..." TextColor="{AppThemeBinding Light=Black, Dark=White}" BackgroundColor="Transparent" VerticalOptions="Fill" AutoSize="TextChanges"/>
+                                    <Editor x:Name="EditOverlayObservationsEntry" Placeholder="Escreva aqui..." TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" BackgroundColor="Transparent" VerticalOptions="Fill" AutoSize="TextChanges" Margin="8"/>
                                 </Border>
-                            </Grid>
+                            </VerticalStackLayout>
                         </VerticalStackLayout>
                     </ScrollView>
 

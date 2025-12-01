@@ -59,13 +59,13 @@ public partial class HoursEntryPage : ContentPage
             var services = Application.Current?.Handler?.MauiContext?.Services;
             var vm = services?.GetService<HorasColaboradorViewModel>() ?? new HorasColaboradorViewModel();
             BindingContext = vm;
-            CarregarTab1Resumo();
+            InitializeTabContent();
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"Erro ao inicializar: {ex.Message}");
             BindingContext = new HorasColaboradorViewModel();
-            CarregarTab1Resumo();
+            InitializeTabContent();
         }
     }
 
@@ -73,7 +73,28 @@ public partial class HoursEntryPage : ContentPage
     {
         InitializeComponent();
         BindingContext = vm;
-        CarregarTab1Resumo();
+        InitializeTabContent();
+    }
+
+
+    private void InitializeTabContent()
+    {
+        var user = NAVIGEST.macOS.UserSession.Current.User;
+        bool canSeeDashboard = user.IsFinancial || user.IsGeneralSupervisor;
+
+        if (canSeeDashboard)
+        {
+            CarregarTab1Resumo();
+        }
+        else
+        {
+            if (BindingContext is HorasColaboradorViewModel vm)
+            {
+                vm.TabAtiva = 2;
+            }
+            AtivarTab(2);
+            CarregarTab2Lista();
+        }
     }
 
     protected override void OnAppearing()
@@ -110,6 +131,10 @@ public partial class HoursEntryPage : ContentPage
 
     private void OnTab2Tapped(object sender, EventArgs e)
     {
+        // Reset to current date when opening Tab 2
+        _selectedYear = DateTime.Today.Year;
+        _selectedMonth = DateTime.Today.Month;
+        
         AtivarTab(2);
         CarregarTab2Lista();
     }
@@ -125,37 +150,44 @@ public partial class HoursEntryPage : ContentPage
     {
         _vm.TabAtiva = numeroTab;
         
-        // Cores para estado não selecionado (White em Light, Dark Grey em Dark)
-        var isDark = Application.Current?.RequestedTheme == AppTheme.Dark;
-        var unselectedBg = isDark ? Color.FromArgb("#2C2C2E") : Colors.White;
-        var unselectedText = isDark ? Color.FromArgb("#8E8E93") : Color.FromArgb("#6E6E73");
+        // Reset styles to Unselected state (using AppTheme aware colors)
+        var unselectedTextLight = Color.FromArgb("#6E6E73");
+        var unselectedTextDark = Color.FromArgb("#8E8E93");
+        var unselectedBgLight = Colors.White;
+        var unselectedBgDark = Color.FromArgb("#2C2C2E");
 
-        Tab1Border.BackgroundColor = unselectedBg;
-        Tab2Border.BackgroundColor = unselectedBg;
-        Tab3Border.BackgroundColor = unselectedBg;
-        
-        Tab1Label.TextColor = unselectedText;
-        Tab2Label.TextColor = unselectedText;
-        Tab3Label.TextColor = unselectedText;
-        
+        // Tab 1
+        Tab1Border.SetAppThemeColor(Border.BackgroundColorProperty, unselectedBgLight, unselectedBgDark);
+        Tab1Label.SetAppThemeColor(Label.TextColorProperty, unselectedTextLight, unselectedTextDark);
         Tab1Label.FontAttributes = FontAttributes.None;
+
+        // Tab 2
+        Tab2Border.SetAppThemeColor(Border.BackgroundColorProperty, unselectedBgLight, unselectedBgDark);
+        Tab2Label.SetAppThemeColor(Label.TextColorProperty, unselectedTextLight, unselectedTextDark);
         Tab2Label.FontAttributes = FontAttributes.None;
+
+        // Tab 3
+        Tab3Border.SetAppThemeColor(Border.BackgroundColorProperty, unselectedBgLight, unselectedBgDark);
+        Tab3Label.SetAppThemeColor(Label.TextColorProperty, unselectedTextLight, unselectedTextDark);
         Tab3Label.FontAttributes = FontAttributes.None;
+        
+        // Apply Selected style
+        var selectedColor = Color.FromArgb("#0A84FF");
         
         switch (numeroTab)
         {
             case 1:
-                Tab1Border.BackgroundColor = Color.FromArgb("#0A84FF");
+                Tab1Border.BackgroundColor = selectedColor; // Override AppTheme color
                 Tab1Label.TextColor = Colors.White;
                 Tab1Label.FontAttributes = FontAttributes.Bold;
                 break;
             case 2:
-                Tab2Border.BackgroundColor = Color.FromArgb("#0A84FF");
+                Tab2Border.BackgroundColor = selectedColor;
                 Tab2Label.TextColor = Colors.White;
                 Tab2Label.FontAttributes = FontAttributes.Bold;
                 break;
             case 3:
-                Tab3Border.BackgroundColor = Color.FromArgb("#0A84FF");
+                Tab3Border.BackgroundColor = selectedColor;
                 Tab3Label.TextColor = Colors.White;
                 Tab3Label.FontAttributes = FontAttributes.Bold;
                 break;
@@ -234,7 +266,8 @@ public partial class HoursEntryPage : ContentPage
             TextColor = Colors.Black,
             FontAttributes = FontAttributes.Bold,
             CornerRadius = 12,
-            Padding = 12
+            Padding = 12,
+            IsVisible = _vm.IsFinancial // Only Financial/Admin
         };
         btnTipos.Clicked += async (s, e) => 
         {
@@ -267,8 +300,9 @@ public partial class HoursEntryPage : ContentPage
             StrokeShape = new RoundRectangle { CornerRadius = 8 },
             Padding = new Thickness(12, 8),
             HeightRequest = 44,
-            BackgroundColor = Application.Current?.RequestedTheme == AppTheme.Dark ? Color.FromArgb("#2C2C2E") : Color.FromArgb("#F5F5F7")
+            IsEnabled = _vm.IsFinancial // Only Financial/Admin can change collaborator
         };
+        pickerContainer.SetAppThemeColor(Border.BackgroundColorProperty, Color.FromArgb("#F5F5F7"), Color.FromArgb("#2C2C2E"));
         
         var pickerGrid = new Grid
         {
@@ -278,9 +312,9 @@ public partial class HoursEntryPage : ContentPage
         var lblPicker = new Label
         {
             FontSize = 16,
-            VerticalTextAlignment = TextAlignment.Center,
-            TextColor = Application.Current?.RequestedTheme == AppTheme.Dark ? Colors.White : Colors.Black
+            VerticalTextAlignment = TextAlignment.Center
         };
+        lblPicker.SetAppThemeColor(Label.TextColorProperty, Colors.Black, Colors.White);
         lblPicker.SetBinding(Label.TextProperty, new Binding("ColaboradorSelecionado.Nome", source: _vm) { TargetNullValue = "Selecione Colaborador" });
 
         var iconPicker = new Label
@@ -877,7 +911,8 @@ public partial class HoursEntryPage : ContentPage
             StrokeShape = new RoundRectangle { CornerRadius = 8 },
             Padding = new Thickness(12, 8),
             Margin = new Thickness(0, 0, 0, 16),
-            HeightRequest = 44
+            HeightRequest = 44,
+            IsEnabled = _vm.IsFinancial // Only Financial/Admin
         };
         
         pickerContainer.SetAppThemeColor(Border.BackgroundColorProperty, Colors.White, Color.FromArgb("#111827"));
@@ -1388,21 +1423,6 @@ public partial class HoursEntryPage : ContentPage
                 }
             }
         }
-    }
-
-    private string GetAbsenceIcon(string? description, string? clientName)
-    {
-        if (string.IsNullOrEmpty(description)) return string.Empty;
-        var desc = description.ToLower();
-        
-        if (desc.Contains("férias") || desc.Contains("ferias")) return "🏖️";
-        if (desc.Contains("doença") || desc.Contains("doenca") || desc.Contains("médico") || desc.Contains("medico") || desc.Contains("hospital")) return "🏥";
-        if (desc.Contains("pai") || desc.Contains("mãe") || desc.Contains("parental") || desc.Contains("filho")) return "👶";
-        if (desc.Contains("luto") || desc.Contains("falecimento") || desc.Contains("funeral")) return "⚫";
-        if (desc.Contains("formação") || desc.Contains("formacao") || desc.Contains("curso")) return "🎓";
-        if (desc.Contains("outros")) return "⚠️";
-
-        return string.Empty;
     }
 
     private List<Button> _monthButtons = new();

@@ -9,7 +9,7 @@ public partial class AppShell : Shell
     public AppShell()
     {
         InitializeComponent();
-        Routing.RegisterRoute("Login", typeof(Pages.LoginPage));
+        // Routing.RegisterRoute("Login", typeof(Pages.LoginPage)); // Agora é ShellContent
         Routing.RegisterRoute(nameof(Pages.LoginPage), typeof(Pages.LoginPage));
         Routing.RegisterRoute("DbConfigPage", typeof(Pages.DbConfigPage));
         Routing.RegisterRoute("mainpage", typeof(Pages.MainYahPage));

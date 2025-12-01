@@ -125,7 +125,8 @@
                                            FontSize="16" 
                                            FontAttributes="Bold" 
                                            TextColor="{DynamicResource BodyTextColor}" 
-                                           HorizontalTextAlignment="End"/>
+                                           HorizontalTextAlignment="End"
+                                           IsVisible="{Binding BindingContext.IsFinancial, Source={x:Reference ClientsPageRoot}}"/>
                                     
                                     <Border BackgroundColor="{DynamicResource EntryPlaceholderColor}" StrokeThickness="0" StrokeShape="RoundRectangle 4" Padding="6,2" HorizontalOptions="End" IsVisible="{Binding EXTERNO}">
                                         <Label Text="EXTERNO" FontSize="10" TextColor="White" FontAttributes="Bold"/>
@@ -167,9 +168,9 @@
                                             HeightRequest="40"
                                             Padding="0"
                                             Clicked="OnDeleteClicked"
-                                            CommandParameter="{Binding .}">
+                                            CommandParameter="{Binding .}"
+                                            IsVisible="{Binding BindingContext.IsFinancial, Source={x:Reference ClientsPageRoot}}">
                                         <Button.Behaviors>
-                                            <behaviors:ButtonMicroAnimationsBehavior />
                                         </Button.Behaviors>
                                     </Button>
 
@@ -311,7 +312,7 @@
                                 </VerticalStackLayout>
                             </Grid>
                             
-                            <VerticalStackLayout Spacing="6">
+                            <VerticalStackLayout Spacing="6" IsVisible="{Binding BindingContext.IsFinancial, Source={x:Reference ClientsPageRoot}}">
                                 <Label Text="Valor Crédito" FontSize="13" TextColor="{DynamicResource EntryPlaceholderColor}" Margin="2,0,0,0"/>
                                 <Entry x:Name="EntryValorCredito" Style="{StaticResource AppleEntry}" Placeholder="0.00" Text="{Binding Editing.VALORCREDITO}" Focused="OnValorCreditoFocused" Unfocused="OnValorCreditoUnfocused" TextChanged="OnValorCreditoTextChanged">
                                     <Entry.Behaviors>
@@ -342,7 +343,7 @@
                     <!-- Footer Buttons -->
                     <Grid Grid.Row="2" ColumnDefinitions="*, Auto, Auto, Auto" ColumnSpacing="12">
                         
-                        <!-- Delete Button (Only visible if not new) -->
+                        <!-- Delete Button (Only visible if not new AND Financial) -->
                         <Button Grid.Column="1"
                                 Text="Eliminar"
                                 BackgroundColor="#FF3B30"
@@ -351,7 +352,7 @@
                                 CornerRadius="8"
                                 HeightRequest="44"
                                 Command="{Binding DeleteEditingCommand}"
-                                IsVisible="{Binding IsNew, Converter={StaticResource InvertedBoolConverter}}"/>
+                                IsVisible="{Binding CanDelete}"/>
 
                         <Button Grid.Column="2"
                                 Text="Cancelar" 

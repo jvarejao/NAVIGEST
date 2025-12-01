@@ -14,9 +14,9 @@ public partial class WelcomePage
             await ShowMainContentAsync();
             await Task.Delay(50); // animação mínima
             if (MainThread.IsMainThread)
-                await Shell.Current.GoToAsync("Login"); // Rota relativa
+                await Shell.Current.GoToAsync("//Login"); // Rota absoluta para ShellContent
             else
-                await MainThread.InvokeOnMainThreadAsync(() => Shell.Current.GoToAsync("Login"));
+                await MainThread.InvokeOnMainThreadAsync(() => Shell.Current.GoToAsync("//Login"));
         }
         catch (Exception ex)
         {

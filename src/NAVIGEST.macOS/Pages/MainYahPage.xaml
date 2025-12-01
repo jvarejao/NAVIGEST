@@ -91,7 +91,7 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <Image Grid.Column="0" Source="{Binding CompanyLogo}" HeightRequest="32" WidthRequest="32" Aspect="AspectFit" />
+                <Image x:Name="CompanyLogoImage" Grid.Column="0" HeightRequest="32" WidthRequest="32" Aspect="AspectFit" />
                 <Label Grid.Column="1" Text="{Binding CompanyName}" Style="{StaticResource TitleText}" VerticalTextAlignment="Center" />
             </Grid>
 
@@ -119,8 +119,8 @@
                                    IsVisible="{OnPlatform Android=false, iOS=false, MacCatalyst=true, WinUI=true}">
                 <Border Style="{StaticResource TopbarActionBorder}">
                     <HorizontalStackLayout Spacing="8">
-                        <Label Text="&#xF2F5;" Style="{StaticResource TopbarActionIconLabel}" />
-                        <Label Text="Logout" Style="{StaticResource TopbarActionTextLabel}" />
+                        <Label Text="&#xF011;" Style="{StaticResource TopbarActionIconLabel}" />
+                        <Label Text="Sair" Style="{StaticResource TopbarActionTextLabel}" />
                     </HorizontalStackLayout>
                     <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnLogoutTapped" /></Border.GestureRecognizers>
                 </Border>
@@ -181,7 +181,7 @@
                             <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="produtos" /></Border.GestureRecognizers>
                         </Border>
                         <!-- HORAS -->
-                        <Border Style="{StaticResource MenuItemBorder}">
+                        <Border Style="{StaticResource MenuItemBorder}" IsVisible="{Binding IsHoursVisible}">
                             <Border.Behaviors>
                             </Border.Behaviors>
                             <Grid ColumnDefinitions="40,*">
@@ -252,9 +252,25 @@
         <!-- ÁREA DE CONTEÚDO -->
         <Grid Grid.Row="1" Grid.Column="1" BackgroundColor="{DynamicResource BodyBg}">
             <ContentView x:Name="ContentHost">
-                <VerticalStackLayout Spacing="6" HorizontalOptions="Center" VerticalOptions="Center">                                    
-                    <Label Text="Bem-vindo à:" Style="{StaticResource TitleText}" />                    
-                    <Label Text="{Binding CompanyName}" Style="{StaticResource TitleText}" VerticalTextAlignment="Center" />                   
+                <VerticalStackLayout Spacing="24" HorizontalOptions="Center" VerticalOptions="Center">
+                    <!-- Logo Central -->
+                    <Image Source="{Binding CompanyLogo}" 
+                           HeightRequest="128" 
+                           WidthRequest="128" 
+                           Aspect="AspectFit" 
+                           HorizontalOptions="Center" />
+                    
+                    <VerticalStackLayout Spacing="4" HorizontalOptions="Center">
+                        <Label Text="Bem-vindo à" 
+                               Style="{StaticResource TitleText}" 
+                               FontSize="16" 
+                               Opacity="0.6" 
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="{Binding CompanyName}" 
+                               Style="{StaticResource TitleText}" 
+                               FontSize="28" 
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
                 </VerticalStackLayout>
             </ContentView>
         </Grid>
