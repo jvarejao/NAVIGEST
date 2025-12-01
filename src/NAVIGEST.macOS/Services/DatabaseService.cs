@@ -608,6 +608,66 @@ namespace NAVIGEST.macOS.Services
             return rows > 0;
         }
 
+        public static async Task<Setup?> GetSetupAsync(CancellationToken ct = default)
+        {
+            using var conn = new MySqlConnection(GetConnectionString());
+            await conn.OpenAsync(ct);
+
+            const string sql = @"
+                SELECT CodEmp, Empresa, CaminhoServidor, CaminhoServidor2,
+                       SERV1PASTA1, SERV1PASTA2, SERV1PASTA3, SERV1PASTA4,
+                       SERV1PASTA5, SERV1PASTA6, SERV1PASTA7, SERV1PASTA8,
+                       SERV2PASTA1, SERV2PASTA2
+                FROM SETUP
+                LIMIT 1;";
+
+            using var cmd = new MySqlCommand(sql, conn);
+            using var rd = await cmd.ExecuteReaderAsync(ct);
+            if (!await rd.ReadAsync(ct)) return null;
+
+            return new Setup
+            {
+                CodEmp = rd.GetString("CodEmp"),
+                Empresa = rd.IsDBNull(rd.GetOrdinal("Empresa")) ? null : rd.GetString("Empresa"),
+                CaminhoServidor = rd.IsDBNull(rd.GetOrdinal("CaminhoServidor")) ? null : rd.GetString("CaminhoServidor"),
+                CaminhoServidor2 = rd.IsDBNull(rd.GetOrdinal("CaminhoServidor2")) ? null : rd.GetString("CaminhoServidor2"),
+                SERV1PASTA1 = rd.IsDBNull(rd.GetOrdinal("SERV1PASTA1")) ? null : rd.GetString("SERV1PASTA1"),
+                SERV1PASTA2 = rd.IsDBNull(rd.GetOrdinal("SERV1PASTA2")) ? null : rd.GetString("SERV1PASTA2"),
+                SERV1PASTA3 = rd.IsDBNull(rd.GetOrdinal("SERV1PASTA3")) ? null : rd.GetString("SERV1PASTA3"),
+                SERV1PASTA4 = rd.IsDBNull(rd.GetOrdinal("SERV1PASTA4")) ? null : rd.GetString("SERV1PASTA4"),
+                SERV1PASTA5 = rd.IsDBNull(rd.GetOrdinal("SERV1PASTA5")) ? null : rd.GetString("SERV1PASTA5"),
+                SERV1PASTA6 = rd.IsDBNull(rd.GetOrdinal("SERV1PASTA6")) ? null : rd.GetString("SERV1PASTA6"),
+                SERV1PASTA7 = rd.IsDBNull(rd.GetOrdinal("SERV1PASTA7")) ? null : rd.GetString("SERV1PASTA7"),
+                SERV1PASTA8 = rd.IsDBNull(rd.GetOrdinal("SERV1PASTA8")) ? null : rd.GetString("SERV1PASTA8"),
+                SERV2PASTA1 = rd.IsDBNull(rd.GetOrdinal("SERV2PASTA1")) ? null : rd.GetString("SERV2PASTA1"),
+                SERV2PASTA2 = rd.IsDBNull(rd.GetOrdinal("SERV2PASTA2")) ? null : rd.GetString("SERV2PASTA2")
+            };
+        }
+
+        public static async Task<(bool Created, string Message)> EnsureClientePastasAsync(Cliente c)
+        {
+            var (success, msg) = await FolderService.CreateClientFoldersAsync(c);
+            if (success)
+            {
+                try
+                {
+                    using var conn = new MySqlConnection(GetConnectionString());
+                    await conn.OpenAsync();
+                    const string sql = "UPDATE CLIENTES SET PastasSincronizadas=1 WHERE CLICODIGO=@cod LIMIT 1;";
+                    using var cmd = new MySqlCommand(sql, conn);
+                    cmd.Parameters.Add("@cod", MySqlDbType.VarChar, 30).Value = c.CLICODIGO;
+                    await cmd.ExecuteNonQueryAsync();
+                    
+                    c.PastasSincronizadas = true;
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[DB] Erro ao atualizar flag pastas: {ex.Message}");
+                }
+            }
+            return (success, msg);
+        }
+
         public static async Task<bool> DeleteClienteAsync(string? codigo, CancellationToken ct = default)
         {
             if (string.IsNullOrWhiteSpace(codigo))

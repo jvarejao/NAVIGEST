@@ -328,6 +328,17 @@ public class ClientsPageModel : INotifyPropertyChanged
             // Pré-seleciona primeiro cliente se nenhum
             if (Clientes.Count > 0 && SelectedCliente is null)
                 SelectedCliente = Clientes.First();
+
+            // Verificar pastas não sincronizadas (apenas se carregou dados)
+            if (_all.Count > 0)
+            {
+                // Executa em background para não bloquear a UI imediata
+                _ = Task.Run(async () => 
+                {
+                    await Task.Delay(1000); // Pequeno delay para deixar a UI estabilizar
+                    MainThread.BeginInvokeOnMainThread(async () => await CheckForUnsyncedFoldersAsync());
+                });
+            }
         }
         catch (Exception ex)
         {
@@ -337,6 +348,54 @@ public class ClientsPageModel : INotifyPropertyChanged
         finally
         {
             IsBusy = false;
+        }
+    }
+
+    private async Task CheckForUnsyncedFoldersAsync()
+    {
+        // Ignora anulados e externos (se aplicável)
+        var unsynced = _all.Where(c => !c.PastasSincronizadas && !c.ANULADO).ToList();
+        
+        if (unsynced.Count > 0)
+        {
+            bool sync = await AppShell.Current.DisplayAlert("Sincronização de Pastas", 
+                $"Detetados {unsynced.Count} clientes sem pastas sincronizadas.\nDeseja criar a estrutura de pastas para eles agora?", 
+                "Sim, Sincronizar", "Agora não");
+            
+            if (sync)
+            {
+                IsBusy = true;
+                int successCount = 0;
+                int errorCount = 0;
+
+                // Barra de progresso ou apenas toast? Vamos usar toast por enquanto.
+                await AppShell.DisplayToastAsync("A iniciar sincronização...", ToastTipo.Info);
+
+                foreach (var c in unsynced)
+                {
+                    try
+                    {
+                        var (ok, _) = await DatabaseService.EnsureClientePastasAsync(c);
+                        if (ok)
+                        {
+                            // Atualiza o objeto na lista principal
+                            c.PastasSincronizadas = true;
+                            successCount++;
+                        }
+                        else
+                        {
+                            errorCount++;
+                        }
+                    }
+                    catch
+                    {
+                        errorCount++;
+                    }
+                }
+
+                var msg = $"Sincronização concluída.\nSucesso: {successCount}\nErros/Ignorados: {errorCount}";
+                await AppShell.Current.DisplayAlert("Relatório", msg, "OK");
+            }
         }
     }
 
@@ -559,51 +618,68 @@ public class ClientsPageModel : INotifyPropertyChanged
         }
     }
 
-    private async Task OnPastasAsync() => await OnCreateFoldersAsync();
-
-    private async Task OnCreateFoldersAsync()
+    private async Task OnPastasAsync()
     {
         if (EditModel is null) return;
+        var c = EditModel;
 
-        if (string.IsNullOrWhiteSpace(EditModel.CLICODIGO))
+        if (c.PastasSincronizadas)
         {
-            await OnSaveAsync();
-            if (string.IsNullOrWhiteSpace(EditModel.CLICODIGO))
+            // Se já tem visto verde, abre a pasta
+            await FolderService.OpenClientFolderAsync(c);
+        }
+        else
+        {
+            // Se tem X vermelho, pergunta se quer criar
+            bool criar = await AppShell.Current.DisplayAlert(
+                "Sincronizar Pastas", 
+                $"As pastas para o cliente {c.CLINOME} não estão criadas/sincronizadas.\nDeseja criar a estrutura de pastas agora?", 
+                "Criar", "Cancelar");
+
+            if (criar)
             {
-                await AppShell.DisplayToastAsync("Gerar/guardar cliente antes de continuar.");
-                return;
+                IsBusy = true;
+                try
+                {
+                    var (ok, msg) = await DatabaseService.EnsureClientePastasAsync(c);
+                    if (ok)
+                    {
+                        SetPastasSincronizadas(true);
+
+                        if (!string.IsNullOrEmpty(msg) && msg.Contains("já existia"))
+                        {
+                            await AppShell.Current.DisplayAlert("Informação", msg, "OK");
+                        }
+                        else
+                        {
+                            await AppShell.DisplayToastAsync("Pastas criadas com sucesso!", ToastTipo.Sucesso);
+                        }
+
+                        // Opcional: Abrir logo a pasta após criar
+                        await FolderService.OpenClientFolderAsync(c);
+                    }
+                    else
+                    {
+                        await AppShell.DisplayToastAsync($"Erro: {msg}", ToastTipo.Erro, 4000);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    GlobalErro.TratarErro(ex);
+                }
+                finally
+                {
+                    IsBusy = false;
+                }
             }
         }
+    }
 
-#if ANDROID || IOS
-        await AppShell.DisplayToastAsync("Criação de pastas só disponível em Desktop.");
-        return;
-#endif
-
-        if (EditModel.PastasSincronizadas)
-        {
-            await AppShell.DisplayToastAsync("Pastas já criadas.");
-            return;
-        }
-
-        try
-        {
-            var (ok, _) = await DatabaseService.EnsureClientePastasAsync(EditModel);
-            if (ok)
-            {
-                SetPastasSincronizadas(true);
-            }
-            else
-            {
-                await AppShell.DisplayToastAsync("Falha ao criar pastas.");
-            }
-        }
-        catch (Exception ex)
-        {
-            GlobalErro.TratarErro(ex);
-            await AppShell.DisplayToastAsync("Erro ao criar pastas.");
-        }
-        OnPropertyChanged(nameof(Editing));
+    // Método antigo removido ou mantido como helper se necessário, mas OnPastasAsync agora faz tudo.
+    private async Task OnCreateFoldersAsync()
+    {
+        // Redireciona para a nova lógica para manter compatibilidade se for chamado de outro lado
+        await OnPastasAsync();
     }
 
     private void ApplyFilterImmediate()
@@ -995,12 +1071,29 @@ public class ClientsPageModel : INotifyPropertyChanged
     private void SetPastasSincronizadas(bool valor)
     {
         if (EditModel == null) return;
-        if (EditModel.PastasSincronizadas == valor) return;
-        EditModel.PastasSincronizadas = valor;
+        
+        // Atualiza o EditModel (que é um clone)
+        if (EditModel.PastasSincronizadas != valor)
+        {
+            EditModel.PastasSincronizadas = valor;
+            OnPropertyChanged(nameof(Editing));
+            OnPropertyChanged(nameof(PastasButtonText));
+        }
+
+        // Atualiza o item na lista principal (_all)
         var cache = _all.FirstOrDefault(c => c.CLICODIGO == EditModel.CLICODIGO);
-        if (cache != null) cache.PastasSincronizadas = valor;
-        OnPropertyChanged(nameof(Editing));
-        OnPropertyChanged(nameof(PastasButtonText));
+        if (cache != null) 
+        {
+            cache.PastasSincronizadas = valor;
+        }
+
+        // Atualiza o item na lista filtrada (Filtered) que está ligada à UI
+        // Isto garante que a UI atualiza mesmo que Filtered tenha instâncias diferentes (embora não devesse)
+        var itemInFiltered = Filtered.FirstOrDefault(c => c.CLICODIGO == EditModel.CLICODIGO);
+        if (itemInFiltered != null && itemInFiltered != cache)
+        {
+            itemInFiltered.PastasSincronizadas = valor;
+        }
     }
 
     private void OnPropertyChanged([CallerMemberName] string? name = null)
