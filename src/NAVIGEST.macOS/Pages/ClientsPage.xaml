@@ -295,12 +295,35 @@
                             
                             <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
                                 <VerticalStackLayout Spacing="6" Grid.Column="0">
-                                    <Label Text="Telefone" FontSize="13" TextColor="{DynamicResource EntryPlaceholderColor}" Margin="2,0,0,0"/>
-                                    <Entry Style="{StaticResource AppleEntry}" Placeholder="Telefone" Keyboard="Telephone" Text="{Binding Editing.TELEFONE}">
-                                        <Entry.Behaviors>
-                                            <behaviors:EntryValidationBehavior ValidationKind="Phone" />
-                                        </Entry.Behaviors>
-                                    </Entry>
+                                                                        <Label Text="Telefone" FontSize="13" TextColor="{DynamicResource EntryPlaceholderColor}" Margin="2,0,0,0"/>
+                                    <Grid ColumnDefinitions="120,*" ColumnSpacing="8">
+                                        <Border StrokeShape="RoundRectangle 8" 
+                                                StrokeThickness="1" 
+                                                Stroke="{DynamicResource EntryBorderColor}"
+                                                BackgroundColor="{DynamicResource EntryBackgroundColor}" 
+                                                HeightRequest="44" 
+                                                Padding="0">
+                                            <Border.GestureRecognizers>
+                                                <TapGestureRecognizer Command="{Binding OpenCountryPickerCommand}"/>
+                                            </Border.GestureRecognizers>
+                                            <Grid ColumnDefinitions="Auto, *" Padding="8,0">
+                                                <Label Text="{Binding SelectedDialCodeItem.FlagEmoji}" 
+                                                       VerticalOptions="Center" 
+                                                       FontSize="20"
+                                                       Margin="0,0,4,0"/>
+                                                <Label Grid.Column="1" 
+                                                       Text="{Binding SelectedDialCodeItem.NormalizedPrefix}" 
+                                                       VerticalOptions="Center"
+                                                       TextColor="{DynamicResource BodyTextColor}"
+                                                       LineBreakMode="TailTruncation"/>
+                                            </Grid>
+                                        </Border>
+                                        <Entry Grid.Column="1" Style="{StaticResource AppleEntry}" Placeholder="Telefone" Keyboard="Telephone" Text="{Binding PhoneBody}">
+                                            <Entry.Behaviors>
+                                                <behaviors:EntryValidationBehavior ValidationKind="Phone" />
+                                            </Entry.Behaviors>
+                                        </Entry>
+                                    </Grid>
                                 </VerticalStackLayout>
                                 <VerticalStackLayout Spacing="6" Grid.Column="1">
                                     <Label Text="Email" FontSize="13" TextColor="{DynamicResource EntryPlaceholderColor}" Margin="2,0,0,0"/>

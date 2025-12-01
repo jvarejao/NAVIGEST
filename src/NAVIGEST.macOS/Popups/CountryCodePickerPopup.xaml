@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:NAVIGEST.macOS.Models"
+             x:Class="NAVIGEST.macOS.Popups.CountryCodePickerPopup"
+             BackgroundColor="{AppThemeBinding Light=#80000000, Dark=#80000000}">
+
+    <Grid HorizontalOptions="Fill" VerticalOptions="Fill">
+        <!-- Background tap to close - Layer 1 -->
+        <Grid BackgroundColor="Transparent" HorizontalOptions="Fill" VerticalOptions="Fill">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnCloseClicked" />
+            </Grid.GestureRecognizers>
+        </Grid>
+
+        <!-- Content - Layer 2 -->
+        <Border StrokeShape="RoundRectangle 10"
+                StrokeThickness="0"
+                BackgroundColor="{AppThemeBinding Light=White, Dark=#1E1E1E}"
+                WidthRequest="400"
+                HeightRequest="600"
+                Padding="20"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"
+                InputTransparent="False">
+            
+            <Grid RowDefinitions="Auto, Auto, *, Auto" RowSpacing="15">
+                <!-- Header -->
+                <Label Text="Selecionar País"
+                       FontSize="18"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"
+                       TextColor="{DynamicResource BodyTextColor}"/>
+
+                <!-- Search Bar -->
+                <Border Grid.Row="1" 
+                        StrokeShape="RoundRectangle 8" 
+                        StrokeThickness="1" 
+                        Stroke="{DynamicResource EntryBorderColor}" 
+                        BackgroundColor="{DynamicResource EntryBackgroundColor}" 
+                        Padding="10,0"
+                        HeightRequest="50">
+                    <Entry x:Name="SearchEntry"
+                           Placeholder="Pesquisar (ex: Portugal, PT, +351)..."
+                           TextChanged="OnSearchTextChanged"
+                           TextColor="{DynamicResource BodyTextColor}"
+                           PlaceholderColor="{DynamicResource EntryPlaceholderColor}"
+                           BackgroundColor="Transparent"
+                           VerticalOptions="Center"/>
+                </Border>
+
+                <!-- List -->
+                <CollectionView Grid.Row="2" 
+                                x:Name="CountriesList" 
+                                SelectionMode="Single" 
+                                SelectionChanged="OnCountrySelected">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:DialCodeItem">
+                            <Grid Padding="10" ColumnDefinitions="Auto, *">
+                                <Label Text="{Binding FlagEmoji}" 
+                                       FontSize="24" 
+                                       VerticalOptions="Center" 
+                                       Margin="0,0,10,0"/>
+                                <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                                    <Label Text="{Binding Country}" 
+                                           FontSize="16" 
+                                           TextColor="{DynamicResource BodyTextColor}"/>
+                                    <Label Text="{Binding NormalizedPrefix}" 
+                                           FontSize="12" 
+                                           TextColor="{DynamicResource EntryPlaceholderColor}"/>
+                                </VerticalStackLayout>
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <!-- Close Button -->
+                <Button Grid.Row="3" 
+                        Text="Fechar" 
+                        Clicked="OnCloseClicked" 
+                        BackgroundColor="Transparent" 
+                        TextColor="{DynamicResource AccentColor}"
+                        FontAttributes="Bold"
+                        HeightRequest="44"/>
+            </Grid>
+        </Border>
+    </Grid>
+</ContentPage>
