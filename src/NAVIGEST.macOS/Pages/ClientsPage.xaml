@@ -5,6 +5,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:models="clr-namespace:NAVIGEST.macOS.Models"
              xmlns:behaviors="clr-namespace:NAVIGEST.macOS.Behaviors"
+             xmlns:pages="clr-namespace:NAVIGEST.macOS.Pages"
              BackgroundColor="{DynamicResource PageBackgroundColor}"
              Title="Clientes"
              SizeChanged="OnPageSizeChanged"
@@ -12,269 +13,344 @@
 
     <ContentPage.Resources>
         <ResourceDictionary>
-
-            <!-- (já existia) Estilo local de Entry desta página -->
             <Style TargetType="Entry" x:Key="FormEntry">
                 <Setter Property="HeightRequest" Value="44"/>
                 <Setter Property="FontSize" Value="15"/>
                 <Setter Property="Margin" Value="0,4,0,0"/>
             </Style>
-
-            <!-- NOVO: força listas a ocuparem a largura no iPhone -->
-            <Style TargetType="CollectionView">
-                <Setter Property="HorizontalOptions">
-                    <Setter.Value>
-                        <OnPlatform x:TypeArguments="LayoutOptions">
-                            <On Platform="iOS" Value="Fill" />
-                            <On Platform="Android" Value="Fill" />
-                            <On Platform="MacCatalyst" Value="Center" />
-                            <On Platform="WinUI" Value="Center" />
-                        </OnPlatform>
-                    </Setter.Value>
-                </Setter>
-                <!-- Em telemóvel: 0 deixa expandir ao ecrã completo; em desktop/tablet: até 1920px -->
-                <Setter Property="WidthRequest" Value="{OnIdiom Phone=0, Tablet=1080, Desktop=1920}" />
-                <Setter Property="MaximumWidthRequest" Value="{OnIdiom Phone=0, Tablet=1080, Desktop=1920}" />
-                <Setter Property="Margin" Value="0,8,0,0" />
-                <Setter Property="VerticalOptions" Value="Fill" />
-                <Setter Property="ItemsLayout" Value="VerticalList" />
-            </Style>
-
-            <!-- Opcional: se tiveres ContentView a envolver listas, também abre a largura -->
-            <Style TargetType="ContentView">
-                <Setter Property="HorizontalOptions">
-                    <Setter.Value>
-                        <OnPlatform x:TypeArguments="LayoutOptions">
-                            <On Platform="iOS" Value="Fill" />
-                            <On Platform="Android" Value="Fill" />
-                            <On Platform="MacCatalyst" Value="Center" />
-                            <On Platform="WinUI" Value="Center" />
-                        </OnPlatform>
-                    </Setter.Value>
-                </Setter>
-                <Setter Property="WidthRequest" Value="{OnIdiom Phone=0, Tablet=1080, Desktop=1920}" />
-                <Setter Property="MaximumWidthRequest" Value="{OnIdiom Phone=0, Tablet=1080, Desktop=1920}" />
-            </Style>
-
         </ResourceDictionary>
     </ContentPage.Resources>
 
-
     <Grid>
-        <ScrollView x:Name="MainScrollView">
-            <HorizontalStackLayout HorizontalOptions="Center" VerticalOptions="Fill">
-                <VerticalStackLayout x:Name="PageContainer" Spacing="18" Padding="24,24,24,60" HorizontalOptions="Fill"
-                                     MaximumWidthRequest="1400">
-
-                <!-- ================== BLOCO DE TESTE DO TEMA ================== -->
-                <Label Text="Teste Tema"
-                       TextColor="{DynamicResource BodyTextColor}" />
-                <Border Style="{StaticResource CardBorder}">
-                    <Label Text="Card"
-                           TextColor="{DynamicResource BodyTextColor}" />
+        <!-- MAIN CONTENT -->
+        <Grid RowDefinitions="Auto, *" 
+              Padding="24,24,24,0" 
+              RowSpacing="16"
+              MaximumWidthRequest="1200"
+              HorizontalOptions="Center">
+            
+            <!-- HEADER: Search & Add -->
+            <Grid ColumnDefinitions="*, Auto" ColumnSpacing="16">
+                <!-- Search -->
+                <Border StrokeShape="RoundRectangle 10" 
+                        BackgroundColor="{DynamicResource CardBackgroundColor}"
+                        StrokeThickness="0"
+                        Padding="8,0"
+                        HeightRequest="44"
+                        VerticalOptions="Center">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Entry Placeholder="Pesquisar (código, nome, email...)" 
+                               Text="{Binding Filter}" 
+                               BackgroundColor="Transparent"
+                               TextColor="{DynamicResource BodyTextColor}"
+                               HeightRequest="44"
+                               VerticalOptions="Center"
+                               Style="{StaticResource AppleEntry}"
+                               Margin="0"/>
+                        
+                        <Button Grid.Column="1"
+                                Text="✕"
+                                TextColor="{DynamicResource EntryPlaceholderColor}"
+                                BackgroundColor="Transparent"
+                                Command="{Binding ClearSearchCommand}"
+                                IsVisible="{Binding Filter, Converter={StaticResource IsNotNullOrEmptyConverter}}"
+                                WidthRequest="30"
+                                HeightRequest="30"
+                                Padding="0"
+                                VerticalOptions="Center"/>
+                    </Grid>
                 </Border>
-                <!-- ============================================================ -->
 
-                <!-- Botão para picker (mobile/tablet) -->
-                <Button Text="Selecionar Cliente" IsVisible="{OnIdiom Phone=true, Tablet=true, Desktop=false}" Style="{StaticResource AppleFilledButton}" Clicked="OnOpenClientPicker">
+                <!-- Add Button -->
+                <Button Grid.Column="1" 
+                        Text="➕ Novo Cliente" 
+                        Command="{Binding NewCommand}"
+                        BackgroundColor="#0A84FF" 
+                        TextColor="White" 
+                        FontAttributes="Bold" 
+                        CornerRadius="12" 
+                        HeightRequest="44"
+                        VerticalOptions="Center"
+                        Padding="20,0">
                     <Button.Behaviors>
                         <behaviors:ButtonMicroAnimationsBehavior />
                     </Button.Behaviors>
                 </Button>
+            </Grid>
 
-                <!-- FORM -->
-                <Border StrokeShape="RoundRectangle 18" StrokeThickness="1" Stroke="{DynamicResource DividerColor}" Background="{DynamicResource CardBackgroundColor}" Padding="20">
-                    <VerticalStackLayout Spacing="10">
-                        <Entry Style="{StaticResource AppleEntry}" Placeholder="Código" Text="{Binding Editing.CLICODIGO}" IsReadOnly="True" />
-                        <Entry Style="{StaticResource AppleEntry}" Placeholder="Nome"   Text="{Binding Editing.CLINOME}" />
+            <!-- LIST -->
+            <CollectionView Grid.Row="1" x:Name="ClientsView" ItemsSource="{Binding Filtered}" SelectionMode="None" Margin="0,0,0,20">
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="12"/>
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Border StrokeThickness="0"
+                                BackgroundColor="{DynamicResource CardBackgroundColor}"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="16">
+                            <Grid ColumnDefinitions="*, Auto, Auto" ColumnSpacing="16">
+                                
+                                <!-- INFO (Left) -->
+                                <VerticalStackLayout Spacing="4" Grid.Column="0" VerticalOptions="Center">
+                                    <!-- Name -->
+                                    <Label Text="{Binding CLINOME}" 
+                                           FontSize="16" 
+                                           FontAttributes="Bold" 
+                                           TextColor="{DynamicResource BodyTextColor}"
+                                           LineBreakMode="TailTruncation"/>
+                                    
+                                    <!-- Code -->
+                                    <Label Text="{Binding CLICODIGO}" 
+                                           FontSize="14" 
+                                           TextColor="{DynamicResource EntryPlaceholderColor}"/>
+                                    
+                                    <!-- Contact Info (Icon + Text) -->
+                                    <HorizontalStackLayout Spacing="12" Margin="0,4,0,0">
+                                        <HorizontalStackLayout Spacing="6" IsVisible="{Binding EMAIL, Converter={StaticResource IsNotNullOrEmptyConverter}}">
+                                            <Label Text="&#xF0E0;" FontFamily="FA7Solid" FontSize="12" TextColor="{DynamicResource AccentColor}" VerticalOptions="Center"/>
+                                            <Label Text="{Binding EMAIL}" FontSize="13" TextColor="{DynamicResource BodyTextColor}" VerticalOptions="Center" LineBreakMode="TailTruncation"/>
+                                        </HorizontalStackLayout>
+                                        
+                                        <HorizontalStackLayout Spacing="6" IsVisible="{Binding TELEFONE, Converter={StaticResource IsNotNullOrEmptyConverter}}">
+                                            <Label Text="&#xF095;" FontFamily="FA7Solid" FontSize="12" TextColor="{DynamicResource AccentColor}" VerticalOptions="Center"/>
+                                            <Label Text="{Binding TELEFONE}" FontSize="13" TextColor="{DynamicResource BodyTextColor}" VerticalOptions="Center"/>
+                                        </HorizontalStackLayout>
+                                    </HorizontalStackLayout>
+                                </VerticalStackLayout>
+
+                                <!-- STATUS / VALUE (Middle) -->
+                                <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" HorizontalOptions="End" Spacing="4" MinimumWidthRequest="100">
+                                    <Label Text="{Binding VALORCREDITO}" 
+                                           FontSize="16" 
+                                           FontAttributes="Bold" 
+                                           TextColor="{DynamicResource BodyTextColor}" 
+                                           HorizontalTextAlignment="End"/>
+                                    
+                                    <Border BackgroundColor="{DynamicResource EntryPlaceholderColor}" StrokeThickness="0" StrokeShape="RoundRectangle 4" Padding="6,2" HorizontalOptions="End" IsVisible="{Binding EXTERNO}">
+                                        <Label Text="EXTERNO" FontSize="10" TextColor="White" FontAttributes="Bold"/>
+                                    </Border>
+                                    
+                                    <Border BackgroundColor="#FF3B30" StrokeThickness="0" StrokeShape="RoundRectangle 4" Padding="6,2" HorizontalOptions="End" IsVisible="{Binding ANULADO}">
+                                        <Label Text="ANULADO" FontSize="10" TextColor="White" FontAttributes="Bold"/>
+                                    </Border>
+                                </VerticalStackLayout>
+
+                                <!-- ACTIONS (Right) -->
+                                <HorizontalStackLayout Grid.Column="2" Spacing="8" VerticalOptions="Center">
+                                    
+                                    <!-- Edit -->
+                                    <Button Text="&#xF044;" 
+                                            FontFamily="FA7Solid" 
+                                            FontSize="16"
+                                            BackgroundColor="#190A84FF" 
+                                            TextColor="#0A84FF"
+                                            CornerRadius="8"
+                                            WidthRequest="40"
+                                            HeightRequest="40"
+                                            Padding="0"
+                                            Clicked="OnEditClicked"
+                                            CommandParameter="{Binding .}">
+                                        <Button.Behaviors>
+                                            <behaviors:ButtonMicroAnimationsBehavior />
+                                        </Button.Behaviors>
+                                    </Button>
+
+                                    <!-- Delete -->
+                                    <Button Text="&#xF1F8;" 
+                                            FontFamily="FA7Solid" 
+                                            FontSize="16"
+                                            BackgroundColor="#19FF3B30" 
+                                            TextColor="#FF3B30"
+                                            CornerRadius="8"
+                                            WidthRequest="40"
+                                            HeightRequest="40"
+                                            Padding="0"
+                                            Clicked="OnDeleteClicked"
+                                            CommandParameter="{Binding .}">
+                                        <Button.Behaviors>
+                                            <behaviors:ButtonMicroAnimationsBehavior />
+                                        </Button.Behaviors>
+                                    </Button>
+
+                                    <!-- Folder -->
+                                    <Button Text="&#xF07C;" 
+                                            FontFamily="FA7Solid" 
+                                            FontSize="16"
+                                            BackgroundColor="#19FF9500" 
+                                            TextColor="#FF9500"
+                                            CornerRadius="8"
+                                            WidthRequest="40"
+                                            HeightRequest="40"
+                                            Padding="0"
+                                            Clicked="OnPastasClicked"
+                                            CommandParameter="{Binding .}">
+                                        <Button.Behaviors>
+                                            <behaviors:ButtonMicroAnimationsBehavior />
+                                        </Button.Behaviors>
+                                    </Button>
+
+                                    <!-- Services -->
+                                    <Button Text="&#xF085;" 
+                                            FontFamily="FA7Solid" 
+                                            FontSize="16"
+                                            BackgroundColor="#19AF52DE" 
+                                            TextColor="#AF52DE"
+                                            CornerRadius="8"
+                                            WidthRequest="40"
+                                            HeightRequest="40"
+                                            Padding="0"
+                                            Clicked="OnServicesClicked"
+                                            CommandParameter="{Binding .}">
+                                        <Button.Behaviors>
+                                            <behaviors:ButtonMicroAnimationsBehavior />
+                                        </Button.Behaviors>
+                                    </Button>
+
+                                </HorizontalStackLayout>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </Grid>
+
+        <!-- EDIT OVERLAY -->
+        <Grid x:Name="EditOverlay" 
+              IsVisible="{Binding IsEditOverlayVisible}" 
+              BackgroundColor="#80000000" 
+              ZIndex="999">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding CloseEditCommand}"/>
+            </Grid.GestureRecognizers>
+
+            <Border BackgroundColor="{DynamicResource CardBackgroundColor}"
+                    StrokeThickness="0"
+                    Padding="24"
+                    StrokeShape="RoundRectangle 18"
+                    VerticalOptions="Center"
+                    HorizontalOptions="Center"
+                    WidthRequest="800"
+                    MaximumHeightRequest="700">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer /> <!-- Prevent close -->
+                </Border.GestureRecognizers>
+                <Border.Shadow>
+                    <Shadow Brush="Black" Opacity="0.25" Radius="20" Offset="0,4"/>
+                </Border.Shadow>
+
+                <Grid RowDefinitions="Auto, *, Auto" RowSpacing="20">
+                    <!-- Header -->
+                    <Label Text="{Binding Editing.CLINOME, StringFormat='Editar {0}', TargetNullValue='Novo Cliente'}" 
+                           FontSize="20" 
+                           FontAttributes="Bold" 
+                           TextColor="{DynamicResource BodyTextColor}"/>
+
+                    <!-- Form -->
+                    <ScrollView Grid.Row="1">
+                        <VerticalStackLayout Spacing="16">
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+                                <VerticalStackLayout Spacing="6" Grid.Column="0">
+                                    <Label Text="Código" FontSize="13" TextColor="{DynamicResource EntryPlaceholderColor}" Margin="2,0,0,0"/>
+                                    <Entry Style="{StaticResource AppleEntry}" Placeholder="Código" Text="{Binding Editing.CLICODIGO}" IsReadOnly="True" />
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Spacing="6" Grid.Column="1">
+                                    <Label Text="Vendedor" FontSize="13" TextColor="{DynamicResource EntryPlaceholderColor}" Margin="2,0,0,0"/>
+                                    <Entry Style="{StaticResource AppleEntry}" Placeholder="Vendedor" Text="{Binding Editing.VENDEDOR}" />
+                                </VerticalStackLayout>
+                            </Grid>
+
+                            <VerticalStackLayout Spacing="6">
+                                <Label Text="Nome" FontSize="13" TextColor="{DynamicResource EntryPlaceholderColor}" Margin="2,0,0,0"/>
+                                <Entry Style="{StaticResource AppleEntry}" Placeholder="Nome do Cliente" Text="{Binding Editing.CLINOME}" />
+                            </VerticalStackLayout>
+                            
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+                                <VerticalStackLayout Spacing="6" Grid.Column="0">
+                                    <Label Text="Telefone" FontSize="13" TextColor="{DynamicResource EntryPlaceholderColor}" Margin="2,0,0,0"/>
+                                    <Entry Style="{StaticResource AppleEntry}" Placeholder="Telefone" Keyboard="Telephone" Text="{Binding Editing.TELEFONE}">
+                                        <Entry.Behaviors>
+                                            <behaviors:EntryValidationBehavior ValidationKind="Phone" />
+                                        </Entry.Behaviors>
+                                    </Entry>
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Spacing="6" Grid.Column="1">
+                                    <Label Text="Email" FontSize="13" TextColor="{DynamicResource EntryPlaceholderColor}" Margin="2,0,0,0"/>
+                                    <Entry Style="{StaticResource AppleEntry}" Placeholder="Email" Keyboard="Email" Text="{Binding Editing.EMAIL}">
+                                        <Entry.Behaviors>
+                                            <behaviors:EntryValidationBehavior ValidationKind="Email" />
+                                        </Entry.Behaviors>
+                                    </Entry>
+                                </VerticalStackLayout>
+                            </Grid>
+                            
+                            <VerticalStackLayout Spacing="6">
+                                <Label Text="Valor Crédito" FontSize="13" TextColor="{DynamicResource EntryPlaceholderColor}" Margin="2,0,0,0"/>
+                                <Entry x:Name="EntryValorCredito" Style="{StaticResource AppleEntry}" Placeholder="0.00" Text="{Binding Editing.VALORCREDITO}" Focused="OnValorCreditoFocused" Unfocused="OnValorCreditoUnfocused" TextChanged="OnValorCreditoTextChanged">
+                                    <Entry.Behaviors>
+                                        <behaviors:EntryValidationBehavior ValidationKind="Numeric" />
+                                    </Entry.Behaviors>
+                                </Entry>
+                            </VerticalStackLayout>
+
+                            <FlexLayout Wrap="Wrap" JustifyContent="SpaceBetween" AlignItems="Center" Margin="0,8,0,0">
+                                <HorizontalStackLayout Spacing="8" Margin="0,0,16,8">
+                                    <Label Text="Externo" VerticalTextAlignment="Center" TextColor="{DynamicResource BodyTextColor}"/>
+                                    <Switch IsToggled="{Binding Editing.EXTERNO}" OnColor="{DynamicResource AccentColor}" />
+                                </HorizontalStackLayout>
+                                
+                                <HorizontalStackLayout Spacing="8" Margin="0,0,16,8">
+                                    <Label Text="Anulado" VerticalTextAlignment="Center" TextColor="{DynamicResource BodyTextColor}"/>
+                                    <Switch IsToggled="{Binding Editing.ANULADO}" OnColor="{DynamicResource AccentColor}" />
+                                </HorizontalStackLayout>
+                                
+                                <HorizontalStackLayout Spacing="8" Margin="0,0,0,8">
+                                    <Label Text="Pastas Sincronizadas" VerticalTextAlignment="Center" TextColor="{DynamicResource BodyTextColor}"/>
+                                    <Switch IsToggled="{Binding Editing.PastasSincronizadas}" IsEnabled="False" OnColor="{DynamicResource AccentColor}" />
+                                </HorizontalStackLayout>
+                            </FlexLayout>
+                        </VerticalStackLayout>
+                    </ScrollView>
+
+                    <!-- Footer Buttons -->
+                    <Grid Grid.Row="2" ColumnDefinitions="*, Auto, Auto, Auto" ColumnSpacing="12">
                         
-                        <!-- Telefone com validação -->
-                        <Entry Style="{StaticResource AppleEntry}" Placeholder="Telefone" Keyboard="Telephone" Text="{Binding Editing.TELEFONE}">
-                            <Entry.Behaviors>
-                                <behaviors:EntryValidationBehavior ValidationKind="Phone" />
-                            </Entry.Behaviors>
-                        </Entry>
+                        <!-- Delete Button (Only visible if not new) -->
+                        <Button Grid.Column="1"
+                                Text="Eliminar"
+                                BackgroundColor="#FF3B30"
+                                TextColor="White"
+                                FontAttributes="Bold"
+                                CornerRadius="8"
+                                HeightRequest="44"
+                                Command="{Binding DeleteEditingCommand}"
+                                IsVisible="{Binding IsNew, Converter={StaticResource InvertedBoolConverter}}"/>
+
+                        <Button Grid.Column="2"
+                                Text="Cancelar" 
+                                BackgroundColor="#8E8E93" 
+                                TextColor="White" 
+                                FontAttributes="Bold"
+                                CornerRadius="8"
+                                HeightRequest="44"
+                                Command="{Binding CloseEditCommand}"/>
                         
-                        <!-- Email com validação -->
-                        <Entry Style="{StaticResource AppleEntry}" Placeholder="Email" Keyboard="Email" Text="{Binding Editing.EMAIL}">
-                            <Entry.Behaviors>
-                                <behaviors:EntryValidationBehavior ValidationKind="Email" />
-                            </Entry.Behaviors>
-                        </Entry>
-                        
-                        <Entry Style="{StaticResource AppleEntry}" Placeholder="Vendedor" Text="{Binding Editing.VENDEDOR}" />
-                        
-                        <!-- Valor Crédito com validação numérica -->
-                        <Entry x:Name="EntryValorCredito" Style="{StaticResource AppleEntry}" Placeholder="Valor Crédito" Text="{Binding Editing.VALORCREDITO}" Focused="OnValorCreditoFocused" Unfocused="OnValorCreditoUnfocused" TextChanged="OnValorCreditoTextChanged">
-                            <Entry.Behaviors>
-                                <behaviors:EntryValidationBehavior ValidationKind="Numeric" />
-                            </Entry.Behaviors>
-                        </Entry>
-                        <Grid ColumnDefinitions="Auto,*,Auto,*,Auto,*" ColumnSpacing="12" Margin="0,8,0,0">
-                            <Label Text="Externo" Grid.Column="0" VerticalTextAlignment="Center"/>
-                            <Switch Grid.Column="1" IsToggled="{Binding Editing.EXTERNO}" />
-                            <Label Text="Anulado" Grid.Column="2" VerticalTextAlignment="Center"/>
-                            <Switch Grid.Column="3" IsToggled="{Binding Editing.ANULADO}" />
-                            <Label Text="Pastas" Grid.Column="4" VerticalTextAlignment="Center"/>
-                            <Switch Grid.Column="5" IsToggled="{Binding Editing.PastasSincronizadas}" IsEnabled="False"/>
-                        </Grid>
-                    </VerticalStackLayout>
-                </Border>
-
-                <!-- BOTÕES -->
-                <Border StrokeThickness="1"
-                        Stroke="{DynamicResource DividerColor}"
-                        Background="{DynamicResource CardBackgroundColor}"
-                        Padding="18">
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="18" />
-                    </Border.StrokeShape>
-
-                    <VerticalStackLayout Spacing="10">
-
-                        <!-- Guardar -->
-                        <Button Style="{StaticResource Button.PrimaryIcon}" Text="Guardar">
-                            <Button.ImageSource>
-                                <FontImageSource Glyph="&#xF0C7;" FontFamily="FA7Solid" Size="{StaticResource BtnIconSize}"
-                         Color="{StaticResource BtnPrimaryIconColor}" />
-                            </Button.ImageSource>
-                            <Button.Behaviors>
-                                <behaviors:ButtonMicroAnimationsBehavior />
-                            </Button.Behaviors>
-                        </Button>
-
-                        <!-- Novo -->
-                        <Button Style="{StaticResource Button.Outline}" Text="Novo" Command="{Binding NewCommand}">
-                            <Button.ImageSource>
-                                <FontImageSource Glyph="&#xF067;" FontFamily="FA7Solid" Size="{StaticResource BtnIconSize}"
-                         Color="{StaticResource BtnAltIconColor}" />
-                            </Button.ImageSource>
-                            <Button.Behaviors>
-                                <behaviors:ButtonMicroAnimationsBehavior />
-                            </Button.Behaviors>
-                        </Button>
-
-                        <!-- Eliminar -->
-                        <Button Style="{StaticResource Button.Outline}" Text="Eliminar" Command="{Binding DeleteCommand}">
-                            <Button.ImageSource>
-                                <FontImageSource Glyph="&#xF1F8;" FontFamily="FA7Solid" Size="{StaticResource BtnIconSize}"
-                         Color="{StaticResource BtnAltIconColor}" />
-                            </Button.ImageSource>
-                            <Button.Behaviors>
-                                <behaviors:ButtonMicroAnimationsBehavior />
-                            </Button.Behaviors>
-                        </Button>
-
-                        <!-- Limpar -->
-                        <Button Style="{StaticResource Button.Ghost}" Text="Limpar" Command="{Binding ClearCommand}">
-                            <Button.ImageSource>
-                                <FontImageSource Glyph="&#xF12D;" FontFamily="FA7Solid" Size="{StaticResource BtnIconSize}"
-                         Color="{StaticResource BtnAltIconColor}" />
-                            </Button.ImageSource>
-                            <Button.Behaviors>
-                                <behaviors:ButtonMicroAnimationsBehavior />
-                            </Button.Behaviors>
-                        </Button>
-
-                        <!-- Pastas do Cliente -->
-                        <Button Style="{StaticResource Button.Ghost}" Text="Pastas do Cliente" Command="{Binding PastasCommand}">
-                            <Button.ImageSource>
-                                <FontImageSource Glyph="&#xF07C;" FontFamily="FA7Solid" Size="{StaticResource BtnIconSize}"
-                         Color="{StaticResource BtnAltIconColor}" />
-                            </Button.ImageSource>
-                            <Button.Behaviors>
-                                <behaviors:ButtonMicroAnimationsBehavior />
-                            </Button.Behaviors>
-                        </Button>
-
-                        <!-- Atualizar -->
-                        <Button Style="{StaticResource Button.Ghost}" Text="Atualizar" Command="{Binding RefreshCommand}">
-                            <Button.ImageSource>
-                                <FontImageSource Glyph="&#xF021;" FontFamily="FA7Solid" Size="{StaticResource BtnIconSize}"
-                         Color="{StaticResource BtnAltIconColor}" />
-                            </Button.ImageSource>
-                            <Button.Behaviors>
-                                <behaviors:ButtonMicroAnimationsBehavior />
-                            </Button.Behaviors>
-                        </Button>
-
-                    </VerticalStackLayout>
-                </Border>
-
-
-                <!-- PESQUISA -->
-                <Border StrokeShape="RoundRectangle 18" StrokeThickness="1" Stroke="{DynamicResource DividerColor}" Background="{DynamicResource CardBackgroundColor}" Padding="18">
-                    <Entry Style="{StaticResource AppleEntry}" Placeholder="Pesquisar (código, nome, email...)" Text="{Binding Filter}"/>
-                </Border>
-
-                <!-- LISTA (ocultada em mobile para usar picker) -->
-                <Border StrokeShape="RoundRectangle 18" StrokeThickness="1" Stroke="{DynamicResource DividerColor}" Background="{DynamicResource CardBackgroundColor}" Padding="0" IsVisible="{OnIdiom Desktop=true, Phone=false, Tablet=false}">
-                    <VerticalStackLayout Spacing="0">
-                        <Grid BackgroundColor="{DynamicResource ListHeaderBackgroundColor}" Padding="10" ColumnDefinitions="110,3*,4*,140" ColumnSpacing="14">
-                            <Label Text="Código" FontAttributes="Bold" FontSize="13" TextColor="{DynamicResource BodyTextColor}"/>
-                            <Label Grid.Column="1" Text="Nome" FontAttributes="Bold" FontSize="13" TextColor="{DynamicResource BodyTextColor}"/>
-                            <Label Grid.Column="2" Text="Email" FontAttributes="Bold" FontSize="13" TextColor="{DynamicResource BodyTextColor}"/>
-                            <Label Grid.Column="3" Text="Telefone" FontAttributes="Bold" FontSize="13" TextColor="{DynamicResource BodyTextColor}"/>
-                        </Grid>
-                        <CollectionView x:Name="ClientsView" ItemsSource="{Binding Filtered}" SelectionMode="Single" SelectedItem="{Binding SelectedCliente, Mode=TwoWay}" SelectionChanged="OnClientSelectionChanged">
-                            <CollectionView.ItemTemplate>
-                                <DataTemplate x:DataType="models:Cliente">
-                                    <Grid Padding="10" ColumnSpacing="14" ColumnDefinitions="110,3*,4*,140" MinimumHeightRequest="44">
-                                        <VisualStateManager.VisualStateGroups>
-                                            <VisualStateGroup Name="SelectionStates">
-                                                <VisualState Name="Normal">
-                                                    <VisualState.Setters>
-                                                        <Setter Property="BackgroundColor" Value="Transparent"/>
-                                                    </VisualState.Setters>
-                                                </VisualState>
-                                                <VisualState Name="Selected">
-                                                    <VisualState.Setters>
-                                                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#E0F2FE, Dark=#204454}"/>
-                                                    </VisualState.Setters>
-                                                </VisualState>
-                                            </VisualStateGroup>
-                                        </VisualStateManager.VisualStateGroups>
-                                        <Label Text="{Binding CLICODIGO}" FontSize="13" TextColor="{DynamicResource BodyTextColor}"/>
-                                        <Label Grid.Column="1" Text="{Binding CLINOME}" FontSize="13" LineBreakMode="TailTruncation" TextColor="{DynamicResource BodyTextColor}"/>
-                                        <Label Grid.Column="2" Text="{Binding EMAIL}" FontSize="13" LineBreakMode="TailTruncation" TextColor="{DynamicResource BodyTextColor}"/>
-                                        <Label Grid.Column="3" Text="{Binding TELEFONE}" FontSize="13" LineBreakMode="TailTruncation" TextColor="{DynamicResource BodyTextColor}"/>
-                                    </Grid>
-                                </DataTemplate>
-                            </CollectionView.ItemTemplate>
-                        </CollectionView>
-                    </VerticalStackLayout>
-                </Border>
-            </VerticalStackLayout>
-        </HorizontalStackLayout>
-        </ScrollView>
-
-        <!-- OVERLAY Picker Mobile -->
-        <Grid x:Name="ClientPickerOverlay" IsVisible="False" BackgroundColor="#80000000" IsEnabled="{Binding Source={x:Reference ClientPickerOverlay}, Path=IsVisible}">
-            <Border StrokeShape="RoundRectangle 18" Background="{DynamicResource CardBackgroundColor}" StrokeThickness="1" Stroke="{DynamicResource DividerColor}" Padding="18" Margin="20" HorizontalOptions="Center" VerticalOptions="Center" MaximumWidthRequest="600" MaximumHeightRequest="700">
-                <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12">
-                    <Label Text="Selecionar Cliente" FontAttributes="Bold" FontSize="18"/>
-                    <Entry Grid.Row="1" Style="{StaticResource AppleEntry}" Placeholder="Filtrar..." Text="{Binding Filter}" />
-                    <CollectionView Grid.Row="2" ItemsSource="{Binding Filtered}" SelectionMode="Single" SelectionChanged="OnClientPickerSelectionChanged">
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate x:DataType="models:Cliente">
-                                <Grid Padding="10" ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                                    <Label Text="{Binding CLINOME}" FontSize="14" LineBreakMode="TailTruncation" TextColor="{DynamicResource BodyTextColor}"/>
-                                    <Label Grid.Column="1" Text="{Binding TELEFONE}" FontSize="13" TextColor="{DynamicResource BodyTextColor}"/>
-                                </Grid>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
-                    <Button Grid.Row="3" Text="Fechar" Clicked="OnCloseClientPicker" Style="{StaticResource AppleFilledButton}">
-                        <Button.Behaviors>
-                            <behaviors:ButtonMicroAnimationsBehavior />
-                        </Button.Behaviors>
-                    </Button>
+                        <Button Grid.Column="3"
+                                Text="Atualizar" 
+                                BackgroundColor="#0A84FF" 
+                                TextColor="White" 
+                                FontAttributes="Bold" 
+                                CornerRadius="8"
+                                HeightRequest="44"
+                                WidthRequest="120"
+                                Command="{Binding SaveCommand}"/>
+                    </Grid>
                 </Grid>
             </Border>
         </Grid>
 
         <!-- Busy -->
-        <Grid IsVisible="{Binding IsBusy}" BackgroundColor="#66000000" Padding="30" VerticalOptions="Center" HorizontalOptions="Center">
+        <Grid IsVisible="{Binding IsBusy}" BackgroundColor="#66000000" Padding="30" VerticalOptions="Center" HorizontalOptions="Center" ZIndex="1000">
             <ActivityIndicator IsRunning="True" Color="{DynamicResource AccentColor}" />
         </Grid>
     </Grid>

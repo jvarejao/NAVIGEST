@@ -1,4 +1,3 @@
-// File: NAVIGEST.macOS/Pages/ClientsPage.xaml.cs
 #nullable enable
 using System;
 using System.Linq;
@@ -30,7 +29,6 @@ namespace NAVIGEST.macOS.Pages
         {
             base.OnAppearing();
             await EnsureLoadedAsync();
-            // Desktop header visibilidade j� tratada em XAML condicional; manter se necess�rio
         }
 
         private async Task EnsureLoadedAsync()
@@ -50,54 +48,39 @@ namespace NAVIGEST.macOS.Pages
 
         private void OnPageSizeChanged(object sender, EventArgs e) { }
 
-        // -------- Sele��o Desktop --------
-        private async void OnClientSelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void OnEditClicked(object sender, EventArgs e)
         {
-            try
+            if (sender is Button btn && btn.CommandParameter is Models.Cliente cliente && BindingContext is ClientsPageModel vm)
             {
-                if (BindingContext is ClientsPageModel vm && e.CurrentSelection?.FirstOrDefault() is object item)
-                {
-                    if (vm.SelectCommand?.CanExecute(item) == true)
-                    {
-                        vm.SelectCommand.Execute(item);
-                        // Scroll para o topo para mostrar os campos de edição
-                        await MainScrollView.ScrollToAsync(0, 0, true);
-                    }
-                }
+                vm.OpenEditCommand.Execute(cliente);
             }
-            catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
         }
 
-        // -------- Overlay Mobile --------
-        private void OnOpenClientPicker(object sender, EventArgs e)
+        private void OnDeleteClicked(object sender, EventArgs e)
         {
-            ClientPickerOverlay.IsVisible = true;
-        }
-
-        private void OnCloseClientPicker(object sender, EventArgs e)
-        {
-            ClientPickerOverlay.IsVisible = false;
-        }
-
-        private async void OnClientPickerSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            try
+            if (sender is Button btn && btn.CommandParameter is Models.Cliente cliente && BindingContext is ClientsPageModel vm)
             {
-                if (BindingContext is ClientsPageModel vm && e.CurrentSelection?.FirstOrDefault() is object item)
-                {
-                    if (vm.SelectCommand?.CanExecute(item) == true)
-                    {
-                        vm.SelectCommand.Execute(item);
-                        ClientPickerOverlay.IsVisible = false;
-                        // Scroll para o topo para mostrar os campos de edição
-                        await MainScrollView.ScrollToAsync(0, 0, true);
-                    }
-                }
+                vm.DeleteCommand.Execute(cliente);
             }
-            catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
         }
 
-        // -------- Valor Cr�dito --------
+        private void OnPastasClicked(object sender, EventArgs e)
+        {
+            if (sender is Button btn && btn.CommandParameter is Models.Cliente cliente && BindingContext is ClientsPageModel vm)
+            {
+                vm.PastasCommand.Execute(cliente);
+            }
+        }
+
+        private void OnServicesClicked(object sender, EventArgs e)
+        {
+            if (sender is Button btn && btn.CommandParameter is Models.Cliente cliente && BindingContext is ClientsPageModel vm)
+            {
+                vm.ServicesCommand.Execute(cliente);
+            }
+        }
+
+        // -------- Valor Crédito --------
         private void OnValorCreditoFocused(object sender, FocusEventArgs e)
         {
             try
@@ -158,13 +141,3 @@ namespace NAVIGEST.macOS.Pages
         }
     }
 }
-
-#if WINDOWS
-// C�digo Windows espec�fico (exemplo: anima��es, navega��o, layouts)
-#endif
-#if ANDROID
-// C�digo Android espec�fico (exemplo: anima��es, navega��o, layouts)
-#endif
-#if IOS
-// C�digo iOS espec�fico (exemplo: anima��es, navega��o, layouts)
-#endif

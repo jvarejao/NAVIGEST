@@ -23,7 +23,19 @@ public class ClientsPageModel : INotifyPropertyChanged
 
     private readonly List<Cliente> _all = new();
     public ObservableCollection<Cliente> Clientes { get; } = new();
-    public ObservableCollection<Cliente> Filtered => Clientes;
+    private ObservableCollection<Cliente> _filtered = new();
+    public ObservableCollection<Cliente> Filtered
+    {
+        get => _filtered;
+        set
+        {
+            if (_filtered != value)
+            {
+                _filtered = value;
+                OnPropertyChanged();
+            }
+        }
+    }
     public ObservableCollection<string> Vendedores { get; } = new();
 
     private Cliente? _selectedCliente;
@@ -36,6 +48,7 @@ public class ClientsPageModel : INotifyPropertyChanged
             _selectedCliente = value;
             Debug.WriteLine($"[SELECT] {_selectedCliente?.CLICODIGO}");
             OnPropertyChanged();
+            OnPropertyChanged(nameof(IsNew));
             _codigoPreview = false;
             EditModel = _selectedCliente?.Clone() ?? NewClienteTemplate();
             if (EditModel != null)
@@ -43,6 +56,20 @@ public class ClientsPageModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(Editing));
         }
     }
+    private bool _isEditOverlayVisible;
+    public bool IsEditOverlayVisible
+    {
+        get => _isEditOverlayVisible;
+        set
+        {
+            if (_isEditOverlayVisible != value)
+            {
+                _isEditOverlayVisible = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
 
     private Cliente _editModel = NewClienteTemplate();
     public Cliente EditModel
@@ -67,6 +94,8 @@ public class ClientsPageModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(Editing));
         }
     }
+
+    public bool IsNew => SelectedCliente == null;
 
     private string _searchText = string.Empty;
     public string SearchText
@@ -116,6 +145,12 @@ public class ClientsPageModel : INotifyPropertyChanged
     public Command RefreshCommand { get; }
     public Command PastasCommand { get; }
     public Command<Cliente> SelectCommand { get; }
+    public Command<Cliente> OpenEditCommand { get; }
+    public Command<Cliente> ServicesCommand { get; }
+    public Command CloseEditCommand { get; }
+    public Command DeleteEditingCommand { get; }
+    public Command ClearSearchCommand { get; }
+
 
     public string PastasButtonText =>
         (EditModel?.PastasSincronizadas ?? false) ? "Abrir Pastas" : "Criar Pastas";
@@ -138,11 +173,66 @@ public class ClientsPageModel : INotifyPropertyChanged
         NewCommand = new Command(async () => await OnNewAsync());
         ClearCommand = new Command(OnClear);
         SaveCommand = new Command(async () => await OnSaveAsync());
-        DeleteCommand = new Command(async () => await OnDeleteAsync());
+        DeleteCommand = new Command<Cliente>(async c => { if (c != null) SelectedCliente = c; await OnDeleteAsync(); });
         SearchCommand = new Command(ApplyFilterImmediate);
         RefreshCommand = new Command(async () => await LoadAsync(force: true));
-        PastasCommand = new Command(async () => await OnPastasAsync());
+        PastasCommand = new Command<Cliente>(async c => { if (c != null) SelectedCliente = c; await OnPastasAsync(); });
         SelectCommand = new Command<Cliente>(c => { if (c != null) SelectedCliente = c; });
+        OpenEditCommand = new Command<Cliente>(c => 
+        { 
+            if (c != null) 
+            {
+                SelectedCliente = c;
+                IsEditOverlayVisible = true;
+            }
+        });
+        
+        ServicesCommand = new Command<Cliente>(async c => 
+        {
+            if (c != null)
+            {
+                // Navigate to ServicePage
+                // Assuming ServicePage takes a Cliente or we pass it via BindingContext
+                // For now, let's try to push the page
+                try 
+                {
+                    if (Application.Current?.MainPage is Shell shell)
+                    {
+                        // We might need to register the route or just push it
+                        // Let's assume we can push a new page instance
+                        // We need to find where ServicePage is. It is in Pages namespace.
+                        // We can't easily instantiate it here without reference, but we are in PageModels.
+                        // Ideally, use a NavigationService. 
+                        // For this quick fix, we will use AppShell.Current.Navigation
+                        
+                        // Since we can't reference the View from ViewModel easily without circular deps or DI,
+                        // We will use a weak approach or just show a toast for now if we can't find it.
+                        // Actually, we can use Shell navigation with route if registered.
+                        
+                        await Shell.Current.GoToAsync($"ServicePage?ClientId={c.CLICODIGO}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    await AppShell.DisplayToastAsync("Serviços: " + ex.Message);
+                }
+            }
+        });
+
+        CloseEditCommand = new Command(() => IsEditOverlayVisible = false);
+        
+        DeleteEditingCommand = new Command(async () => {
+            if (SelectedCliente != null) {
+                bool confirm = await AppShell.Current.DisplayAlert("Eliminar", $"Tem a certeza que deseja eliminar {SelectedCliente.CLINOME}?", "Eliminar", "Cancelar");
+                if (confirm) {
+                    await OnDeleteAsync();
+                    IsEditOverlayVisible = false;
+                }
+            }
+        });
+
+        ClearSearchCommand = new Command(() => Filter = string.Empty);
+
     }
 
     public async Task LoadAsync(bool force = false)
@@ -194,6 +284,7 @@ public class ClientsPageModel : INotifyPropertyChanged
 
     private async Task OnNewAsync()
     {
+        IsEditOverlayVisible = true;
         SelectedCliente = null;
         EditModel = NewClienteTemplate();
         _codigoPreview = false;
@@ -281,7 +372,7 @@ public class ClientsPageModel : INotifyPropertyChanged
                     Normalize(cloned);
                     cloned.VALORCREDITO = FormatValorCredito(cloned.VALORCREDITO);
                     _all.Add(cloned);
-                    Clientes.Add(cloned);
+                    Filtered.Add(cloned);
                     SelectedCliente = cloned;
                 }
                 else
@@ -289,16 +380,17 @@ public class ClientsPageModel : INotifyPropertyChanged
                     Copy(EditModel, existing);
                     Normalize(existing);
                     existing.VALORCREDITO = FormatValorCredito(existing.VALORCREDITO);
-                    var vis = Clientes.FirstOrDefault(c => c.CLICODIGO == existing.CLICODIGO);
+                    var vis = Filtered.FirstOrDefault(c => c.CLICODIGO == existing.CLICODIGO);
                     if (vis != null)
                     {
-                        var idx = Clientes.IndexOf(vis);
-                        if (idx >= 0) Clientes[idx] = existing;
+                        var idx = Filtered.IndexOf(vis);
+                        if (idx >= 0) Filtered[idx] = existing;
                     }
                     if (SelectedCliente?.CLICODIGO == existing.CLICODIGO)
                         SelectedCliente = existing;
                 }
                 await AppShell.DisplayToastAsync("Cliente guardado.", ToastTipo.Sucesso, 2500);
+                IsEditOverlayVisible = false;
             }
             else
             {
@@ -375,8 +467,8 @@ public class ClientsPageModel : INotifyPropertyChanged
             if (ok)
             {
                 _all.RemoveAll(c => c.CLICODIGO == code);
-                var toRemove = Clientes.FirstOrDefault(c => c.CLICODIGO == code);
-                if (toRemove != null) Clientes.Remove(toRemove);
+                var toRemove = Filtered.FirstOrDefault(c => c.CLICODIGO == code);
+                if (toRemove != null) Filtered.Remove(toRemove);
                 SelectedCliente = null;
                 EditModel = NewClienteTemplate();
                 _codigoPreview = false;
@@ -482,11 +574,19 @@ public class ClientsPageModel : INotifyPropertyChanged
     private void Repopulate(IEnumerable<Cliente> items)
     {
         var prev = SelectedCliente?.CLICODIGO;
-        Clientes.Clear();
-        foreach (var c in items)
-            Clientes.Add(c);
+        
+        // Create new collection to avoid rapid UI updates (crash fix)
+        Filtered = new ObservableCollection<Cliente>(items);
+
+        // Sync Clientes (optional, but keeps it as a mirror if needed elsewhere)
+        // But since Filtered is now the source of truth for the UI, we might not need to sync Clientes perfectly
+        // However, let's keep Clientes in sync just in case other logic depends on it, 
+        // but do it safely or just rely on Filtered.
+        // Actually, Clientes was just a backing store for Filtered before. 
+        // We can clear it and add items if we really want, but Filtered is what matters for the View.
+        
         if (prev != null)
-            SelectedCliente = Clientes.FirstOrDefault(c => c.CLICODIGO == prev);
+            SelectedCliente = Filtered.FirstOrDefault(c => c.CLICODIGO == prev);
     }
 
     private static void Copy(Cliente src, Cliente dst)

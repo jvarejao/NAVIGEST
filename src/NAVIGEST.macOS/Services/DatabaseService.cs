@@ -577,13 +577,17 @@ namespace NAVIGEST.macOS.Services
             using var conn = new MySqlConnection(GetConnectionString());
             await conn.OpenAsync(ct);
 
-            const string depSql = "SELECT COUNT(*) FROM orderinfo WHERE CustomerNO=@cod;";
-            using (var dep = new MySqlCommand(depSql, conn))
+            // Verificar se tabela orderinfo existe antes de fazer query
+            if (await TableExistsAsync(conn, "orderinfo", ct))
             {
-                dep.Parameters.Add("@cod", MySqlDbType.VarChar, 30).Value = codigo;
-                var count = Convert.ToInt32(await dep.ExecuteScalarAsync(ct));
-                if (count > 0)
-                    throw new InvalidOperationException("Impossível eliminar. Existem serviços associados.");
+                const string depSql = "SELECT COUNT(*) FROM orderinfo WHERE CustomerNO=@cod;";
+                using (var dep = new MySqlCommand(depSql, conn))
+                {
+                    dep.Parameters.Add("@cod", MySqlDbType.VarChar, 30).Value = codigo;
+                    var count = Convert.ToInt32(await dep.ExecuteScalarAsync(ct));
+                    if (count > 0)
+                        throw new InvalidOperationException("Impossível eliminar. Existem serviços associados.");
+                }
             }
 
             const string del = "DELETE FROM CLIENTES WHERE CLICODIGO=@cod LIMIT 1;";
@@ -591,6 +595,20 @@ namespace NAVIGEST.macOS.Services
             cmd.Parameters.Add("@cod", MySqlDbType.VarChar, 30).Value = codigo;
             var rows = await cmd.ExecuteNonQueryAsync(ct);
             return rows > 0;
+        }
+
+        private static async Task<bool> TableExistsAsync(MySqlConnection conn, string tableName, CancellationToken ct)
+        {
+            const string sql = @"SELECT 1
+                                   FROM information_schema.TABLES
+                                  WHERE TABLE_SCHEMA = DATABASE()
+                                    AND TABLE_NAME = @table
+                                  LIMIT 1;";
+
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.Add("@table", MySqlDbType.VarChar, 128).Value = tableName;
+            using var reader = await cmd.ExecuteReaderAsync(ct);
+            return await reader.ReadAsync(ct);
         }
 
         public static async Task<List<string>> GetVendedoresAsync(CancellationToken ct = default)
