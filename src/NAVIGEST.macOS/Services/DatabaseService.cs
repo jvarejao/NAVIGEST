@@ -489,43 +489,77 @@ namespace NAVIGEST.macOS.Services
                 sql += " WHERE (LOWER(CLINOME) LIKE @f OR LOWER(CLICODIGO) LIKE @f OR LOWER(EMAIL) LIKE @f)";
             sql += " ORDER BY CLINOME;";
 
-            using var cmd = new MySqlCommand(sql, conn);
-            if (!string.IsNullOrWhiteSpace(filtro))
-                cmd.Parameters.Add("@f", MySqlDbType.VarChar, 120).Value = "%" + filtro.ToLowerInvariant() + "%";
-
-            using var rd = await cmd.ExecuteReaderAsync(ct);
-            while (await rd.ReadAsync(ct))
+            using (var cmd = new MySqlCommand(sql, conn))
             {
-                bool GetBool(string col)
-                {
-                    if (rd.IsDBNull(rd.GetOrdinal(col))) return false;
-                    object val = rd[col];
-                    return val switch
-                    {
-                        bool b => b,
-                        sbyte sb => sb != 0,
-                        byte bt => bt != 0,
-                        short sh => sh != 0,
-                        int i => i != 0,
-                        long l => l != 0,
-                        string str => str == "1" || str.Equals("true", StringComparison.OrdinalIgnoreCase),
-                        _ => false
-                    };
-                }
+                if (!string.IsNullOrWhiteSpace(filtro))
+                    cmd.Parameters.Add("@f", MySqlDbType.VarChar, 120).Value = "%" + filtro.ToLowerInvariant() + "%";
 
-                list.Add(new Cliente
+                using var rd = await cmd.ExecuteReaderAsync(ct);
+                while (await rd.ReadAsync(ct))
                 {
-                    CLINOME = rd.IsDBNull(rd.GetOrdinal("CLINOME")) ? null : rd.GetString("CLINOME"),
-                    CLICODIGO = rd.IsDBNull(rd.GetOrdinal("CLICODIGO")) ? null : rd.GetString("CLICODIGO"),
-                    TELEFONE = rd.IsDBNull(rd.GetOrdinal("TELEFONE")) ? null : rd.GetString("TELEFONE"),
-                    EMAIL = rd.IsDBNull(rd.GetOrdinal("EMAIL")) ? null : rd.GetString("EMAIL"),
-                    EXTERNO = GetBool("EXTERNO"),
-                    ANULADO = GetBool("ANULADO"),
-                    VENDEDOR = rd.IsDBNull(rd.GetOrdinal("VENDEDOR")) ? null : rd.GetString("VENDEDOR"),
-                    VALORCREDITO = rd.IsDBNull(rd.GetOrdinal("VALORCREDITO")) ? null : rd.GetString("VALORCREDITO"),
-                    PastasSincronizadas = GetBool("PastasSincronizadas")
-                });
+                    bool GetBool(string col)
+                    {
+                        if (rd.IsDBNull(rd.GetOrdinal(col))) return false;
+                        object val = rd[col];
+                        return val switch
+                        {
+                            bool b => b,
+                            sbyte sb => sb != 0,
+                            byte bt => bt != 0,
+                            short sh => sh != 0,
+                            int i => i != 0,
+                            long l => l != 0,
+                            string str => str == "1" || str.Equals("true", StringComparison.OrdinalIgnoreCase),
+                            _ => false
+                        };
+                    }
+
+                    list.Add(new Cliente
+                    {
+                        CLINOME = rd.IsDBNull(rd.GetOrdinal("CLINOME")) ? null : rd.GetString("CLINOME"),
+                        CLICODIGO = rd.IsDBNull(rd.GetOrdinal("CLICODIGO")) ? null : rd.GetString("CLICODIGO"),
+                        TELEFONE = rd.IsDBNull(rd.GetOrdinal("TELEFONE")) ? null : rd.GetString("TELEFONE"),
+                        EMAIL = rd.IsDBNull(rd.GetOrdinal("EMAIL")) ? null : rd.GetString("EMAIL"),
+                        EXTERNO = GetBool("EXTERNO"),
+                        ANULADO = GetBool("ANULADO"),
+                        VENDEDOR = rd.IsDBNull(rd.GetOrdinal("VENDEDOR")) ? null : rd.GetString("VENDEDOR"),
+                        VALORCREDITO = rd.IsDBNull(rd.GetOrdinal("VALORCREDITO")) ? null : rd.GetString("VALORCREDITO"),
+                        PastasSincronizadas = GetBool("PastasSincronizadas")
+                    });
+                }
             }
+
+            // Fetch service counts if OrderInfo exists
+            if (await TableExistsAsync(conn, "OrderInfo", ct))
+            {
+                try
+                {
+                    const string countSql = "SELECT CustomerNo, COUNT(*) as Cnt FROM OrderInfo GROUP BY CustomerNo";
+                    using var cmdCount = new MySqlCommand(countSql, conn);
+                    using var rdCount = await cmdCount.ExecuteReaderAsync(ct);
+                    var counts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+                    while (await rdCount.ReadAsync(ct))
+                    {
+                        var code = rdCount.IsDBNull(0) ? null : rdCount.GetString(0);
+                        var cnt = rdCount.GetInt32(1);
+                        if (!string.IsNullOrWhiteSpace(code))
+                            counts[code] = cnt;
+                    }
+
+                    foreach (var c in list)
+                    {
+                        if (!string.IsNullOrWhiteSpace(c.CLICODIGO) && counts.TryGetValue(c.CLICODIGO, out var count))
+                        {
+                            c.ServicesCount = count;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error fetching service counts: {ex.Message}");
+                }
+            }
+
             return list;
         }
 

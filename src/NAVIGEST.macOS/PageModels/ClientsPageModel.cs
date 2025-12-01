@@ -173,7 +173,18 @@ public class ClientsPageModel : INotifyPropertyChanged
         NewCommand = new Command(async () => await OnNewAsync());
         ClearCommand = new Command(OnClear);
         SaveCommand = new Command(async () => await OnSaveAsync());
-        DeleteCommand = new Command<Cliente>(async c => { if (c != null) SelectedCliente = c; await OnDeleteAsync(); });
+        DeleteCommand = new Command<Cliente>(async c => 
+        { 
+            if (c != null) 
+            {
+                SelectedCliente = c;
+                bool confirm = await AppShell.Current.DisplayAlert("Eliminar", $"Tem a certeza que deseja eliminar {c.CLINOME}?", "Eliminar", "Cancelar");
+                if (confirm)
+                {
+                    await OnDeleteAsync();
+                }
+            } 
+        });
         SearchCommand = new Command(ApplyFilterImmediate);
         RefreshCommand = new Command(async () => await LoadAsync(force: true));
         PastasCommand = new Command<Cliente>(async c => { if (c != null) SelectedCliente = c; await OnPastasAsync(); });

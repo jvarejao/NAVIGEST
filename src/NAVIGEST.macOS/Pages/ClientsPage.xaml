@@ -191,21 +191,48 @@
                                     </Button>
 
                                     <!-- Services -->
-                                    <Button Text="&#xF085;" 
-                                            FontFamily="FA7Solid" 
-                                            FontSize="16"
-                                            BackgroundColor="#19AF52DE" 
-                                            TextColor="#AF52DE"
-                                            CornerRadius="8"
-                                            WidthRequest="40"
-                                            HeightRequest="40"
-                                            Padding="0"
-                                            Clicked="OnServicesClicked"
-                                            CommandParameter="{Binding .}">
-                                        <Button.Behaviors>
-                                            <behaviors:ButtonMicroAnimationsBehavior />
-                                        </Button.Behaviors>
-                                    </Button>
+                                    <Grid WidthRequest="48" HeightRequest="48">
+                                        <Button Text="&#xF085;" 
+                                                FontFamily="FA7Solid" 
+                                                FontSize="16"
+                                                BackgroundColor="#19AF52DE" 
+                                                TextColor="#AF52DE"
+                                                CornerRadius="8"
+                                                WidthRequest="40"
+                                                HeightRequest="40"
+                                                Padding="0"
+                                                VerticalOptions="Center"
+                                                HorizontalOptions="Center"
+                                                Clicked="OnServicesClicked"
+                                                CommandParameter="{Binding .}">
+                                            <Button.Behaviors>
+                                                <behaviors:ButtonMicroAnimationsBehavior />
+                                            </Button.Behaviors>
+                                        </Button>
+
+                                        <Border BackgroundColor="#FF3B30" 
+                                                StrokeThickness="0"
+                                                StrokeShape="RoundRectangle 10"
+                                                HeightRequest="20"
+                                                MinimumWidthRequest="20"
+                                                Padding="4,0"
+                                                HorizontalOptions="End"
+                                                VerticalOptions="Start"
+                                                TranslationX="-2"
+                                                TranslationY="2">
+                                            <Border.Triggers>
+                                                <DataTrigger TargetType="Border" Binding="{Binding ServicesCount}" Value="0">
+                                                    <Setter Property="IsVisible" Value="False"/>
+                                                </DataTrigger>
+                                            </Border.Triggers>
+                                            <Label Text="{Binding ServicesCount}" 
+                                                   TextColor="White" 
+                                                   FontSize="11" 
+                                                   FontAttributes="Bold" 
+                                                   HorizontalOptions="Center" 
+                                                   VerticalOptions="Center"/>
+                                        </Border>
+                                    </Grid>
 
                                 </HorizontalStackLayout>
                             </Grid>

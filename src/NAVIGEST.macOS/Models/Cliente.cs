@@ -11,6 +11,7 @@
         public string? VENDEDOR { get; set; }
         public string? VALORCREDITO { get; set; }
         public bool PastasSincronizadas { get; set; }
+        public int ServicesCount { get; set; }
 
         public Cliente Clone() => new()
         {
@@ -22,7 +23,8 @@
             ANULADO = ANULADO,
             VENDEDOR = VENDEDOR,
             VALORCREDITO = VALORCREDITO,
-            PastasSincronizadas = PastasSincronizadas
+            PastasSincronizadas = PastasSincronizadas,
+            ServicesCount = ServicesCount
         };
     }
 }
