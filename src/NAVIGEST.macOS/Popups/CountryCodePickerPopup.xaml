@@ -33,21 +33,13 @@
                        TextColor="{DynamicResource BodyTextColor}"/>
 
                 <!-- Search Bar -->
-                <Border Grid.Row="1" 
-                        StrokeShape="RoundRectangle 8" 
-                        StrokeThickness="1" 
-                        Stroke="{DynamicResource EntryBorderColor}" 
-                        BackgroundColor="{DynamicResource EntryBackgroundColor}" 
-                        Padding="10,0"
-                        HeightRequest="50">
-                    <Entry x:Name="SearchEntry"
-                           Placeholder="Pesquisar (ex: Portugal, PT, +351)..."
-                           TextChanged="OnSearchTextChanged"
-                           TextColor="{DynamicResource BodyTextColor}"
-                           PlaceholderColor="{DynamicResource EntryPlaceholderColor}"
-                           BackgroundColor="Transparent"
-                           VerticalOptions="Center"/>
-                </Border>
+                <Entry Grid.Row="1"
+                       x:Name="SearchEntry"
+                       Placeholder="Pesquisar (ex: Portugal, PT, +351)..."
+                       TextChanged="OnSearchTextChanged"
+                       HeightRequest="50"
+                       Style="{StaticResource AppleEntry}"
+                       VerticalOptions="Center"/>
 
                 <!-- List -->
                 <CollectionView Grid.Row="2" 

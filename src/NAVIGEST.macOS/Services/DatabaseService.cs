@@ -482,7 +482,7 @@ namespace NAVIGEST.macOS.Services
             await conn.OpenAsync(ct);
 
             string sql = @"
-                SELECT CLINOME, CLICODIGO, TELEFONE, EMAIL, EXTERNO, ANULADO,
+                SELECT CLINOME, CLICODIGO, TELEFONE, INDICATIVO, EMAIL, EXTERNO, ANULADO,
                        VENDEDOR, VALORCREDITO, PastasSincronizadas
                 FROM CLIENTES";
             if (!string.IsNullOrWhiteSpace(filtro))
@@ -507,10 +507,13 @@ namespace NAVIGEST.macOS.Services
                             sbyte sb => sb != 0,
                             byte bt => bt != 0,
                             short sh => sh != 0,
+                            ushort us => us != 0,
                             int i => i != 0,
+                            uint ui => ui != 0,
                             long l => l != 0,
+                            ulong ul => ul != 0,
                             string str => str == "1" || str.Equals("true", StringComparison.OrdinalIgnoreCase),
-                            _ => false
+                            _ => Convert.ToBoolean(val) // Fallback genérico
                         };
                     }
 
@@ -519,6 +522,7 @@ namespace NAVIGEST.macOS.Services
                         CLINOME = rd.IsDBNull(rd.GetOrdinal("CLINOME")) ? null : rd.GetString("CLINOME"),
                         CLICODIGO = rd.IsDBNull(rd.GetOrdinal("CLICODIGO")) ? null : rd.GetString("CLICODIGO"),
                         TELEFONE = rd.IsDBNull(rd.GetOrdinal("TELEFONE")) ? null : rd.GetString("TELEFONE"),
+                        INDICATIVO = rd.IsDBNull(rd.GetOrdinal("INDICATIVO")) ? null : rd.GetString("INDICATIVO"),
                         EMAIL = rd.IsDBNull(rd.GetOrdinal("EMAIL")) ? null : rd.GetString("EMAIL"),
                         EXTERNO = GetBool("EXTERNO"),
                         ANULADO = GetBool("ANULADO"),
@@ -581,18 +585,19 @@ namespace NAVIGEST.macOS.Services
 
             string sql = exists
                 ? @"UPDATE CLIENTES SET
-                        CLINOME=@nome, TELEFONE=@tel, EMAIL=@mail,
+                        CLINOME=@nome, TELEFONE=@tel, INDICATIVO=@ind, EMAIL=@mail,
                         EXTERNO=@ext, ANULADO=@anu, VENDEDOR=@vend,
                         VALORCREDITO=@cred, PastasSincronizadas=@past
                     WHERE CLICODIGO=@cod LIMIT 1;"
                 : @"INSERT INTO CLIENTES
-                    (CLICODIGO, CLINOME, TELEFONE, EMAIL, EXTERNO, ANULADO, VENDEDOR, VALORCREDITO, PastasSincronizadas)
-                    VALUES (@cod,@nome,@tel,@mail,@ext,@anu,@vend,@cred,@past);";
+                    (CLICODIGO, CLINOME, TELEFONE, INDICATIVO, EMAIL, EXTERNO, ANULADO, VENDEDOR, VALORCREDITO, PastasSincronizadas)
+                    VALUES (@cod,@nome,@tel,@ind,@mail,@ext,@anu,@vend,@cred,@past);";
 
             using var cmd = new MySqlCommand(sql, conn);
             cmd.Parameters.Add("@cod", MySqlDbType.VarChar, 30).Value = c.CLICODIGO ?? "";
             cmd.Parameters.Add("@nome", MySqlDbType.VarChar, 150).Value = c.CLINOME ?? "";
             cmd.Parameters.Add("@tel", MySqlDbType.VarChar, 40).Value = c.TELEFONE ?? "";
+            cmd.Parameters.Add("@ind", MySqlDbType.VarChar, 10).Value = c.INDICATIVO ?? "";
             cmd.Parameters.Add("@mail", MySqlDbType.VarChar, 150).Value = c.EMAIL ?? "";
             cmd.Parameters.Add("@ext", MySqlDbType.Bit).Value = c.EXTERNO ? 1 : 0;
             cmd.Parameters.Add("@anu", MySqlDbType.Bit).Value = c.ANULADO ? 1 : 0;

@@ -19,17 +19,6 @@ public partial class CountryCodePickerPopup : ContentPage
         CountriesList.ItemsSource = _allItems;
     }
 
-    protected override void OnHandlerChanged()
-    {
-        base.OnHandlerChanged();
-#if MACCATALYST
-        if (SearchEntry.Handler?.PlatformView is UIKit.UITextField textField)
-        {
-            textField.BorderStyle = UIKit.UITextBorderStyle.None;
-        }
-#endif
-    }
-
     private void OnSearchTextChanged(object sender, TextChangedEventArgs e)
     {
         if (string.IsNullOrWhiteSpace(e.NewTextValue))
