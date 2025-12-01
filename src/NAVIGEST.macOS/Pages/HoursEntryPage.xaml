@@ -21,8 +21,8 @@
         <!-- TABS HEADER -->
         <Grid Grid.Row="0" 
               ColumnDefinitions="*,*,*" 
-              ColumnSpacing="0"
-              Padding="8,8,8,0"
+              ColumnSpacing="8"
+              Padding="16,8,16,0"
               BackgroundColor="{AppThemeBinding Light=#F5F5F7, Dark=#1C1C1E}">
             <Border x:Name="Tab1Border"
                     Grid.Column="0"
@@ -30,6 +30,9 @@
                     StrokeThickness="0"
                     Padding="12,10"
                     StrokeShape="RoundRectangle 8,8,0,0">
+                <Border.Shadow>
+                    <Shadow Brush="Black" Offset="0,2" Radius="3" Opacity="0.1"/>
+                </Border.Shadow>
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnTab1Tapped"/>
                 </Border.GestureRecognizers>
@@ -43,11 +46,13 @@
             
             <Border x:Name="Tab2Border"
                     Grid.Column="1"
-                    BackgroundColor="{AppThemeBinding Light=#E5E5EA, Dark=#2C2C2E}"
+                    BackgroundColor="{AppThemeBinding Light=White, Dark=#2C2C2E}"
                     StrokeThickness="0"
                     Padding="12,10"
-                    Margin="2,0"
                     StrokeShape="RoundRectangle 8,8,0,0">
+                <Border.Shadow>
+                    <Shadow Brush="Black" Offset="0,2" Radius="3" Opacity="0.1"/>
+                </Border.Shadow>
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnTab2Tapped"/>
                 </Border.GestureRecognizers>
@@ -60,10 +65,13 @@
             
             <Border x:Name="Tab3Border"
                     Grid.Column="2"
-                    BackgroundColor="{AppThemeBinding Light=#E5E5EA, Dark=#2C2C2E}"
+                    BackgroundColor="{AppThemeBinding Light=White, Dark=#2C2C2E}"
                     StrokeThickness="0"
                     Padding="12,10"
                     StrokeShape="RoundRectangle 8,8,0,0">
+                <Border.Shadow>
+                    <Shadow Brush="Black" Offset="0,2" Radius="3" Opacity="0.1"/>
+                </Border.Shadow>
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnTab3Tapped"/>
                 </Border.GestureRecognizers>

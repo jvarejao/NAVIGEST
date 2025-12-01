@@ -13,8 +13,8 @@
         <converters:BoolToColorConverter x:Key="BoolToTextColorConverter" TrueColor="White" FalseColor="{AppThemeBinding Light=Black, Dark=White}" />
     </toolkit:Popup.Resources>
 
-    <Grid HorizontalOptions="Center" VerticalOptions="Center">
-        <Border WidthRequest="1000" HeightRequest="600" 
+    <Grid HorizontalOptions="Fill" VerticalOptions="Fill" Margin="50">
+        <Border HorizontalOptions="Fill" VerticalOptions="Fill" 
                 BackgroundColor="{AppThemeBinding Light=White, Dark=#1C1C1E}"
                 StrokeShape="RoundRectangle 12"
                 StrokeThickness="0">

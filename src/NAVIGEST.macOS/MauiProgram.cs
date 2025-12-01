@@ -2,8 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Syncfusion.Maui.Toolkit.Hosting;
 using SkiaSharp.Views.Maui.Controls.Hosting;
-using LiveChartsCore.SkiaSharpView.Maui;
-using LiveChartsCore; // Try adding this
+using LiveChartsCore.SkiaSharpView.Maui; // <-- LiveCharts2
 using NAVIGEST.macOS.Services.Icons; // <-- IIconProvider (namespace)
 using NAVIGEST.macOS.Pages;          // <-- ADICIONADO: HoursEntryPage
 using NAVIGEST.macOS.ViewModels;     // <-- ADICIONADO: HoursEntryViewModel
@@ -32,6 +31,8 @@ using Microsoft.Maui.Handlers;
 using UIKit;
 #endif
 
+using Microcharts.Maui; // <-- ADICIONADO
+
 namespace NAVIGEST.macOS
 {
     public static class MauiProgram
@@ -44,7 +45,7 @@ namespace NAVIGEST.macOS
                 .UseMauiApp<App>()
                 .UseMauiCommunityToolkit()
                 .UseSkiaSharp()
-                .UseLiveCharts()
+                .UseLiveCharts() // <-- LiveCharts2
                 .ConfigureSyncfusionToolkit()
                 .ConfigureMauiHandlers(handlers =>
                 {

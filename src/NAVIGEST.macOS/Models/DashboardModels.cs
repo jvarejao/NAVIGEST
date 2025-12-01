@@ -13,6 +13,7 @@ namespace NAVIGEST.macOS.Models
         public int TotalDiasTrabalhados { get; set; }
         public int TotalAusencias { get; set; }
         public string TopCliente { get; set; } = string.Empty;
+        public double SaldoHoras { get; set; }
     }
 
     public partial class MonthlyHoursData : ObservableObject
@@ -37,6 +38,9 @@ namespace NAVIGEST.macOS.Models
         public double HorasIdeais { get; set; } // 8 se dia útil, 0 se fds/feriado
         public bool IsAbsent { get; set; }
         public string AbsenceType { get; set; } = string.Empty;
+
+        // Helper for Charting Absences
+        public double? AbsencePoint => IsAbsent ? HorasIdeais : null;
     }
 
     public class AbsenceSummary

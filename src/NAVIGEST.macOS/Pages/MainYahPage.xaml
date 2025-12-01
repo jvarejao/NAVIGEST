@@ -201,6 +201,14 @@
                             </Grid>
                             <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="servicos" /></Border.GestureRecognizers>
                         </Border>
+                        <!-- TEST CHART -->
+                        <Border Style="{StaticResource MenuItemBorder}">
+                            <Grid ColumnDefinitions="40,*">
+                                <Label Text="&#xF080;" Style="{StaticResource SidebarIconLabel}" />
+                                <Label Grid.Column="1" Text="Test Chart" Style="{StaticResource SidebarTextLabel}" IsVisible="{Binding IsSidebarExpanded}" />
+                            </Grid>
+                            <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="testchart" /></Border.GestureRecognizers>
+                        </Border>
                         <!-- CONFIGURAÇÕES (sem expander— já autorizado) -->
                         <Border Style="{StaticResource MenuItemBorder}" IsVisible="{Binding IsAdminUnlocked}">
                             <Grid ColumnDefinitions="50,*">

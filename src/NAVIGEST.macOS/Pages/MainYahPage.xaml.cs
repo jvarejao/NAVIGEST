@@ -553,6 +553,21 @@ namespace NAVIGEST.macOS.Pages
                                 CloseSidebarMobileIfNeeded();
                                 break;
                             }
+                        case "testchart":
+                            {
+                                try
+                                {
+                                    var page = new TestChartPage();
+                                    // TestChartPage is a ContentView, so we can use it directly as content
+                                    if (BindingContext is MainYahPageViewModel vmTest) vmTest.IsConfigExpanded = false;
+                                    
+                                    // Since it's a ContentView, we don't need to extract .Content
+                                    ShowContent(page);
+                                }
+                                catch (Exception ex) { TratarErro(ex); }
+                                CloseSidebarMobileIfNeeded();
+                                break;
+                            }
 
                     }
                 }

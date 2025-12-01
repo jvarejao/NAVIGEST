@@ -8,27 +8,12 @@ using CommunityToolkit.Mvvm.Input;
 using NAVIGEST.macOS.Models;
 using NAVIGEST.macOS.Services;
 using Microsoft.Maui.Controls;
-using LiveChartsCore;
-using LiveChartsCore.SkiaSharpView;
-using LiveChartsCore.SkiaSharpView.Painting;
-using LiveChartsCore.SkiaSharpView.Painting.Effects;
-using LiveChartsCore.Kernel;
-using SkiaSharp;
 using System.Collections.Generic;
 
 namespace NAVIGEST.macOS.ViewModels
 {
     public partial class DashboardViewModel : ObservableObject
     {
-        [ObservableProperty]
-        private ISeries[] _series = Array.Empty<ISeries>();
-
-        [ObservableProperty]
-        private Axis[] _xAxes = Array.Empty<Axis>();
-
-        [ObservableProperty]
-        private Axis[] _yAxes = Array.Empty<Axis>();
-
         [ObservableProperty]
         private ObservableCollection<Colaborador> _colaboradores = new();
 
@@ -72,11 +57,7 @@ namespace NAVIGEST.macOS.ViewModels
         [ObservableProperty]
         private string _collaboratorSearchText = string.Empty;
 
-        [ObservableProperty]
-        private bool _isChartDetailVisible;
 
-        [ObservableProperty]
-        private string _selectedMonthDetailTitle = string.Empty;
 
         [ObservableProperty]
         private ObservableCollection<DailyHoursData> _selectedMonthDailyData = new();
@@ -93,24 +74,17 @@ namespace NAVIGEST.macOS.ViewModels
         [ObservableProperty]
         private ObservableCollection<string> _selectedAbsenceDetails = new();
 
-
-        [ObservableProperty]
-        private ISeries[] _detailSeries = Array.Empty<ISeries>();
-
-        [ObservableProperty]
-        private Axis[] _detailXAxes = Array.Empty<Axis>();
-
-        [ObservableProperty]
-        private Axis[] _detailYAxes = Array.Empty<Axis>();
-
         [ObservableProperty]
         private MonthlyHoursData? _selectedDetailMonth;
+
+        [ObservableProperty]
+        private bool _isAnnualView = true;
 
         public ICommand RefreshCommand { get; }
         public ICommand DrillDownCommand { get; }
         public ICommand SelectDetailMonthCommand { get; }
         public ICommand ShowAbsenceDetailsCommand { get; }
-        public ICommand DataPointerDownCommand { get; }
+        public ICommand ShowAnnualViewCommand { get; }
         
         public DashboardViewModel()
         {
@@ -118,7 +92,14 @@ namespace NAVIGEST.macOS.ViewModels
             DrillDownCommand = new AsyncRelayCommand<MonthlyHoursData>(OnDrillDownAsync);
             SelectDetailMonthCommand = new AsyncRelayCommand<MonthlyHoursData>(OnDrillDownAsync);
             ShowAbsenceDetailsCommand = new AsyncRelayCommand<AbsenceSummary>(OnShowAbsenceDetailsAsync);
-            DataPointerDownCommand = new AsyncRelayCommand<IEnumerable<ChartPoint>>(OnDataPointerDownAsync);
+            ShowAnnualViewCommand = new RelayCommand(ShowAnnualView);
+        }
+
+        private void ShowAnnualView()
+        {
+            IsAnnualView = true;
+            SelectedDetailMonth = null;
+            foreach (var m in MonthlyData) m.IsSelected = false;
         }
 
         public async Task InitializeAsync()
@@ -174,6 +155,25 @@ namespace NAVIGEST.macOS.ViewModels
             }
         }
 
+        [ObservableProperty]
+        private int _selectedChartIndex = -1;
+
+        partial void OnSelectedChartIndexChanged(int value)
+        {
+            if (value >= 0 && value < MonthlyData.Count)
+            {
+                var month = MonthlyData[value];
+                _ = OnDrillDownAsync(month);
+                
+                // Reset selection to allow clicking the same month again
+                MainThread.BeginInvokeOnMainThread(async () => 
+                {
+                    await Task.Delay(200);
+                    SelectedChartIndex = -1;
+                });
+            }
+        }
+
         private async Task LoadDataAsync()
         {
             if (IsLoading) return;
@@ -189,8 +189,6 @@ namespace NAVIGEST.macOS.ViewModels
                 var monthly = await DatabaseService.GetMonthlyHoursStatsAsync(colabId, SelectedYear);
                 MonthlyData.Clear();
                 foreach (var m in monthly) MonthlyData.Add(m);
-
-                UpdateChart();
 
                 // 3. Absences
                 var absences = await DatabaseService.GetAbsenceStatsAsync(colabId, SelectedYear);
@@ -212,55 +210,13 @@ namespace NAVIGEST.macOS.ViewModels
             }
         }
 
-        private void UpdateChart()
+        [RelayCommand]
+        private async Task ChartSelectionChanged(object? data)
         {
-            var labels = MonthlyData.Select(m => m.Mes).ToArray();
-            
-            Series = new ISeries[]
+            if (data is MonthlyHoursData month)
             {
-                new LineSeries<double>
-                {
-                    Values = MonthlyData.Select(m => m.HorasNormais).ToArray(),
-                    Name = "Reais",
-                    Fill = null,
-                    GeometrySize = 10,
-                    Stroke = new SolidColorPaint(SKColors.Green) { StrokeThickness = 3 },
-                    GeometryStroke = new SolidColorPaint(SKColors.Green) { StrokeThickness = 3 }
-                },
-                new LineSeries<double>
-                {
-                    Values = MonthlyData.Select(m => m.HorasIdeais).ToArray(),
-                    Name = "Ideais",
-                    Fill = null,
-                    GeometrySize = 0, 
-                    Stroke = new SolidColorPaint(SKColors.Gray) { StrokeThickness = 2, PathEffect = new DashEffect(new float[] { 6, 6 }) }
-                },
-                new LineSeries<double>
-                {
-                    Values = MonthlyData.Select(m => m.HorasExtras).ToArray(),
-                    Name = "Extra",
-                    Fill = null,
-                    GeometrySize = 5,
-                    Stroke = new SolidColorPaint(SKColors.Orange) { StrokeThickness = 2 },
-                    GeometryStroke = new SolidColorPaint(SKColors.Orange) { StrokeThickness = 2 }
-                }
-            };
-
-            XAxes = new Axis[]
-            {
-                new Axis
-                {
-                    Labels = labels,
-                    LabelsRotation = 0,
-                    TextSize = 12,
-                    MinStep = 1
-                }
-            };
-
-            YAxes = new Axis[]
-            {
-                new Axis { Labeler = value => $"{value}h" }
-            };
+                await OnDrillDownAsync(month);
+            }
         }
 
         private async Task OnDrillDownAsync(MonthlyHoursData? month)
@@ -276,81 +232,22 @@ namespace NAVIGEST.macOS.ViewModels
                 }
 
                 SelectedDetailMonth = month; // Update selection for UI
-                var days = await DatabaseService.GetDailyHoursStatsAsync(SelectedColaborador.ID, month.MesNumero, SelectedYear);
                 
-                SelectedMonthDetailTitle = $"{month.Mes} {month.Ano} - Detalhes";
+                // Use GetDailyHoursStatsAsync as it returns DailyHoursData with AbsencePoint
+                var daily = await DatabaseService.GetDailyHoursStatsAsync(
+                    IsAllSelected ? null : SelectedColaborador?.ID, 
+                    month.MesNumero, 
+                    month.Ano);
+                
                 SelectedMonthDailyData.Clear();
-                foreach(var d in days) SelectedMonthDailyData.Add(d);
+                foreach(var d in daily) SelectedMonthDailyData.Add(d);
                 
-                UpdateDetailChart(days);
-
-                IsChartDetailVisible = true;
+                IsAnnualView = false; // Switch to Daily View
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
             }
-        }
-
-        private void UpdateDetailChart(List<DailyHoursData> days)
-        {
-            var labels = days.Select(d => d.Data.Day.ToString()).ToArray();
-
-            DetailSeries = new ISeries[]
-            {
-                new LineSeries<double>
-                {
-                    Values = days.Select(d => d.HorasNormais).ToArray(),
-                    Name = "Reais",
-                    Fill = null,
-                    GeometrySize = 8,
-                    Stroke = new SolidColorPaint(SKColors.Green) { StrokeThickness = 2 },
-                    GeometryStroke = new SolidColorPaint(SKColors.Green) { StrokeThickness = 2 }
-                },
-                new LineSeries<double>
-                {
-                    Values = days.Select(d => 8.0).ToArray(), // Assuming 8h ideal per day
-                    Name = "Ideais",
-                    Fill = null,
-                    GeometrySize = 0, 
-                    Stroke = new SolidColorPaint(SKColors.Gray) { StrokeThickness = 1, PathEffect = new DashEffect(new float[] { 4, 4 }) }
-                },
-                new LineSeries<double>
-                {
-                    Values = days.Select(d => d.HorasExtras).ToArray(),
-                    Name = "Extra",
-                    Fill = null,
-                    GeometrySize = 4,
-                    Stroke = new SolidColorPaint(SKColors.Orange) { StrokeThickness = 2 },
-                    GeometryStroke = new SolidColorPaint(SKColors.Orange) { StrokeThickness = 2 }
-                },
-                new ColumnSeries<double>
-                {
-                    Values = days.Select(d => d.IsAbsent ? 8.0 : 0).ToArray(),
-                    Name = "Ausência",
-                    Fill = new SolidColorPaint(SKColors.Red.WithAlpha(100)), // Semi-transparent red
-                    Stroke = null,
-                    MaxBarWidth = 20
-                }
-            };
-
-            DetailXAxes = new Axis[]
-            {
-                new Axis
-                {
-                    Labels = labels,
-                    LabelsRotation = 0,
-                    TextSize = 12,
-                    MinStep = 1,
-                    ForceStepToMin = true,
-                    SeparatorsPaint = new SolidColorPaint(SKColors.LightGray.WithAlpha(50)) { StrokeThickness = 1 }
-                }
-            };
-
-            DetailYAxes = new Axis[]
-            {
-                new Axis { Labeler = value => $"{value}h" }
-            };
         }
 
         private async Task OnShowAbsenceDetailsAsync(AbsenceSummary? summary)
@@ -371,20 +268,6 @@ namespace NAVIGEST.macOS.ViewModels
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
-            }
-        }
-
-        private async Task OnDataPointerDownAsync(IEnumerable<ChartPoint>? points)
-        {
-            if (points == null || !points.Any()) return;
-            
-            var point = points.First();
-            var index = point.Index;
-            
-            if (index >= 0 && index < MonthlyData.Count)
-            {
-                var monthData = MonthlyData[index];
-                await OnDrillDownAsync(monthData);
             }
         }
 
@@ -409,11 +292,7 @@ namespace NAVIGEST.macOS.ViewModels
             IsCollaboratorPickerVisible = false;
         }
 
-        [RelayCommand]
-        private void CloseChartDetail()
-        {
-            IsChartDetailVisible = false;
-        }
+
 
         [RelayCommand]
         private void CloseAbsenceDetail()

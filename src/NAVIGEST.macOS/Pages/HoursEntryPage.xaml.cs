@@ -124,13 +124,19 @@ public partial class HoursEntryPage : ContentPage
     private void AtivarTab(int numeroTab)
     {
         _vm.TabAtiva = numeroTab;
-        Tab1Border.BackgroundColor = Colors.Transparent;
-        Tab2Border.BackgroundColor = Colors.Transparent;
-        Tab3Border.BackgroundColor = Colors.Transparent;
         
-        Tab1Label.TextColor = Color.FromArgb("#8E8E93");
-        Tab2Label.TextColor = Color.FromArgb("#8E8E93");
-        Tab3Label.TextColor = Color.FromArgb("#8E8E93");
+        // Cores para estado não selecionado (White em Light, Dark Grey em Dark)
+        var isDark = Application.Current?.RequestedTheme == AppTheme.Dark;
+        var unselectedBg = isDark ? Color.FromArgb("#2C2C2E") : Colors.White;
+        var unselectedText = isDark ? Color.FromArgb("#8E8E93") : Color.FromArgb("#6E6E73");
+
+        Tab1Border.BackgroundColor = unselectedBg;
+        Tab2Border.BackgroundColor = unselectedBg;
+        Tab3Border.BackgroundColor = unselectedBg;
+        
+        Tab1Label.TextColor = unselectedText;
+        Tab2Label.TextColor = unselectedText;
+        Tab3Label.TextColor = unselectedText;
         
         Tab1Label.FontAttributes = FontAttributes.None;
         Tab2Label.FontAttributes = FontAttributes.None;

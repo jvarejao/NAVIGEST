@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Maui;assembly=LiveChartsCore.SkiaSharpView.Maui"
+             xmlns:chart="clr-namespace:Syncfusion.Maui.Toolkit.Charts;assembly=Syncfusion.Maui.Toolkit"
              xmlns:vm="clr-namespace:NAVIGEST.macOS.ViewModels"
              xmlns:models="clr-namespace:NAVIGEST.macOS.Models"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
@@ -10,6 +10,7 @@
              x:Name="dashboardView">
 
     <ContentView.Resources>
+        <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter" />
         <Style TargetType="Border" x:Key="CardStyle">
             <Setter Property="StrokeShape" Value="RoundRectangle 10"/>
             <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=White, Dark=#1C1C1E}"/>
@@ -32,95 +33,308 @@
     </ContentView.Resources>
 
     <Grid>
-        <ScrollView VerticalScrollBarVisibility="Always">
-            <Grid x:Name="ContentContainer">
-                <VerticalStackLayout Spacing="16" Padding="16,16,16,100" MaximumWidthRequest="1400" HorizontalOptions="Center">
+        <!-- Main Layout Grid (No ScrollView) -->
+        <Grid x:Name="ContentContainer" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="16" Padding="16,16,16,16">
 
-                <!-- 1. HEADER / PICKER (Custom Style like Tab 2) -->
-                <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
-                    <Label Text="👤 Colaborador" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
-                    <Border Grid.Row="1" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" StrokeThickness="0" StrokeShape="RoundRectangle 8" HeightRequest="50">
-                        <Border.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding OpenCollaboratorPickerCommand}"/>
-                        </Border.GestureRecognizers>
-                        <Grid ColumnDefinitions="*,Auto">
-                            <Label Text="{Binding SelectedColaborador.Nome, TargetNullValue='Selecione colaborador'}" Padding="12,10" VerticalOptions="Center" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
-                            <Label Grid.Column="1" Text="▼" FontSize="12" Padding="12,10" VerticalOptions="Center" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
-                        </Grid>
-                    </Border>
-                </Grid>
-
-                <!-- 2. METRICS GRID (2x2) -->
-                <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,*" RowSpacing="10" ColumnSpacing="10">
-                    
-                    <!-- Total Hours (Blue) -->
-                    <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource CardStyle}">
-                        <VerticalStackLayout Spacing="4">
-                            <Label Text="&#xf017;" FontFamily="FA7Solid" FontSize="20" TextColor="#0A84FF" HorizontalOptions="End"/>
-                            <Label Text="Total Horas" Style="{StaticResource LabelCaption}"/>
-                            <Label Text="{Binding Metrics.TotalHoras, StringFormat='{0:F1}h'}" 
-                                   Style="{StaticResource LabelValue}" TextColor="#0A84FF"/>
-                        </VerticalStackLayout>
-                    </Border>
-
-                    <!-- Absences (Red) -->
-                    <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource CardStyle}">
-                        <VerticalStackLayout Spacing="4">
-                            <Label Text="&#xf073;" FontFamily="FA7Solid" FontSize="20" TextColor="#FF2D55" HorizontalOptions="End"/>
-                            <Label Text="Ausências" Style="{StaticResource LabelCaption}"/>
-                            <Label Text="{Binding Metrics.TotalAusencias, StringFormat='{0} dias'}" 
-                                   Style="{StaticResource LabelValue}" TextColor="#FF2D55"/>
-                        </VerticalStackLayout>
-                    </Border>
-
-                    <!-- Top Client (Purple) -->
-                    <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource CardStyle}">
-                        <VerticalStackLayout Spacing="4">
-                            <Label Text="&#xf007;" FontFamily="FA7Solid" FontSize="20" TextColor="#AF52DE" HorizontalOptions="End"/>
-                            <Label Text="Top Cliente" Style="{StaticResource LabelCaption}"/>
-                            <Label Text="{Binding Metrics.TopCliente}" 
-                                   Style="{StaticResource LabelValue}" TextColor="#AF52DE" LineBreakMode="TailTruncation"/>
-                        </VerticalStackLayout>
-                    </Border>
-
-                    <!-- Work Days (Green) -->
-                    <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource CardStyle}">
-                        <VerticalStackLayout Spacing="4">
-                            <Label Text="&#xf073;" FontFamily="FA7Solid" FontSize="20" TextColor="#34C759" HorizontalOptions="End"/>
-                            <Label Text="Dias Trab." Style="{StaticResource LabelCaption}"/>
-                            <Label Text="{Binding Metrics.TotalDiasTrabalhados, StringFormat='{0} dias'}" 
-                                   Style="{StaticResource LabelValue}" TextColor="#34C759"/>
-                        </VerticalStackLayout>
-                    </Border>
-                </Grid>
-
-                <!-- 3. CHART -->
-                <Border Style="{StaticResource CardStyle}" HeightRequest="500">
-                    <Grid RowDefinitions="Auto,*">
-                        <Label Grid.Row="0" Text="Evolução Anual" FontAttributes="Bold" FontSize="16" Margin="0,0,0,10"/>
-                        <lvc:CartesianChart Grid.Row="1"
-                                            Series="{Binding Series}"
-                                            XAxes="{Binding XAxes}"
-                                            YAxes="{Binding YAxes}"
-                                            DataPointerDownCommand="{Binding DataPointerDownCommand}"
-                                            TooltipPosition="Top">
-                        </lvc:CartesianChart>
+            <!-- 1. HEADER / PICKER (Custom Style like Tab 2) -->
+            <Grid Grid.Row="0" RowDefinitions="Auto,Auto" RowSpacing="6">
+                <Label Text="👤 Colaborador" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                <Border Grid.Row="1" BackgroundColor="{AppThemeBinding Light=White, Dark=#2C2C2E}" StrokeThickness="0" StrokeShape="RoundRectangle 8" HeightRequest="50">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Offset="0,2" Radius="3" Opacity="0.1"/>
+                    </Border.Shadow>
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding OpenCollaboratorPickerCommand}"/>
+                    </Border.GestureRecognizers>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="{Binding SelectedColaborador.Nome, TargetNullValue='Selecione colaborador'}" Padding="12,10" VerticalOptions="Center" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                        <Label Grid.Column="1" Text="▼" FontSize="12" Padding="12,10" VerticalOptions="Center" TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
                     </Grid>
                 </Border>
+            </Grid>
 
-                <!-- 4. ACCUMULATIVE ABSENCES -->
+            <!-- 2. METRICS GRID (2x2) -->
+            <Grid Grid.Row="1" RowDefinitions="Auto,Auto" ColumnDefinitions="*,*" RowSpacing="10" ColumnSpacing="10">
+                
+                <!-- Total Hours (Blue) -->
+                                <!-- Total Hours (Blue) -->
+                <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource CardStyle}">
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="&#xf017;" FontFamily="FA7Solid" FontSize="20" TextColor="#0A84FF" HorizontalOptions="End"/>
+                        <Label Text="Total Horas" Style="{StaticResource LabelCaption}"/>
+                        <Label Text="{Binding Metrics.TotalHoras, StringFormat='{0:F1}h'}" 
+                               Style="{StaticResource LabelValue}" TextColor="#0A84FF"/>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Total Days (Green) -->
+                <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource CardStyle}">
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="&#xf073;" FontFamily="FA7Solid" FontSize="20" TextColor="#34C759" HorizontalOptions="End"/>
+                        <Label Text="Dias Trabalhados" Style="{StaticResource LabelCaption}"/>
+                        <Label Text="{Binding Metrics.TotalDiasTrabalhados}" 
+                               Style="{StaticResource LabelValue}" TextColor="#34C759"/>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Average Hours (Orange) -->
+                <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource CardStyle}">
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="&#xf201;" FontFamily="FA7Solid" FontSize="20" TextColor="#FF9500" HorizontalOptions="End"/>
+                        <Label Text="Média Diária" Style="{StaticResource LabelCaption}"/>
+                        <Label Text="{Binding Metrics.MediaHorasDia, StringFormat='{0:F1}h'}" 
+                               Style="{StaticResource LabelValue}" TextColor="#FF9500"/>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Balance (Purple) -->
+                <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource CardStyle}">
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="&#xf24e;" FontFamily="FA7Solid" FontSize="20" TextColor="#AF52DE" HorizontalOptions="End"/>
+                        <Label Text="Saldo Horas" Style="{StaticResource LabelCaption}"/>
+                        <Label Text="{Binding Metrics.SaldoHoras, StringFormat='{0:F1}h'}" 
+                               Style="{StaticResource LabelValue}" TextColor="#AF52DE"/>
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+
+            <!-- 3. MAIN CHART (Annual Evolution) -->
+            <Border Grid.Row="2" Style="{StaticResource CardStyle}">
+                <Grid RowDefinitions="Auto,*">
+                    <!-- Header with Buttons -->
+                    <Grid ColumnDefinitions="Auto,*" Margin="0,0,0,10">
+                        <Label Text="Evolução" FontAttributes="Bold" FontSize="16" VerticalOptions="Center"/>
+                        
+                        <!-- Month Selector + Annual Button -->
+                        <ScrollView Grid.Column="1" Orientation="Horizontal" HorizontalScrollBarVisibility="Never" Margin="20,0,0,0" VerticalOptions="Center">
+                            <HorizontalStackLayout Spacing="10">
+                                <!-- Annual Button -->
+                                <Border StrokeShape="RoundRectangle 10" StrokeThickness="0" Padding="16,8" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding ShowAnnualViewCommand}"/>
+                                    </Border.GestureRecognizers>
+                                    <Border.Triggers>
+                                        <DataTrigger TargetType="Border" Binding="{Binding IsAnnualView}" Value="True">
+                                            <Setter Property="BackgroundColor" Value="#0A84FF"/>
+                                        </DataTrigger>
+                                    </Border.Triggers>
+                                    <Label Text="Anual" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}">
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding IsAnnualView}" Value="True">
+                                                <Setter Property="TextColor" Value="White"/>
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
+                                </Border>
+
+                                <!-- Months List -->
+                                <HorizontalStackLayout BindableLayout.ItemsSource="{Binding MonthlyData}" Spacing="10">
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border x:DataType="{x:Null}" StrokeShape="RoundRectangle 10" StrokeThickness="0" Padding="16,8" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}">
+                                                <Border.GestureRecognizers>
+                                                    <TapGestureRecognizer Command="{Binding BindingContext.SelectDetailMonthCommand, Source={x:Reference dashboardView}}" CommandParameter="{Binding .}"/>
+                                                </Border.GestureRecognizers>
+                                                <Border.Triggers>
+                                                    <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                                        <Setter Property="BackgroundColor" Value="#0A84FF"/>
+                                                    </DataTrigger>
+                                                </Border.Triggers>
+                                                <Label Text="{Binding Mes}" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}">
+                                                    <Label.Triggers>
+                                                        <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                                            <Setter Property="TextColor" Value="White"/>
+                                                        </DataTrigger>
+                                                    </Label.Triggers>
+                                                </Label>
+                                            </Border>
+                                        </DataTemplate>
+                                    </BindableLayout.ItemTemplate>
+                                </HorizontalStackLayout>
+                            </HorizontalStackLayout>
+                        </ScrollView>
+                    </Grid>
+
+                    <!-- Charts Container -->
+                    <Grid Grid.Row="1">
+                        <!-- ANNUAL CHART -->
+                        <chart:SfCartesianChart IsVisible="{Binding IsAnnualView}" 
+                                              HorizontalOptions="Fill" 
+                                              HeightRequest="450">
+                            
+                            <chart:SfCartesianChart.Legend>
+                                <chart:ChartLegend Placement="Bottom"/>
+                            </chart:SfCartesianChart.Legend>
+
+                            <chart:SfCartesianChart.TooltipBehavior>
+                                <chart:ChartTooltipBehavior/>
+                            </chart:SfCartesianChart.TooltipBehavior>
+
+                            <chart:SfCartesianChart.XAxes>
+                                <chart:CategoryAxis LabelPlacement="BetweenTicks" ShowMajorGridLines="False">
+                                    <chart:CategoryAxis.LabelStyle>
+                                        <chart:ChartAxisLabelStyle TextColor="{AppThemeBinding Light=Black, Dark=White}" />
+                                    </chart:CategoryAxis.LabelStyle>
+                                </chart:CategoryAxis>
+                            </chart:SfCartesianChart.XAxes>
+                            
+                            <chart:SfCartesianChart.YAxes>
+                                <chart:NumericalAxis IsVisible="True" Minimum="0" ShowMajorGridLines="False">
+                                    <chart:NumericalAxis.LabelStyle>
+                                        <chart:ChartAxisLabelStyle TextColor="{AppThemeBinding Light=Black, Dark=White}" FontSize="14" FontAttributes="Bold"/>
+                                    </chart:NumericalAxis.LabelStyle>
+                                </chart:NumericalAxis>
+                            </chart:SfCartesianChart.YAxes>
+
+                            <!-- 1. Reais (Green) -->
+                            <chart:LineSeries Label="Horas Reais"
+                                            ItemsSource="{Binding MonthlyData}"
+                                            XBindingPath="Mes"
+                                            YBindingPath="HorasNormais"
+                                            Fill="#34C759"
+                                            StrokeWidth="4"
+                                            EnableTooltip="True"
+                                            ShowDataLabels="True">
+                                <chart:LineSeries.DataLabelSettings>
+                                    <chart:CartesianDataLabelSettings LabelPlacement="Outer" UseSeriesPalette="False">
+                                        <chart:CartesianDataLabelSettings.LabelStyle>
+                                            <chart:ChartDataLabelStyle TextColor="{AppThemeBinding Light=Black, Dark=White}" FontSize="12" FontAttributes="Bold"/>
+                                        </chart:CartesianDataLabelSettings.LabelStyle>
+                                    </chart:CartesianDataLabelSettings>
+                                </chart:LineSeries.DataLabelSettings>
+                            </chart:LineSeries>
+
+                            <!-- 2. Ideais (Gray Dashed) -->
+                            <chart:LineSeries Label="Horas Ideais"
+                                            ItemsSource="{Binding MonthlyData}"
+                                            XBindingPath="Mes"
+                                            YBindingPath="HorasIdeais"
+                                            Fill="#8E8E93"
+                                            StrokeWidth="2"
+                                            StrokeDashArray="6,6"
+                                            EnableTooltip="True"/>
+
+                            <!-- 3. Extra (Orange) -->
+                            <chart:LineSeries Label="Horas Extras"
+                                            ItemsSource="{Binding MonthlyData}"
+                                            XBindingPath="Mes"
+                                            YBindingPath="HorasExtras"
+                                            Fill="#FF9500"
+                                            StrokeWidth="2"
+                                            EnableTooltip="True"/>
+                            
+                            <!-- Interaction: Selection -->
+                            <chart:SfCartesianChart.SelectionBehavior>
+                                <chart:SeriesSelectionBehavior Type="Single" SelectionBrush="#34C759" SelectedIndex="{Binding SelectedChartIndex, Mode=TwoWay}" />
+                            </chart:SfCartesianChart.SelectionBehavior>
+                        </chart:SfCartesianChart>
+
+                        <!-- DAILY CHART (Replaces Popup) -->
+                        <chart:SfCartesianChart IsVisible="{Binding IsAnnualView, Converter={toolkit:InvertedBoolConverter}}" 
+                                              HorizontalOptions="Fill" 
+                                              HeightRequest="450">
+                            
+                            <chart:SfCartesianChart.Legend>
+                                <chart:ChartLegend Placement="Bottom"/>
+                            </chart:SfCartesianChart.Legend>
+
+                            <chart:SfCartesianChart.TooltipBehavior>
+                                <chart:ChartTooltipBehavior/>
+                            </chart:SfCartesianChart.TooltipBehavior>
+
+                            <chart:SfCartesianChart.XAxes>
+                                <chart:CategoryAxis LabelPlacement="BetweenTicks" ShowMajorGridLines="False">
+                                    <chart:CategoryAxis.LabelStyle>
+                                        <chart:ChartAxisLabelStyle TextColor="{AppThemeBinding Light=Black, Dark=White}" />
+                                    </chart:CategoryAxis.LabelStyle>
+                                </chart:CategoryAxis>
+                            </chart:SfCartesianChart.XAxes>
+                            
+                            <chart:SfCartesianChart.YAxes>
+                                <chart:NumericalAxis IsVisible="True" Minimum="0" ShowMajorGridLines="False">
+                                    <chart:NumericalAxis.LabelStyle>
+                                        <chart:ChartAxisLabelStyle TextColor="{AppThemeBinding Light=Black, Dark=White}" FontSize="14" FontAttributes="Bold"/>
+                                    </chart:NumericalAxis.LabelStyle>
+                                </chart:NumericalAxis>
+                            </chart:SfCartesianChart.YAxes>
+
+                            <!-- 1. Reais (Green) -->
+                            <chart:LineSeries Label="Horas Reais"
+                                            ItemsSource="{Binding SelectedMonthDailyData}"
+                                            XBindingPath="Data.Day"
+                                            YBindingPath="HorasNormais"
+                                            Fill="#34C759"
+                                            StrokeWidth="3"
+                                            ShowDataLabels="True"
+                                            ShowMarkers="True"
+                                            EnableTooltip="True">
+                                <chart:LineSeries.MarkerSettings>
+                                    <chart:ChartMarkerSettings Type="Circle" Height="8" Width="8" Fill="#34C759" />
+                                </chart:LineSeries.MarkerSettings>
+                                <chart:LineSeries.DataLabelSettings>
+                                    <chart:CartesianDataLabelSettings LabelPlacement="Outer">
+                                        <chart:CartesianDataLabelSettings.LabelStyle>
+                                            <chart:ChartDataLabelStyle TextColor="{AppThemeBinding Light=Black, Dark=White}" FontSize="12"/>
+                                        </chart:CartesianDataLabelSettings.LabelStyle>
+                                    </chart:CartesianDataLabelSettings>
+                                </chart:LineSeries.DataLabelSettings>
+                            </chart:LineSeries>
+
+                            <!-- 2. Ideais (Gray Dashed) -->
+                            <chart:LineSeries Label="Horas Ideais"
+                                            ItemsSource="{Binding SelectedMonthDailyData}"
+                                            XBindingPath="Data.Day"
+                                            YBindingPath="HorasIdeais"
+                                            Fill="#8E8E93"
+                                            StrokeWidth="2"
+                                            StrokeDashArray="6,6"
+                                            EnableTooltip="True"/>
+
+                            <!-- 3. Extra (Orange) -->
+                            <chart:LineSeries Label="Horas Extras"
+                                            ItemsSource="{Binding SelectedMonthDailyData}"
+                                            XBindingPath="Data.Day"
+                                            YBindingPath="HorasExtras"
+                                            Fill="#FF9500"
+                                            StrokeWidth="2"
+                                            EnableTooltip="True"/>
+
+                            <!-- 4. Absences (Red Markers) -->
+                            <chart:ScatterSeries Label="Ausências"
+                                                ItemsSource="{Binding SelectedMonthDailyData}"
+                                                XBindingPath="Data.Day"
+                                                YBindingPath="AbsencePoint"
+                                                PointHeight="12"
+                                                PointWidth="12"
+                                                Fill="#FF3B30"
+                                                EnableTooltip="True"/>
+
+                        </chart:SfCartesianChart>
+                    </Grid>
+                </Grid>
+            </Border>
+
+
+
+            <!-- 4. ACCUMULATIVE ABSENCES -->
+            <VerticalStackLayout Grid.Row="3" Spacing="10">
                 <Label Text="Acumulado de Ausências" FontAttributes="Bold" FontSize="16" Margin="0,10,0,0"/>
-                <CollectionView ItemsSource="{Binding AbsenceData}" SelectionMode="None">
-                    <CollectionView.ItemsLayout>
-                        <GridItemsLayout Orientation="Vertical" Span="3" HorizontalItemSpacing="10" VerticalItemSpacing="10"/>
-                    </CollectionView.ItemsLayout>
-                    <CollectionView.ItemTemplate>
+                
+                <!-- Replaced CollectionView with FlexLayout for better sizing -->
+                <FlexLayout BindableLayout.ItemsSource="{Binding AbsenceData}" 
+                            Wrap="Wrap" 
+                            JustifyContent="Start" 
+                            AlignItems="Start"
+                            Direction="Row">
+                    <BindableLayout.ItemTemplate>
                         <DataTemplate>
                             <Border x:DataType="{x:Null}" StrokeShape="RoundRectangle 10"
                                     BackgroundColor="{AppThemeBinding Light=White, Dark=#1C1C1E}"
                                     StrokeThickness="0"
                                     Padding="10"
-                                    HeightRequest="100">
+                                    HeightRequest="80"
+                                    WidthRequest="100"
+                                    Margin="0,0,10,10">
                                 <Border.GestureRecognizers>
                                     <TapGestureRecognizer Command="{Binding BindingContext.ShowAbsenceDetailsCommand, Source={x:Reference dashboardView}}"
                                                           CommandParameter="{Binding .}"/>
@@ -128,19 +342,17 @@
                                 <Border.Shadow>
                                     <Shadow Brush="Black" Offset="0,2" Radius="3" Opacity="0.1"/>
                                 </Border.Shadow>
-                                <VerticalStackLayout Spacing="5" VerticalOptions="Center" HorizontalOptions="Center">
-                                    <Label Text="{Binding Icon}" FontFamily="FA7Solid" FontSize="24" TextColor="{Binding Cor}" HorizontalOptions="Center"/>
-                                    <Label Text="{Binding Tipo}" FontSize="12" HorizontalOptions="Center" LineBreakMode="TailTruncation" MaxLines="1"/>
-                                    <Label Text="{Binding Dias, StringFormat='{0} dias'}" FontAttributes="Bold" FontSize="14" HorizontalOptions="Center"/>
+                                <VerticalStackLayout Spacing="2" VerticalOptions="Center" HorizontalOptions="Center">
+                                    <Label Text="{Binding Icon}" FontFamily="FA7Solid" FontSize="20" TextColor="{Binding Cor}" HorizontalOptions="Center"/>
+                                    <Label Text="{Binding Tipo}" FontSize="10" HorizontalOptions="Center" LineBreakMode="TailTruncation" MaxLines="1"/>
+                                    <Label Text="{Binding Dias, StringFormat='{0} dias'}" FontAttributes="Bold" FontSize="12" HorizontalOptions="Center"/>
                                 </VerticalStackLayout>
                             </Border>
                         </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
-
-                </VerticalStackLayout>
-            </Grid>
-        </ScrollView>
+                    </BindableLayout.ItemTemplate>
+                </FlexLayout>
+            </VerticalStackLayout>
+        </Grid>
 
         <!-- COLLABORATOR PICKER OVERLAY -->
         <Grid x:Name="CollaboratorPickerOverlay"
@@ -210,79 +422,7 @@
             </Border>
         </Grid>
 
-        <!-- CHART DETAIL OVERLAY (Daily Breakdown) -->
-        <Grid x:Name="ChartDetailOverlay"
-              IsVisible="{Binding IsChartDetailVisible}"
-              BackgroundColor="#80000000"
-              IgnoreSafeArea="True"
-              ZIndex="1002">
-            <Grid.GestureRecognizers>
-                <TapGestureRecognizer Command="{Binding CloseChartDetailCommand}"/>
-            </Grid.GestureRecognizers>
 
-            <Border BackgroundColor="{AppThemeBinding Light=White, Dark=#1C1C1E}"
-                    StrokeThickness="0"
-                    Padding="20"
-                    StrokeShape="RoundRectangle 18"
-                    VerticalOptions="Fill"
-                    HorizontalOptions="Fill"
-                    MaximumWidthRequest="1000"
-                    MaximumHeightRequest="600"
-                    Margin="40">
-                <Border.GestureRecognizers>
-                    <TapGestureRecognizer />
-                </Border.GestureRecognizers>
-                
-                <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="10">
-                    <Label Text="{Binding SelectedMonthDetailTitle}" FontAttributes="Bold" FontSize="18" HorizontalOptions="Center"/>
-                    
-                    <!-- Month Selector -->
-                    <ScrollView Grid.Row="1" Orientation="Horizontal" HorizontalScrollBarVisibility="Never" HeightRequest="40">
-                        <HorizontalStackLayout BindableLayout.ItemsSource="{Binding MonthlyData}" Spacing="8">
-                            <BindableLayout.ItemTemplate>
-                                <DataTemplate x:DataType="models:MonthlyHoursData">
-                                    <Border StrokeShape="RoundRectangle 8"
-                                            StrokeThickness="0"
-                                            BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
-                                            Padding="12,8">
-                                        <Border.GestureRecognizers>
-                                            <TapGestureRecognizer Command="{Binding BindingContext.SelectDetailMonthCommand, Source={x:Reference dashboardView}}"
-                                                                  CommandParameter="{Binding .}"
-                                                                  x:DataType="{x:Null}"/>
-                                        </Border.GestureRecognizers>
-                                        <Border.Triggers>
-                                            <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
-                                                <Setter Property="BackgroundColor" Value="#0A84FF" />
-                                            </DataTrigger>
-                                        </Border.Triggers>
-                                        <Label Text="{Binding Mes}" 
-                                               TextColor="{AppThemeBinding Light=Black, Dark=White}"
-                                               HorizontalOptions="Center" 
-                                               VerticalOptions="Center">
-                                            <Label.Triggers>
-                                                <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
-                                                    <Setter Property="TextColor" Value="White" />
-                                                </DataTrigger>
-                                            </Label.Triggers>
-                                        </Label>
-                                    </Border>
-                                </DataTemplate>
-                            </BindableLayout.ItemTemplate>
-                        </HorizontalStackLayout>
-                    </ScrollView>
-
-                    <lvc:CartesianChart Grid.Row="2"
-                                        Series="{Binding DetailSeries}"
-                                        XAxes="{Binding DetailXAxes}"
-                                        YAxes="{Binding DetailYAxes}"
-                                        LegendPosition="Bottom"
-                                        TooltipPosition="Top">
-                    </lvc:CartesianChart>
-
-                    <Button Grid.Row="3" Text="Fechar" Command="{Binding CloseChartDetailCommand}" BackgroundColor="Transparent" TextColor="#0A84FF"/>
-                </Grid>
-            </Border>
-        </Grid>
 
         <!-- ABSENCE DETAIL OVERLAY -->
         <Grid x:Name="AbsenceDetailOverlay"

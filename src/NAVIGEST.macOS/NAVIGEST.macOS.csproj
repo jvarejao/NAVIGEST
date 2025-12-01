@@ -148,8 +148,10 @@
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="MailKit" Version="4.13.0" />
+    <PackageReference Include="Microcharts.Maui" Version="1.0.1" />
     <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.110" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0-rc.1.25451.107" />
+    <PackageReference Include="OxyPlot.Maui.Skia" Version="1.1.0" />
   </ItemGroup>
 
   <ItemGroup>

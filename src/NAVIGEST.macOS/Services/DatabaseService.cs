@@ -1165,6 +1165,8 @@ FROM OrderInfo";
             m.TotalHoras = m.TotalHorasNormais + m.TotalHorasExtras;
             if (m.TotalDiasTrabalhados > 0)
                 m.MediaHorasDia = m.TotalHoras / m.TotalDiasTrabalhados;
+            
+            m.SaldoHoras = m.TotalHoras - (m.TotalDiasTrabalhados * 8);
 
             // 2. Absences (Records with IdCentroCusto NOT NULL)
             string sqlAbs = $@"SELECT COUNT(*) FROM HORASTRABALHADAS {filter} AND IDCentroCusto IS NOT NULL";
