@@ -28,7 +28,7 @@ namespace NAVIGEST.macOS.Services
                 if (!Directory.Exists(rootPath))
                 {
                     // Tenta montar automaticamente se for caminho de rede
-                    TryMountServer(setup.CaminhoServidor);
+                    TryMountServer(setup);
                     return (false, $"A pasta raiz não está acessível: {rootPath}.\nO sistema tentou ligar ao servidor. Por favor, autentique-se se necessário e tente novamente.");
                 }
 
@@ -94,7 +94,7 @@ namespace NAVIGEST.macOS.Services
                 if (!Directory.Exists(rootPath))
                 {
                     // Tenta montar automaticamente se for caminho de rede
-                    TryMountServer(setup.CaminhoServidor);
+                    TryMountServer(setup);
                     
                     // Dá um pequeno tempo para montar
                     await Task.Delay(2000);
@@ -147,6 +147,18 @@ namespace NAVIGEST.macOS.Services
                 var setup = await DatabaseService.GetSetupAsync();
                 if (setup == null || string.IsNullOrWhiteSpace(setup.CaminhoServidor)) return false;
                 var rootPath = ResolvePath(setup.CaminhoServidor);
+                
+                if (!string.IsNullOrWhiteSpace(rootPath) && Directory.Exists(rootPath))
+                {
+                    return true;
+                }
+
+                // Se não existe, tenta montar
+                TryMountServer(setup);
+                
+                // Espera um pouco para o sistema montar
+                await Task.Delay(3000);
+
                 return !string.IsNullOrWhiteSpace(rootPath) && Directory.Exists(rootPath);
             }
             catch { return false; }
@@ -181,8 +193,9 @@ namespace NAVIGEST.macOS.Services
             return dbPath;
         }
 
-        private static void TryMountServer(string? dbPath)
+        private static void TryMountServer(Setup setup)
         {
+            var dbPath = setup.CaminhoServidor;
             if (string.IsNullOrWhiteSpace(dbPath) || !dbPath.StartsWith(@"\\")) return;
 
             try
@@ -193,7 +206,19 @@ namespace NAVIGEST.macOS.Services
                 {
                     var ip = parts[0];
                     var share = parts[1];
-                    var url = $"smb://{ip}/{share}";
+                    
+                    string url;
+                    if (!string.IsNullOrWhiteSpace(setup.ServerUser) && !string.IsNullOrWhiteSpace(setup.ServerPassword))
+                    {
+                        var user = Uri.EscapeDataString(setup.ServerUser);
+                        var pass = Uri.EscapeDataString(setup.ServerPassword);
+                        url = $"smb://{user}:{pass}@{ip}/{share}";
+                    }
+                    else
+                    {
+                        url = $"smb://{ip}/{share}";
+                    }
+
                     Process.Start("open", url);
                 }
             }

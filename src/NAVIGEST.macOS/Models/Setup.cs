@@ -7,6 +7,10 @@ namespace NAVIGEST.macOS.Models
         public string? CaminhoServidor { get; set; }
         public string? CaminhoServidor2 { get; set; }
         
+        // Credenciais Servidor (Opcional)
+        public string? ServerUser { get; set; }
+        public string? ServerPassword { get; set; }
+        
         // Pastas Servidor 1
         public string? SERV1PASTA1 { get; set; }
         public string? SERV1PASTA2 { get; set; }

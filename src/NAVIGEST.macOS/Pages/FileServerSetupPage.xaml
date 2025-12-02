@@ -39,6 +39,17 @@
             <Entry Text="{Binding Setup.CaminhoServidor}" Placeholder="Ex: \\192.168.1.200\Dados" Style="{StaticResource InputEntry}" />
             <Label Text="Nota: No macOS, este caminho será convertido automaticamente para /Volumes/..." FontSize="12" TextColor="Gray" />
 
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="20">
+                <VerticalStackLayout>
+                    <Label Text="Utilizador (Opcional)" Style="{StaticResource HeaderLabel}" />
+                    <Entry Text="{Binding Setup.ServerUser}" Placeholder="Utilizador" Style="{StaticResource InputEntry}" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Grid.Column="1">
+                    <Label Text="Password (Opcional)" Style="{StaticResource HeaderLabel}" />
+                    <Entry Text="{Binding Setup.ServerPassword}" Placeholder="Password" IsPassword="True" Style="{StaticResource InputEntry}" />
+                </VerticalStackLayout>
+            </Grid>
+
             <BoxView HeightRequest="1" Color="Gray" Opacity="0.3" Margin="0,10" />
 
             <Label Text="Subpastas a criar (Opcional)" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource BodyTextColor}" />

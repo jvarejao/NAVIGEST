@@ -608,8 +608,52 @@ namespace NAVIGEST.macOS.Services
             return rows > 0;
         }
 
+        private static async Task EnsureSetupSchemaAsync()
+        {
+            try
+            {
+                using var conn = new MySqlConnection(GetConnectionString());
+                await conn.OpenAsync();
+
+                // Check ServerUser
+                var checkSql = "SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = @db AND TABLE_NAME = 'SETUP' AND COLUMN_NAME = 'ServerUser';";
+                using (var cmd = new MySqlCommand(checkSql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@db", conn.Database);
+                    var count = Convert.ToInt64(await cmd.ExecuteScalarAsync());
+                    if (count == 0)
+                    {
+                        var alter = "ALTER TABLE SETUP ADD COLUMN ServerUser VARCHAR(100) NULL DEFAULT NULL;";
+                        using var alterCmd = new MySqlCommand(alter, conn);
+                        await alterCmd.ExecuteNonQueryAsync();
+                    }
+                }
+
+                // Check ServerPassword
+                checkSql = "SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = @db AND TABLE_NAME = 'SETUP' AND COLUMN_NAME = 'ServerPassword';";
+                using (var cmd = new MySqlCommand(checkSql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@db", conn.Database);
+                    var count = Convert.ToInt64(await cmd.ExecuteScalarAsync());
+                    if (count == 0)
+                    {
+                        var alter = "ALTER TABLE SETUP ADD COLUMN ServerPassword VARCHAR(100) NULL DEFAULT NULL;";
+                        using var alterCmd = new MySqlCommand(alter, conn);
+                        await alterCmd.ExecuteNonQueryAsync();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SchemaUpdate] Erro: {ex.Message}");
+            }
+        }
+
         public static async Task<Setup?> GetSetupAsync(CancellationToken ct = default)
         {
+            // Ensure schema exists before querying
+            await EnsureSetupSchemaAsync();
+
             using var conn = new MySqlConnection(GetConnectionString());
             await conn.OpenAsync(ct);
 
@@ -617,7 +661,8 @@ namespace NAVIGEST.macOS.Services
                 SELECT CodEmp, Empresa, CaminhoServidor, CaminhoServidor2,
                        SERV1PASTA1, SERV1PASTA2, SERV1PASTA3, SERV1PASTA4,
                        SERV1PASTA5, SERV1PASTA6, SERV1PASTA7, SERV1PASTA8,
-                       SERV2PASTA1, SERV2PASTA2
+                       SERV2PASTA1, SERV2PASTA2,
+                       ServerUser, ServerPassword
                 FROM SETUP
                 LIMIT 1;";
 
@@ -625,22 +670,32 @@ namespace NAVIGEST.macOS.Services
             using var rd = await cmd.ExecuteReaderAsync(ct);
             if (!await rd.ReadAsync(ct)) return null;
 
+            // Helper to safely get string even if column doesn't exist (though SQL would fail before)
+            // or if it is null.
+            string? GetStr(string col) 
+            {
+                try { return rd.IsDBNull(rd.GetOrdinal(col)) ? null : rd.GetString(col); }
+                catch { return null; }
+            }
+
             return new Setup
             {
                 CodEmp = rd.GetString("CodEmp"),
-                Empresa = rd.IsDBNull(rd.GetOrdinal("Empresa")) ? null : rd.GetString("Empresa"),
-                CaminhoServidor = rd.IsDBNull(rd.GetOrdinal("CaminhoServidor")) ? null : rd.GetString("CaminhoServidor"),
-                CaminhoServidor2 = rd.IsDBNull(rd.GetOrdinal("CaminhoServidor2")) ? null : rd.GetString("CaminhoServidor2"),
-                SERV1PASTA1 = rd.IsDBNull(rd.GetOrdinal("SERV1PASTA1")) ? null : rd.GetString("SERV1PASTA1"),
-                SERV1PASTA2 = rd.IsDBNull(rd.GetOrdinal("SERV1PASTA2")) ? null : rd.GetString("SERV1PASTA2"),
-                SERV1PASTA3 = rd.IsDBNull(rd.GetOrdinal("SERV1PASTA3")) ? null : rd.GetString("SERV1PASTA3"),
-                SERV1PASTA4 = rd.IsDBNull(rd.GetOrdinal("SERV1PASTA4")) ? null : rd.GetString("SERV1PASTA4"),
-                SERV1PASTA5 = rd.IsDBNull(rd.GetOrdinal("SERV1PASTA5")) ? null : rd.GetString("SERV1PASTA5"),
-                SERV1PASTA6 = rd.IsDBNull(rd.GetOrdinal("SERV1PASTA6")) ? null : rd.GetString("SERV1PASTA6"),
-                SERV1PASTA7 = rd.IsDBNull(rd.GetOrdinal("SERV1PASTA7")) ? null : rd.GetString("SERV1PASTA7"),
-                SERV1PASTA8 = rd.IsDBNull(rd.GetOrdinal("SERV1PASTA8")) ? null : rd.GetString("SERV1PASTA8"),
-                SERV2PASTA1 = rd.IsDBNull(rd.GetOrdinal("SERV2PASTA1")) ? null : rd.GetString("SERV2PASTA1"),
-                SERV2PASTA2 = rd.IsDBNull(rd.GetOrdinal("SERV2PASTA2")) ? null : rd.GetString("SERV2PASTA2")
+                Empresa = GetStr("Empresa"),
+                CaminhoServidor = GetStr("CaminhoServidor"),
+                CaminhoServidor2 = GetStr("CaminhoServidor2"),
+                ServerUser = GetStr("ServerUser"),
+                ServerPassword = GetStr("ServerPassword"),
+                SERV1PASTA1 = GetStr("SERV1PASTA1"),
+                SERV1PASTA2 = GetStr("SERV1PASTA2"),
+                SERV1PASTA3 = GetStr("SERV1PASTA3"),
+                SERV1PASTA4 = GetStr("SERV1PASTA4"),
+                SERV1PASTA5 = GetStr("SERV1PASTA5"),
+                SERV1PASTA6 = GetStr("SERV1PASTA6"),
+                SERV1PASTA7 = GetStr("SERV1PASTA7"),
+                SERV1PASTA8 = GetStr("SERV1PASTA8"),
+                SERV2PASTA1 = GetStr("SERV2PASTA1"),
+                SERV2PASTA2 = GetStr("SERV2PASTA2")
             };
         }
 
@@ -652,6 +707,8 @@ namespace NAVIGEST.macOS.Services
             const string sql = @"
                 UPDATE SETUP SET
                     CaminhoServidor = @CaminhoServidor,
+                    ServerUser = @ServerUser,
+                    ServerPassword = @ServerPassword,
                     SERV1PASTA1 = @SERV1PASTA1,
                     SERV1PASTA2 = @SERV1PASTA2,
                     SERV1PASTA3 = @SERV1PASTA3,
@@ -666,6 +723,8 @@ namespace NAVIGEST.macOS.Services
             using var cmd = new MySqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@CodEmp", setup.CodEmp);
             cmd.Parameters.AddWithValue("@CaminhoServidor", setup.CaminhoServidor);
+            cmd.Parameters.AddWithValue("@ServerUser", setup.ServerUser);
+            cmd.Parameters.AddWithValue("@ServerPassword", setup.ServerPassword);
             cmd.Parameters.AddWithValue("@SERV1PASTA1", setup.SERV1PASTA1);
             cmd.Parameters.AddWithValue("@SERV1PASTA2", setup.SERV1PASTA2);
             cmd.Parameters.AddWithValue("@SERV1PASTA3", setup.SERV1PASTA3);
