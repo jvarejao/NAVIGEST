@@ -20,6 +20,11 @@ public partial class DbConfigPage : ContentPage
         BindingContext = _settings;
     }
 
+    private async void OnBackClicked(object sender, EventArgs e)
+    {
+        await Navigation.PopAsync();
+    }
+
     protected override async void OnAppearing()
     {
         base.OnAppearing();

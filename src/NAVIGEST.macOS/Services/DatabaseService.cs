@@ -644,6 +644,41 @@ namespace NAVIGEST.macOS.Services
             };
         }
 
+        public static async Task<bool> UpdateSetupAsync(Setup setup)
+        {
+            using var conn = new MySqlConnection(GetConnectionString());
+            await conn.OpenAsync();
+
+            const string sql = @"
+                UPDATE SETUP SET
+                    CaminhoServidor = @CaminhoServidor,
+                    SERV1PASTA1 = @SERV1PASTA1,
+                    SERV1PASTA2 = @SERV1PASTA2,
+                    SERV1PASTA3 = @SERV1PASTA3,
+                    SERV1PASTA4 = @SERV1PASTA4,
+                    SERV1PASTA5 = @SERV1PASTA5,
+                    SERV1PASTA6 = @SERV1PASTA6,
+                    SERV1PASTA7 = @SERV1PASTA7,
+                    SERV1PASTA8 = @SERV1PASTA8
+                WHERE CodEmp = @CodEmp
+                LIMIT 1;";
+
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@CodEmp", setup.CodEmp);
+            cmd.Parameters.AddWithValue("@CaminhoServidor", setup.CaminhoServidor);
+            cmd.Parameters.AddWithValue("@SERV1PASTA1", setup.SERV1PASTA1);
+            cmd.Parameters.AddWithValue("@SERV1PASTA2", setup.SERV1PASTA2);
+            cmd.Parameters.AddWithValue("@SERV1PASTA3", setup.SERV1PASTA3);
+            cmd.Parameters.AddWithValue("@SERV1PASTA4", setup.SERV1PASTA4);
+            cmd.Parameters.AddWithValue("@SERV1PASTA5", setup.SERV1PASTA5);
+            cmd.Parameters.AddWithValue("@SERV1PASTA6", setup.SERV1PASTA6);
+            cmd.Parameters.AddWithValue("@SERV1PASTA7", setup.SERV1PASTA7);
+            cmd.Parameters.AddWithValue("@SERV1PASTA8", setup.SERV1PASTA8);
+
+            var rows = await cmd.ExecuteNonQueryAsync();
+            return rows > 0;
+        }
+
         public static async Task<(bool Created, string Message)> EnsureClientePastasAsync(Cliente c)
         {
             var (success, msg) = await FolderService.CreateClientFoldersAsync(c);

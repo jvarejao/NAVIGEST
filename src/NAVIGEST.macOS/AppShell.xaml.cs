@@ -10,11 +10,19 @@ public partial class AppShell : Shell
     {
         InitializeComponent();
         // Routing.RegisterRoute("Login", typeof(Pages.LoginPage)); // Agora é ShellContent
-        Routing.RegisterRoute(nameof(Pages.LoginPage), typeof(Pages.LoginPage));
-        Routing.RegisterRoute("DbConfigPage", typeof(Pages.DbConfigPage));
-        Routing.RegisterRoute("mainpage", typeof(Pages.MainYahPage));
+        // Routing.RegisterRoute(nameof(Pages.LoginPage), typeof(Pages.LoginPage)); // Já está no XAML como "Login"
+        
+        // Routing.RegisterRoute("mainpage", typeof(Pages.MainYahPage)); // Já está no XAML
+        
         Routing.RegisterRoute("projects", typeof(Pages.ProjectListPage));
         Routing.RegisterRoute("manage", typeof(Pages.ManageMetaPage));
+        
+        // Definições
+        Routing.RegisterRoute("SettingsPage", typeof(Pages.SettingsPage));
+        // Routing.RegisterRoute("FileServerSetupPage", typeof(Pages.FileServerSetupPage)); // Duplicado
+        Routing.RegisterRoute("config.utilizadores", typeof(Pages.RegisterPage));
+        Routing.RegisterRoute("config.db", typeof(Pages.DbConfigPage));
+        Routing.RegisterRoute("config.fileserver", typeof(Pages.FileServerSetupPage));
     }
 
     private void SfSegmentedControl_SelectionChanged(object sender, Syncfusion.Maui.Toolkit.SegmentedControl.SelectionChangedEventArgs e)

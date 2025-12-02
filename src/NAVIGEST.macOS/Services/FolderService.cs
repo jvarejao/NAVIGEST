@@ -79,13 +79,31 @@ namespace NAVIGEST.macOS.Services
             {
                 var setup = await DatabaseService.GetSetupAsync();
                 if (setup == null || string.IsNullOrWhiteSpace(setup.CaminhoServidor))
+                {
+                    await AppShell.DisplayToastAsync("Servidor de ficheiros não configurado.", ToastTipo.Erro);
                     return;
+                }
 
                 var rootPath = ResolvePath(setup.CaminhoServidor);
-                if (string.IsNullOrWhiteSpace(rootPath) || !Directory.Exists(rootPath))
+                if (string.IsNullOrWhiteSpace(rootPath))
                 {
-                    // Tenta abrir a raiz se a do cliente falhar, ou avisa
+                    await AppShell.DisplayToastAsync("Caminho do servidor inválido.", ToastTipo.Erro);
                     return;
+                }
+
+                if (!Directory.Exists(rootPath))
+                {
+                    // Tenta montar automaticamente se for caminho de rede
+                    TryMountServer(setup.CaminhoServidor);
+                    
+                    // Dá um pequeno tempo para montar
+                    await Task.Delay(2000);
+
+                    if (!Directory.Exists(rootPath))
+                    {
+                        await AppShell.DisplayToastAsync("Servidor de ficheiros inacessível. Verifique a ligação.", ToastTipo.Erro);
+                        return;
+                    }
                 }
 
                 // Tenta encontrar a pasta do cliente. 
@@ -110,17 +128,31 @@ namespace NAVIGEST.macOS.Services
                 }
                 else
                 {
-                    // Se não existe, abre a raiz para o utilizador procurar
-                    Process.Start("open", $"\"{rootPath}\"");
+                    await AppShell.DisplayToastAsync($"Pasta do cliente não encontrada: {folderName}", ToastTipo.Aviso);
+                    // Não abre a raiz para não confundir, ou pergunta se quer abrir a raiz?
+                    // O utilizador disse: "se a pasta tiver um visto verde, eu clico e nbao acontece nada... tem de dar um aviso"
                 }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"[FolderService] Erro ao abrir pasta: {ex.Message}");
+                await AppShell.DisplayToastAsync("Erro ao abrir pasta.", ToastTipo.Erro);
             }
         }
 
-        private static string? ResolvePath(string? dbPath)
+        public static async Task<bool> TestConnectionAsync()
+        {
+            try
+            {
+                var setup = await DatabaseService.GetSetupAsync();
+                if (setup == null || string.IsNullOrWhiteSpace(setup.CaminhoServidor)) return false;
+                var rootPath = ResolvePath(setup.CaminhoServidor);
+                return !string.IsNullOrWhiteSpace(rootPath) && Directory.Exists(rootPath);
+            }
+            catch { return false; }
+        }
+
+        public static string? ResolvePath(string? dbPath)
         {
             if (string.IsNullOrWhiteSpace(dbPath)) return null;
 

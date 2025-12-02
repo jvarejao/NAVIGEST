@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="NAVIGEST.macOS.Pages.SettingsPage"
+             Title="Definições"
+             BackgroundColor="{DynamicResource PageBackgroundColor}">
+
+    <ContentPage.Resources>
+        <Style TargetType="Button" x:Key="SettingsButton">
+            <Setter Property="HeightRequest" Value="60" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="BackgroundColor" Value="{DynamicResource CardBackgroundColor}" />
+            <Setter Property="TextColor" Value="{DynamicResource BodyTextColor}" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontAttributes" Value="Bold" />
+            <Setter Property="HorizontalOptions" Value="Fill" />
+            <Setter Property="BorderColor" Value="{DynamicResource SidebarAccent}" />
+            <Setter Property="BorderWidth" Value="1" />
+        </Style>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto, *" Padding="30">
+        
+        <!-- Header -->
+        <HorizontalStackLayout Spacing="15" VerticalOptions="Start">
+            <Label Text="Definições do Sistema" FontSize="28" FontAttributes="Bold" VerticalOptions="Center" TextColor="{DynamicResource BodyTextColor}"/>
+        </HorizontalStackLayout>
+
+        <!-- Menu Grid -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto" ColumnSpacing="20" RowSpacing="20" Margin="0,40,0,0">
+            
+            <!-- Utilizadores -->
+            <Border Grid.Row="0" Grid.Column="0" StrokeShape="RoundRectangle 12" BackgroundColor="{DynamicResource CardBackgroundColor}" Padding="20">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="&#xF0C0;" FontFamily="FA7Solid" FontSize="32" HorizontalOptions="Center" TextColor="#0A84FF"/>
+                    <Label Text="Utilizadores" FontSize="18" FontAttributes="Bold" HorizontalOptions="Center" TextColor="{DynamicResource BodyTextColor}"/>
+                    <Label Text="Gerir contas e permissões" FontSize="12" HorizontalOptions="Center" TextColor="Gray"/>
+                </VerticalStackLayout>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding OpenUsersCommand}"/>
+                </Border.GestureRecognizers>
+            </Border>
+
+            <!-- Base de Dados -->
+            <Border Grid.Row="0" Grid.Column="1" StrokeShape="RoundRectangle 12" BackgroundColor="{DynamicResource CardBackgroundColor}" Padding="20">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="&#xF1C0;" FontFamily="FA7Solid" FontSize="32" HorizontalOptions="Center" TextColor="#FF9500"/>
+                    <Label Text="Base de Dados" FontSize="18" FontAttributes="Bold" HorizontalOptions="Center" TextColor="{DynamicResource BodyTextColor}"/>
+                    <Label Text="Ligação MariaDB / MySQL" FontSize="12" HorizontalOptions="Center" TextColor="Gray"/>
+                </VerticalStackLayout>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding OpenDBConfigCommand}"/>
+                </Border.GestureRecognizers>
+            </Border>
+
+            <!-- Servidor Ficheiros -->
+            <Border Grid.Row="0" Grid.Column="2" StrokeShape="RoundRectangle 12" BackgroundColor="{DynamicResource CardBackgroundColor}" Padding="20">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="&#xF07B;" FontFamily="FA7Solid" FontSize="32" HorizontalOptions="Center" TextColor="#30D158"/>
+                    <Label Text="Servidor Ficheiros" FontSize="18" FontAttributes="Bold" HorizontalOptions="Center" TextColor="{DynamicResource BodyTextColor}"/>
+                    <Label Text="Caminhos e Pastas (NAS)" FontSize="12" HorizontalOptions="Center" TextColor="Gray"/>
+                </VerticalStackLayout>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding OpenFileServerConfigCommand}"/>
+                </Border.GestureRecognizers>
+            </Border>
+
+        </Grid>
+    </Grid>
+</ContentPage>

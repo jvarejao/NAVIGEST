@@ -230,8 +230,8 @@ public partial class WelcomePage : ContentPage
     {
         await ShowLoadingAsync(false);
 
-        if (!await NavigateToAsync("DbConfigPage"))
-            if (!await NavigateToAsync("//DbConfigPage"))
+        if (!await NavigateToAsync("config.db"))
+            if (!await NavigateToAsync("//config.db"))
             {
                 try
                 {

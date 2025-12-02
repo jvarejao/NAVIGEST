@@ -20,12 +20,13 @@ namespace NAVIGEST.macOS.Pages
         private TaskCompletionSource<bool>? _adminTcs;
         private bool _adminPwdShown;
 
-        protected override void OnAppearing()
+        protected override async void OnAppearing()
         {
             base.OnAppearing();
             if (BindingContext is MainYahPageViewModel vm)
             {
                 vm.Refresh();
+                await vm.CheckConnectionsAsync();
                 
                 // Forçar atualização manual da imagem para garantir que o logo carregado no login apareça
                 try
@@ -417,6 +418,16 @@ namespace NAVIGEST.macOS.Pages
 #endif
                     switch (route)
                     {
+                        case "settings":
+                            {
+                                try
+                                {
+                                    await Shell.Current.GoToAsync("SettingsPage");
+                                }
+                                catch (Exception ex) { TratarErro(ex); }
+                                CloseSidebarMobileIfNeeded();
+                                break;
+                            }
                         case "config.utilizadores":
                             {
                                 try

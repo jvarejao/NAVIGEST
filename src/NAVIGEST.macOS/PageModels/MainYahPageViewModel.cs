@@ -98,6 +98,26 @@ namespace NAVIGEST.macOS.Pages
 
         public bool IsHoursVisible => UserSession.Current.User.IsFinancial || UserSession.Current.User.IsGeneralSupervisor;
 
+        private bool _isDbConnected;
+        public bool IsDbConnected
+        {
+            get => _isDbConnected;
+            set { _isDbConnected = value; OnPropertyChanged(); }
+        }
+
+        private bool _isFileServerConnected;
+        public bool IsFileServerConnected
+        {
+            get => _isFileServerConnected;
+            set { _isFileServerConnected = value; OnPropertyChanged(); }
+        }
+
+        public async Task CheckConnectionsAsync()
+        {
+            IsDbConnected = await Services.DatabaseService.TestConnectionAsync();
+            IsFileServerConnected = await Services.FolderService.TestConnectionAsync();
+        }
+
         public void Refresh()
         {
             System.Diagnostics.Debug.WriteLine($"[MainYahPageViewModel] Refresh called. Company: {CompanyName}, Logo bytes: {UserSession.Current.User.CompanyLogo?.Length ?? 0}");

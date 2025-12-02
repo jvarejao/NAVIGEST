@@ -33,6 +33,11 @@ namespace NAVIGEST.macOS.Pages
             SetUsersViewItemsSource();
         }
 
+        private async void OnBackClicked(object sender, EventArgs e)
+        {
+            await Navigation.PopAsync();
+        }
+
         protected override async void OnAppearing()
         {
             base.OnAppearing();

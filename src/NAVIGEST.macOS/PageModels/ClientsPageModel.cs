@@ -623,9 +623,31 @@ public class ClientsPageModel : INotifyPropertyChanged
         if (EditModel is null) return;
         var c = EditModel;
 
+        // Verificar ligação ao servidor antes de qualquer ação
+        bool serverAvailable = false;
+        try
+        {
+            var setup = await DatabaseService.GetSetupAsync();
+            if (setup != null && !string.IsNullOrWhiteSpace(setup.CaminhoServidor))
+            {
+                var rootPath = FolderService.ResolvePath(setup.CaminhoServidor);
+                if (Directory.Exists(rootPath))
+                {
+                    serverAvailable = true;
+                }
+            }
+        }
+        catch { }
+
         if (c.PastasSincronizadas)
         {
-            // Se já tem visto verde, abre a pasta
+            // Se já tem visto verde
+            if (!serverAvailable)
+            {
+                await AppShell.Current.DisplayAlert("Aviso", "Não é possível estabelecer ligação com o servidor de ficheiros.", "OK");
+            }
+            
+            // Tenta abrir de qualquer forma (pode desencadear montagem ou falhar)
             await FolderService.OpenClientFolderAsync(c);
         }
         else
@@ -638,6 +660,11 @@ public class ClientsPageModel : INotifyPropertyChanged
 
             if (criar)
             {
+                if (!serverAvailable)
+                {
+                    await AppShell.Current.DisplayAlert("Aviso", "Não é possível estabelecer ligação com o servidor de ficheiros.", "OK");
+                }
+
                 IsBusy = true;
                 try
                 {

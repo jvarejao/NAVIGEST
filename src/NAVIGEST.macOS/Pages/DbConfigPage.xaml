@@ -21,12 +21,19 @@
                     <VerticalStackLayout Spacing="14">
 
                         <!-- Cabeçalho simples -->
-                        <HorizontalStackLayout Spacing="8" HorizontalOptions="Center">
-                            <Label Text="&#xF233;" FontFamily="FA7Solid" FontSize="28"
-                     TextColor="{StaticResource Color.Primary}" />
-                            <Label Text="Configuração da Base de Dados"
-                     FontSize="20" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
-                        </HorizontalStackLayout>
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                             <Button Text="&#xF060;" FontFamily="FA7Solid" 
+                                    BackgroundColor="Transparent" TextColor="{AppThemeBinding Light=Black, Dark=White}" 
+                                    FontSize="20" Clicked="OnBackClicked" 
+                                    WidthRequest="40" HeightRequest="40" 
+                                    HorizontalOptions="Start" />
+                            <HorizontalStackLayout Grid.Column="1" Spacing="8" HorizontalOptions="Center">
+                                <Label Text="&#xF233;" FontFamily="FA7Solid" FontSize="28"
+                         TextColor="{StaticResource Color.Primary}" />
+                                <Label Text="Configuração da Base de Dados"
+                         FontSize="20" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
+                            </HorizontalStackLayout>
+                        </Grid>
 
                         <!-- Servidor -->
                         <VerticalStackLayout>

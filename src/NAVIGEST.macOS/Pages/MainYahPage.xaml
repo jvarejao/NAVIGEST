@@ -58,7 +58,7 @@
     </ContentPage.Resources>
 
     <!-- GRID PRINCIPAL -->
-    <Grid RowDefinitions="64,*" ColumnDefinitions="Auto,*">
+    <Grid RowDefinitions="64,*,48" ColumnDefinitions="Auto,*">
 
         <!-- TOPBAR -->
         <Grid Grid.Row="0" Grid.ColumnSpan="2"
@@ -201,26 +201,12 @@
                             </Grid>
                             <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="servicos" /></Border.GestureRecognizers>
                         </Border>
-                        <!-- CONFIGURAÇÕES (sem expander— já autorizado) -->
-                        <Border Style="{StaticResource MenuItemBorder}" IsVisible="{Binding IsAdminUnlocked}">
-                            <Grid ColumnDefinitions="50,*">
-                                <Label Text="&#xF0C0;" Style="{StaticResource SidebarIconLabel}" />
-                                <Label Grid.Column="1" Text="Utilizadores" Style="{StaticResource SidebarTextLabel}" IsVisible="{Binding IsSidebarExpanded}" />
-                            </Grid>
-                            <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="config.utilizadores" /></Border.GestureRecognizers>
-                        </Border>
-                        <Border Style="{StaticResource MenuItemBorder}" IsVisible="{Binding IsAdminUnlocked}">
-                            <Grid ColumnDefinitions="50,*">
-                                <Label Text="&#xF1C0;" Style="{StaticResource SidebarIconLabel}" />
-                                <Label Grid.Column="1" Text="Ligação BD" Style="{StaticResource SidebarTextLabel}" IsVisible="{Binding IsSidebarExpanded}" />
-                            </Grid>
-                            <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="config.db" /></Border.GestureRecognizers>
-                        </Border>
                     </VerticalStackLayout>
                 </ScrollView>
 
-                <!-- Rodapé: Tema -->
+                <!-- Rodapé: Definições e Tema -->
                 <Grid Grid.Row="1" Padding="16,10" RowDefinitions="Auto,Auto" RowSpacing="8">
+
                     <HorizontalStackLayout Grid.Row="0" Spacing="10" VerticalOptions="Center">
                         <Label x:Name="ThemeModeIcon" FontFamily="FA7Solid" FontSize="18" Text="&#xF185;"
                                TextColor="{AppThemeBinding Light=Black, Dark=White}" />
@@ -353,31 +339,26 @@
                         </Grid>
                         <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="servicos" /></Border.GestureRecognizers>
                     </Border>
-                    <!-- CONFIGURAÇÕES (sem expander— já autorizado) -->
-                    <Border Style="{StaticResource MenuItemBorder}" IsVisible="{Binding IsAdminUnlocked}">
-                        <Grid ColumnDefinitions="50,*">
-                            <Label Text="&#xF0C0;" Style="{StaticResource SidebarIconLabel}" />
-                            <Label Grid.Column="1" Text="Utilizadores" Style="{StaticResource SidebarTextLabel}" IsVisible="{Binding IsSidebarExpanded}" />
-                        </Grid>
-                        <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="config.utilizadores" /></Border.GestureRecognizers>
-                    </Border>
-                    <Border Style="{StaticResource MenuItemBorder}" IsVisible="{Binding IsAdminUnlocked}">
-                        <Grid ColumnDefinitions="50,*">
-                            <Label Text="&#xF1C0;" Style="{StaticResource SidebarIconLabel}" />
-                            <Label Grid.Column="1" Text="Ligação BD" Style="{StaticResource SidebarTextLabel}" IsVisible="{Binding IsSidebarExpanded}" />
-                        </Grid>
-                        <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="config.db" /></Border.GestureRecognizers>
-                    </Border>
                 </VerticalStackLayout>
             </ScrollView>
-            <!-- Rodapé: Tema -->
-            <Grid Padding="16,10" RowDefinitions="Auto,Auto" RowSpacing="8" VerticalOptions="End">
-                <HorizontalStackLayout Grid.Row="0" Spacing="10" VerticalOptions="Center">
+            <!-- Rodapé: Definições e Tema -->
+            <Grid Padding="16,10" RowDefinitions="Auto,Auto,Auto" RowSpacing="8" VerticalOptions="End">
+                
+                <!-- Definições (Admin) -->
+                <Border Grid.Row="0" Style="{StaticResource MenuItemBorder}" IsVisible="{Binding IsAdminUnlocked}">
+                    <Grid ColumnDefinitions="40,*">
+                        <Label Text="&#xF013;" Style="{StaticResource SidebarIconLabel}" />
+                        <Label Grid.Column="1" Text="Definições" Style="{StaticResource SidebarTextLabel}" />
+                    </Grid>
+                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="settings" /></Border.GestureRecognizers>
+                </Border>
+
+                <HorizontalStackLayout Grid.Row="1" Spacing="10" VerticalOptions="Center">
                     <Label x:Name="ThemeModeIconMobile" FontFamily="FA7Solid" FontSize="18" Text="&#xF185;"
                            TextColor="{AppThemeBinding Light=Black, Dark=White}" />
                     <Label Text="Tema" Style="{StaticResource SidebarTextLabel}" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
                 </HorizontalStackLayout>
-                <Border Grid.Row="1" StrokeThickness="1" Stroke="{DynamicResource SidebarAccent}" BackgroundColor="White" Padding="4,0" StrokeShape="RoundRectangle 10">
+                <Border Grid.Row="2" StrokeThickness="1" Stroke="{DynamicResource SidebarAccent}" BackgroundColor="White" Padding="4,0" StrokeShape="RoundRectangle 10">
                     <Picker x:Name="ThemeModePickerMobile" TitleColor="Black" TextColor="Black" BackgroundColor="White" HeightRequest="40" SelectedIndexChanged="OnThemeModeChangedMobile">
                         <Picker.Items>
                             <x:String>Automático</x:String>
@@ -389,5 +370,37 @@
             </Grid>
         </Grid>
 
+        <!-- STATUS BAR (BOTTOM) -->
+        <Grid Grid.Row="2" Grid.ColumnSpan="2" BackgroundColor="{DynamicResource SidebarBg}" Padding="10,0">
+            <HorizontalStackLayout Spacing="24" HorizontalOptions="End" VerticalOptions="Center">
+                <HorizontalStackLayout Spacing="8" ToolTipProperties.Text="Base de Dados">
+                    <Label Text="&#xF1C0;" FontFamily="FA7Solid" FontSize="24" TextColor="{DynamicResource SidebarAccent}" VerticalOptions="Center"/>
+                    <BoxView WidthRequest="12" HeightRequest="12" CornerRadius="6" VerticalOptions="Center" Color="#FF3B30">
+                        <BoxView.Triggers>
+                            <DataTrigger TargetType="BoxView" Binding="{Binding IsDbConnected}" Value="True">
+                                <Setter Property="Color" Value="#28CD41" />
+                            </DataTrigger>
+                        </BoxView.Triggers>
+                    </BoxView>
+                </HorizontalStackLayout>
+                
+                <HorizontalStackLayout Spacing="8" ToolTipProperties.Text="Servidor de Ficheiros">
+                    <Label Text="&#xF07C;" FontFamily="FA7Solid" FontSize="24" TextColor="{DynamicResource SidebarAccent}" VerticalOptions="Center"/>
+                    <BoxView WidthRequest="12" HeightRequest="12" CornerRadius="6" VerticalOptions="Center" Color="#FF3B30">
+                        <BoxView.Triggers>
+                            <DataTrigger TargetType="BoxView" Binding="{Binding IsFileServerConnected}" Value="True">
+                                <Setter Property="Color" Value="#28CD41" />
+                            </DataTrigger>
+                        </BoxView.Triggers>
+                    </BoxView>
+                </HorizontalStackLayout>
+
+                <!-- Definições (Admin) -->
+                <Border BackgroundColor="Transparent" StrokeThickness="0" Padding="8" IsVisible="{Binding IsAdminUnlocked}">
+                    <Label Text="&#xF013;" FontFamily="FA7Solid" FontSize="24" TextColor="{DynamicResource SidebarAccent}" VerticalOptions="Center" />
+                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="settings" /></Border.GestureRecognizers>
+                </Border>
+            </HorizontalStackLayout>
+        </Grid>
     </Grid>
 </ContentPage>

@@ -18,6 +18,11 @@
         Title="Horas"
         Route="hours-entry"
         ContentTemplate="{DataTemplate pages:HoursEntryPage}" />
+
+    <!-- Rotas para Definições (sem ShellContent para não aparecer no menu, apenas registo) -->
+    <!-- Nota: Em MAUI Shell, rotas de detalhe registam-se no code-behind ou via Routing.RegisterRoute. 
+         Mas se quisermos usar ShellContent com IsVisible=False também dá, ou simplesmente registar no AppShell.xaml.cs.
+         Vou registar no AppShell.xaml.cs para ser mais limpo. -->
 </Shell>
 
 
