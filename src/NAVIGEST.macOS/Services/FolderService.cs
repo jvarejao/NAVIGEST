@@ -195,13 +195,16 @@ namespace NAVIGEST.macOS.Services
 
         private static void TryMountServer(Setup setup)
         {
-            var dbPath = setup.CaminhoServidor;
-            if (string.IsNullOrWhiteSpace(dbPath) || !dbPath.StartsWith(@"\\")) return;
+            TryMountPath(setup.CaminhoServidor, setup);
+        }
+
+        private static void TryMountPath(string? path, Setup setup)
+        {
+             if (string.IsNullOrWhiteSpace(path) || !path.StartsWith(@"\\")) return;
 
             try
             {
-                // Converte \\IP\Share\Path para smb://IP/Share/Path
-                var parts = dbPath.Split('\\', StringSplitOptions.RemoveEmptyEntries);
+                var parts = path.Split('\\', StringSplitOptions.RemoveEmptyEntries);
                 if (parts.Length >= 2)
                 {
                     var ip = parts[0];
@@ -230,6 +233,141 @@ namespace NAVIGEST.macOS.Services
             var invalid = Path.GetInvalidFileNameChars();
             var newName = string.Join("_", name.Split(invalid, StringSplitOptions.RemoveEmptyEntries)).Trim();
             return newName;
+        }
+
+        /// <summary>
+        /// Tenta criar a estrutura de pastas para o produto.
+        /// Retorna (sucesso, mensagem).
+        /// </summary>
+        public static async Task<(bool Success, string Message)> CreateProductFoldersAsync(Product product)
+        {
+            try
+            {
+                var setup = await DatabaseService.GetSetupAsync();
+                if (setup == null)
+                    return (false, "Configuração (SETUP) não encontrada na base de dados.");
+
+                // Usa CaminhoServidor2 para produtos, ou CaminhoServidor se o 2 não estiver definido?
+                // Assumindo CaminhoServidor2 conforme estrutura do Setup.
+                var rootPathRaw = !string.IsNullOrWhiteSpace(setup.CaminhoServidor2) ? setup.CaminhoServidor2 : setup.CaminhoServidor;
+                
+                var rootPath = ResolvePath(rootPathRaw);
+                if (string.IsNullOrWhiteSpace(rootPath))
+                    return (false, "Caminho do servidor (Produtos) não configurado ou inválido.");
+
+                if (!Directory.Exists(rootPath))
+                {
+                    // Tenta montar automaticamente
+                    // Nota: TryMountServer usa setup.CaminhoServidor. Precisamos adaptar se for o 2.
+                    // Mas como o TryMountServer recebe o Setup object, podemos ajustar lá ou criar um overload.
+                    // Por agora, vamos tentar montar o path específico.
+                    TryMountPath(rootPathRaw, setup);
+                    return (false, $"A pasta raiz não está acessível: {rootPath}.\nO sistema tentou ligar ao servidor. Por favor, autentique-se se necessário e tente novamente.");
+                }
+
+                // Nome da pasta do produto: "PRODCODIGO - PRODNOME" ou apenas "PRODNOME"?
+                // Em clientes mudou para apenas NOME. Em produtos, geralmente o código é importante.
+                // Vamos usar "CODIGO - NOME" para garantir unicidade, ou seguir o padrão do cliente se for pedido.
+                // Por defeito: "CODIGO - NOME"
+                var folderName = SanitizeFileName($"{product.PRODCODIGO} - {product.PRODNOME}");
+                var productPath = Path.Combine(rootPath, folderName);
+
+                bool folderExisted = Directory.Exists(productPath);
+
+                // Criar pasta mãe
+                if (!folderExisted)
+                {
+                    Directory.CreateDirectory(productPath);
+                }
+
+                // Criar subpastas
+                var subfolders = setup.GetProductSubfolders();
+                foreach (var sub in subfolders)
+                {
+                    var subPath = Path.Combine(productPath, sub.Trim());
+                    if (!Directory.Exists(subPath))
+                    {
+                        Directory.CreateDirectory(subPath);
+                    }
+                }
+
+                if (folderExisted)
+                {
+                    return (true, $"A pasta '{folderName}' já existia. A estrutura foi verificada.");
+                }
+
+                return (true, productPath);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[FolderService] Erro: {ex.Message}");
+                return (false, $"Erro ao criar pastas: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Abre a pasta do produto no Finder.
+        /// </summary>
+        public static async Task OpenProductFolderAsync(Product product)
+        {
+            try
+            {
+                var setup = await DatabaseService.GetSetupAsync();
+                if (setup == null)
+                {
+                    await AppShell.DisplayToastAsync("Configuração não encontrada.", ToastTipo.Erro);
+                    return;
+                }
+
+                var rootPathRaw = !string.IsNullOrWhiteSpace(setup.CaminhoServidor2) ? setup.CaminhoServidor2 : setup.CaminhoServidor;
+                var rootPath = ResolvePath(rootPathRaw);
+
+                if (string.IsNullOrWhiteSpace(rootPath))
+                {
+                    await AppShell.DisplayToastAsync("Caminho do servidor (Produtos) inválido.", ToastTipo.Erro);
+                    return;
+                }
+
+                if (!Directory.Exists(rootPath))
+                {
+                    TryMountPath(rootPathRaw, setup);
+                    await Task.Delay(2000);
+
+                    if (!Directory.Exists(rootPath))
+                    {
+                        await AppShell.DisplayToastAsync("Servidor de ficheiros inacessível.", ToastTipo.Erro);
+                        return;
+                    }
+                }
+
+                // Tenta encontrar a pasta
+                var folderName = SanitizeFileName($"{product.PRODCODIGO} - {product.PRODNOME}");
+                var productFolder = Path.Combine(rootPath, folderName);
+
+                if (!Directory.Exists(productFolder))
+                {
+                    // Tenta encontrar apenas pelo código se o nome mudou
+                    var found = Directory.GetDirectories(rootPath, $"{product.PRODCODIGO}*").FirstOrDefault();
+                    if (!string.IsNullOrEmpty(found))
+                    {
+                        productFolder = found;
+                    }
+                }
+
+                if (Directory.Exists(productFolder))
+                {
+                    Process.Start("open", $"\"{productFolder}\"");
+                }
+                else
+                {
+                    await AppShell.DisplayToastAsync($"Pasta do produto não encontrada: {folderName}", ToastTipo.Aviso);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[FolderService] Erro ao abrir pasta: {ex.Message}");
+                await AppShell.DisplayToastAsync("Erro ao abrir pasta.", ToastTipo.Erro);
+            }
         }
     }
 }

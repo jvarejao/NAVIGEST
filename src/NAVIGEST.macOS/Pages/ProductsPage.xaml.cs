@@ -62,53 +62,79 @@ public partial class ProductsPage : ContentPage
         }
     }
 
-    private async void OnProductSelectionChanged(object sender, SelectionChangedEventArgs e)
+
+
+    private void OnEditClicked(object sender, EventArgs e)
     {
-        try
+        if (sender is Button btn && btn.CommandParameter is Models.Product product && BindingContext is ProductsPageModel vm)
         {
-            if (BindingContext is ProductsPageModel vm && e.CurrentSelection?.FirstOrDefault() is object item)
-            {
-                if (vm.SelectCommand?.CanExecute(item) == true)
-                {
-                    vm.SelectCommand.Execute(item);
-                    // Scroll para o topo para mostrar os campos de edição
-                    await MainScrollView.ScrollToAsync(0, 0, true);
-                }
-            }
+            vm.OpenEditCommand.Execute(product);
         }
-        catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
     }
 
-    // Overlay picker (mobile/tablet)
-    private void OnOpenProductPicker(object sender, EventArgs e)
+    private void OnDeleteClicked(object sender, EventArgs e)
     {
-        ProductPickerOverlay.IsVisible = true;
-    }
-
-    private void OnCloseProductPicker(object sender, EventArgs e)
-    {
-        ProductPickerOverlay.IsVisible = false;
-    }
-
-    private async void OnProductPickerSelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        try
+        if (sender is Button btn && btn.CommandParameter is Models.Product product && BindingContext is ProductsPageModel vm)
         {
-            if (BindingContext is ProductsPageModel vm && e.CurrentSelection?.FirstOrDefault() is object item)
-            {
-                if (vm.SelectCommand?.CanExecute(item) == true)
-                {
-                    vm.SelectCommand.Execute(item);
-                    ProductPickerOverlay.IsVisible = false;
-                    // Scroll para o topo para mostrar os campos de edição
-                    await MainScrollView.ScrollToAsync(0, 0, true);
-                }
-            }
+            vm.DeleteProductCommand.Execute(product);
         }
-        catch (Exception ex) { GlobalErro.TratarErro(ex, mostrarAlerta: false); }
     }
 
-    // ---------- Popup Adicionar Fam�lia ----------
+    // ---------- List Picker Logic ----------
+    private List<string> _allFamilies = new();
+
+    private void OnFamilyPickerTapped(object sender, EventArgs e)
+    {
+        if (BindingContext is not ProductsPageModel vm) return;
+        
+        _allFamilies = vm.Families.ToList();
+        ListPickerCollectionView.ItemsSource = _allFamilies;
+        ListPickerTitleLabel.Text = "Selecionar Família";
+        ListPickerSearchEntry.Text = string.Empty;
+        ListPickerOverlay.IsVisible = true;
+    }
+
+    private void OnCloseListPickerClicked(object sender, EventArgs e)
+    {
+        ListPickerOverlay.IsVisible = false;
+    }
+
+    private void OnListPickerItemTapped(object sender, EventArgs e)
+    {
+        if (sender is BindableObject bo && bo.BindingContext is string selected && BindingContext is ProductsPageModel vm)
+        {
+            if (vm.EditModel != null)
+            {
+                vm.EditModel.FAMILIA = selected;
+                vm.RefreshEditing();
+            }
+            ListPickerOverlay.IsVisible = false;
+        }
+    }
+
+    private void OnListPickerSearchTextChanged(object sender, TextChangedEventArgs e)
+    {
+        var term = e.NewTextValue?.Trim() ?? "";
+        ListPickerClearButton.IsVisible = !string.IsNullOrEmpty(term);
+
+        if (string.IsNullOrWhiteSpace(term))
+        {
+            ListPickerCollectionView.ItemsSource = _allFamilies;
+        }
+        else
+        {
+            ListPickerCollectionView.ItemsSource = _allFamilies
+                .Where(f => f.Contains(term, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+    }
+
+    private void OnListPickerClearSearchClicked(object sender, EventArgs e)
+    {
+        ListPickerSearchEntry.Text = string.Empty;
+    }
+
+    // ---------- Popup Adicionar Família ----------
     private void OnAddFamilyClicked(object sender, EventArgs e)
     {
         AddFamilyErrorLabel.IsVisible = false;
@@ -147,8 +173,12 @@ public partial class ProductsPage : ContentPage
             }
 
             AddFamilyOverlay.IsVisible = false;
-            FamilyPicker.SelectedItem = finalCode;
-            await GlobalToast.ShowAsync("Fam�lia adicionada.", ToastTipo.Sucesso, 1600);
+            if (vm.EditModel != null)
+            {
+                vm.EditModel.FAMILIA = finalCode;
+                vm.RefreshEditing();
+            }
+            await GlobalToast.ShowAsync("Família adicionada.", ToastTipo.Sucesso, 1600);
         }
         catch (Exception ex)
         {
@@ -166,6 +196,54 @@ public partial class ProductsPage : ContentPage
     {
         AddFamilyErrorLabel.Text = msg;
         AddFamilyErrorLabel.IsVisible = true;
+    }
+
+    private void OnSearchTextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (sender is Entry entry && !string.IsNullOrEmpty(entry.Text))
+        {
+            var upper = entry.Text.ToUpper();
+            if (entry.Text != upper)
+            {
+                entry.Text = upper;
+                entry.CursorPosition = upper.Length;
+            }
+        }
+    }
+
+    private void OnDescriptionTextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (sender is Entry entry && !string.IsNullOrEmpty(entry.Text))
+        {
+            var upper = entry.Text.ToUpper();
+            if (entry.Text != upper)
+            {
+                entry.Text = upper;
+                entry.CursorPosition = upper.Length;
+            }
+        }
+    }
+
+    private void OnPriceUnfocused(object sender, FocusEventArgs e)
+    {
+        if (sender is Entry entry)
+        {
+            string text = entry.Text;
+            if (string.IsNullOrWhiteSpace(text)) return;
+
+            // Remove currency symbol and whitespace if present
+            string cleanText = text.Replace("€", "").Trim();
+
+            // Normaliza: substitui ponto por vírgula para suportar input com ponto
+            string normalized = cleanText.Replace(".", ",");
+
+            // Tenta fazer parse usando cultura PT (vírgula como decimal)
+            if (decimal.TryParse(normalized, System.Globalization.NumberStyles.Any, new System.Globalization.CultureInfo("pt-PT"), out decimal value))
+            {
+                // Formata de volta para o padrão PT com símbolo de moeda (ex: 1 245,50 €)
+                entry.Text = value.ToString("C2", new System.Globalization.CultureInfo("pt-PT"));
+            }
+        }
     }
 
 #if WINDOWS

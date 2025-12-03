@@ -39,5 +39,13 @@ namespace NAVIGEST.macOS.Models
             // Adicionar SERV2 se necessário, mas o user falou em subpastas da pasta mãe
             return list;
         }
+
+        public List<string> GetProductSubfolders()
+        {
+            var list = new List<string>();
+            if (!string.IsNullOrWhiteSpace(SERV2PASTA1)) list.Add(SERV2PASTA1);
+            if (!string.IsNullOrWhiteSpace(SERV2PASTA2)) list.Add(SERV2PASTA2);
+            return list;
+        }
     }
 }

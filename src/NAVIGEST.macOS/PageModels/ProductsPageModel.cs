@@ -37,6 +37,8 @@ public class ProductsPageModel : INotifyPropertyChanged
             _selectedProduct = value;
             Debug.WriteLine($"[SELECT PRODUCT] {_selectedProduct?.PRODCODIGO}");
             OnPropertyChanged();
+            OnPropertyChanged(nameof(OverlayTitle));
+            OnPropertyChanged(nameof(SaveButtonText));
             EditModel = _selectedProduct?.Clone() ?? NewTemplate();
         }
     }
@@ -51,8 +53,11 @@ public class ProductsPageModel : INotifyPropertyChanged
             _editModel = value;
             OnPropertyChanged();
             OnPropertyChanged(nameof(Editing));
+            OnPropertyChanged(nameof(CanDelete));
         }
     }
+
+    public bool CanDelete => !string.IsNullOrEmpty(Editing?.PRODCODIGO) && IsFinancial;
 
     public Product? Editing
     {
@@ -83,8 +88,9 @@ public class ProductsPageModel : INotifyPropertyChanged
         get => SearchText;
         set
         {
-            if (SearchText == value) return;
-            SearchText = value ?? string.Empty;
+            var upper = value?.ToUpper();
+            if (SearchText == upper) return;
+            SearchText = upper ?? string.Empty;
             OnPropertyChanged(nameof(Filter));
         }
     }
@@ -96,6 +102,9 @@ public class ProductsPageModel : INotifyPropertyChanged
         set { if (_statusMessage != value) { _statusMessage = value; OnPropertyChanged(); } }
     }
 
+    public string OverlayTitle => SelectedProduct is null ? "Adicionar Produto" : $"Editar {SelectedProduct.PRODNOME}";
+    public string SaveButtonText => SelectedProduct is null ? "Guardar" : "Atualizar";
+
     // Comandos
     public Command NewCommand { get; }
     public Command ClearCommand { get; }
@@ -104,6 +113,12 @@ public class ProductsPageModel : INotifyPropertyChanged
     public Command SearchCommand { get; }
     public Command RefreshCommand { get; }
     public Command<Product> SelectCommand { get; }
+    public Command<Product> OpenEditCommand { get; }
+    public Command CloseEditCommand { get; }
+    public Command DeleteEditingCommand { get; }
+    public Command<Product> DeleteProductCommand { get; }
+    public Command ClearSearchCommand { get; }
+    public Command OpenFamilyPickerCommand { get; }
 
     private CancellationTokenSource? _searchCts;
     private CancellationTokenSource? _loadCts;
@@ -113,6 +128,13 @@ public class ProductsPageModel : INotifyPropertyChanged
     {
         get => _isBusy;
         set { if (_isBusy != value) { _isBusy = value; OnPropertyChanged(); } }
+    }
+
+    private bool _isEditOverlayVisible;
+    public bool IsEditOverlayVisible
+    {
+        get => _isEditOverlayVisible;
+        set { if (_isEditOverlayVisible != value) { _isEditOverlayVisible = value; OnPropertyChanged(); } }
     }
 
     public ProductsPageModel()
@@ -127,7 +149,42 @@ public class ProductsPageModel : INotifyPropertyChanged
         {
             if (p == null) return;
             SelectedProduct = p;
+            IsEditOverlayVisible = true;
         });
+        OpenEditCommand = new Command<Product>(p =>
+        {
+            if (p == null) return;
+            SelectedProduct = p;
+            IsEditOverlayVisible = true;
+        });
+        CloseEditCommand = new Command(() => IsEditOverlayVisible = false);
+        DeleteEditingCommand = new Command(async () =>
+        {
+            if (SelectedProduct == null) return;
+            
+            bool confirm = await AppShell.Current.DisplayAlert("Eliminar", $"Tem a certeza que deseja eliminar {SelectedProduct.PRODNOME}?", "Eliminar", "Cancelar");
+            if (!confirm) return;
+
+            await OnDeleteAsync();
+            IsEditOverlayVisible = false;
+        });
+        ClearSearchCommand = new Command(() => Filter = string.Empty);
+        OpenFamilyPickerCommand = new Command(async () => await OpenFamilyPickerAsync());
+
+        DeleteProductCommand = new Command<Product>(async (p) => 
+        {
+            if (p == null) return;
+            bool confirm = await AppShell.Current.DisplayAlert("Eliminar", $"Tem a certeza que deseja eliminar {p.PRODNOME}?", "Eliminar", "Cancelar");
+            if (!confirm) return;
+            
+            SelectedProduct = p;
+            await OnDeleteAsync();
+        });
+    }
+
+    public void RefreshEditing()
+    {
+        OnPropertyChanged(nameof(Editing));
     }
 
     public async Task LoadAsync(bool force = false)
@@ -183,6 +240,26 @@ public class ProductsPageModel : INotifyPropertyChanged
         // Agora usa o nome do utilizador autenticado (sessão) em vez de Environment.UserName
         EditModel.COLABORADOR = GetLoggedUserName();
         OnPropertyChanged(nameof(Editing));
+        IsEditOverlayVisible = true;
+    }
+
+    private async Task OpenFamilyPickerAsync()
+    {
+        if (Families.Count == 0)
+        {
+            await AppShell.DisplayToastAsync("Sem famílias disponíveis.");
+            return;
+        }
+
+        var result = await AppShell.Current.DisplayActionSheet("Selecionar Família", "Cancelar", null, Families.ToArray());
+        if (result != null && result != "Cancelar")
+        {
+            if (EditModel != null)
+            {
+                EditModel.FAMILIA = result;
+                OnPropertyChanged(nameof(Editing));
+            }
+        }
     }
 
     private void OnClear()
@@ -258,6 +335,7 @@ public class ProductsPageModel : INotifyPropertyChanged
                 }
                 await AppShell.DisplayToastAsync("Produto guardado.");
                 StatusMessage = "Guardado.";
+                IsEditOverlayVisible = false;
             }
             else
             {
@@ -354,6 +432,9 @@ public class ProductsPageModel : INotifyPropertyChanged
         dst.PRODNOME = src.PRODNOME;
         dst.FAMILIA = src.FAMILIA;
         dst.COLABORADOR = src.COLABORADOR;
+        dst.PRECOCUSTO = src.PRECOCUSTO;
+        dst.PRECOVENDA = src.PRECOVENDA;
+        dst.TOTALVENDAS = src.TOTALVENDAS;
     }
 
     private bool Validate(Product p, out string msg)

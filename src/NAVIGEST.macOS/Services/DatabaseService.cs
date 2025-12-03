@@ -762,6 +762,8 @@ namespace NAVIGEST.macOS.Services
             return (success, msg);
         }
 
+
+
         public static async Task<bool> DeleteClienteAsync(string? codigo, CancellationToken ct = default)
         {
             if (string.IsNullOrWhiteSpace(codigo))
@@ -826,18 +828,81 @@ namespace NAVIGEST.macOS.Services
         // ================= PRODUTOS =================
         private const string ProdutosTable = "PRODUTOS"; // Ajuste se o nome real for diferente.
 
+        private static async Task EnsureProductSeqTableAsync(MySqlConnection conn, CancellationToken ct)
+        {
+            const string createSeq = @"
+                CREATE TABLE IF NOT EXISTS PRODUTO_SEQ (
+                    Id BIGINT NOT NULL AUTO_INCREMENT,
+                    PRIMARY KEY (Id)
+                ) ENGINE=InnoDB;";
+            using (var cmd = new MySqlCommand(createSeq, conn))
+                await cmd.ExecuteNonQueryAsync(ct);
+
+            // Se a tabela estiver vazia (acabou de ser criada ou nunca usada), tentar inicializar com o MAX atual
+            // Para evitar reiniciar do 1 se já existirem produtos.
+            // Verificamos o AUTO_INCREMENT atual? Ou apenas se tem registos?
+            // O mais seguro é: se count=0, fazemos ALTER TABLE AUTO_INCREMENT = MAX + 1
+            
+            // Nota: Em MySQL, verificar o valor atual do auto_increment é via information_schema, 
+            // mas para simplificar, vamos assumir que se não houver registos na tabela SEQ, precisamos sincronizar.
+            // Mas a tabela SEQ vai enchendo. Se estiver vazia, é porque é nova.
+            
+            // Verificar se tem linhas
+            const string check = "SELECT 1 FROM PRODUTO_SEQ LIMIT 1;";
+            using var cmdCheck = new MySqlCommand(check, conn);
+            var hasRows = (await cmdCheck.ExecuteScalarAsync(ct)) != null;
+
+            if (!hasRows)
+            {
+                // Buscar o maior ID atual na tabela de produtos
+                // PRDxxxxxx -> substring(4)
+                string sqlMax = $"SELECT MAX(CAST(SUBSTRING(PRODCODIGO,4) AS UNSIGNED)) FROM {ProdutosTable} WHERE PRODCODIGO REGEXP '^PRD[0-9]+$';";
+                using var cmdMax = new MySqlCommand(sqlMax, conn);
+                var result = await cmdMax.ExecuteScalarAsync(ct);
+                long max = (result == null || result == DBNull.Value) ? 0 : Convert.ToInt64(result);
+
+                if (max > 0)
+                {
+                    // Ajustar o próximo ID
+                    string sqlAlter = $"ALTER TABLE PRODUTO_SEQ AUTO_INCREMENT = {max + 1};";
+                    using var cmdAlter = new MySqlCommand(sqlAlter, conn);
+                    await cmdAlter.ExecuteNonQueryAsync(ct);
+                }
+            }
+        }
+
         public static async Task<string> GetNextProductCodigoAsync(CancellationToken ct = default)
         {
             using var conn = new MySqlConnection(GetConnectionString());
             await conn.OpenAsync(ct);
 
-            string sql = $"SELECT MAX(CAST(SUBSTRING(PRODCODIGO,3) AS UNSIGNED)) FROM {ProdutosTable} WHERE PRODCODIGO REGEXP '^PRD[0-9]+$';";
-            using var cmd = new MySqlCommand(sql, conn);
-            var result = await cmd.ExecuteScalarAsync(ct);
-            long max = (result == null || result == DBNull.Value) ? 0 : Convert.ToInt64(result);
-            if (max >= 999999)
-                throw new InvalidOperationException("Limite de códigos de produto atingido (PRD999999).");
-            return "PRD" + (max + 1).ToString("D6");
+            await EnsureProductSeqTableAsync(conn, ct);
+
+            long id;
+            using (var ins = new MySqlCommand("INSERT INTO PRODUTO_SEQ () VALUES ();", conn))
+                await ins.ExecuteNonQueryAsync(ct);
+            using (var last = new MySqlCommand("SELECT LAST_INSERT_ID();", conn))
+                id = Convert.ToInt64(await last.ExecuteScalarAsync(ct));
+
+            return id <= 999999
+                ? "PRD" + id.ToString("D6")
+                : "PRD" + id.ToString();
+        }
+
+        private static async Task EnsureProductColumnsAsync(MySqlConnection conn, CancellationToken ct)
+        {
+            // Verifica se PRECOVENDA existe
+            const string checkSql = "SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tb AND COLUMN_NAME = 'PRECOVENDA';";
+            using var cmd = new MySqlCommand(checkSql, conn);
+            cmd.Parameters.Add("@tb", MySqlDbType.VarChar).Value = ProdutosTable;
+            var count = Convert.ToInt64(await cmd.ExecuteScalarAsync(ct));
+            
+            if (count == 0)
+            {
+                const string alterSql = $"ALTER TABLE {ProdutosTable} ADD COLUMN PRECOVENDA DECIMAL(18,4) NOT NULL DEFAULT 0.0000;";
+                using var alterCmd = new MySqlCommand(alterSql, conn);
+                await alterCmd.ExecuteNonQueryAsync(ct);
+            }
         }
 
         public static async Task<List<Product>> GetProductsAsync(string? filtro = null, CancellationToken ct = default)
@@ -846,12 +911,22 @@ namespace NAVIGEST.macOS.Services
             using var conn = new MySqlConnection(GetConnectionString());
             await conn.OpenAsync(ct);
 
+            await EnsureProductColumnsAsync(conn, ct);
+
             string sql = $@"
-                SELECT PRODCODIGO, PRODNOME, FAMILIA, COLABORADOR
-                FROM {ProdutosTable}";
+                SELECT 
+                    p.PRODCODIGO, 
+                    p.PRODNOME, 
+                    p.FAMILIA, 
+                    p.COLABORADOR,
+                    p.PRECOCUSTO,
+                    p.PRECOVENDA,
+                    (SELECT COALESCE(SUM(SUBTOTAIS), 0) FROM ORDEREDPRODUCT WHERE ProductCode = p.PRODCODIGO COLLATE utf8mb4_unicode_ci) AS TOTALVENDAS
+                FROM {ProdutosTable} p";
+
             if (!string.IsNullOrWhiteSpace(filtro))
-                sql += " WHERE (LOWER(PRODNOME) LIKE @f OR LOWER(PRODCODIGO) LIKE @f OR LOWER(FAMILIA) LIKE @f)";
-            sql += " ORDER BY PRODNOME;";
+                sql += " WHERE (LOWER(p.PRODNOME) LIKE @f OR LOWER(p.PRODCODIGO) LIKE @f OR LOWER(p.FAMILIA) LIKE @f)";
+            sql += " ORDER BY p.PRODNOME;";
 
             using var cmd = new MySqlCommand(sql, conn);
             if (!string.IsNullOrWhiteSpace(filtro))
@@ -865,7 +940,10 @@ namespace NAVIGEST.macOS.Services
                     PRODCODIGO = rd.IsDBNull(rd.GetOrdinal("PRODCODIGO")) ? null : rd.GetString("PRODCODIGO"),
                     PRODNOME = rd.IsDBNull(rd.GetOrdinal("PRODNOME")) ? null : rd.GetString("PRODNOME"),
                     FAMILIA = rd.IsDBNull(rd.GetOrdinal("FAMILIA")) ? null : rd.GetString("FAMILIA"),
-                    COLABORADOR = rd.IsDBNull(rd.GetOrdinal("COLABORADOR")) ? null : rd.GetString("COLABORADOR")
+                    COLABORADOR = rd.IsDBNull(rd.GetOrdinal("COLABORADOR")) ? null : rd.GetString("COLABORADOR"),
+                    PRECOCUSTO = rd.IsDBNull(rd.GetOrdinal("PRECOCUSTO")) ? 0m : rd.GetDecimal("PRECOCUSTO"),
+                    PRECOVENDA = rd.IsDBNull(rd.GetOrdinal("PRECOVENDA")) ? 0m : rd.GetDecimal("PRECOVENDA"),
+                    TOTALVENDAS = rd.IsDBNull(rd.GetOrdinal("TOTALVENDAS")) ? 0m : rd.GetDecimal("TOTALVENDAS")
                 });
             }
             return list;
@@ -894,6 +972,8 @@ namespace NAVIGEST.macOS.Services
             using var conn = new MySqlConnection(GetConnectionString());
             await conn.OpenAsync(ct);
 
+            await EnsureProductColumnsAsync(conn, ct);
+
             string existsSql = $"SELECT 1 FROM {ProdutosTable} WHERE PRODCODIGO=@cod LIMIT 1;";
             bool exists;
             using (var check = new MySqlCommand(existsSql, conn))
@@ -906,18 +986,22 @@ namespace NAVIGEST.macOS.Services
                 ? $@"UPDATE {ProdutosTable} SET
                         PRODNOME=@nome,
                         FAMILIA=@fam,
-                        COLABORADOR=@col
+                        COLABORADOR=@col,
+                        PRECOCUSTO=@pcusto,
+                        PRECOVENDA=@pvenda
                     WHERE PRODCODIGO=@cod LIMIT 1;"
                 : $@"INSERT INTO {ProdutosTable}
-                        (PRODCODIGO, PRODNOME, FAMILIA, COLABORADOR)
+                        (PRODCODIGO, PRODNOME, FAMILIA, COLABORADOR, PRECOCUSTO, PRECOVENDA)
                     VALUES
-                        (@cod,@nome,@fam,@col);";
+                        (@cod,@nome,@fam,@col,@pcusto,@pvenda);";
 
             using var cmd = new MySqlCommand(sql, conn);
             cmd.Parameters.Add("@cod", MySqlDbType.VarChar, 30).Value = p.PRODCODIGO ?? "";
             cmd.Parameters.Add("@nome", MySqlDbType.VarChar, 150).Value = p.PRODNOME ?? "";
             cmd.Parameters.Add("@fam", MySqlDbType.VarChar, 80).Value = p.FAMILIA ?? "";
             cmd.Parameters.Add("@col", MySqlDbType.VarChar, 80).Value = p.COLABORADOR ?? "";
+            cmd.Parameters.Add("@pcusto", MySqlDbType.Decimal).Value = p.PRECOCUSTO;
+            cmd.Parameters.Add("@pvenda", MySqlDbType.Decimal).Value = p.PRECOVENDA;
             var rows = await cmd.ExecuteNonQueryAsync(ct);
             return rows > 0;
         }

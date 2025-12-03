@@ -7,6 +7,7 @@
         <ResourceDictionary>
             <converters:IsNotNullOrEmptyConverter x:Key="IsNotNullOrEmptyConverter" />
             <converters:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+            <converters:CurrencyConverter x:Key="CurrencyConverter" />
 
             <!-- Dicionários estáveis (não mudam com o tema) -->
             <ResourceDictionary.MergedDictionaries>
