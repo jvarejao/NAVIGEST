@@ -262,9 +262,39 @@
                                 </VerticalStackLayout>
                             </Grid>
 
-                            <VerticalStackLayout Spacing="6">
+                            <VerticalStackLayout Spacing="6" ZIndex="100">
                                 <Label Text="Descrição" FontSize="13" TextColor="{DynamicResource EntryPlaceholderColor}" Margin="2,0,0,0"/>
-                                <Entry Style="{StaticResource AppleEntry}" Placeholder="Descrição do Produto" Text="{Binding Editing.PRODNOME}" TextChanged="OnDescriptionTextChanged" />
+                                <Grid>
+                                    <Entry Style="{StaticResource AppleEntry}" 
+                                           Placeholder="Descrição do Produto" 
+                                           Text="{Binding Editing.PRODNOME}" 
+                                           TextChanged="OnDescriptionTextChanged"
+                                           VerticalOptions="Start" />
+                                    
+                                    <!-- Suggestions Dropdown -->
+                                    <Border StrokeShape="RoundRectangle 8"
+                                            StrokeThickness="0"
+                                            BackgroundColor="{DynamicResource CardBackgroundColor}"
+                                            IsVisible="{Binding IsSuggestionsVisible}"
+                                            VerticalOptions="Start"
+                                            Margin="0,60,0,0"
+                                            MaximumHeightRequest="200"
+                                            ZIndex="999">
+                                        <Border.Shadow>
+                                            <Shadow Brush="Black" Opacity="0.2" Radius="10" Offset="0,4"/>
+                                        </Border.Shadow>
+                                        <CollectionView ItemsSource="{Binding DescriptionSuggestions}" SelectionMode="None">
+                                            <CollectionView.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid Padding="12,8" ColumnDefinitions="*, Auto">
+                                                        <Label Text="{Binding PRODNOME}" TextColor="{DynamicResource BodyTextColor}" VerticalOptions="Center"/>
+                                                        <Label Grid.Column="1" Text="{Binding PRODCODIGO}" TextColor="{DynamicResource EntryPlaceholderColor}" FontSize="12" VerticalOptions="Center"/>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </CollectionView.ItemTemplate>
+                                        </CollectionView>
+                                    </Border>
+                                </Grid>
                             </VerticalStackLayout>
                             
                             <VerticalStackLayout Spacing="6">

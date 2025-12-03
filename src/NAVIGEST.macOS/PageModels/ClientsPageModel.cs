@@ -41,6 +41,52 @@ public class ClientsPageModel : INotifyPropertyChanged
             }
         }
     }
+    
+    // Sugestões de nomes duplicados
+    public ObservableCollection<Cliente> NameSuggestions { get; } = new();
+    
+    private bool _isSuggestionsVisible;
+    public bool IsSuggestionsVisible
+    {
+        get => _isSuggestionsVisible;
+        set
+        {
+            if (_isSuggestionsVisible != value)
+            {
+                _isSuggestionsVisible = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    public void UpdateNameSuggestions(string query)
+    {
+        if (string.IsNullOrWhiteSpace(query) || query.Length < 2)
+        {
+            NameSuggestions.Clear();
+            IsSuggestionsVisible = false;
+            return;
+        }
+
+        var normalizedQuery = query.Trim().ToUpperInvariant();
+        
+        // Ignora o próprio cliente que estamos a editar
+        var currentCode = EditModel?.CLICODIGO;
+
+        var matches = _all
+            .Where(c => c.CLINOME != null && 
+                        c.CLINOME.Contains(normalizedQuery, StringComparison.OrdinalIgnoreCase) &&
+                        c.CLICODIGO != currentCode)
+            .Take(5)
+            .ToList();
+
+        NameSuggestions.Clear();
+        foreach (var m in matches)
+            NameSuggestions.Add(m);
+
+        IsSuggestionsVisible = NameSuggestions.Count > 0;
+    }
+
     public ObservableCollection<string> Vendedores { get; } = new();
 
     private bool _suppressPhoneSync;
@@ -87,6 +133,7 @@ public class ClientsPageModel : INotifyPropertyChanged
             OnPropertyChanged();
             OnPropertyChanged(nameof(IsNew));
             OnPropertyChanged(nameof(CanDelete));
+            OnPropertyChanged(nameof(SaveButtonText));
             _codigoPreview = false;
             EditModel = _selectedCliente?.Clone() ?? NewClienteTemplate();
             if (EditModel != null)
@@ -136,6 +183,8 @@ public class ClientsPageModel : INotifyPropertyChanged
 
     public bool IsNew => SelectedCliente == null;
     public bool CanDelete => !IsNew && IsFinancial;
+
+    public string SaveButtonText => IsNew ? "Guardar" : "Atualizar";
 
     private string _searchText = string.Empty;
     public string SearchText
@@ -479,6 +528,17 @@ public class ClientsPageModel : INotifyPropertyChanged
         if (!Validate(EditModel, out string msg))
         {
             await AppShell.DisplayToastAsync(msg, ToastTipo.Erro, 2500);
+            return;
+        }
+
+        // Validação de duplicados (Nome)
+        var duplicate = _all.FirstOrDefault(c => 
+            c.CLINOME.Equals(EditModel.CLINOME, StringComparison.OrdinalIgnoreCase) && 
+            c.CLICODIGO != EditModel.CLICODIGO);
+
+        if (duplicate != null)
+        {
+            await AppShell.DisplayToastAsync($"Já existe um cliente com este nome: {duplicate.CLICODIGO}", ToastTipo.Erro, 4000);
             return;
         }
 

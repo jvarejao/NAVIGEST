@@ -213,13 +213,22 @@ public partial class ProductsPage : ContentPage
 
     private void OnDescriptionTextChanged(object sender, TextChangedEventArgs e)
     {
-        if (sender is Entry entry && !string.IsNullOrEmpty(entry.Text))
+        if (sender is Entry entry)
         {
-            var upper = entry.Text.ToUpper();
-            if (entry.Text != upper)
+            if (!string.IsNullOrEmpty(entry.Text))
             {
-                entry.Text = upper;
-                entry.CursorPosition = upper.Length;
+                var upper = entry.Text.ToUpper();
+                if (entry.Text != upper)
+                {
+                    entry.Text = upper;
+                    entry.CursorPosition = upper.Length;
+                    return;
+                }
+            }
+
+            if (BindingContext is ProductsPageModel vm)
+            {
+                vm.UpdateDescriptionSuggestions(entry.Text);
             }
         }
     }

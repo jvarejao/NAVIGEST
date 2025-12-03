@@ -306,10 +306,20 @@
 
                 <Grid RowDefinitions="Auto, *, Auto" RowSpacing="20">
                     <!-- Header -->
-                    <Label Text="{Binding Editing.CLINOME, StringFormat='Editar {0}', TargetNullValue='Novo Cliente'}" 
-                           FontSize="20" 
+                    <Label FontSize="20" 
                            FontAttributes="Bold" 
-                           TextColor="{DynamicResource BodyTextColor}"/>
+                           TextColor="{DynamicResource BodyTextColor}">
+                        <Label.Style>
+                            <Style TargetType="Label">
+                                <Setter Property="Text" Value="{Binding Editing.CLINOME, StringFormat='Editar {0}'}" />
+                                <Style.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding IsNew}" Value="True">
+                                        <Setter Property="Text" Value="Adicionar Cliente" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Label.Style>
+                    </Label>
 
                     <!-- Form -->
                     <ScrollView Grid.Row="1">
@@ -327,7 +337,37 @@
 
                             <VerticalStackLayout Spacing="6">
                                 <Label Text="Nome" FontSize="13" TextColor="{DynamicResource EntryPlaceholderColor}" Margin="2,0,0,0"/>
-                                <Entry Style="{StaticResource AppleEntry}" Placeholder="Nome do Cliente" Text="{Binding Editing.CLINOME}" />
+                                <Grid>
+                                    <Entry Style="{StaticResource AppleEntry}" 
+                                           Placeholder="Nome do Cliente" 
+                                           Text="{Binding Editing.CLINOME}" 
+                                           TextChanged="OnNameTextChanged"
+                                           VerticalOptions="Start" />
+                                    
+                                    <!-- Suggestions Dropdown -->
+                                    <Border StrokeShape="RoundRectangle 8"
+                                            StrokeThickness="0"
+                                            BackgroundColor="{DynamicResource CardBackgroundColor}"
+                                            IsVisible="{Binding IsSuggestionsVisible}"
+                                            VerticalOptions="Start"
+                                            Margin="0,60,0,0"
+                                            MaximumHeightRequest="200"
+                                            ZIndex="999">
+                                        <Border.Shadow>
+                                            <Shadow Brush="Black" Opacity="0.2" Radius="10" Offset="0,4"/>
+                                        </Border.Shadow>
+                                        <CollectionView ItemsSource="{Binding NameSuggestions}" SelectionMode="None">
+                                            <CollectionView.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid Padding="12,8" ColumnDefinitions="*, Auto">
+                                                        <Label Text="{Binding CLINOME}" TextColor="{DynamicResource BodyTextColor}" VerticalOptions="Center"/>
+                                                        <Label Grid.Column="1" Text="{Binding CLICODIGO}" TextColor="{DynamicResource EntryPlaceholderColor}" FontSize="12" VerticalOptions="Center"/>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </CollectionView.ItemTemplate>
+                                        </CollectionView>
+                                    </Border>
+                                </Grid>
                             </VerticalStackLayout>
                             
                             <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
@@ -424,7 +464,7 @@
                                 Command="{Binding CloseEditCommand}"/>
                         
                         <Button Grid.Column="3"
-                                Text="Atualizar" 
+                                Text="{Binding SaveButtonText}" 
                                 BackgroundColor="#0A84FF" 
                                 TextColor="White" 
                                 FontAttributes="Bold" 

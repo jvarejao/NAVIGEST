@@ -80,6 +80,23 @@ namespace NAVIGEST.macOS.Pages
             }
         }
 
+        private void OnNameTextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (sender is Entry entry && BindingContext is ClientsPageModel vm)
+            {
+                // Força maiúsculas
+                var upper = e.NewTextValue?.ToUpperInvariant() ?? "";
+                if (entry.Text != upper)
+                {
+                    entry.Text = upper;
+                    entry.CursorPosition = upper.Length;
+                }
+                
+                // Atualiza sugestões
+                vm.UpdateNameSuggestions(upper);
+            }
+        }
+
         // -------- Valor Crédito --------
         private void OnValorCreditoFocused(object sender, FocusEventArgs e)
         {

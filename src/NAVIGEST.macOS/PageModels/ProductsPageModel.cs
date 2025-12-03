@@ -105,6 +105,37 @@ public class ProductsPageModel : INotifyPropertyChanged
     public string OverlayTitle => SelectedProduct is null ? "Adicionar Produto" : $"Editar {SelectedProduct.PRODNOME}";
     public string SaveButtonText => SelectedProduct is null ? "Guardar" : "Atualizar";
 
+    // Sugestões de Descrição
+    public ObservableCollection<Product> DescriptionSuggestions { get; } = new();
+
+    private bool _isSuggestionsVisible;
+    public bool IsSuggestionsVisible
+    {
+        get => _isSuggestionsVisible;
+        set { if (_isSuggestionsVisible != value) { _isSuggestionsVisible = value; OnPropertyChanged(); } }
+    }
+
+    public void UpdateDescriptionSuggestions(string query)
+    {
+        if (string.IsNullOrWhiteSpace(query) || query.Length < 2)
+        {
+            IsSuggestionsVisible = false;
+            return;
+        }
+
+        var q = query.Trim().ToUpperInvariant();
+        var matches = _all.Where(p => 
+            (p.PRODNOME ?? "").ToUpperInvariant().Contains(q) && 
+            p.PRODCODIGO != EditModel.PRODCODIGO)
+            .Take(5)
+            .ToList();
+
+        DescriptionSuggestions.Clear();
+        foreach (var m in matches) DescriptionSuggestions.Add(m);
+
+        IsSuggestionsVisible = DescriptionSuggestions.Count > 0;
+    }
+
     // Comandos
     public Command NewCommand { get; }
     public Command ClearCommand { get; }
@@ -302,6 +333,39 @@ public class ProductsPageModel : INotifyPropertyChanged
             await AppShell.DisplayToastAsync(msg);
             StatusMessage = msg;
             return;
+        }
+
+        // Validação de Duplicados (Descrição)
+        var duplicateDesc = _all.FirstOrDefault(p => 
+            (p.PRODNOME ?? "").Equals(EditModel.PRODNOME, StringComparison.OrdinalIgnoreCase) && 
+            p.PRODCODIGO != EditModel.PRODCODIGO);
+
+        if (duplicateDesc != null)
+        {
+            string erro = $"Já existe um produto com esta descrição (Código: {duplicateDesc.PRODCODIGO}).";
+            await AppShell.DisplayToastAsync(erro);
+            StatusMessage = erro;
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(EditModel.PRODCODIGO))
+        {
+            await AppShell.DisplayToastAsync("O código do produto é obrigatório.");
+            StatusMessage = "Código obrigatório.";
+            return;
+        }
+
+        // Validação de duplicados
+        var duplicate = _all.FirstOrDefault(p => string.Equals(p.PRODCODIGO?.Trim(), EditModel.PRODCODIGO?.Trim(), StringComparison.OrdinalIgnoreCase));
+        if (duplicate != null)
+        {
+            // Se é novo (SelectedProduct == null) OU se é edição mas o código pertence a outro objeto
+            if (SelectedProduct == null || !ReferenceEquals(duplicate, SelectedProduct))
+            {
+                await AppShell.DisplayToastAsync("Já existe um produto com este código.");
+                StatusMessage = "Código duplicado.";
+                return;
+            }
         }
 
         bool existedBefore = _all.Any(p => p.PRODCODIGO == EditModel.PRODCODIGO && !string.IsNullOrWhiteSpace(EditModel.PRODCODIGO));
