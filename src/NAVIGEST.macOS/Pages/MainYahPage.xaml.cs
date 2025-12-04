@@ -450,7 +450,7 @@ namespace NAVIGEST.macOS.Pages
                                         }
                                         catch (Exception ex) { TratarErro(ex); }
                                     }
-                                    else await DisplayToastAsync("RegisterPage sem conteúdo.");
+                                    else await DisplayToastAsync(string.Format(NAVIGEST.macOS.Resources.Strings.AppResources.Main_NoContent, "RegisterPage"));
                                 }
                                 catch (Exception ex) { TratarErro(ex); }
                                 CloseSidebarMobileIfNeeded();
@@ -468,7 +468,7 @@ namespace NAVIGEST.macOS.Pages
                                         pageContent.BindingContext = page.BindingContext ?? pageContent.BindingContext;
                                         ShowContent(pageContent);
                                     }
-                                    else await DisplayToastAsync("DbConfigPage sem conteúdo.");
+                                    else await DisplayToastAsync(string.Format(NAVIGEST.macOS.Resources.Strings.AppResources.Main_NoContent, "DbConfigPage"));
                                 }
                                 catch (Exception ex) { TratarErro(ex); }
                                 CloseSidebarMobileIfNeeded();
@@ -492,7 +492,7 @@ namespace NAVIGEST.macOS.Pages
                                         }
                                         catch (Exception ex) { TratarErro(ex); }
                                     }
-                                    else await DisplayToastAsync("ClientsPage sem conteúdo.");
+                                    else await DisplayToastAsync(string.Format(NAVIGEST.macOS.Resources.Strings.AppResources.Main_NoContent, "ClientsPage"));
                                 }
                                 catch (Exception ex) { TratarErro(ex); }
                                 CloseSidebarMobileIfNeeded();
@@ -516,7 +516,7 @@ namespace NAVIGEST.macOS.Pages
                                         }
                                         catch { }
                                     }
-                                    else await DisplayToastAsync("ProductsPage sem conteúdo.");
+                                    else await DisplayToastAsync(string.Format(NAVIGEST.macOS.Resources.Strings.AppResources.Main_NoContent, "ProductsPage"));
                                 }
                                 catch (Exception ex) { TratarErro(ex); }
                                 CloseSidebarMobileIfNeeded();
@@ -540,7 +540,7 @@ namespace NAVIGEST.macOS.Pages
                                         }
                                         catch (Exception ex) { TratarErro(ex); }
                                     }
-                                    else await DisplayToastAsync("ServicePage sem conteúdo.");
+                                    else await DisplayToastAsync(string.Format(NAVIGEST.macOS.Resources.Strings.AppResources.Main_NoContent, "ServicePage"));
                                 }
                                 catch (Exception ex) { TratarErro(ex); }
                                 CloseSidebarMobileIfNeeded();
@@ -586,7 +586,7 @@ namespace NAVIGEST.macOS.Pages
                                     }
                                     else
                                     {
-                                        await DisplayToastAsync("HoursEntryPage sem conteúdo.");
+                                        await DisplayToastAsync(string.Format(NAVIGEST.macOS.Resources.Strings.AppResources.Main_NoContent, "HoursEntryPage"));
                                     }
                                 }
                                 catch (Exception ex) { TratarErro(ex); }
@@ -632,7 +632,11 @@ namespace NAVIGEST.macOS.Pages
         {
             try
             {
-                bool confirm = await DisplayAlert("Terminar Sessão", "Tem a certeza que deseja sair da aplicação?", "Sair", "Cancelar");
+                bool confirm = await DisplayAlert(
+                    NAVIGEST.macOS.Resources.Strings.AppResources.Main_LogoutTitle,
+                    NAVIGEST.macOS.Resources.Strings.AppResources.Main_LogoutMessage,
+                    NAVIGEST.macOS.Resources.Strings.AppResources.Main_LogoutConfirm,
+                    NAVIGEST.macOS.Resources.Strings.AppResources.Common_Cancel);
                 if (confirm)
                 {
                     CloseSidebarMobileIfNeeded();
@@ -650,7 +654,10 @@ namespace NAVIGEST.macOS.Pages
 #if WINDOWS
                 Application.Current?.Quit();
 #else
-                await DisplayAlert("Fechar", "No Android/iOS não fechamos a app diretamente.", "OK");
+                await DisplayAlert(
+                    NAVIGEST.macOS.Resources.Strings.AppResources.Main_CloseTitle,
+                    NAVIGEST.macOS.Resources.Strings.AppResources.Main_CloseMessage,
+                    NAVIGEST.macOS.Resources.Strings.AppResources.Common_OK);
 #endif
                 CloseSidebarMobileIfNeeded();
             }
@@ -682,7 +689,10 @@ namespace NAVIGEST.macOS.Pages
                 bool ok = await ShowAdminOverlayAsync();
                 if (!ok)
                 {
-                    await DisplayAlert("Acesso negado", "Precisa de privilégios ADMIN.", "OK");
+                    await DisplayAlert(
+                        NAVIGEST.macOS.Resources.Strings.AppResources.Main_AccessDenied,
+                        NAVIGEST.macOS.Resources.Strings.AppResources.Main_AdminRequired,
+                        NAVIGEST.macOS.Resources.Strings.AppResources.Common_OK);
                     return;
                 }
                 vm.IsAdminUnlocked = true; vm.IsConfigExpanded = true;
@@ -730,10 +740,24 @@ namespace NAVIGEST.macOS.Pages
                 var user = AdminUserEntry.Text?.Trim() ?? "";
                 var pass = AdminPassEntry.Text ?? "";
                 if (string.IsNullOrWhiteSpace(user) || string.IsNullOrWhiteSpace(pass))
-                { AdminErrorLabel.Text = "Indica utilizador e palavra-passe."; AdminErrorLabel.IsVisible = true; return; }
+                { 
+                    AdminErrorLabel.Text = NAVIGEST.macOS.Resources.Strings.AppResources.Main_AdminEnterCredentials; 
+                    AdminErrorLabel.IsVisible = true; 
+                    return; 
+                }
                 (bool ok, string _nome, string tipo) = await DatabaseService.CheckLoginAsync(user, pass);
-                if (!ok) { AdminErrorLabel.Text = "Credenciais inválidas."; AdminErrorLabel.IsVisible = true; return; }
-                if (!string.Equals(tipo, "ADMIN", StringComparison.OrdinalIgnoreCase)) { AdminErrorLabel.Text = "Precisa de privilégios ADMIN."; AdminErrorLabel.IsVisible = true; return; }
+                if (!ok) 
+                { 
+                    AdminErrorLabel.Text = NAVIGEST.macOS.Resources.Strings.AppResources.Login_InvalidCredentials; 
+                    AdminErrorLabel.IsVisible = true; 
+                    return; 
+                }
+                if (!string.Equals(tipo, "ADMIN", StringComparison.OrdinalIgnoreCase)) 
+                { 
+                    AdminErrorLabel.Text = NAVIGEST.macOS.Resources.Strings.AppResources.Main_AdminRequired; 
+                    AdminErrorLabel.IsVisible = true; 
+                    return; 
+                }
                 AdminOverlay.IsVisible = false; _adminTcs?.TrySetResult(true);
             }
             catch (Exception ex) { TratarErro(ex); }

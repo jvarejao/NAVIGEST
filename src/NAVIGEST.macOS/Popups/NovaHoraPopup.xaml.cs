@@ -6,6 +6,7 @@ using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls;
 using NAVIGEST.macOS.Models;
 using NAVIGEST.macOS.Services;
+using NAVIGEST.macOS.Resources.Strings;
 
 namespace NAVIGEST.macOS.Popups;
 
@@ -34,14 +35,14 @@ public partial class NovaHoraPopup : Popup
 
     private async Task InicializarFormAsync()
     {
-        TituloLabel.Text = _isEdit ? "✏️ EDITAR REGISTO" : "➕ NOVO REGISTO";
+        TituloLabel.Text = _isEdit ? AppResources.Hours_EditTitle : AppResources.Hours_NewTitle;
         EliminarButton.IsVisible = _isEdit;
 
         try
         {
             var clientesDb = await DatabaseService.GetClientesAsync(null);
             _clientes = clientesDb.OrderBy(c => c.CLINOME).ToList();
-            _clientes.Insert(0, new Cliente { CLICODIGO = "0", CLINOME = "Sem cliente" });
+            _clientes.Insert(0, new Cliente { CLICODIGO = "0", CLINOME = AppResources.Hours_NoClient });
         }
         catch (Exception ex)
         {
@@ -70,20 +71,20 @@ public partial class NovaHoraPopup : Popup
                 else
                 {
                     _clienteSelecionado = _clientes[0];
-                    ClienteLabel.Text = "Sem cliente";
+                    ClienteLabel.Text = AppResources.Hours_NoClient;
                 }
             }
             else
             {
                 _clienteSelecionado = _clientes[0];
-                ClienteLabel.Text = "Sem cliente";
+                ClienteLabel.Text = AppResources.Hours_NoClient;
             }
         }
         else
         {
             _clienteSelecionado = _clientes[0];
-            ClienteLabel.Text = "Sem cliente";
-            ColaboradorLabel.Text = "Selecione colaborador";
+            ClienteLabel.Text = AppResources.Hours_NoClient;
+            ColaboradorLabel.Text = AppResources.Hours_SelectCollaborator;
         }
 
         DataPicker.Date = _hora.DataTrabalho;
@@ -107,7 +108,7 @@ public partial class NovaHoraPopup : Popup
 
         if (isAbsence)
         {
-            TipoRegistoLabel.Text = "Ausência";
+            TipoRegistoLabel.Text = AppResources.Hours_Absence;
             AbsenceReasonContainer.IsVisible = true;
             ClienteContainer.IsVisible = false;
             HorasNormaisContainer.IsVisible = false;
@@ -115,7 +116,7 @@ public partial class NovaHoraPopup : Popup
         }
         else
         {
-            TipoRegistoLabel.Text = "Trabalho";
+            TipoRegistoLabel.Text = AppResources.Hours_Work;
             AbsenceReasonContainer.IsVisible = false;
             ClienteContainer.IsVisible = true;
             HorasNormaisContainer.IsVisible = true;
@@ -128,19 +129,19 @@ public partial class NovaHoraPopup : Popup
         var page = Application.Current?.Windows[0]?.Page;
         if (page == null) return;
 
-        var action = await page.DisplayActionSheet("Tipo de Registo", "Cancelar", null, "Trabalho", "Ausência");
-        if (action == "Trabalho")
+        var action = await page.DisplayActionSheet(AppResources.Hours_RecordType, AppResources.Common_Cancel, null, AppResources.Hours_Work, AppResources.Hours_Absence);
+        if (action == AppResources.Hours_Work)
         {
-            TipoRegistoLabel.Text = "Trabalho";
+            TipoRegistoLabel.Text = AppResources.Hours_Work;
             AbsenceReasonContainer.IsVisible = false;
             ClienteContainer.IsVisible = true;
             HorasNormaisContainer.IsVisible = true;
             HorasExtrasContainer.IsVisible = true;
             _absenceTypeSelecionado = null;
         }
-        else if (action == "Ausência")
+        else if (action == AppResources.Hours_Absence)
         {
-            TipoRegistoLabel.Text = "Ausência";
+            TipoRegistoLabel.Text = AppResources.Hours_Absence;
             AbsenceReasonContainer.IsVisible = true;
             ClienteContainer.IsVisible = false;
             HorasNormaisContainer.IsVisible = false;
@@ -158,9 +159,9 @@ public partial class NovaHoraPopup : Popup
         if (page == null) return;
 
         var options = _absenceTypes.Select(a => a.Description).ToArray();
-        var action = await page.DisplayActionSheet("Motivo da Ausência", "Cancelar", null, options);
+        var action = await page.DisplayActionSheet(AppResources.Hours_SelectReason, AppResources.Common_Cancel, null, options);
         
-        if (action != "Cancelar" && action != null)
+        if (action != AppResources.Common_Cancel && action != null)
         {
             var selected = _absenceTypes.FirstOrDefault(a => a.Description == action);
             if (selected != null)
@@ -178,9 +179,9 @@ public partial class NovaHoraPopup : Popup
         if (page == null) return;
 
         var options = _colaboradores.Select(c => c.Nome).ToArray();
-        var action = await page.DisplayActionSheet("Selecionar Colaborador", "Cancelar", null, options);
+        var action = await page.DisplayActionSheet(AppResources.Hours_SelectCollaborator, AppResources.Common_Cancel, null, options);
         
-        if (action != "Cancelar" && action != null)
+        if (action != AppResources.Common_Cancel && action != null)
         {
             var selected = _colaboradores.FirstOrDefault(c => c.Nome == action);
             if (selected != null)
@@ -234,9 +235,9 @@ public partial class NovaHoraPopup : Popup
             displayOptions = clientNames;
         }
 
-        var action = await page.DisplayActionSheet("Selecionar Cliente", "Cancelar", null, displayOptions);
+        var action = await page.DisplayActionSheet(AppResources.Hours_SelectClient, AppResources.Common_Cancel, null, displayOptions);
         
-        if (action != "Cancelar" && action != null && !action.StartsWith("..."))
+        if (action != AppResources.Common_Cancel && action != null && !action.StartsWith("..."))
         {
             var selected = _clientes.FirstOrDefault(c => c.CLINOME == action);
             if (selected != null)
@@ -252,7 +253,7 @@ public partial class NovaHoraPopup : Popup
         var page = Application.Current?.Windows[0]?.Page;
         if (page == null) return;
 
-        bool confirm = await page.DisplayAlert("Eliminar", "Tem a certeza que deseja eliminar este registo?", "Sim", "Não");
+        bool confirm = await page.DisplayAlert(AppResources.Common_Delete, AppResources.Common_DeleteConfirmationMessage, AppResources.Sync_Yes, AppResources.Sync_NotNow);
         if (confirm)
         {
             try
@@ -263,7 +264,7 @@ public partial class NovaHoraPopup : Popup
             }
             catch (Exception ex)
             {
-                await page.DisplayAlert("Erro", $"Erro ao eliminar: {ex.Message}", "OK");
+                await page.DisplayAlert(AppResources.Common_Error, $"Erro ao eliminar: {ex.Message}", AppResources.Common_OK);
             }
         }
     }
@@ -275,18 +276,18 @@ public partial class NovaHoraPopup : Popup
 
         if (_colaboradorSelecionado == null)
         {
-            await page.DisplayAlert("Erro", "Selecione um colaborador", "OK");
+            await page.DisplayAlert(AppResources.Common_Error, AppResources.Hours_ErrorSelectCollaborator, AppResources.Common_OK);
             return;
         }
 
-        if (TipoRegistoLabel.Text == "Trabalho")
+        if (TipoRegistoLabel.Text == AppResources.Hours_Work)
         {
             if (!float.TryParse(HorasEntry.Text, out float horasTrab)) horasTrab = 0;
             if (!float.TryParse(HorasExtrasEntry.Text, out float horasExtras)) horasExtras = 0;
 
             if (horasTrab == 0 && horasExtras == 0)
             {
-                await page.DisplayAlert("Erro", "Insira as horas trabalhadas ou extras", "OK");
+                await page.DisplayAlert(AppResources.Common_Error, AppResources.Hours_ErrorEnterHours, AppResources.Common_OK);
                 return;
             }
 

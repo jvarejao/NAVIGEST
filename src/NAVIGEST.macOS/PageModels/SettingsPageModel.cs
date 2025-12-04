@@ -1,4 +1,5 @@
 using System.Windows.Input;
+using CommunityToolkit.Maui.Views;
 
 namespace NAVIGEST.macOS.PageModels
 {
@@ -7,6 +8,7 @@ namespace NAVIGEST.macOS.PageModels
         public ICommand OpenUsersCommand { get; }
         public ICommand OpenDBConfigCommand { get; }
         public ICommand OpenFileServerConfigCommand { get; }
+        public ICommand OpenLanguageCommand { get; }
         public ICommand BackCommand { get; }
 
         public SettingsPageModel()
@@ -15,6 +17,16 @@ namespace NAVIGEST.macOS.PageModels
             OpenUsersCommand = new Command(async () => await Shell.Current.GoToAsync("config.utilizadores"));
             OpenDBConfigCommand = new Command(async () => await Shell.Current.GoToAsync("config.db"));
             OpenFileServerConfigCommand = new Command(async () => await Shell.Current.GoToAsync("config.fileserver"));
+            OpenLanguageCommand = new Command(async () => 
+            {
+                var popup = new NAVIGEST.macOS.Popups.LanguageSelectionPopup();
+                var result = await Shell.Current.ShowPopupAsync(popup);
+                
+                if (result is string cultureCode)
+                {
+                    await NAVIGEST.macOS.Helpers.LanguageHelper.ChangeLanguageAndRestart(cultureCode);
+                }
+            });
             BackCommand = new Command(async () => await Shell.Current.GoToAsync(".."));
         }
     }

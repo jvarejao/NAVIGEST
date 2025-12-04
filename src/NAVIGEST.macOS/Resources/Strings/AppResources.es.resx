@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ClientsPage_Title" xml:space="preserve">
+    <value>Clientes</value>
+  </data>
+  <data name="ClientsPage_NewClient" xml:space="preserve">
+    <value>Nuevo Cliente</value>
+  </data>
+  <data name="ClientsPage_AddClient" xml:space="preserve">
+    <value>Añadir Cliente</value>
+  </data>
+  <data name="ClientsPage_EditClient" xml:space="preserve">
+    <value>Editar {0}</value>
+  </data>
+  <data name="Common_Save" xml:space="preserve">
+    <value>Guardar</value>
+  </data>
+  <data name="Common_Update" xml:space="preserve">
+    <value>Actualizar</value>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Cancelar</value>
+  </data>
+  <data name="Common_Delete" xml:space="preserve">
+    <value>Eliminar</value>
+  </data>
+  <data name="Common_SearchPlaceholder" xml:space="preserve">
+    <value>Buscar (código, nombre, email...)</value>
+  </data>
+  <data name="Common_Name" xml:space="preserve">
+    <value>Nombre</value>
+  </data>
+  <data name="Common_Code" xml:space="preserve">
+    <value>Código</value>
+  </data>
+  <data name="Common_Phone" xml:space="preserve">
+    <value>Teléfono</value>
+  </data>
+  <data name="Common_Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="ClientsPage_External" xml:space="preserve">
+    <value>EXTERNO</value>
+  </data>
+  <data name="ClientsPage_Cancelled" xml:space="preserve">
+    <value>ANULADO</value>
+  </data>
+  <data name="ClientsPage_Salesperson" xml:space="preserve">
+    <value>Vendedor</value>
+  </data>
+  <data name="ClientsPage_ClientNamePlaceholder" xml:space="preserve">
+    <value>Nombre del Cliente</value>
+  </data>
+  <data name="ClientsPage_CreditValue" xml:space="preserve">
+    <value>Valor Crédito</value>
+  </data>
+  <data name="ClientsPage_ExternalLabel" xml:space="preserve">
+    <value>Externo</value>
+  </data>
+  <data name="ClientsPage_CancelledLabel" xml:space="preserve">
+    <value>Anulado</value>
+  </data>
+  <data name="ClientsPage_SyncedFolders" xml:space="preserve">
+    <value>Carpetas Sincronizadas</value>
+  </data>
+  <data name="ProductsPage_Title" xml:space="preserve">
+    <value>Productos</value>
+  </data>
+  <data name="ProductsPage_NewProduct" xml:space="preserve">
+    <value>Nuevo Producto</value>
+  </data>
+  <data name="ProductsPage_SearchPlaceholder" xml:space="preserve">
+    <value>Buscar (código, descripción, familia...)</value>
+  </data>
+  <data name="Common_Cost" xml:space="preserve">
+    <value>Coste</value>
+  </data>
+  <data name="Common_Sale" xml:space="preserve">
+    <value>Venta</value>
+  </data>
+  <data name="Common_TotalSales" xml:space="preserve">
+    <value>Ventas Totales</value>
+  </data>
+  <data name="Common_Collaborator" xml:space="preserve">
+    <value>Colaborador</value>
+  </data>
+  <data name="Common_Description" xml:space="preserve">
+    <value>Descripción</value>
+  </data>
+  <data name="Common_Family" xml:space="preserve">
+    <value>Familia</value>
+  </data>
+  <data name="Common_Close" xml:space="preserve">
+    <value>Cerrar</value>
+  </data>
+  <data name="Common_Search" xml:space="preserve">
+    <value>Buscar...</value>
+  </data>
+  <data name="ProductsPage_CostPrice" xml:space="preserve">
+    <value>Precio Coste (€)</value>
+  </data>
+  <data name="ProductsPage_SalePrice" xml:space="preserve">
+    <value>Precio Venta (€)</value>
+  </data>
+  <data name="ProductsPage_ProductDescriptionPlaceholder" xml:space="preserve">
+    <value>Descripción del Producto</value>
+  </data>
+  <data name="ProductsPage_SelectFamily" xml:space="preserve">
+    <value>Seleccionar Familia</value>
+  </data>
+  <data name="ProductsPage_AddFamily" xml:space="preserve">
+    <value>Añadir Familia</value>
+  </data>
+  <data name="ProductsPage_NewFamily" xml:space="preserve">
+    <value>Nueva Familia</value>
+  </data>
+  <data name="ProductsPage_FamilyCodePlaceholder" xml:space="preserve">
+    <value>Código Familia</value>
+  </data>
+  <data name="ProductsPage_FamilyDescriptionPlaceholder" xml:space="preserve">
+    <value>Descripción Familia</value>
+  </data>
+</root>

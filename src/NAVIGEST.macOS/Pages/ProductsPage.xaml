@@ -6,8 +6,9 @@
              xmlns:models="clr-namespace:NAVIGEST.macOS.Models"
              xmlns:viewmodels="clr-namespace:NAVIGEST.macOS.PageModels"
              xmlns:behaviors="clr-namespace:NAVIGEST.macOS.Behaviors"
+             xmlns:strings="clr-namespace:NAVIGEST.macOS.Resources.Strings"
              BackgroundColor="{DynamicResource PageBackgroundColor}"
-             Title="Produtos">
+             Title="{x:Static strings:AppResources.ProductsPage_Title}">
 
     <ContentPage.Resources>
         <Style TargetType="Button" x:Key="BtnBase">
@@ -54,7 +55,7 @@
                         HeightRequest="44"
                         VerticalOptions="Center">
                     <Grid ColumnDefinitions="*,Auto">
-                        <Entry Placeholder="Pesquisar (código, descrição, família...)" 
+                        <Entry Placeholder="{x:Static strings:AppResources.ProductsPage_SearchPlaceholder}" 
                                Text="{Binding Filter}" 
                                TextChanged="OnSearchTextChanged"
                                BackgroundColor="Transparent"
@@ -79,7 +80,7 @@
 
                 <!-- Add Button -->
                 <Button Grid.Column="1" 
-                        Text="➕ Novo Produto" 
+                        Text="{x:Static strings:AppResources.ProductsPage_NewProduct}" 
                         Command="{Binding NewCommand}"
                         BackgroundColor="#0A84FF" 
                         TextColor="White" 
@@ -137,17 +138,17 @@
                                     <!-- Prices & Totals -->
                                     <HorizontalStackLayout Spacing="16" Margin="0,8,0,0">
                                         <VerticalStackLayout Spacing="2">
-                                            <Label Text="Custo" FontSize="11" TextColor="{DynamicResource EntryPlaceholderColor}"/>
+                                            <Label Text="{x:Static strings:AppResources.Common_Cost}" FontSize="11" TextColor="{DynamicResource EntryPlaceholderColor}"/>
                                             <Label Text="{Binding PRECOCUSTO, StringFormat='{0:C2}'}" FontSize="13" TextColor="{DynamicResource BodyTextColor}" FontAttributes="Bold"/>
                                         </VerticalStackLayout>
                                         
                                         <VerticalStackLayout Spacing="2">
-                                            <Label Text="Venda" FontSize="11" TextColor="{DynamicResource EntryPlaceholderColor}"/>
+                                            <Label Text="{x:Static strings:AppResources.Common_Sale}" FontSize="11" TextColor="{DynamicResource EntryPlaceholderColor}"/>
                                             <Label Text="{Binding PRECOVENDA, StringFormat='{0:C2}'}" FontSize="13" TextColor="{DynamicResource BodyTextColor}" FontAttributes="Bold"/>
                                         </VerticalStackLayout>
 
                                         <VerticalStackLayout Spacing="2">
-                                            <Label Text="Total Vendas" FontSize="11" TextColor="{DynamicResource EntryPlaceholderColor}"/>
+                                            <Label Text="{x:Static strings:AppResources.Common_TotalSales}" FontSize="11" TextColor="{DynamicResource EntryPlaceholderColor}"/>
                                             <Label Text="{Binding TOTALVENDAS, StringFormat='{0:C2}'}" FontSize="13" TextColor="#10B981" FontAttributes="Bold"/>
                                         </VerticalStackLayout>
                                     </HorizontalStackLayout>
@@ -234,18 +235,18 @@
                         <VerticalStackLayout Spacing="16">
                             <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
                                 <VerticalStackLayout Spacing="6" Grid.Column="0">
-                                    <Label Text="Código" FontSize="13" TextColor="{DynamicResource EntryPlaceholderColor}" Margin="2,0,0,0"/>
-                                    <Entry Style="{StaticResource AppleEntry}" Placeholder="Código" Text="{Binding Editing.PRODCODIGO}" IsReadOnly="True" />
+                                    <Label Text="{x:Static strings:AppResources.Common_Code}" FontSize="13" TextColor="{DynamicResource EntryPlaceholderColor}" Margin="2,0,0,0"/>
+                                    <Entry Style="{StaticResource AppleEntry}" Placeholder="{x:Static strings:AppResources.Common_Code}" Text="{Binding Editing.PRODCODIGO}" IsReadOnly="True" />
                                 </VerticalStackLayout>
                                 <VerticalStackLayout Spacing="6" Grid.Column="1">
-                                    <Label Text="Colaborador" FontSize="13" TextColor="{DynamicResource EntryPlaceholderColor}" Margin="2,0,0,0"/>
-                                    <Entry Style="{StaticResource AppleEntry}" Placeholder="Colaborador" Text="{Binding Editing.COLABORADOR}" IsReadOnly="True" TextColor="{DynamicResource EntryPlaceholderColor}" />
+                                    <Label Text="{x:Static strings:AppResources.Common_Collaborator}" FontSize="13" TextColor="{DynamicResource EntryPlaceholderColor}" Margin="2,0,0,0"/>
+                                    <Entry Style="{StaticResource AppleEntry}" Placeholder="{x:Static strings:AppResources.Common_Collaborator}" Text="{Binding Editing.COLABORADOR}" IsReadOnly="True" TextColor="{DynamicResource EntryPlaceholderColor}" />
                                 </VerticalStackLayout>
                             </Grid>
 
                             <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
                                 <VerticalStackLayout Spacing="6" Grid.Column="0">
-                                    <Label Text="Preço Custo (€)" FontSize="13" TextColor="{DynamicResource EntryPlaceholderColor}" Margin="2,0,0,0"/>
+                                    <Label Text="{x:Static strings:AppResources.ProductsPage_CostPrice}" FontSize="13" TextColor="{DynamicResource EntryPlaceholderColor}" Margin="2,0,0,0"/>
                                     <Entry Style="{StaticResource AppleEntry}" 
                                            Placeholder="0,00 €" 
                                            Text="{Binding Editing.PRECOCUSTO, Converter={StaticResource CurrencyConverter}}" 
@@ -253,7 +254,7 @@
                                            Unfocused="OnPriceUnfocused"/>
                                 </VerticalStackLayout>
                                 <VerticalStackLayout Spacing="6" Grid.Column="1">
-                                    <Label Text="Preço Venda (€)" FontSize="13" TextColor="{DynamicResource EntryPlaceholderColor}" Margin="2,0,0,0"/>
+                                    <Label Text="{x:Static strings:AppResources.ProductsPage_SalePrice}" FontSize="13" TextColor="{DynamicResource EntryPlaceholderColor}" Margin="2,0,0,0"/>
                                     <Entry Style="{StaticResource AppleEntry}" 
                                            Placeholder="0,00 €" 
                                            Text="{Binding Editing.PRECOVENDA, Converter={StaticResource CurrencyConverter}}" 
@@ -263,10 +264,10 @@
                             </Grid>
 
                             <VerticalStackLayout Spacing="6" ZIndex="100">
-                                <Label Text="Descrição" FontSize="13" TextColor="{DynamicResource EntryPlaceholderColor}" Margin="2,0,0,0"/>
+                                <Label Text="{x:Static strings:AppResources.Common_Description}" FontSize="13" TextColor="{DynamicResource EntryPlaceholderColor}" Margin="2,0,0,0"/>
                                 <Grid>
                                     <Entry Style="{StaticResource AppleEntry}" 
-                                           Placeholder="Descrição do Produto" 
+                                           Placeholder="{x:Static strings:AppResources.ProductsPage_ProductDescriptionPlaceholder}" 
                                            Text="{Binding Editing.PRODNOME}" 
                                            TextChanged="OnDescriptionTextChanged"
                                            VerticalOptions="Start" />
@@ -298,7 +299,7 @@
                             </VerticalStackLayout>
                             
                             <VerticalStackLayout Spacing="6">
-                                <Label Text="Família" FontSize="13" TextColor="{DynamicResource EntryPlaceholderColor}" Margin="2,0,0,0"/>
+                                <Label Text="{x:Static strings:AppResources.Common_Family}" FontSize="13" TextColor="{DynamicResource EntryPlaceholderColor}" Margin="2,0,0,0"/>
                                 <Grid ColumnDefinitions="*,Auto">
                                     <Border Grid.Column="0" 
                                             StrokeShape="RoundRectangle 10" 
@@ -311,7 +312,7 @@
                                             <TapGestureRecognizer Tapped="OnFamilyPickerTapped"/>
                                         </Border.GestureRecognizers>
                                         <Grid ColumnDefinitions="*, Auto">
-                                            <Label Text="{Binding Editing.FAMILIA, TargetNullValue='Selecionar família'}" 
+                                            <Label Text="{Binding Editing.FAMILIA, TargetNullValue={x:Static strings:AppResources.ProductsPage_SelectFamily}}" 
                                                    VerticalOptions="Center" 
                                                    TextColor="{DynamicResource BodyTextColor}"
                                                    LineBreakMode="TailTruncation"/>
@@ -320,7 +321,7 @@
                                     </Border>
                                     
                                     <Border Grid.Column="1" Margin="8,0,0,0" WidthRequest="44" HeightRequest="44" StrokeThickness="0" BackgroundColor="#2563EB" StrokeShape="RoundRectangle 10" VerticalOptions="Center">
-                                        <Button x:Name="BtnAddFamily" Clicked="OnAddFamilyClicked" BackgroundColor="Transparent" Padding="0" HeightRequest="44" WidthRequest="44" SemanticProperties.Description="Adicionar família">
+                                        <Button x:Name="BtnAddFamily" Clicked="OnAddFamilyClicked" BackgroundColor="Transparent" Padding="0" HeightRequest="44" WidthRequest="44" SemanticProperties.Description="{x:Static strings:AppResources.ProductsPage_AddFamily}">
                                             <Button.ImageSource><FontImageSource Glyph="&#xF067;" FontFamily="FA7Solid" Color="White" Size="20"/></Button.ImageSource>
                                         </Button>
                                     </Border>
@@ -335,7 +336,7 @@
                         
                         <!-- Delete Button (Only visible if not new AND Financial) -->
                         <Button Grid.Column="1"
-                                Text="Eliminar"
+                                Text="{x:Static strings:AppResources.Common_Delete}"
                                 BackgroundColor="#FF3B30"
                                 TextColor="White"
                                 FontAttributes="Bold"
@@ -345,7 +346,7 @@
                                 IsVisible="{Binding CanDelete}"/>
 
                         <Button Grid.Column="2"
-                                Text="Cancelar" 
+                                Text="{x:Static strings:AppResources.Common_Cancel}" 
                                 BackgroundColor="#8E8E93" 
                                 TextColor="White" 
                                 FontAttributes="Bold"
@@ -394,7 +395,7 @@
 
                 <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="15">
                     <Label x:Name="ListPickerTitleLabel"
-                           Text="Selecionar Família"
+                           Text="{x:Static strings:AppResources.ProductsPage_SelectFamily}"
                            FontSize="18"
                            FontAttributes="Bold"
                            HorizontalOptions="Center"
@@ -408,7 +409,7 @@
                             Padding="8,0">
                         <Grid ColumnDefinitions="*,Auto">
                             <Entry x:Name="ListPickerSearchEntry"
-                                   Placeholder="Pesquisar..."
+                                   Placeholder="{x:Static strings:AppResources.Common_Search}"
                                    TextChanged="OnListPickerSearchTextChanged"
                                    BackgroundColor="Transparent"
                                    TextColor="{DynamicResource BodyTextColor}"
@@ -453,7 +454,7 @@
                     </CollectionView>
 
                     <Button Grid.Row="3" 
-                            Text="Fechar" 
+                            Text="{x:Static strings:AppResources.Common_Close}" 
                             TextColor="#0A84FF"
                             BackgroundColor="Transparent"
                             Clicked="OnCloseListPickerClicked"/>
@@ -463,15 +464,15 @@
 
         <!-- Popup Adicionar Família -->
         <Grid x:Name="AddFamilyOverlay" IsVisible="False" BackgroundColor="#66000000" InputTransparent="False" ZIndex="1000">
-            <Border StrokeShape="RoundRectangle 18" Background="{DynamicResource CardBackgroundColor}" StrokeThickness="1" Stroke="{DynamicResource DividerColor}" Padding="22" WidthRequest="340" HorizontalOptions="Center" VerticalOptions="Center">
+            <Border StrokeShape="RoundRectangle 18" Background="{DynamicResource CardBackgroundColor}" StrokeThickness="1" Stroke="{DynamicResource DividerColor}" Padding="22" WidthRequest="450" HorizontalOptions="Center" VerticalOptions="Center">
                 <VerticalStackLayout Spacing="10">
-                    <Label Text="Nova Família" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource BodyTextColor}" HorizontalTextAlignment="Center"/>
-                    <Entry x:Name="NewFamilyCodeEntry" Placeholder="Código família" ClearButtonVisibility="WhileEditing"/>
-                    <Entry x:Name="NewFamilyNameEntry" Placeholder="Descrição família" ClearButtonVisibility="WhileEditing"/>
+                    <Label Text="{x:Static strings:AppResources.Family_NewTitle}" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource BodyTextColor}" HorizontalTextAlignment="Center"/>
+                    <Entry x:Name="NewFamilyCodeEntry" Placeholder="{x:Static strings:AppResources.ProductsPage_FamilyCodePlaceholder}" ClearButtonVisibility="WhileEditing" HeightRequest="44"/>
+                    <Entry x:Name="NewFamilyNameEntry" Placeholder="{x:Static strings:AppResources.Family_NamePlaceholder}" ClearButtonVisibility="WhileEditing" HeightRequest="44"/>
                     <Label x:Name="AddFamilyErrorLabel" FontSize="12" TextColor="Tomato" IsVisible="False"/>
                     <HorizontalStackLayout Spacing="10" HorizontalOptions="End">
-                        <Button x:Name="BtnCancelAddFamily" Text="Cancelar" Clicked="OnCancelAddFamily" Style="{StaticResource BtnDanger}" ContentLayout="Left,6"><Button.ImageSource><FontImageSource Glyph="&#xF05E;" FontFamily="FA7Solid" Color="White" Size="16"/></Button.ImageSource></Button>
-                        <Button x:Name="BtnSaveAddFamily" Text="Guardar" Clicked="OnSaveAddFamily" Style="{StaticResource AppleFilledButton}" ContentLayout="Left,6"><Button.ImageSource><FontImageSource Glyph="&#xF0C7;" FontFamily="FA7Solid" Color="White" Size="16"/></Button.ImageSource></Button>
+                        <Button x:Name="BtnCancelAddFamily" Text="{x:Static strings:AppResources.Common_Cancel}" Clicked="OnCancelAddFamily" Style="{StaticResource BtnDanger}" ContentLayout="Left,6"><Button.ImageSource><FontImageSource Glyph="&#xF05E;" FontFamily="FA7Solid" Color="White" Size="16"/></Button.ImageSource></Button>
+                        <Button x:Name="BtnSaveAddFamily" Text="{x:Static strings:AppResources.Common_Save}" Clicked="OnSaveAddFamily" Style="{StaticResource AppleFilledButton}" ContentLayout="Left,6"><Button.ImageSource><FontImageSource Glyph="&#xF0C7;" FontFamily="FA7Solid" Color="White" Size="16"/></Button.ImageSource></Button>
                     </HorizontalStackLayout>
                 </VerticalStackLayout>
             </Border>

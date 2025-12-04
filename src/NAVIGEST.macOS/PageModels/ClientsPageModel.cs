@@ -15,6 +15,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 
 using NAVIGEST.macOS.Helpers;
+using NAVIGEST.macOS.Resources.Strings;
 
 namespace NAVIGEST.macOS.PageModels;
 
@@ -184,7 +185,7 @@ public class ClientsPageModel : INotifyPropertyChanged
     public bool IsNew => SelectedCliente == null;
     public bool CanDelete => !IsNew && IsFinancial;
 
-    public string SaveButtonText => IsNew ? "Guardar" : "Atualizar";
+    public string SaveButtonText => IsNew ? AppResources.Common_Save : AppResources.Common_Update;
 
     private string _searchText = string.Empty;
     public string SearchText
@@ -328,7 +329,7 @@ public class ClientsPageModel : INotifyPropertyChanged
         
         DeleteEditingCommand = new Command(async () => {
             if (SelectedCliente != null) {
-                bool confirm = await AppShell.Current.DisplayAlert("Eliminar", $"Tem a certeza que deseja eliminar {SelectedCliente.CLINOME}?", "Eliminar", "Cancelar");
+                bool confirm = await AppShell.Current.DisplayAlert(AppResources.Common_DeleteConfirmationTitle, string.Format(AppResources.Common_DeleteConfirmationMessageFormat, SelectedCliente.CLINOME), AppResources.Common_Delete, AppResources.Common_Cancel);
                 if (confirm) {
                     await OnDeleteAsync();
                     IsEditOverlayVisible = false;
@@ -407,9 +408,9 @@ public class ClientsPageModel : INotifyPropertyChanged
         
         if (unsynced.Count > 0)
         {
-            bool sync = await AppShell.Current.DisplayAlert("Sincronização de Pastas", 
-                $"Detetados {unsynced.Count} clientes sem pastas sincronizadas.\nDeseja criar a estrutura de pastas para eles agora?", 
-                "Sim, Sincronizar", "Agora não");
+            bool sync = await AppShell.Current.DisplayAlert(AppResources.Sync_FolderTitle, 
+                string.Format(AppResources.Sync_FolderMessage, unsynced.Count), 
+                AppResources.Sync_Yes, AppResources.Sync_NotNow);
             
             if (sync)
             {
@@ -418,7 +419,7 @@ public class ClientsPageModel : INotifyPropertyChanged
                 int errorCount = 0;
 
                 // Barra de progresso ou apenas toast? Vamos usar toast por enquanto.
-                await AppShell.DisplayToastAsync("A iniciar sincronização...", ToastTipo.Info);
+                await AppShell.DisplayToastAsync(AppResources.Sync_Starting, ToastTipo.Info);
 
                 foreach (var c in unsynced)
                 {
@@ -442,8 +443,8 @@ public class ClientsPageModel : INotifyPropertyChanged
                     }
                 }
 
-                var msg = $"Sincronização concluída.\nSucesso: {successCount}\nErros/Ignorados: {errorCount}";
-                await AppShell.Current.DisplayAlert("Relatório", msg, "OK");
+                var msg = string.Format(AppResources.Sync_ReportMessage, successCount, errorCount);
+                await AppShell.Current.DisplayAlert(AppResources.Sync_ReportTitle, msg, "OK");
             }
         }
     }

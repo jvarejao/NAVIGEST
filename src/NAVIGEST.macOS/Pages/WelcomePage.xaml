@@ -2,22 +2,10 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:beh="clr-namespace:NAVIGEST.macOS.Behaviors"
+             xmlns:res="clr-namespace:NAVIGEST.macOS.Resources.Strings"
              x:Class="NAVIGEST.macOS.Pages.WelcomePage"
-             Title="Bem-vindo"
+             Title="{x:Static res:AppResources.Welcome_Title}"
              BackgroundColor="{DynamicResource PageBackgroundColor}">
-
-    <!-- Toolbar com ação para abrir a DbConfigPage manualmente -->
-    <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Configurar"
-                     Order="Primary"
-                     Priority="0"
-                     Clicked="OnOpenConfigClicked">
-            <ToolbarItem.IconImageSource>
-                <FontImageSource Glyph="&#xF013;" FontFamily="FA7Solid" Size="20"
-                                 Color="{DynamicResource PrimaryTextColor}" />
-            </ToolbarItem.IconImageSource>
-        </ToolbarItem>
-    </ContentPage.ToolbarItems>
 
     <Grid>
         <!-- Fundo -->
@@ -25,6 +13,30 @@
                Aspect="AspectFill"
                Opacity="0.2"
                IsVisible="True" />
+
+        <!-- Custom Header (Language + Settings) -->
+        <Grid VerticalOptions="Start" Padding="20" ColumnDefinitions="*, Auto, Auto" ColumnSpacing="10" ZIndex="999">
+             <!-- Spacer -->
+             
+             <!-- Language Picker -->
+             <Border Grid.Column="1" StrokeShape="RoundRectangle 12" BackgroundColor="#33000000" Padding="10,6" StrokeThickness="0">
+                <HorizontalStackLayout Spacing="6">
+                    <Label Text="{Binding CurrentLanguageFlag}" FontSize="18" VerticalOptions="Center"/>
+                    <Label Text="{Binding CurrentLanguageCode}" TextColor="White" FontAttributes="Bold" VerticalOptions="Center"/>
+                </HorizontalStackLayout>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding ChangeLanguageCommand}"/>
+                </Border.GestureRecognizers>
+             </Border>
+
+             <!-- Settings Button -->
+             <Border Grid.Column="2" StrokeShape="RoundRectangle 12" BackgroundColor="#33000000" Padding="10,6" StrokeThickness="0">
+                <Label Text="&#xF013;" FontFamily="FA7Solid" FontSize="20" TextColor="White" VerticalOptions="Center" HorizontalOptions="Center"/>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnOpenConfigClicked"/>
+                </Border.GestureRecognizers>
+             </Border>
+        </Grid>
 
         <!-- Conteúdo principal (mantido) -->
         <VerticalStackLayout Padding="30" Spacing="30" VerticalOptions="Center">
@@ -38,7 +50,7 @@
                    Margin="0,20" />
 
             <Label x:Name="TituloLabel"
-                   Text="Bem-vindo à YAHPUBLICIDADE"
+                   Text="{x:Static res:AppResources.Welcome_Subtitle}"
                    FontSize="28"
                    FontAttributes="Bold"
                    HorizontalOptions="Center"
@@ -46,7 +58,7 @@
                    Opacity="0" />
 
             <Label x:Name="DescricaoLabel"
-                   Text="Comece agora a gerir os seus dados de forma simples e moderna."
+                   Text="{x:Static res:AppResources.Welcome_Description}"
                    FontSize="16"
                    HorizontalOptions="Center"
                    HorizontalTextAlignment="Center"
@@ -71,7 +83,7 @@
                     <ActivityIndicator IsRunning="True"
                                        WidthRequest="32" HeightRequest="32"/>
                     <Label x:Name="LoadingLabel"
-                           Text="A ligar à base de dados…"
+                           Text="{x:Static res:AppResources.Welcome_Connecting}"
                            FontSize="14"
                            TextColor="{AppThemeBinding Light=#111827, Dark=White}"
                            HorizontalTextAlignment="Center"/>
@@ -116,7 +128,7 @@
                     x:Name="CompanyListContainer"
                     WidthRequest="{OnPlatform Default=600, Android=250, iOS=250}"
                     MaximumWidthRequest="{OnPlatform Default=600, Android=250, iOS=250}">
-                    <Label Text="Escolhe a empresa"
+                    <Label Text="{x:Static res:AppResources.Welcome_ChooseCompany}"
                            FontSize="20"
                            FontAttributes="Bold"
                            HorizontalOptions="Center"

@@ -37,6 +37,11 @@
 		<!-- Face ID permission text (OBRIGATÓRIO p/ mostrar o prompt) -->
 		<key>NSFaceIDUsageDescription</key>
 		<string>Usamos Face ID para iniciar sessão de forma segura.</string>
+
+		<key>UIBackgroundModes</key>
+		<array>
+			<string>fetch</string>
+		</array>
 	</dict>
 </plist>
 

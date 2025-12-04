@@ -221,8 +221,8 @@ namespace NAVIGEST.macOS
             builder.Services.AddSingleton<TagRepository>();
             builder.Services.AddSingleton<SeedDataService>();
             builder.Services.AddSingleton<ModalErrorHandler>();
-            builder.Services.AddSingleton<MainYahPageViewModel>();
-            builder.Services.AddSingleton<MainYahPage>();
+            builder.Services.AddTransient<MainYahPageViewModel>();
+            builder.Services.AddTransient<MainYahPage>();
             builder.Services.AddSingleton<ProjectListPageModel>();
             builder.Services.AddSingleton<ManageMetaPageModel>();
             builder.Services.AddTransientWithShellRoute<ProjectDetailPage, ProjectDetailPageModel>("project");

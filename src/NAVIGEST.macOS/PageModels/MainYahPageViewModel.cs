@@ -6,6 +6,7 @@ using NAVIGEST.macOS; // GlobalErro
 using static NAVIGEST.macOS.GlobalErro;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
+using CommunityToolkit.Maui.Views;
 
 namespace NAVIGEST.macOS.Pages
 {
@@ -19,6 +20,20 @@ namespace NAVIGEST.macOS.Pages
         private bool _isFinancialUnlocked;
 
         public event PropertyChangedEventHandler? PropertyChanged;
+
+        // Language
+        public string CurrentLanguageFlag => NAVIGEST.macOS.Helpers.LanguageHelper.GetCurrentLanguageInfo().Flag;
+        public string CurrentLanguageCode => NAVIGEST.macOS.Helpers.LanguageHelper.GetCurrentLanguageInfo().Code;
+
+        public Command ChangeLanguageCommand => new Command(async () => 
+        {
+            var popup = new NAVIGEST.macOS.Popups.LanguageSelectionPopup();
+            var result = await Shell.Current.ShowPopupAsync(popup);
+            if (result is string code)
+            {
+                await NAVIGEST.macOS.Helpers.LanguageHelper.ChangeLanguageAndRestart(code);
+            }
+        });
 
         // User info (vindo de UserSession)
         public string UserName => UserSession.Current.User.Name;

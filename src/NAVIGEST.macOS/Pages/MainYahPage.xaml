@@ -4,6 +4,7 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:res="clr-namespace:NAVIGEST.macOS.Resources.Strings"
     xmlns:beh="clr-namespace:NAVIGEST.macOS.Behaviors"
     x:Name="Root"
     BackgroundColor="{DynamicResource BodyBg}">
@@ -69,9 +70,10 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" /> <!-- Language -->
+                <ColumnDefinition Width="Auto" /> <!-- Photo -->
+                <ColumnDefinition Width="Auto" /> <!-- Name -->
+                <ColumnDefinition Width="Auto" /> <!-- Logout -->
                 <ColumnDefinition Width="Auto" /> <!-- Window Controls -->
             </Grid.ColumnDefinitions>
 
@@ -98,8 +100,19 @@
             <!-- Espaço central -->
             <Grid Grid.Column="2" />
 
+            <!-- LANGUAGE PICKER -->
+            <Border Grid.Column="3" Style="{StaticResource TopbarActionBorder}" Margin="0,0,8,0" BackgroundColor="Transparent">
+                <HorizontalStackLayout Spacing="6">
+                    <Label Text="{Binding CurrentLanguageFlag}" FontSize="18" VerticalOptions="Center"/>
+                    <Label Text="{Binding CurrentLanguageCode}" Style="{StaticResource TopbarActionTextLabel}" FontAttributes="Bold"/>
+                </HorizontalStackLayout>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding ChangeLanguageCommand}"/>
+                </Border.GestureRecognizers>
+            </Border>
+
             <!-- FOTO UTILIZADOR (apenas desktop) -->
-            <Border Grid.Column="3" Padding="0" BackgroundColor="Transparent" HeightRequest="40" WidthRequest="40"
+            <Border Grid.Column="4" Padding="0" BackgroundColor="Transparent" HeightRequest="40" WidthRequest="40"
                 IsVisible="{OnPlatform Android=false, iOS=false, MacCatalyst=true, WinUI=true}">
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="999" />
@@ -108,19 +121,19 @@
             </Border>
 
             <!-- Nome + tipo (apenas desktop) -->
-            <VerticalStackLayout Grid.Column="4" Spacing="0" Padding="8,0" VerticalOptions="Center"
+            <VerticalStackLayout Grid.Column="5" Spacing="0" Padding="8,0" VerticalOptions="Center"
                 IsVisible="{OnPlatform Android=false, iOS=false, MacCatalyst=true, WinUI=true}">
                 <Label Text="{Binding UserName}" Style="{StaticResource BodyText}" FontAttributes="Bold"/>
                 <Label Text="{Binding UserRole}" Style="{StaticResource BodyText}" FontSize="12" Opacity="0.75"/>
             </VerticalStackLayout>
 
             <!-- Ações desktop -->
-            <HorizontalStackLayout Grid.Column="5" Spacing="8" VerticalOptions="Center"
+            <HorizontalStackLayout Grid.Column="6" Spacing="8" VerticalOptions="Center"
                                    IsVisible="{OnPlatform Android=false, iOS=false, MacCatalyst=true, WinUI=true}">
                 <Border Style="{StaticResource TopbarActionBorder}">
                     <HorizontalStackLayout Spacing="8">
                         <Label Text="&#xF011;" Style="{StaticResource TopbarActionIconLabel}" />
-                        <Label Text="Sair" Style="{StaticResource TopbarActionTextLabel}" />
+                        <Label Text="{x:Static res:AppResources.Main_Logout}" Style="{StaticResource TopbarActionTextLabel}" />
                     </HorizontalStackLayout>
                     <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnLogoutTapped" /></Border.GestureRecognizers>
                 </Border>
@@ -128,7 +141,7 @@
             </HorizontalStackLayout>
 
             <!-- Window Controls (Desktop only) -->
-            <HorizontalStackLayout Grid.Column="6" Spacing="0" VerticalOptions="Center"
+            <HorizontalStackLayout Grid.Column="7" Spacing="0" VerticalOptions="Center"
                                    IsVisible="{OnPlatform Android=false, iOS=false, MacCatalyst=false, WinUI=true}">
                 <Border Style="{StaticResource TopbarActionBorder}">
                     <Label Text="&#xF2D1;" Style="{StaticResource TopbarActionIconLabel}" />
@@ -160,7 +173,7 @@
                         <Border Style="{StaticResource MenuItemBorder}">
                             <Grid ColumnDefinitions="40,*">
                                 <Label Text="&#xF015;" Style="{StaticResource SidebarIconLabel}" />
-                                <Label Grid.Column="1" Text="Dashboard" Style="{StaticResource SidebarTextLabel}" />
+                                <Label Grid.Column="1" Text="{x:Static res:AppResources.Main_Dashboard}" Style="{StaticResource SidebarTextLabel}" />
                             </Grid>
                             <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="dashboard" /></Border.GestureRecognizers>
                         </Border>
@@ -168,7 +181,7 @@
                         <Border Style="{StaticResource MenuItemBorder}">
                             <Grid ColumnDefinitions="40,*">
                                 <Label Text="&#xF0C0;" Style="{StaticResource SidebarIconLabel}" />
-                                <Label Grid.Column="1" Text="Clientes" Style="{StaticResource SidebarTextLabel}" />
+                                <Label Grid.Column="1" Text="{x:Static res:AppResources.Main_Clients}" Style="{StaticResource SidebarTextLabel}" />
                             </Grid>
                             <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="clientes" /></Border.GestureRecognizers>
                         </Border>
@@ -176,7 +189,7 @@
                         <Border Style="{StaticResource MenuItemBorder}">
                             <Grid ColumnDefinitions="40,*">
                                 <Label Text="&#xF466;" Style="{StaticResource SidebarIconLabel}" />
-                                <Label Grid.Column="1" Text="Produtos" Style="{StaticResource SidebarTextLabel}" IsVisible="{Binding IsSidebarExpanded}" />
+                                <Label Grid.Column="1" Text="{x:Static res:AppResources.Main_Products}" Style="{StaticResource SidebarTextLabel}" IsVisible="{Binding IsSidebarExpanded}" />
                             </Grid>
                             <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="produtos" /></Border.GestureRecognizers>
                         </Border>
@@ -187,7 +200,7 @@
                             <Grid ColumnDefinitions="40,*">
                                 <!-- FA7 Solid: relógio = \uf017 -->
                                 <Label Text="&#xF017;" Style="{StaticResource SidebarIconLabel}" />
-                                <Label Grid.Column="1" Text="Horas" Style="{StaticResource SidebarTextLabel}" IsVisible="{Binding IsSidebarExpanded}" />
+                                <Label Grid.Column="1" Text="{x:Static res:AppResources.Main_Hours}" Style="{StaticResource SidebarTextLabel}" IsVisible="{Binding IsSidebarExpanded}" />
                             </Grid>
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="horas" />
@@ -197,7 +210,7 @@
                         <Border Style="{StaticResource MenuItemBorder}">
                             <Grid ColumnDefinitions="40,*">
                                 <Label Text="&#xF0AD;" Style="{StaticResource SidebarIconLabel}" />
-                                <Label Grid.Column="1" Text="Serviços" Style="{StaticResource SidebarTextLabel}" IsVisible="{Binding IsSidebarExpanded}" />
+                                <Label Grid.Column="1" Text="{x:Static res:AppResources.Main_Services}" Style="{StaticResource SidebarTextLabel}" IsVisible="{Binding IsSidebarExpanded}" />
                             </Grid>
                             <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="servicos" /></Border.GestureRecognizers>
                         </Border>
@@ -210,23 +223,23 @@
                     <HorizontalStackLayout Grid.Row="0" Spacing="10" VerticalOptions="Center">
                         <Label x:Name="ThemeModeIcon" FontFamily="FA7Solid" FontSize="18" Text="&#xF185;"
                                TextColor="{AppThemeBinding Light=Black, Dark=White}" />
-                        <Label Text="Tema" Style="{StaticResource SidebarTextLabel}" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
+                        <Label Text="{x:Static res:AppResources.Main_Theme}" Style="{StaticResource SidebarTextLabel}" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
                     </HorizontalStackLayout>
                     
                     <!-- Theme Switcher Buttons (Replaces Picker) -->
                     <Grid Grid.Row="1" ColumnDefinitions="*,*,*" ColumnSpacing="8">
                         <!-- Auto -->
-                        <Border Grid.Column="0" x:Name="ThemeBtnAuto" StrokeThickness="0" BackgroundColor="{DynamicResource SidebarItem}" StrokeShape="RoundRectangle 8" Padding="0" ToolTipProperties.Text="Automático">
+                        <Border Grid.Column="0" x:Name="ThemeBtnAuto" StrokeThickness="0" BackgroundColor="{DynamicResource SidebarItem}" StrokeShape="RoundRectangle 8" Padding="0" ToolTipProperties.Text="{x:Static res:AppResources.Main_ThemeAuto}">
                             <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnThemeButtonTapped" CommandParameter="Auto"/></Border.GestureRecognizers>
                             <Label Text="&#xF042;" FontFamily="FA7Solid" HorizontalOptions="Center" VerticalOptions="Center" Padding="8" TextColor="{DynamicResource SidebarAccent}" InputTransparent="True"/>
                         </Border>
                         <!-- Light -->
-                        <Border Grid.Column="1" x:Name="ThemeBtnLight" StrokeThickness="0" BackgroundColor="{DynamicResource SidebarItem}" StrokeShape="RoundRectangle 8" Padding="0" ToolTipProperties.Text="Claro">
+                        <Border Grid.Column="1" x:Name="ThemeBtnLight" StrokeThickness="0" BackgroundColor="{DynamicResource SidebarItem}" StrokeShape="RoundRectangle 8" Padding="0" ToolTipProperties.Text="{x:Static res:AppResources.Main_ThemeLight}">
                             <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnThemeButtonTapped" CommandParameter="Light"/></Border.GestureRecognizers>
                             <Label Text="&#xF185;" FontFamily="FA7Solid" HorizontalOptions="Center" VerticalOptions="Center" Padding="8" TextColor="{DynamicResource SidebarAccent}" InputTransparent="True"/>
                         </Border>
                         <!-- Dark -->
-                        <Border Grid.Column="2" x:Name="ThemeBtnDark" StrokeThickness="0" BackgroundColor="{DynamicResource SidebarItem}" StrokeShape="RoundRectangle 8" Padding="0" ToolTipProperties.Text="Escuro">
+                        <Border Grid.Column="2" x:Name="ThemeBtnDark" StrokeThickness="0" BackgroundColor="{DynamicResource SidebarItem}" StrokeShape="RoundRectangle 8" Padding="0" ToolTipProperties.Text="{x:Static res:AppResources.Main_ThemeDark}">
                             <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnThemeButtonTapped" CommandParameter="Dark"/></Border.GestureRecognizers>
                             <Label Text="&#xF186;" FontFamily="FA7Solid" HorizontalOptions="Center" VerticalOptions="Center" Padding="8" TextColor="{DynamicResource SidebarAccent}" InputTransparent="True"/>
                         </Border>
@@ -247,7 +260,7 @@
                            HorizontalOptions="Center" />
                     
                     <VerticalStackLayout Spacing="4" HorizontalOptions="Center">
-                        <Label Text="Bem-vindo à" 
+                        <Label Text="{x:Static res:AppResources.Main_WelcomeTo}" 
                                Style="{StaticResource TitleText}" 
                                FontSize="16" 
                                Opacity="0.6" 
@@ -267,15 +280,15 @@
                 <VerticalStackLayout Spacing="12">
                     <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
                         <Label Text="&#xF023;" Style="{StaticResource TopbarActionIconLabel}" FontSize="20"/>
-                        <Label Text="Acesso Administrador" Style="{StaticResource BodyText}" FontSize="18"/>
+                        <Label Text="{x:Static res:AppResources.Main_AdminAccess}" Style="{StaticResource BodyText}" FontSize="18"/>
                     </HorizontalStackLayout>
                     <Grid ColumnDefinitions="28,*" ColumnSpacing="8">
                         <Label Text="&#xF007;" Style="{StaticResource TopbarActionIconLabel}" FontSize="16" VerticalTextAlignment="Center"/>
-                        <Entry x:Name="AdminUserEntry" Grid.Column="1" Placeholder="Utilizador" />
+                        <Entry x:Name="AdminUserEntry" Grid.Column="1" Placeholder="{x:Static res:AppResources.Main_AdminUserPlaceholder}" />
                     </Grid>
                     <Grid ColumnDefinitions="28,*,Auto" ColumnSpacing="8">
                         <Label Text="&#xF084;" Style="{StaticResource TopbarActionIconLabel}" FontSize="16" VerticalTextAlignment="Center"/>
-                        <Entry x:Name="AdminPassEntry" Grid.Column="1" Placeholder="Palavra-passe" IsPassword="True" />
+                        <Entry x:Name="AdminPassEntry" Grid.Column="1" Placeholder="{x:Static res:AppResources.Main_AdminPassPlaceholder}" IsPassword="True" />
                         <Button Grid.Column="2" BackgroundColor="Transparent" Padding="8" Clicked="OnAdminTogglePwd">
                             <Button.ImageSource>
                                 <FontImageSource x:Name="AdminEyeIcon" Glyph="&#xF06E;" FontFamily="FA7Solid" Color="{DynamicResource BodyFg}" Size="18"/>
@@ -284,7 +297,7 @@
                     </Grid>
                     <Label x:Name="AdminErrorLabel" IsVisible="False" FontFamily="Inter" FontSize="13" TextColor="{StaticResource Color.Danger}" />
                     <HorizontalStackLayout Spacing="10" HorizontalOptions="End">
-                        <Button Text="  Cancelar" Clicked="OnAdminCancel">
+                        <Button Text="{x:Static res:AppResources.Common_Cancel}" Clicked="OnAdminCancel">
                             <Button.ImageSource><FontImageSource Glyph="&#xF00D;" FontFamily="FA7Solid" Size="16" Color="{DynamicResource White}" /></Button.ImageSource>
                         </Button>
                         <Button Text="  OK" Clicked="OnAdminOk">

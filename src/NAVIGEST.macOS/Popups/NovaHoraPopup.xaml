@@ -4,6 +4,7 @@
                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
                xmlns:models="clr-namespace:NAVIGEST.macOS.Models"
+               xmlns:res="clr-namespace:NAVIGEST.macOS.Resources.Strings"
                CanBeDismissedByTappingOutsideOfPopup="False">
   <toolkit:Popup.Size>
     <Size Width="400" Height="680" />
@@ -20,7 +21,7 @@
     <Grid RowDefinitions="Auto,*,Auto" RowSpacing="20">
       <!-- Título e Botão Eliminar -->
       <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
-          <Label Text="➕ NOVO REGISTO"
+          <Label Text="{x:Static res:AppResources.Hours_NewTitle}"
                  x:Name="TituloLabel"
                  FontSize="18"
                  FontAttributes="Bold"
@@ -42,7 +43,7 @@
         <VerticalStackLayout Spacing="16">
           <!-- Tipo de Registo -->
           <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
-            <Label Text="📋 Tipo de Registo"
+            <Label Text="{x:Static res:AppResources.Hours_RecordType}"
                    FontSize="14"
                    FontAttributes="Bold"
                    TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
@@ -55,7 +56,7 @@
                         <TapGestureRecognizer Tapped="OnSelecionarTipoRegistoTapped"/>
                     </Grid.GestureRecognizers>
                     <Label x:Name="TipoRegistoLabel"
-                           Text="Trabalho"
+                           Text="{x:Static res:AppResources.Hours_Work}"
                            Padding="12,10"
                            VerticalOptions="Center"
                            TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
@@ -71,7 +72,7 @@
 
           <!-- Motivo Ausência -->
           <Grid x:Name="AbsenceReasonContainer" RowDefinitions="Auto,Auto" RowSpacing="6" IsVisible="False">
-            <Label Text="🏥 Motivo"
+            <Label Text="{x:Static res:AppResources.Hours_Reason}"
                    FontSize="14"
                    FontAttributes="Bold"
                    TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
@@ -91,7 +92,7 @@
                            TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
                     <Label Grid.Column="1"
                            x:Name="AbsenceReasonLabel"
-                           Text="Selecione o motivo"
+                           Text="{x:Static res:AppResources.Hours_SelectReason}"
                            Padding="5,10,12,10"
                            VerticalOptions="Center"
                            TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
@@ -107,7 +108,7 @@
 
           <!-- Colaborador -->
           <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
-            <Label Text="👤 Colaborador"
+            <Label Text="{x:Static res:AppResources.Common_Collaborator}"
                    FontSize="14"
                    FontAttributes="Bold"
                    TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
@@ -117,7 +118,7 @@
                     StrokeShape="RoundRectangle 8">
               <Grid ColumnDefinitions="*,Auto">
                 <Label x:Name="ColaboradorLabel"
-                       Text="Selecione colaborador"
+                       Text="{x:Static res:AppResources.Hours_SelectCollaborator}"
                        Padding="12,10"
                        VerticalOptions="Center"
                        TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
@@ -134,7 +135,7 @@
 
           <!-- Cliente -->
           <Grid x:Name="ClienteContainer" RowDefinitions="Auto,Auto" RowSpacing="6">
-            <Label Text="🏢 Cliente"
+            <Label Text="{x:Static res:AppResources.Hours_Client}"
                    FontSize="14"
                    FontAttributes="Bold"
                    TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
@@ -144,7 +145,7 @@
                     StrokeShape="RoundRectangle 8">
               <Grid ColumnDefinitions="*,Auto">
                 <Label x:Name="ClienteLabel"
-                       Text="Selecione cliente"
+                       Text="{x:Static res:AppResources.Hours_SelectClient}"
                        Padding="12,10"
                        VerticalOptions="Center"
                        TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
@@ -161,7 +162,7 @@
 
           <!-- Data -->
           <Grid RowDefinitions="Auto,Auto" RowSpacing="6">
-            <Label Text="📅 Data"
+            <Label Text="{x:Static res:AppResources.Hours_Date}"
                    FontSize="14"
                    FontAttributes="Bold"
                    TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
@@ -178,7 +179,7 @@
 
           <!-- Horas Normais -->
           <Grid x:Name="HorasNormaisContainer" RowDefinitions="Auto,Auto" RowSpacing="6">
-            <Label Text="⏱️ Horas Normais"
+            <Label Text="{x:Static res:AppResources.Hours_NormalHours}"
                    FontSize="14"
                    FontAttributes="Bold"
                    TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
@@ -196,7 +197,7 @@
 
           <!-- Horas Extras -->
           <Grid x:Name="HorasExtrasContainer" RowDefinitions="Auto,Auto" RowSpacing="6">
-            <Label Text="⚡ Horas Extras"
+            <Label Text="{x:Static res:AppResources.Hours_ExtraHours}"
                    FontSize="14"
                    FontAttributes="Bold"
                    TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
@@ -216,12 +217,12 @@
 
       <!-- Botões -->
       <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="12">
-        <Button Text="Cancelar"
+        <Button Text="{x:Static res:AppResources.Common_Cancel}"
                 BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}"
                 TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
                 Clicked="OnCancelarClicked"/>
         
-        <Button Text="Guardar"
+        <Button Text="{x:Static res:AppResources.Common_Save}"
                 BackgroundColor="{AppThemeBinding Light=#0A84FF, Dark=#0A84FF}"
                 TextColor="White"
                 FontAttributes="Bold"

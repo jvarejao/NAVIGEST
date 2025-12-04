@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ClientsPage_Title" xml:space="preserve">
+    <value>Clients</value>
+  </data>
+  <data name="ClientsPage_NewClient" xml:space="preserve">
+    <value>Nouveau Client</value>
+  </data>
+  <data name="ClientsPage_AddClient" xml:space="preserve">
+    <value>Ajouter Client</value>
+  </data>
+  <data name="ClientsPage_EditClient" xml:space="preserve">
+    <value>Modifier {0}</value>
+  </data>
+  <data name="Common_Save" xml:space="preserve">
+    <value>Enregistrer</value>
+  </data>
+  <data name="Common_Update" xml:space="preserve">
+    <value>Mettre à jour</value>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="Common_Delete" xml:space="preserve">
+    <value>Supprimer</value>
+  </data>
+  <data name="Common_SearchPlaceholder" xml:space="preserve">
+    <value>Rechercher (code, nom, email...)</value>
+  </data>
+  <data name="Common_Name" xml:space="preserve">
+    <value>Nom</value>
+  </data>
+  <data name="Common_Code" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="Common_Phone" xml:space="preserve">
+    <value>Téléphone</value>
+  </data>
+  <data name="Common_Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="ClientsPage_External" xml:space="preserve">
+    <value>EXTERNE</value>
+  </data>
+  <data name="ClientsPage_Cancelled" xml:space="preserve">
+    <value>ANNULÉ</value>
+  </data>
+  <data name="ClientsPage_Salesperson" xml:space="preserve">
+    <value>Vendeur</value>
+  </data>
+  <data name="ClientsPage_ClientNamePlaceholder" xml:space="preserve">
+    <value>Nom du Client</value>
+  </data>
+  <data name="ClientsPage_CreditValue" xml:space="preserve">
+    <value>Valeur Crédit</value>
+  </data>
+  <data name="ClientsPage_ExternalLabel" xml:space="preserve">
+    <value>Externe</value>
+  </data>
+  <data name="ClientsPage_CancelledLabel" xml:space="preserve">
+    <value>Annulé</value>
+  </data>
+  <data name="ClientsPage_SyncedFolders" xml:space="preserve">
+    <value>Dossiers Synchronisés</value>
+  </data>
+  <data name="ProductsPage_Title" xml:space="preserve">
+    <value>Produits</value>
+  </data>
+  <data name="ProductsPage_NewProduct" xml:space="preserve">
+    <value>Nouveau Produit</value>
+  </data>
+  <data name="ProductsPage_SearchPlaceholder" xml:space="preserve">
+    <value>Rechercher (code, description, famille...)</value>
+  </data>
+  <data name="Common_Cost" xml:space="preserve">
+    <value>Coût</value>
+  </data>
+  <data name="Common_Sale" xml:space="preserve">
+    <value>Vente</value>
+  </data>
+  <data name="Common_TotalSales" xml:space="preserve">
+    <value>Ventes Totales</value>
+  </data>
+  <data name="Common_Collaborator" xml:space="preserve">
+    <value>Collaborateur</value>
+  </data>
+  <data name="Common_Description" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="Common_Family" xml:space="preserve">
+    <value>Famille</value>
+  </data>
+  <data name="Common_Close" xml:space="preserve">
+    <value>Fermer</value>
+  </data>
+  <data name="Common_Search" xml:space="preserve">
+    <value>Rechercher...</value>
+  </data>
+  <data name="ProductsPage_CostPrice" xml:space="preserve">
+    <value>Prix de Revient</value>
+  </data>
+  <data name="ProductsPage_SalePrice" xml:space="preserve">
+    <value>Prix de Vente</value>
+  </data>
+  <data name="ProductsPage_ProductDescriptionPlaceholder" xml:space="preserve">
+    <value>Description du Produit</value>
+  </data>
+  <data name="ProductsPage_SelectFamily" xml:space="preserve">
+    <value>Sélectionner Famille</value>
+  </data>
+  <data name="ProductsPage_AddFamily" xml:space="preserve">
+    <value>Ajouter Famille</value>
+  </data>
+  <data name="ProductsPage_NewFamily" xml:space="preserve">
+    <value>Nouvelle Famille</value>
+  </data>
+  <data name="ProductsPage_FamilyCodePlaceholder" xml:space="preserve">
+    <value>Code Famille</value>
+  </data>
+  <data name="ProductsPage_FamilyDescriptionPlaceholder" xml:space="preserve">
+    <value>Description Famille</value>
+  </data>
+  <data name="Login_Title" xml:space="preserve">
+    <value>Connexion</value>
+  </data>
+  <data name="Login_Welcome" xml:space="preserve">
+    <value>Bienvenue 👋</value>
+  </data>
+  <data name="Login_UserFound" xml:space="preserve">
+    <value>Utilisateur trouvé</value>
+  </data>
+  <data name="Login_Subtitle" xml:space="preserve">
+    <value>Connectez-vous pour continuer</value>
+  </data>
+  <data name="Login_EmailPlaceholder" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="Login_PasswordPlaceholder" xml:space="preserve">
+    <value>Mot de passe</value>
+  </data>
+  <data name="Login_Button" xml:space="preserve">
+    <value>Se connecter</value>
+  </data>
+  <data name="Login_Biometric" xml:space="preserve">
+    <value>Connexion avec Face ID</value>
+  </data>
+  <data name="Login_Config" xml:space="preserve">
+    <value>Configurer la connexion</value>
+  </data>
+  <data name="Login_UsernamePlaceholder" xml:space="preserve">
+    <value>Nom d'utilisateur</value>
+  </data>
+  <data name="Login_RememberMe" xml:space="preserve">
+    <value>Se souvenir de moi sur cet appareil</value>
+  </data>
+  <data name="Common_Back" xml:space="preserve">
+    <value>Retour</value>
+  </data>
+  <data name="Login_ForgotPassword" xml:space="preserve">
+    <value>Mot de passe oublié (email)</value>
+  </data>
+  <data name="Login_HaveCode" xml:space="preserve">
+    <value>J'ai un code email</value>
+  </data>
+  <data name="Login_InternalReset" xml:space="preserve">
+    <value>Réinitialisation interne (admin)</value>
+  </data>
+  <data name="Login_UseBiometric" xml:space="preserve">
+    <value>Utiliser la biométrie (Face ID/Touch ID)</value>
+  </data>
+  <data name="Welcome_Connecting" xml:space="preserve">
+    <value>Connexion à la base de données...</value>
+  </data>
+  <data name="Welcome_Subtitle" xml:space="preserve">
+    <value>Bienvenue chez YAHPUBLICIDADE</value>
+  </data>
+  <data name="Welcome_Description" xml:space="preserve">
+    <value>Commencez à gérer vos données simplement et de manière moderne.</value>
+  </data>
+  <data name="Welcome_ConnectionFailed" xml:space="preserve">
+    <value>Échec de la connexion : {0}</value>
+  </data>
+  <data name="Welcome_ConnectionError" xml:space="preserve">
+    <value>Impossible de se connecter. Ouverture de la configuration...</value>
+  </data>
+  <data name="Welcome_Title" xml:space="preserve">
+    <value>Bienvenue</value>
+  </data>
+  <data name="Welcome_ChooseCompany" xml:space="preserve">
+    <value>Choisir l'entreprise</value>
+  </data>
+  <data name="Main_Logout" xml:space="preserve">
+    <value>Se déconnecter</value>
+  </data>
+  <data name="Main_Dashboard" xml:space="preserve">
+    <value>Tableau de bord</value>
+  </data>
+  <data name="Main_Clients" xml:space="preserve">
+    <value>Clients</value>
+  </data>
+  <data name="Main_Products" xml:space="preserve">
+    <value>Produits</value>
+  </data>
+  <data name="Main_Hours" xml:space="preserve">
+    <value>Heures</value>
+  </data>
+  <data name="Main_Services" xml:space="preserve">
+    <value>Services</value>
+  </data>
+  <data name="Main_Theme" xml:space="preserve">
+    <value>Thème</value>
+  </data>
+  <data name="Main_ThemeAuto" xml:space="preserve">
+    <value>Automatique</value>
+  </data>
+  <data name="Main_ThemeLight" xml:space="preserve">
+    <value>Clair</value>
+  </data>
+  <data name="Main_ThemeDark" xml:space="preserve">
+    <value>Sombre</value>
+  </data>
+  <data name="Main_WelcomeTo" xml:space="preserve">
+    <value>Bienvenue à</value>
+  </data>
+  <data name="Main_AdminAccess" xml:space="preserve">
+    <value>Accès Admin</value>
+  </data>
+  <data name="Main_AdminUserPlaceholder" xml:space="preserve">
+    <value>Nom d'utilisateur</value>
+  </data>
+  <data name="Main_AdminPassPlaceholder" xml:space="preserve">
+    <value>Mot de passe</value>
+  </data>
+  <data name="Main_LogoutTitle" xml:space="preserve">
+    <value>Déconnexion</value>
+  </data>
+  <data name="Main_LogoutMessage" xml:space="preserve">
+    <value>Êtes-vous sûr de vouloir quitter ?</value>
+  </data>
+  <data name="Main_LogoutConfirm" xml:space="preserve">
+    <value>Quitter</value>
+  </data>
+  <data name="Main_CloseTitle" xml:space="preserve">
+    <value>Fermer</value>
+  </data>
+  <data name="Main_CloseMessage" xml:space="preserve">
+    <value>Sur Android/iOS, nous ne fermons pas l'application directement.</value>
+  </data>
+  <data name="Main_AccessDenied" xml:space="preserve">
+    <value>Accès refusé</value>
+  </data>
+  <data name="Main_AdminRequired" xml:space="preserve">
+    <value>Privilèges ADMIN requis.</value>
+  </data>
+  <data name="Main_AdminEnterCredentials" xml:space="preserve">
+    <value>Entrez le nom d'utilisateur et le mot de passe.</value>
+  </data>
+  <data name="Login_InvalidCredentials" xml:space="preserve">
+    <value>Identifiants invalides.</value>
+  </data>
+  <data name="Common_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Main_NoContent" xml:space="preserve">
+    <value>{0} sans contenu.</value>
+  </data>
+  <data name="Settings_Title" xml:space="preserve">
+    <value>Paramètres</value>
+  </data>
+  <data name="Settings_SystemSettings" xml:space="preserve">
+    <value>Paramètres système</value>
+  </data>
+  <data name="Settings_Users" xml:space="preserve">
+    <value>Utilisateurs</value>
+  </data>
+  <data name="Settings_UsersDesc" xml:space="preserve">
+    <value>Gérer les comptes et permissions</value>
+  </data>
+  <data name="Settings_Database" xml:space="preserve">
+    <value>Base de données</value>
+  </data>
+  <data name="Settings_DatabaseDesc" xml:space="preserve">
+    <value>Connexion MariaDB / MySQL</value>
+  </data>
+  <data name="Settings_FileServer" xml:space="preserve">
+    <value>Serveur de fichiers</value>
+  </data>
+  <data name="Settings_FileServerDesc" xml:space="preserve">
+    <value>Chemins et dossiers (NAS)</value>
+  </data>
+  <data name="Settings_Language" xml:space="preserve">
+    <value>Langue</value>
+  </data>
+  <data name="Settings_LanguageDesc" xml:space="preserve">
+    <value>Changer de langue</value>
+  </data>
+</root>

@@ -1,5 +1,6 @@
 ﻿using NAVIGEST.macOS.Resources.Styles;
 using Microsoft.Maui.Storage;
+using System.Globalization;
 
 namespace NAVIGEST.macOS
 {
@@ -13,6 +14,13 @@ namespace NAVIGEST.macOS
         public App()
         {
             InitializeComponent(); // Colors_Light já é carregado via App.xaml
+            
+            // Initialize Language
+            var lang = Preferences.Get("SelectedLanguage", "pt-PT");
+            var culture = new CultureInfo(lang);
+            CultureInfo.CurrentCulture = culture;
+            CultureInfo.CurrentUICulture = culture;
+
             // MainPage = new AppShell(); // REMOVIDO para evitar conflito com CreateWindow
 
             var stored = Preferences.Get(ThemePrefKey, string.Empty);

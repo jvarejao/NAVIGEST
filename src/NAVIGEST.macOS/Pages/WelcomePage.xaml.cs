@@ -5,6 +5,7 @@ using Microsoft.Maui.ApplicationModel; // MainThread
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls;        // SolidColorBrush
 using Microsoft.Maui.Storage;         // Preferences
+using CommunityToolkit.Maui.Views;
 
 namespace NAVIGEST.macOS.Pages;
 
@@ -20,6 +21,20 @@ public partial class WelcomePage : ContentPage
 
     private bool _programmaticSelect; // evita disparar navegação ao pré-selecionar
 
+    // Language
+    public string CurrentLanguageFlag => NAVIGEST.macOS.Helpers.LanguageHelper.GetCurrentLanguageInfo().Flag;
+    public string CurrentLanguageCode => NAVIGEST.macOS.Helpers.LanguageHelper.GetCurrentLanguageInfo().Code;
+
+    public Command ChangeLanguageCommand => new Command(async () => 
+    {
+        var popup = new NAVIGEST.macOS.Popups.LanguageSelectionPopup();
+        var result = await this.ShowPopupAsync(popup);
+        if (result is string code)
+        {
+            await NAVIGEST.macOS.Helpers.LanguageHelper.ChangeLanguageAndRestart(code);
+        }
+    });
+
     // modelo para o picker (logo pronto)
     private sealed class CompanyDisplay
     {
@@ -33,6 +48,7 @@ public partial class WelcomePage : ContentPage
     public WelcomePage()
     {
         InitializeComponent();
+        BindingContext = this;
     }
 
     protected override async void OnAppearing()
@@ -44,7 +60,7 @@ public partial class WelcomePage : ContentPage
         try
         {
             // 1) Teste de ligação
-            LoadingLabel.Text = "A ligar à base de dados…";
+            LoadingLabel.Text = NAVIGEST.macOS.Resources.Strings.AppResources.Welcome_Connecting;
             await ShowLoadingAsync(true);
 
             bool ok;
@@ -55,7 +71,7 @@ public partial class WelcomePage : ContentPage
             catch (Exception ex)
             {
                 await ShowLoadingAsync(false);
-                await ShowToastAsync($"Ligação falhou: {ex.Message}", success: false, ms: 1800);
+                await ShowToastAsync(string.Format(NAVIGEST.macOS.Resources.Strings.AppResources.Welcome_ConnectionFailed, ex.Message), success: false, ms: 1800);
                 await NavigateToConfigAsync();
                 return;
             }
@@ -64,7 +80,7 @@ public partial class WelcomePage : ContentPage
 
             if (!ok)
             {
-                await ShowToastAsync("Não foi possível ligar. A abrir configuração…", success: false, ms: 1400);
+                await ShowToastAsync(NAVIGEST.macOS.Resources.Strings.AppResources.Welcome_ConnectionError, success: false, ms: 1400);
                 await NavigateToConfigAsync();
                 return;
             }

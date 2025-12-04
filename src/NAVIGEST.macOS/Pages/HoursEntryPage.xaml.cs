@@ -12,6 +12,7 @@ using NAVIGEST.macOS.Models;
 using NAVIGEST.macOS.Services;
 using NAVIGEST.macOS.Views;
 using NAVIGEST.macOS.Popups;
+using NAVIGEST.macOS.Resources.Strings;
 
 namespace NAVIGEST.macOS.Pages;
 
@@ -27,14 +28,7 @@ public partial class HoursEntryPage : ContentPage
     private int _selectedMonth = DateTime.Today.Month;
 
     // Edit Overlay State
-    private HoraColaborador? _currentEditingHora;
-    private bool _isEditMode;
-    private List<Cliente> _clientes = new();
-    private List<AbsenceType> _absenceTypes = new();
-    private Cliente? _selectedClient;
-    private Colaborador? _selectedCollaborator;
-    private AbsenceType? _selectedAbsenceType;
-    private bool _isAbsenceMode;
+    // Removed as we now use NovaHoraPopup
 
     // List Picker State
     private TaskCompletionSource<object?>? _pickerTcs;
@@ -250,7 +244,7 @@ public partial class HoursEntryPage : ContentPage
 
         var btnAdicionar = new Button
         {
-            Text = "➕ Horas",
+            Text = $"➕ {AppResources.Hours_NewTitle}",
             BackgroundColor = Color.FromArgb("#0A84FF"),
             TextColor = Colors.White,
             FontAttributes = FontAttributes.Bold,
@@ -261,7 +255,7 @@ public partial class HoursEntryPage : ContentPage
         
         var btnTipos = new Button
         {
-            Text = "⚙️ Tipos Ausência",
+            Text = $"⚙️ {AppResources.Hours_Absence}",
             BackgroundColor = Color.FromArgb("#E5E5EA"),
             TextColor = Colors.Black,
             FontAttributes = FontAttributes.Bold,
@@ -315,7 +309,7 @@ public partial class HoursEntryPage : ContentPage
             VerticalTextAlignment = TextAlignment.Center
         };
         lblPicker.SetAppThemeColor(Label.TextColorProperty, Colors.Black, Colors.White);
-        lblPicker.SetBinding(Label.TextProperty, new Binding("ColaboradorSelecionado.Nome", source: _vm) { TargetNullValue = "Selecione Colaborador" });
+        lblPicker.SetBinding(Label.TextProperty, new Binding("ColaboradorSelecionado.Nome", source: _vm) { TargetNullValue = AppResources.Hours_SelectCollaborator });
 
         var iconPicker = new Label
         {
@@ -334,7 +328,7 @@ public partial class HoursEntryPage : ContentPage
         tapPicker.Tapped += async (s, e) => 
         {
             var names = _vm.Colaboradores.Select(c => c.Nome).ToList();
-            var result = await ShowListPickerAsync("Selecione Colaborador", names);
+            var result = await ShowListPickerAsync(AppResources.Hours_SelectCollaborator, names);
             
             if (result is string action)
             {
@@ -367,7 +361,7 @@ public partial class HoursEntryPage : ContentPage
             HorizontalOptions = LayoutOptions.Center
         };
         emptyView.Add(new Label { Text = "📭", FontSize = 48, HorizontalTextAlignment = TextAlignment.Center });
-        emptyView.Add(new Label { Text = "Sem registos neste período", FontSize = 16, TextColor = Color.FromArgb("#8E8E93"), HorizontalTextAlignment = TextAlignment.Center });
+        emptyView.Add(new Label { Text = AppResources.Hours_NoRecords, FontSize = 16, TextColor = Color.FromArgb("#8E8E93"), HorizontalTextAlignment = TextAlignment.Center });
         listaCollection.EmptyView = emptyView;
         
         mainGrid.Add(listaCollection, 0, 3);
@@ -523,14 +517,14 @@ public partial class HoursEntryPage : ContentPage
        
     private async Task MostrarMenuPeriodoAsync()
     {
-        var result = await ShowListPickerAsync("Selecionar Período", new List<string> { "Hoje", "Esta Semana", "Este Mês", "Últimos 30 dias" });
+        var result = await ShowListPickerAsync(AppResources.Hours_SelectPeriod, new List<string> { AppResources.Hours_PeriodToday, AppResources.Hours_PeriodThisWeek, AppResources.Hours_PeriodThisMonth, AppResources.Hours_PeriodLast30Days });
         
         if (result is string action)
         {
-            if (action == "Hoje") _vm.SelecionarHojeCommand.Execute(null);
-            else if (action == "Esta Semana") _vm.SelecionarEstaSemanaCommand.Execute(null);
-            else if (action == "Este Mês") _vm.SelecionarEsteMesCommand.Execute(null);
-            else if (action == "Últimos 30 dias") _vm.SelecionarUltimos30DiasCommand.Execute(null);
+            if (action == AppResources.Hours_PeriodToday) _vm.SelecionarHojeCommand.Execute(null);
+            else if (action == AppResources.Hours_PeriodThisWeek) _vm.SelecionarEstaSemanaCommand.Execute(null);
+            else if (action == AppResources.Hours_PeriodThisMonth) _vm.SelecionarEsteMesCommand.Execute(null);
+            else if (action == AppResources.Hours_PeriodLast30Days) _vm.SelecionarUltimos30DiasCommand.Execute(null);
         }
     }
 
@@ -538,276 +532,56 @@ public partial class HoursEntryPage : ContentPage
     {
         try
         {
-            _currentEditingHora = hora ?? new HoraColaborador
+            var horaParaEditar = hora ?? new HoraColaborador
             {
                 DataTrabalho = DateTime.Today,
                 HorasTrab = 0,
                 HorasExtras = 0,
                 IdColaborador = _vm.ColaboradorSelecionado?.ID ?? 0
             };
-            _isEditMode = hora != null && hora.Id > 0;
 
-            // Load data if needed
+            // Ensure collaborators are loaded
             if (_vm.Colaboradores.Count == 0)
             {
-                Console.WriteLine("DEBUG: Colaboradores list is empty. Loading...");
                 await _vm.CarregarColaboradoresAsync();
-                Console.WriteLine($"DEBUG: Loaded {_vm.Colaboradores.Count} colaboradores.");
-            }
-            else
-            {
-                Console.WriteLine($"DEBUG: Colaboradores list has {_vm.Colaboradores.Count} items.");
             }
 
-            if (_clientes.Count == 0)
+            var popup = new NovaHoraPopup(horaParaEditar, _vm.Colaboradores.ToList());
+            var result = await this.ShowPopupAsync(popup);
+
+            if (result is HoraColaborador horaSalva)
             {
-                Console.WriteLine("DEBUG: Clientes list is empty. Loading...");
-                var clientesDb = await DatabaseService.GetClientesAsync(null);
-                if (clientesDb != null && clientesDb.Any())
+                if (horaSalva.Id == -1)
                 {
-                    _clientes = clientesDb.OrderBy(c => c.CLINOME).ToList();
-                    _clientes.Insert(0, new Cliente { CLICODIGO = "0", CLINOME = "Sem cliente" });
+                    // Deleted
+                    if (hora != null)
+                    {
+                        _vm.HorasList.Remove(hora);
+                    }
+                    await AtualizarFiltroListaAsync(); // Refresh totals
                 }
                 else
                 {
-                     _clientes = new List<Cliente> { new Cliente { CLICODIGO = "0", CLINOME = "Sem cliente" } };
+                    // Saved/Updated
+                    // The popup already saves to DB, we just need to refresh the list
+                    await AtualizarFiltroListaAsync();
                 }
-                Console.WriteLine($"DEBUG: Loaded {_clientes.Count} clientes.");
-            }
-
-            if (_absenceTypes.Count == 0)
-            {
-                Console.WriteLine("DEBUG: AbsenceTypes list is empty. Loading...");
-                _absenceTypes = await DatabaseService.GetAbsenceTypesAsync();
-                Console.WriteLine($"DEBUG: Loaded {_absenceTypes.Count} absence types.");
-            }
-
-            // Setup UI
-            EditOverlayTitleLabel.Text = _isEditMode ? "✏️ EDITAR REGISTO" : "➕ NOVO REGISTO";
-            EditOverlayDeleteButton.IsVisible = _isEditMode;
-            EditOverlaySaveButton.Text = _isEditMode ? "Atualizar" : "Guardar";
-            
-            EditOverlayDatePicker.Date = _currentEditingHora.DataTrabalho;
-            EditOverlayHoursEntry.Text = _currentEditingHora.HorasTrab > 0 ? _currentEditingHora.HorasTrab.ToString("0.00") : "";
-            EditOverlayExtrasEntry.Text = _currentEditingHora.HorasExtras > 0 ? _currentEditingHora.HorasExtras.ToString("0.00") : "";
-            EditOverlayObservationsEntry.Text = _currentEditingHora.Observacoes ?? "";
-
-            // Setup Collaborator
-            if (_currentEditingHora.IdColaborador > 0)
-            {
-                _selectedCollaborator = _vm.Colaboradores.FirstOrDefault(c => c.ID == _currentEditingHora.IdColaborador);
-            }
-            else
-            {
-                _selectedCollaborator = _vm.ColaboradorSelecionado;
-            }
-            EditOverlayCollaboratorLabel.Text = _selectedCollaborator?.Nome ?? "Selecione colaborador";
-
-            // Setup Type/Client/Absence
-            if (_isEditMode && _currentEditingHora.IdCentroCusto.HasValue)
-            {
-                // Absence
-                _isAbsenceMode = true;
-                _selectedAbsenceType = _absenceTypes.FirstOrDefault(a => a.Id == _currentEditingHora.IdCentroCusto.Value);
-                EditOverlayTypeLabel.Text = "Ausência";
-                EditOverlayAbsenceLabel.Text = _selectedAbsenceType?.Description ?? "Selecione o motivo";
                 
-                // Reset Client
-                _selectedClient = _clientes.FirstOrDefault();
-                EditOverlayClientLabel.Text = "Sem cliente";
-            }
-            else
-            {
-                // Work
-                _isAbsenceMode = false;
-                EditOverlayTypeLabel.Text = "Trabalho";
-                
-                if (!string.IsNullOrEmpty(_currentEditingHora.IdCliente))
+                // Force Calendar Refresh
+                if (_vm.TabAtiva == 3) 
                 {
-                    var idClienteTrim = _currentEditingHora.IdCliente.Trim();
-                    _selectedClient = _clientes.FirstOrDefault(c => c.CLICODIGO?.Trim() == idClienteTrim) ?? _clientes.FirstOrDefault();
+                    MainThread.BeginInvokeOnMainThread(() => CarregarTab3Calendario());
                 }
-                else
-                {
-                    _selectedClient = _clientes.FirstOrDefault();
-                }
-                EditOverlayClientLabel.Text = _selectedClient?.CLINOME ?? "Sem cliente";
             }
-
-            UpdateEditOverlayUI();
-            EditHourOverlay.IsVisible = true;
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"Erro ao abrir popup nova hora: {ex.Message}");
-            await DisplayAlert("Erro", $"Erro ao abrir popup: {ex.Message}", "OK");
+            await DisplayAlert(AppResources.Common_Error, $"Erro ao abrir popup: {ex.Message}", AppResources.Common_OK);
         }
     }
 
-    private void UpdateEditOverlayUI()
-    {
-        EditOverlayClientContainer.IsVisible = !_isAbsenceMode;
-        EditOverlayHoursContainer.IsVisible = !_isAbsenceMode;
-        EditOverlayExtrasContainer.IsVisible = !_isAbsenceMode;
-        EditOverlayAbsenceContainer.IsVisible = _isAbsenceMode;
-    }
 
-    private void OnCloseEditOverlayClicked(object sender, EventArgs e)
-    {
-        EditHourOverlay.IsVisible = false;
-    }
-
-    private async void OnEditOverlaySaveClicked(object sender, EventArgs e)
-    {
-        Console.WriteLine("DEBUG: OnEditOverlaySaveClicked called");
-        if (_currentEditingHora == null) return;
-
-        try
-        {
-            if (_selectedCollaborator == null)
-            {
-                await DisplayAlert("Erro", "Selecione um colaborador.", "OK");
-                return;
-            }
-
-            if (_isAbsenceMode)
-            {
-                if (_selectedAbsenceType == null)
-                {
-                    await DisplayAlert("Erro", "Selecione o motivo da ausência.", "OK");
-                    return;
-                }
-                
-                _currentEditingHora.IdCentroCusto = _selectedAbsenceType.Id;
-                _currentEditingHora.DescCentroCusto = _selectedAbsenceType.Description;
-                _currentEditingHora.IdCliente = "";
-                _currentEditingHora.HorasTrab = 0;
-                _currentEditingHora.HorasExtras = 0;
-            }
-            else
-            {
-                if (!double.TryParse(EditOverlayHoursEntry.Text, out double horas)) horas = 0;
-                if (!double.TryParse(EditOverlayExtrasEntry.Text, out double extras)) extras = 0;
-
-                if (horas == 0 && extras == 0)
-                {
-                    await DisplayAlert("Erro", "Insira horas normais ou extras.", "OK");
-                    return;
-                }
-
-                _currentEditingHora.IdCentroCusto = null;
-                _currentEditingHora.IdCliente = _selectedClient?.CLICODIGO ?? "";
-                _currentEditingHora.Cliente = _selectedClient?.CLINOME ?? "";
-                _currentEditingHora.HorasTrab = (float)horas;
-                _currentEditingHora.HorasExtras = (float)extras;
-            }
-
-            _currentEditingHora.DataTrabalho = EditOverlayDatePicker.Date;
-            _currentEditingHora.IdColaborador = _selectedCollaborator.ID;
-            _currentEditingHora.NomeColaborador = _selectedCollaborator.Nome;
-            _currentEditingHora.Observacoes = EditOverlayObservationsEntry.Text;
-
-            // Save
-            await DatabaseService.UpsertHoraColaboradorAsync(_currentEditingHora);
-            
-            EditHourOverlay.IsVisible = false;
-            await AppShell.DisplayToastAsync("Registo guardado com sucesso!");
-            
-            // Refresh
-            await _vm.CarregarHorasCommand.ExecuteAsync(null);
-            
-            // Force Calendar Refresh
-            if (_vm.TabAtiva == 3) 
-            {
-                MainThread.BeginInvokeOnMainThread(() => CarregarTab3Calendario());
-            }
-        }
-        catch (Exception ex)
-        {
-            await DisplayAlert("Erro", $"Erro ao guardar: {ex.Message}", "OK");
-        }
-    }
-
-    private async void OnEditOverlayDeleteClicked(object sender, EventArgs e)
-    {
-        Console.WriteLine("DEBUG: OnEditOverlayDeleteClicked called");
-        
-        if (_currentEditingHora == null) return;
-
-        // Use the ViewModel command as requested, to match the behavior of the List button.
-        // The Command handles the confirmation dialog and the deletion from the DB and List.
-        await _vm.EliminarHoraCommand.ExecuteAsync(_currentEditingHora);
-
-        // If the item was successfully removed from the list, close the overlay.
-        // If the user cancelled, the item will still be in the list.
-        if (!_vm.HorasList.Contains(_currentEditingHora))
-        {
-            EditHourOverlay.IsVisible = false;
-            
-            // Force Calendar Refresh
-            if (_vm.TabAtiva == 3) 
-            {
-                MainThread.BeginInvokeOnMainThread(() => CarregarTab3Calendario());
-            }
-        }
-    }
-
-    // --- Pickers Logic ---
-
-    private async void OnEditOverlayTypeTapped(object sender, EventArgs e)
-    {
-        var result = await ShowListPickerAsync("Tipo de Registo", new List<string> { "Trabalho", "Ausência" });
-        if (result is string type)
-        {
-            _isAbsenceMode = type == "Ausência";
-            EditOverlayTypeLabel.Text = type;
-            UpdateEditOverlayUI();
-        }
-    }
-
-    private async void OnEditOverlayCollaboratorTapped(object sender, EventArgs e)
-    {
-        var names = _vm.Colaboradores.Select(c => c.Nome ?? "").ToList();
-        Console.WriteLine($"DEBUG: Opening Collaborator Picker with {names.Count} items.");
-        var result = await ShowListPickerAsync("Selecione Colaborador", names);
-        if (result is string name)
-        {
-            var colab = _vm.Colaboradores.FirstOrDefault(c => c.Nome == name);
-            if (colab != null)
-            {
-                _selectedCollaborator = colab;
-                EditOverlayCollaboratorLabel.Text = colab.Nome;
-            }
-        }
-    }
-
-    private async void OnEditOverlayClientTapped(object sender, EventArgs e)
-    {
-        var result = await ShowListPickerAsync("Selecione Cliente", _clientes.Select(c => c.CLINOME ?? "").ToList());
-        if (result is string name)
-        {
-            var client = _clientes.FirstOrDefault(c => c.CLINOME == name);
-            if (client != null)
-            {
-                _selectedClient = client;
-                EditOverlayClientLabel.Text = client.CLINOME;
-            }
-        }
-    }
-
-    private async void OnEditOverlayAbsenceTapped(object sender, EventArgs e)
-    {
-        var result = await ShowListPickerAsync("Selecione Motivo", _absenceTypes.Select(a => a.Description ?? "").ToList());
-        if (result is string desc)
-        {
-            var absence = _absenceTypes.FirstOrDefault(a => a.Description == desc);
-            if (absence != null)
-            {
-                _selectedAbsenceType = absence;
-                EditOverlayAbsenceLabel.Text = absence.Description;
-            }
-        }
-    }
 
     // --- Generic List Picker ---
 
@@ -897,7 +671,7 @@ public partial class HoursEntryPage : ContentPage
         
         var lblTitulo = new Label 
         { 
-            Text = "📅 Calendário do Mês", 
+            Text = $"📅 {AppResources.Hours_CalendarMonth}", 
             FontSize = 24, 
             FontAttributes = FontAttributes.Bold,
             HorizontalTextAlignment = TextAlignment.Center 
@@ -925,7 +699,7 @@ public partial class HoursEntryPage : ContentPage
 
         var lblPicker = new Label
         {
-            Text = _vm.ColaboradorSelecionado?.Nome ?? "Selecione Colaborador",
+            Text = _vm.ColaboradorSelecionado?.Nome ?? AppResources.Hours_SelectCollaborator,
             FontSize = 16,
             VerticalTextAlignment = TextAlignment.Center
         };
@@ -947,7 +721,7 @@ public partial class HoursEntryPage : ContentPage
         var tapPicker = new TapGestureRecognizer();
         tapPicker.Tapped += async (s, e) => 
         {
-            var result = await ShowListPickerAsync("Selecione Colaborador", _vm.Colaboradores.Select(c => c.Nome).ToList());
+            var result = await ShowListPickerAsync(AppResources.Hours_SelectCollaborator, _vm.Colaboradores.Select(c => c.Nome).ToList());
             
             if (result is string action)
             {
@@ -1045,9 +819,9 @@ public partial class HoursEntryPage : ContentPage
             Margin = new Thickness(0, 24, 0, 0)
         };
         
-        legendaStack.Add(CriarItemLegenda("#34C759", "Normal"));
-        legendaStack.Add(CriarItemLegenda("#FF9500", "Extra"));
-        legendaStack.Add(CriarItemLegenda("#8E8E93", "Fim de Semana"));
+        legendaStack.Add(CriarItemLegenda("#34C759", AppResources.Hours_LegendNormal));
+        legendaStack.Add(CriarItemLegenda("#FF9500", AppResources.Hours_LegendExtra));
+        legendaStack.Add(CriarItemLegenda("#8E8E93", AppResources.Hours_Weekend));
         
         mainStack.Add(legendaStack);
         
@@ -1354,7 +1128,7 @@ public partial class HoursEntryPage : ContentPage
         double totalExtra = horasExistentes?.Sum(h => h.HorasExtras) ?? 0;
         double total = totalNormal + totalExtra;
         
-        OverlayTotalHoursLabel.Text = $"Total: {total:0.00}h ({totalNormal:0.00}h + {totalExtra:0.00}h extra)";
+        OverlayTotalHoursLabel.Text = $"{AppResources.Hours_Total}: {total:0.00}h ({totalNormal:0.00}h + {totalExtra:0.00}h {AppResources.Hours_LegendExtra.ToLower()})";
 
         // Update List
         OverlayEntriesCollectionView.ItemsSource = horasExistentes;
