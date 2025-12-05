@@ -4,6 +4,7 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:res="clr-namespace:NAVIGEST.Shared.Resources.Strings;assembly=NAVIGEST.Shared"
     xmlns:beh="clr-namespace:NAVIGEST.Android.Behaviors"
     x:Name="Root"
     BackgroundColor="{DynamicResource BodyBg}">
@@ -104,7 +105,7 @@
                            Aspect="AspectFit"
                            HorizontalOptions="Center"
                            VerticalOptions="Center" />
-                    <Label Text="Bem-vindo à:" Style="{StaticResource TitleText}" HorizontalTextAlignment="Center" />
+                    <Label Text="{x:Static res:AppResources.MainPage_WelcomeTo}" Style="{StaticResource TitleText}" HorizontalTextAlignment="Center" />
                     <Label Text="{Binding CompanyName}"
                            Style="{StaticResource TitleText}"
                            HorizontalTextAlignment="Center"
@@ -129,15 +130,15 @@
                 <VerticalStackLayout Spacing="12">
                     <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
                         <Label Text="&#xF023;" Style="{StaticResource TopbarActionIconLabel}" FontSize="20" />
-                        <Label Text="Acesso Administrador" Style="{StaticResource BodyText}" FontSize="18" />
+                        <Label Text="{x:Static res:AppResources.MainPage_AdminAccess}" Style="{StaticResource BodyText}" FontSize="18" />
                     </HorizontalStackLayout>
                     <Grid ColumnDefinitions="28,*" ColumnSpacing="8">
                         <Label Text="&#xF007;" Style="{StaticResource TopbarActionIconLabel}" FontSize="16" VerticalTextAlignment="Center" />
-                        <Entry x:Name="AdminUserEntry" Grid.Column="1" Placeholder="Utilizador" />
+                        <Entry x:Name="AdminUserEntry" Grid.Column="1" Placeholder="{x:Static res:AppResources.Common_User}" />
                     </Grid>
                     <Grid ColumnDefinitions="28,*,Auto" ColumnSpacing="8">
                         <Label Text="&#xF084;" Style="{StaticResource TopbarActionIconLabel}" FontSize="16" VerticalTextAlignment="Center" />
-                        <Entry x:Name="AdminPassEntry" Grid.Column="1" Placeholder="Palavra-passe" IsPassword="True" />
+                        <Entry x:Name="AdminPassEntry" Grid.Column="1" Placeholder="{x:Static res:AppResources.Common_Password}" IsPassword="True" />
                         <Button Grid.Column="2" BackgroundColor="Transparent" Padding="8" Clicked="OnAdminTogglePwd">
                             <Button.ImageSource>
                                 <FontImageSource x:Name="AdminEyeIcon" Glyph="&#xF06E;" FontFamily="FA7Solid" Color="{DynamicResource BodyFg}" Size="18" />
@@ -146,12 +147,12 @@
                     </Grid>
                     <Label x:Name="AdminErrorLabel" IsVisible="False" FontFamily="Inter" FontSize="13" TextColor="{StaticResource Color.Danger}" />
                     <HorizontalStackLayout Spacing="10" HorizontalOptions="End">
-                        <Button Text="  Cancelar" Clicked="OnAdminCancel">
+                        <Button Text="{x:Static res:AppResources.Common_Cancel}" Clicked="OnAdminCancel">
                             <Button.ImageSource>
                                 <FontImageSource Glyph="&#xF00D;" FontFamily="FA7Solid" Size="16" Color="{DynamicResource White}" />
                             </Button.ImageSource>
                         </Button>
-                        <Button Text="  OK" Clicked="OnAdminOk">
+                        <Button Text="{x:Static res:AppResources.Common_OK}" Clicked="OnAdminOk">
                             <Button.ImageSource>
                                 <FontImageSource Glyph="&#xF00C;" FontFamily="FA7Solid" Size="16" Color="{DynamicResource White}" />
                             </Button.ImageSource>
@@ -178,7 +179,7 @@
                     <Border Style="{StaticResource MenuItemBorder}">
                         <Grid ColumnDefinitions="40,*">
                             <Label Text="&#xF015;" Style="{StaticResource SidebarIconLabel}" />
-                            <Label Grid.Column="1" Text="Dashboard" Style="{StaticResource SidebarTextLabel}" />
+                            <Label Grid.Column="1" Text="{x:Static res:AppResources.MainPage_Dashboard}" Style="{StaticResource SidebarTextLabel}" />
                         </Grid>
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="dashboard" />
@@ -187,7 +188,7 @@
                     <Border Style="{StaticResource MenuItemBorder}">
                         <Grid ColumnDefinitions="40,*">
                             <Label Text="&#xF0C0;" Style="{StaticResource SidebarIconLabel}" />
-                            <Label Grid.Column="1" Text="Clientes" Style="{StaticResource SidebarTextLabel}" />
+                            <Label Grid.Column="1" Text="{x:Static res:AppResources.ClientsPage_Title}" Style="{StaticResource SidebarTextLabel}" />
                         </Grid>
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="clientes" />
@@ -196,7 +197,7 @@
                     <Border Style="{StaticResource MenuItemBorder}">
                         <Grid ColumnDefinitions="40,*">
                             <Label Text="&#xF466;" Style="{StaticResource SidebarIconLabel}" />
-                            <Label Grid.Column="1" Text="Produtos" Style="{StaticResource SidebarTextLabel}" IsVisible="{Binding IsSidebarExpanded}" />
+                            <Label Grid.Column="1" Text="{x:Static res:AppResources.ProductsPage_Title}" Style="{StaticResource SidebarTextLabel}" IsVisible="{Binding IsSidebarExpanded}" />
                         </Grid>
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="produtos" />
@@ -205,7 +206,7 @@
                     <Border Style="{StaticResource MenuItemBorder}">
                         <Grid ColumnDefinitions="40,*">
                             <Label Text="&#xF017;" Style="{StaticResource SidebarIconLabel}" />
-                            <Label Grid.Column="1" Text="Horas (Nova)" Style="{StaticResource SidebarTextLabel}" IsVisible="{Binding IsSidebarExpanded}" />
+                            <Label Grid.Column="1" Text="{x:Static res:AppResources.Common_Hours}" Style="{StaticResource SidebarTextLabel}" IsVisible="{Binding IsSidebarExpanded}" />
                         </Grid>
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="horas" />
@@ -214,7 +215,7 @@
                     <Border Style="{StaticResource MenuItemBorder}">
                         <Grid ColumnDefinitions="40,*">
                             <Label Text="&#xF017;" Style="{StaticResource SidebarIconLabel}" />
-                            <Label Grid.Column="1" Text="Horas (Old)" Style="{StaticResource SidebarTextLabel}" IsVisible="{Binding IsSidebarExpanded}" />
+                            <Label Grid.Column="1" Text="{x:Static res:AppResources.Common_HoursOld}" Style="{StaticResource SidebarTextLabel}" IsVisible="{Binding IsSidebarExpanded}" />
                         </Grid>
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="horas_old" />
@@ -223,7 +224,7 @@
                     <Border Style="{StaticResource MenuItemBorder}">
                         <Grid ColumnDefinitions="40,*">
                             <Label Text="&#xF0AD;" Style="{StaticResource SidebarIconLabel}" />
-                            <Label Grid.Column="1" Text="Serviços" Style="{StaticResource SidebarTextLabel}" IsVisible="{Binding IsSidebarExpanded}" />
+                            <Label Grid.Column="1" Text="{x:Static res:AppResources.Common_Services}" Style="{StaticResource SidebarTextLabel}" IsVisible="{Binding IsSidebarExpanded}" />
                         </Grid>
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="servicos" />
@@ -232,7 +233,7 @@
                     <Border Style="{StaticResource MenuItemBorder}">
                         <Grid ColumnDefinitions="40,*">
                             <Label Text="&#xF0A5;" Style="{StaticResource SidebarIconLabel}" />
-                            <Label Grid.Column="1" Text="Swipe" Style="{StaticResource SidebarTextLabel}" />
+                            <Label Grid.Column="1" Text="{x:Static res:AppResources.MainPage_Swipe}" Style="{StaticResource SidebarTextLabel}" />
                         </Grid>
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="swipe" />
@@ -241,7 +242,7 @@
                     <Border Style="{StaticResource MenuItemBorder}" IsVisible="{Binding IsAdminUnlocked}">
                         <Grid ColumnDefinitions="50,*">
                             <Label Text="&#xF0C0;" Style="{StaticResource SidebarIconLabel}" />
-                            <Label Grid.Column="1" Text="Utilizadores" Style="{StaticResource SidebarTextLabel}" IsVisible="{Binding IsSidebarExpanded}" />
+                            <Label Grid.Column="1" Text="{x:Static res:AppResources.MainPage_Users}" Style="{StaticResource SidebarTextLabel}" IsVisible="{Binding IsSidebarExpanded}" />
                         </Grid>
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="config.utilizadores" />
@@ -250,7 +251,7 @@
                     <Border Style="{StaticResource MenuItemBorder}" IsVisible="{Binding IsAdminUnlocked}">
                         <Grid ColumnDefinitions="50,*">
                             <Label Text="&#xF1C0;" Style="{StaticResource SidebarIconLabel}" />
-                            <Label Grid.Column="1" Text="Ligação BD" Style="{StaticResource SidebarTextLabel}" IsVisible="{Binding IsSidebarExpanded}" />
+                            <Label Grid.Column="1" Text="{x:Static res:AppResources.MainPage_DbConnection}" Style="{StaticResource SidebarTextLabel}" IsVisible="{Binding IsSidebarExpanded}" />
                         </Grid>
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="config.db" />
@@ -262,7 +263,7 @@
                 <HorizontalStackLayout Grid.Row="0" Spacing="10" VerticalOptions="Center">
                     <Label x:Name="ThemeModeIconMobile" FontFamily="FA7Solid" FontSize="18" Text="&#xF185;"
                            TextColor="{AppThemeBinding Light=Black, Dark=White}" />
-                    <Label Text="Tema" Style="{StaticResource SidebarTextLabel}" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
+                    <Label Text="{x:Static res:AppResources.MainPage_Theme}" Style="{StaticResource SidebarTextLabel}" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
                 </HorizontalStackLayout>
                 <Border Grid.Row="1" StrokeThickness="1" Stroke="{DynamicResource SidebarAccent}" BackgroundColor="White" Padding="4,0" StrokeShape="RoundRectangle 10">
                     <Picker x:Name="ThemeModePickerMobile"
@@ -272,9 +273,9 @@
                             HeightRequest="40"
                             SelectedIndexChanged="OnThemeModeChangedMobile">
                         <Picker.Items>
-                            <x:String>Automático</x:String>
-                            <x:String>Claro</x:String>
-                            <x:String>Escuro</x:String>
+                            <x:String>{x:Static res:AppResources.MainPage_ThemeAuto}</x:String>
+                            <x:String>{x:Static res:AppResources.MainPage_ThemeLight}</x:String>
+                            <x:String>{x:Static res:AppResources.MainPage_ThemeDark}</x:String>
                         </Picker.Items>
                     </Picker>
                 </Border>

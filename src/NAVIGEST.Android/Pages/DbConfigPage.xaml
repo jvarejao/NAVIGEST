@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:res="clr-namespace:NAVIGEST.Shared.Resources.Strings;assembly=NAVIGEST.Shared"
              x:Class="NAVIGEST.Android.Pages.DbConfigPage"
-             Title="Configuração da Ligação"
+             Title="{x:Static res:AppResources.DbConfigPage_Title}"
              Shell.FlyoutBehavior="Disabled"
              Shell.NavBarIsVisible="False">
 
@@ -21,13 +22,13 @@
                         <HorizontalStackLayout Spacing="8" HorizontalOptions="Center">
                             <Label Text="&#xF233;" FontFamily="FA7Solid" FontSize="28"
                      TextColor="{StaticResource Color.Primary}" />
-                            <Label Text="Configuração da Base de Dados"
+                            <Label Text="{x:Static res:AppResources.DbConfigPage_Header}"
                      FontSize="20" FontAttributes="Bold" />
                         </HorizontalStackLayout>
 
                         <!-- Servidor -->
                         <VerticalStackLayout>
-                            <Label Text="Servidor" FontAttributes="Bold"/>
+                            <Label Text="{x:Static res:AppResources.Common_Server}" FontAttributes="Bold"/>
                             <Border x:Name="ServerBorder" Style="{StaticResource FieldBorder}">
                                 <Entry x:Name="ServerEntry"
                        Placeholder="ex.: 100.81.152.95"
@@ -37,12 +38,12 @@
                        Unfocused="OnEntryUnfocused"
                        TextChanged="OnEntryTextChanged" />
                             </Border>
-                            <Label x:Name="ServerError" Text="Servidor obrigatório." TextColor="#FFA500" IsVisible="False" FontSize="12"/>
+                            <Label x:Name="ServerError" Text="{x:Static res:AppResources.DbConfigPage_ErrorServer}" TextColor="#FFA500" IsVisible="False" FontSize="12"/>
                         </VerticalStackLayout>
 
                         <!-- Porta -->
                         <VerticalStackLayout>
-                            <Label Text="Porta" FontAttributes="Bold"/>
+                            <Label Text="{x:Static res:AppResources.Common_Port}" FontAttributes="Bold"/>
                             <Border x:Name="PortBorder" Style="{StaticResource FieldBorder}">
                                 <Entry x:Name="PortEntry"
                        Placeholder="3307"
@@ -53,12 +54,12 @@
                        Unfocused="OnEntryUnfocused"
                        TextChanged="OnEntryTextChanged" />
                             </Border>
-                            <Label x:Name="PortError" Text="Porta inválida (1–65535)." TextColor="#FFA500" IsVisible="False" FontSize="12"/>
+                            <Label x:Name="PortError" Text="{x:Static res:AppResources.DbConfigPage_ErrorPort}" TextColor="#FFA500" IsVisible="False" FontSize="12"/>
                         </VerticalStackLayout>
 
                         <!-- Base de Dados -->
                         <VerticalStackLayout>
-                            <Label Text="Base de Dados" FontAttributes="Bold"/>
+                            <Label Text="{x:Static res:AppResources.Common_Database}" FontAttributes="Bold"/>
                             <Border x:Name="DbBorder" Style="{StaticResource FieldBorder}">
                                 <Entry x:Name="DbEntry"
                        Placeholder="YAHPUBLICIDADE2025"
@@ -68,12 +69,12 @@
                        Unfocused="OnEntryUnfocused"
                        TextChanged="OnEntryTextChanged" />
                             </Border>
-                            <Label x:Name="DbError" Text="Nome da base de dados obrigatório." TextColor="#FFA500" IsVisible="False" FontSize="12"/>
+                            <Label x:Name="DbError" Text="{x:Static res:AppResources.DbConfigPage_ErrorDatabase}" TextColor="#FFA500" IsVisible="False" FontSize="12"/>
                         </VerticalStackLayout>
 
                         <!-- Utilizador -->
                         <VerticalStackLayout>
-                            <Label Text="Utilizador" FontAttributes="Bold"/>
+                            <Label Text="{x:Static res:AppResources.Common_User}" FontAttributes="Bold"/>
                             <Border x:Name="UserBorder" Style="{StaticResource FieldBorder}">
                                 <Entry x:Name="UserEntry"
                        Placeholder="YAH"
@@ -83,15 +84,15 @@
                        Unfocused="OnEntryUnfocused"
                        TextChanged="OnEntryTextChanged" />
                             </Border>
-                            <Label x:Name="UserError" Text="Utilizador obrigatório." TextColor="#FFA500" IsVisible="False" FontSize="12"/>
+                            <Label x:Name="UserError" Text="{x:Static res:AppResources.DbConfigPage_ErrorUser}" TextColor="#FFA500" IsVisible="False" FontSize="12"/>
                         </VerticalStackLayout>
 
                         <!-- Password -->
                         <VerticalStackLayout>
-                            <Label Text="Password" FontAttributes="Bold"/>
+                            <Label Text="{x:Static res:AppResources.Common_Password}" FontAttributes="Bold"/>
                             <Border x:Name="PasswordBorder" Style="{StaticResource FieldBorder}">
                                 <Entry x:Name="PasswordEntry"
-                       Placeholder="Password"
+                       Placeholder="{x:Static res:AppResources.Common_Password}"
                        IsPassword="True"
                        Text="{Binding Password}"
                        Completed="OnEntryCompleted"
@@ -99,12 +100,12 @@
                        Unfocused="OnEntryUnfocused"
                        TextChanged="OnEntryTextChanged" />
                             </Border>
-                            <Label x:Name="PasswordError" Text="Password obrigatória." TextColor="#FFA500" IsVisible="False" FontSize="12"/>
+                            <Label x:Name="PasswordError" Text="{x:Static res:AppResources.DbConfigPage_ErrorPassword}" TextColor="#FFA500" IsVisible="False" FontSize="12"/>
                         </VerticalStackLayout>
 
                         <!-- Email (opcional) -->
                         <VerticalStackLayout>
-                            <Label Text="Email de contacto (opcional)" FontAttributes="Bold"/>
+                            <Label Text="{x:Static res:AppResources.DbConfigPage_ContactEmailOptional}" FontAttributes="Bold"/>
                             <Border x:Name="EmailBorder" Style="{StaticResource FieldBorder}">
                                 <Entry x:Name="EmailEntry"
                        Placeholder="ex.: admin@yah.pt"
@@ -113,18 +114,18 @@
                        Unfocused="OnEntryUnfocused"
                        TextChanged="OnEntryTextChanged" />
                             </Border>
-                            <Label x:Name="EmailErrorLabel" Text="Formato de email inválido." TextColor="#FF3B30" IsVisible="False" FontSize="12"/>
+                            <Label x:Name="EmailErrorLabel" Text="{x:Static res:AppResources.DbConfigPage_ErrorEmail}" TextColor="#FF3B30" IsVisible="False" FontSize="12"/>
                         </VerticalStackLayout>
 
                         <!-- Botão principal -->
                         <Button x:Name="SaveTestButton"
                     StyleClass="Salvar"
                     Clicked="OnSaveAndTestClicked"
-                    Text=" Guardar e Testar" />
+                    Text="{x:Static res:AppResources.DbConfigPage_SaveAndTest}" />
 
                         <VerticalStackLayout Padding="24" Spacing="18">                        
                             <Button x:Name="BtnTestarDb"
-             Text="Testar ligação à Base de Dados"
+             Text="{x:Static res:AppResources.DbConfigPage_TestConnection}"
              Clicked="BtnTestarDb_Clicked"
              SemanticProperties.Description="Executa teste de ligação ao MariaDB" />
                             <Label x:Name="LblResultado"

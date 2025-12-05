@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Maui.Views;
 using NAVIGEST.Android.Models;
 using NAVIGEST.Android.Services;
+using NAVIGEST.Shared.Resources.Strings;
 
 namespace NAVIGEST.Android.PageModels;
 
@@ -72,7 +73,7 @@ public partial class HorasColaboradorViewModel : ObservableObject
         catch (Exception ex)
         {
             GlobalErro.TratarErro(ex, mostrarAlerta: false);
-            Mensagem = "Erro ao inicializar página";
+            Mensagem = AppResources.Common_Error;
         }
         finally
         {
@@ -94,7 +95,7 @@ public partial class HorasColaboradorViewModel : ObservableObject
         try
         {
             IsBusy = true;
-            Mensagem = "A carregar...";
+            Mensagem = AppResources.WelcomePage_Loading;
 
             // Se "Todos" estiver selecionado (ID = 0), passa null para obter todos
             int? idColaboradorFiltro = ColaboradorSelecionado?.ID == 0 ? null : ColaboradorSelecionado?.ID;
@@ -112,12 +113,12 @@ public partial class HorasColaboradorViewModel : ObservableObject
             }
 
             AtualizarTotais();
-            Mensagem = $"{HorasList.Count} registo(s) encontrado(s)";
+            Mensagem = string.Format(AppResources.Common_RecordsCount, HorasList.Count);
         }
         catch (Exception ex)
         {
             GlobalErro.TratarErro(ex, mostrarAlerta: false);
-            Mensagem = "Erro ao carregar horas";
+            Mensagem = AppResources.Common_Error;
         }
         finally
         {
@@ -162,13 +163,13 @@ public partial class HorasColaboradorViewModel : ObservableObject
             if (result is HoraColaborador novaHora && novaHora.Id >= 0)
             {
                 await CarregarHorasAsync();
-                await GlobalToast.ShowAsync("Registo guardado com sucesso", ToastTipo.Sucesso);
+                await GlobalToast.ShowAsync(AppResources.Hours_SavedSuccess, ToastTipo.Sucesso);
             }
         }
         catch (Exception ex)
         {
             GlobalErro.TratarErro(ex, mostrarAlerta: false);
-            await GlobalToast.ShowAsync("Erro ao criar registo", ToastTipo.Erro);
+            await GlobalToast.ShowAsync(AppResources.Common_SaveError, ToastTipo.Erro);
         }
     }
 
@@ -185,13 +186,13 @@ public partial class HorasColaboradorViewModel : ObservableObject
             if (result is HoraColaborador horaEditada && horaEditada.Id >= 0)
             {
                 await CarregarHorasAsync();
-                await GlobalToast.ShowAsync("Registo atualizado com sucesso", ToastTipo.Sucesso);
+                await GlobalToast.ShowAsync(AppResources.Hours_SavedSuccess, ToastTipo.Sucesso);
             }
         }
         catch (Exception ex)
         {
             GlobalErro.TratarErro(ex, mostrarAlerta: false);
-            await GlobalToast.ShowAsync("Erro ao editar registo", ToastTipo.Erro);
+            await GlobalToast.ShowAsync(AppResources.Common_SaveError, ToastTipo.Erro);
         }
     }
 
@@ -203,10 +204,10 @@ public partial class HorasColaboradorViewModel : ObservableObject
         try
         {
             bool confirmacao = await Shell.Current.DisplayAlert(
-                "Confirmar",
-                $"Eliminar registo de {hora.NomeColaborador} do dia {hora.DataFormatted}?",
-                "Sim",
-                "Não"
+                AppResources.Common_DeleteConfirmationTitle,
+                string.Format(AppResources.Common_DeleteConfirmationMessageFormat, $"{hora.NomeColaborador} ({hora.DataFormatted})"),
+                AppResources.Common_Yes,
+                AppResources.Common_No
             );
 
             if (!confirmacao) return;
@@ -214,12 +215,12 @@ public partial class HorasColaboradorViewModel : ObservableObject
             await DatabaseService.DeleteHoraColaboradorAsync(hora.Id);
             HorasList.Remove(hora);
             AtualizarTotais();
-            await GlobalToast.ShowAsync("Registo eliminado com sucesso", ToastTipo.Sucesso);
+            await GlobalToast.ShowAsync(AppResources.SwipeProofPage_Deleted, ToastTipo.Sucesso);
         }
         catch (Exception ex)
         {
             GlobalErro.TratarErro(ex, mostrarAlerta: false);
-            await GlobalToast.ShowAsync("Erro ao eliminar registo", ToastTipo.Erro);
+            await GlobalToast.ShowAsync(AppResources.Common_DeleteError, ToastTipo.Erro);
         }
     }
 

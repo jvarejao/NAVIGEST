@@ -7,9 +7,10 @@
              xmlns:sf="clr-namespace:Syncfusion.Maui.Toolkit.TextInputLayout;assembly=Syncfusion.Maui.Toolkit"
              xmlns:controls="clr-namespace:NAVIGEST.Android.Pages.Controls"
              xmlns:fonts="clr-namespace:Fonts"
+             xmlns:res="clr-namespace:NAVIGEST.Shared.Resources.Strings;assembly=NAVIGEST.Shared"
              x:Class="NAVIGEST.Android.Pages.ProjectDetailPage"
              x:DataType="pageModels:ProjectDetailPageModel"
-             Title="Project">
+             Title="{x:Static res:AppResources.ProjectDetailPage_Title}">
 
     <ContentPage.Resources>
         <DataTemplate x:Key="NormalTagTemplate" x:DataType="models:Tag">
@@ -56,7 +57,7 @@
 
     <ContentPage.ToolbarItems>
         <ToolbarItem
-            Text="Delete"
+            Text="{x:Static res:AppResources.ProjectDetailPage_Delete}"
             Command="{Binding DeleteCommand}"
             Order="Primary"
             Priority="0"
@@ -67,19 +68,19 @@
         <ScrollView>
             <VerticalStackLayout Padding="{StaticResource LayoutPadding}" Spacing="{StaticResource LayoutSpacing}">
                 <sf:SfTextInputLayout 
-                    Hint="Name" >
+                    Hint="{x:Static res:AppResources.ProjectDetailPage_Name}" >
                     <Entry
                         Text="{Binding Name}" />
                 </sf:SfTextInputLayout>
 
                 <sf:SfTextInputLayout 
-                    Hint="Description">
+                    Hint="{x:Static res:AppResources.ProjectDetailPage_Description}">
                     <Entry
                         Text="{Binding Description}" />
                 </sf:SfTextInputLayout>
 
                 <sf:SfTextInputLayout 
-                    Hint="Category">
+                    Hint="{x:Static res:AppResources.ProjectDetailPage_Category}">
                     <Picker 
                         ItemsSource="{Binding Categories}"
                         SelectedItem="{Binding Category}"
@@ -87,7 +88,7 @@
                 </sf:SfTextInputLayout>
 
                 <Label 
-                    Text="Icon" 
+                    Text="{x:Static res:AppResources.ProjectDetailPage_Icon}" 
                     Style="{StaticResource Title2}"/>
                 <CollectionView 
                     HeightRequest="44" Margin="0,0,0,15"
@@ -124,7 +125,7 @@
                                     VerticalOptions="Center"
                                     HorizontalOptions="Center"
                                     SemanticProperties.Description="{Binding Description}"
-                                    SemanticProperties.Hint="Icon representing the type of task . Tap to select"
+                                    SemanticProperties.Hint="{x:Static res:AppResources.ProjectDetailPage_IconHint}"
                                     TextColor="{AppThemeBinding Light={StaticResource DarkOnLightBackground},Dark={StaticResource LightOnDarkBackground}}"/>
                                 <BoxView x:Name="SelectedIndicator" Color="{StaticResource Primary}" HeightRequest="4" HorizontalOptions="Fill" Grid.Row="1"/>
                             </Grid>                            
@@ -137,7 +138,7 @@
                 
 
                 <Label 
-                    Text="Tags" 
+                    Text="{x:Static res:AppResources.Common_Tags}" 
                     Style="{StaticResource Title2}"/>
                 <ScrollView Orientation="Horizontal">
                     <HorizontalStackLayout 
@@ -148,13 +149,13 @@
                         BindableLayout.ItemTemplateSelector="{StaticResource ChipDataTemplateSelector}"/>
                 </ScrollView>
 
-                <Button Text="Save" 
+                <Button Text="{x:Static res:AppResources.Common_Save}" 
                     HeightRequest="{OnIdiom 44, Desktop=60}"
                     Command="{Binding SaveCommand}" />
 
                 <Grid HeightRequest="44">
                     <Label 
-                        Text="Tasks" 
+                        Text="{x:Static res:AppResources.Common_Tasks}" 
                         Style="{StaticResource Title2}" 
                         VerticalOptions="Center"/>
                     <ImageButton 

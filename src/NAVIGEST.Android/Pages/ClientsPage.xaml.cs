@@ -10,6 +10,7 @@ using NAVIGEST.Android.PageModels;
 using NAVIGEST.Android.Models;
 using NAVIGEST.Android.Popups;
 using NAVIGEST.Android; // GlobalToast / GlobalErro
+using NAVIGEST.Shared.Resources.Strings;
 
 namespace NAVIGEST.Android.Pages
 {
@@ -71,7 +72,7 @@ namespace NAVIGEST.Android.Pages
                 catch (Exception ex)
                 {
                     GlobalErro.TratarErro(ex, mostrarAlerta: false);
-                    await GlobalToast.ShowAsync("Falha ao carregar clientes.", ToastTipo.Erro, 2500);
+                    await GlobalToast.ShowAsync(AppResources.ClientsPage_LoadError, ToastTipo.Erro, 2500);
                 }
                 _loadedOnce = true;
             }
@@ -106,9 +107,9 @@ namespace NAVIGEST.Android.Pages
                     return;
 
                 // Confirmação (padrão iOS)
-                var confirm = await ShowConfirmAsync("Eliminar Cliente",
-                    $"Tem a certeza que deseja eliminar '{cliente.CLINOME}'?",
-                    "Eliminar", "Cancelar");
+                var confirm = await ShowConfirmAsync(AppResources.ClientsPage_DeleteConfirmTitle,
+                    string.Format(AppResources.Common_DeleteConfirmationMessageFormat, $"'{cliente.CLINOME}'"),
+                    AppResources.Common_Delete, AppResources.Common_Cancel);
 
                 if (!confirm)
                     return;
@@ -133,13 +134,13 @@ namespace NAVIGEST.Android.Pages
                 // Receber o Cliente diretamente do SwipeItemView (não usar vm.Editing!)
                 if (sender is not SwipeItemView siv || siv.BindingContext is not Cliente cliente)
                 {
-                    await GlobalToast.ShowAsync("Erro: cliente não encontrado", ToastTipo.Erro, 2000);
+                    await GlobalToast.ShowAsync(AppResources.ClientsPage_ClientNotFound, ToastTipo.Erro, 2000);
                     return;
                 }
 
                 if (string.IsNullOrWhiteSpace(cliente.CLICODIGO))
                 {
-                    await GlobalToast.ShowAsync("Erro: código do cliente inválido", ToastTipo.Erro, 2000);
+                    await GlobalToast.ShowAsync(AppResources.ClientsPage_InvalidClientCode, ToastTipo.Erro, 2000);
                     return;
                 }
 
@@ -147,20 +148,20 @@ namespace NAVIGEST.Android.Pages
                 {
                     try
                     {
-                        await GlobalToast.ShowAsync("A abrir pastas...", ToastTipo.Info, 1000);
+                        await GlobalToast.ShowAsync(AppResources.ClientsPage_OpeningFolders, ToastTipo.Info, 1000);
                         await Shell.Current.GoToAsync($"ClientPastas?clienteId={cliente.CLICODIGO}");
                     }
                     catch (Exception ex)
                     {
                         System.Diagnostics.Debug.WriteLine($"[PASTAS_SWIPE] Navigate failed: {ex}");
-                        await GlobalToast.ShowAsync($"Erro ao abrir pastas: {ex.Message}", ToastTipo.Erro, 3000);
+                        await GlobalToast.ShowAsync(string.Format(AppResources.ClientsPage_OpenFoldersError, ex.Message), ToastTipo.Erro, 3000);
                     }
                 });
             }
             catch (Exception ex) 
             { 
                 GlobalErro.TratarErro(ex, mostrarAlerta: false);
-                await GlobalToast.ShowAsync($"Erro: {ex.Message}", ToastTipo.Erro, 3000);
+                await GlobalToast.ShowAsync(string.Format(AppResources.Common_Error, ex.Message), ToastTipo.Erro, 3000);
             }
         }
 
@@ -237,7 +238,7 @@ namespace NAVIGEST.Android.Pages
             // Update form title
             if (FindByName("FormTitle") is Label titleLabel)
             {
-                titleLabel.Text = isNew ? "Novo Cliente" : "Editar Cliente";
+                titleLabel.Text = isNew ? AppResources.ClientsPage_NewClient : AppResources.ClientsPage_EditClient;
             }
         }
 
@@ -308,7 +309,7 @@ namespace NAVIGEST.Android.Pages
                     if (result is Vendedor vendedor)
                     {
                         vm.UpsertVendedor(vendedor);
-                        await GlobalToast.ShowAsync("Vendedor criado.", ToastTipo.Sucesso, 2000);
+                        await GlobalToast.ShowAsync(AppResources.ClientsPage_SalespersonCreated, ToastTipo.Sucesso, 2000);
                     }
 
                     if (popup.VendedoresDirty)
@@ -337,7 +338,7 @@ namespace NAVIGEST.Android.Pages
                         catch (Exception innerEx)
                         {
                             System.Diagnostics.Debug.WriteLine($"[PASTAS] GoToAsync failed: {innerEx}");
-                            await GlobalToast.ShowAsync($"Erro ao abrir pastas: {innerEx.Message}", ToastTipo.Erro, 3000);
+                            await GlobalToast.ShowAsync(string.Format(AppResources.ClientsPage_ErrorFolders, innerEx.Message), ToastTipo.Erro, 3000);
                         }
                     });
                 }
@@ -352,9 +353,9 @@ namespace NAVIGEST.Android.Pages
                 if (BindingContext is ClientsPageModel vm && vm.Editing is not null)
                 {
                     // Confirmação (padrão iOS)
-                    var confirm = await ShowConfirmAsync("Eliminar Cliente",
-                        $"Tem a certeza que deseja eliminar '{vm.Editing.CLINOME}'?",
-                        "Eliminar", "Cancelar");
+                    var confirm = await ShowConfirmAsync(AppResources.ClientsPage_DeleteTitle,
+                        string.Format(AppResources.ClientsPage_DeleteConfirm, vm.Editing.CLINOME),
+                        AppResources.Common_Delete, AppResources.Common_Cancel);
 
                     if (!confirm)
                         return;

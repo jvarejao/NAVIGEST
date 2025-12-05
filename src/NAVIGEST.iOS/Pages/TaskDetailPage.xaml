@@ -4,52 +4,53 @@
              xmlns:sf="clr-namespace:Syncfusion.Maui.Toolkit.TextInputLayout;assembly=Syncfusion.Maui.Toolkit"
              xmlns:pageModel="clr-namespace:NAVIGEST.iOS.PageModels"
              xmlns:models="clr-namespace:NAVIGEST.iOS.Models"
+             xmlns:res="clr-namespace:NAVIGEST.Shared.Resources.Strings;assembly=NAVIGEST.Shared"
              x:DataType="pageModel:TaskDetailPageModel"
              x:Class="NAVIGEST.iOS.Pages.TaskDetailPage"
-             Title="Task">
+             Title="{x:Static res:AppResources.TaskDetailPage_Title}">
 
     <ContentPage.ToolbarItems>
         <ToolbarItem
-            Text="Delete"
+            Text="{x:Static res:AppResources.ProjectDetailPage_Delete}"
             Command="{Binding DeleteCommand}"
             Order="Primary"
             Priority="0"
             IconImageSource="{StaticResource IconDelete}"
-            SemanticProperties.Description="Delete" />
+            SemanticProperties.Description="{x:Static res:AppResources.ProjectDetailPage_Delete}" />
     </ContentPage.ToolbarItems>        
 
     <Grid>
         <ScrollView>
             <VerticalStackLayout Spacing="{StaticResource LayoutSpacing}" Padding="{StaticResource LayoutPadding}">
-                <sf:SfTextInputLayout Hint="Task">
+                <sf:SfTextInputLayout Hint="{x:Static res:AppResources.TaskDetailPage_Task}">
                     <Entry
                         Text="{Binding Title}"
-                        SemanticProperties.Description="Title" />
+                        SemanticProperties.Description="{x:Static res:AppResources.TaskDetailPage_Task}" />
                 </sf:SfTextInputLayout>
 
-                <sf:SfTextInputLayout Hint="Completed">
+                <sf:SfTextInputLayout Hint="{x:Static res:AppResources.TaskDetailPage_Completed}">
                     <CheckBox
                         HorizontalOptions="End"
                         IsChecked="{Binding IsCompleted}"
-                        SemanticProperties.Description="Status"
-                        SemanticProperties.Hint="Indicates if this task is completed" />
+                        SemanticProperties.Description="{x:Static res:AppResources.TaskDetailPage_Status}"
+                        SemanticProperties.Hint="{x:Static res:AppResources.TaskDetailPage_CompletedHint}" />
                 </sf:SfTextInputLayout>
 
                 <sf:SfTextInputLayout 
                     IsVisible="{Binding IsExistingProject}" 
-                    Hint="Project">
+                    Hint="{x:Static res:AppResources.TaskDetailPage_Project}">
                     <Picker 
                         ItemsSource="{Binding Projects}"
                         ItemDisplayBinding="{Binding Name, x:DataType=models:Project}"
                         SelectedItem="{Binding Project}"
                         SelectedIndex="{Binding SelectedProjectIndex}"
-                        SemanticProperties.Description="Project"
-                        SemanticProperties.Hint="Which project this task belongs to" />
+                        SemanticProperties.Description="{x:Static res:AppResources.TaskDetailPage_Project}"
+                        SemanticProperties.Hint="{x:Static res:AppResources.TaskDetailPage_ProjectHint}" />
                 </sf:SfTextInputLayout>
 
                 <Button 
                     HeightRequest="{OnIdiom 44, Desktop=60}"
-                    Text="Save"
+                    Text="{x:Static res:AppResources.Common_Save}"
                     Command="{Binding SaveCommand}"/>
             </VerticalStackLayout>
         </ScrollView>

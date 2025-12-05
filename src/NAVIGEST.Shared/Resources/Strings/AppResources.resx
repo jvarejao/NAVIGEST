@@ -1,0 +1,1517 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ClientsPage_Title" xml:space="preserve">
+    <value>Clients</value>
+  </data>
+  <data name="ClientsPage_NewClient" xml:space="preserve">
+    <value>New Client</value>
+  </data>
+  <data name="ClientsPage_AddClient" xml:space="preserve">
+    <value>Add Client</value>
+  </data>
+  <data name="ClientsPage_EditClient" xml:space="preserve">
+    <value>Edit {0}</value>
+  </data>
+  <data name="Common_Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Common_Update" xml:space="preserve">
+    <value>Update</value>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Common_Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Common_SearchPlaceholder" xml:space="preserve">
+    <value>Search (code, name, email...)</value>
+  </data>
+  <data name="Common_Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Common_Code" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="Common_Phone" xml:space="preserve">
+    <value>Phone</value>
+  </data>
+  <data name="Common_Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="Common_DialCode" xml:space="preserve">
+    <value>Dial Code</value>
+  </data>
+  <data name="ClientsPage_SelectSalesperson" xml:space="preserve">
+    <value>Select Salesperson</value>
+  </data>
+  <data name="Common_Folders" xml:space="preserve">
+    <value>Folders</value>
+  </data>
+  <data name="ClientsPage_External" xml:space="preserve">
+    <value>EXTERNAL</value>
+  </data>
+  <data name="ClientsPage_Cancelled" xml:space="preserve">
+    <value>CANCELLED</value>
+  </data>
+  <data name="ClientsPage_Salesperson" xml:space="preserve">
+    <value>Salesperson</value>
+  </data>
+  <data name="ClientsPage_ClientNamePlaceholder" xml:space="preserve">
+    <value>Client Name</value>
+  </data>
+  <data name="ClientsPage_CreditValue" xml:space="preserve">
+    <value>Credit Value</value>
+  </data>
+  <data name="ClientsPage_ExternalLabel" xml:space="preserve">
+    <value>External</value>
+  </data>
+  <data name="ClientsPage_CancelledLabel" xml:space="preserve">
+    <value>Cancelled</value>
+  </data>
+  <data name="ClientsPage_SyncedFolders" xml:space="preserve">
+    <value>Synced Folders</value>
+  </data>
+  <data name="ProductsPage_Title" xml:space="preserve">
+    <value>Products</value>
+  </data>
+  <data name="ProductsPage_NewProduct" xml:space="preserve">
+    <value>New Product</value>
+  </data>
+  <data name="ProductsPage_SearchPlaceholder" xml:space="preserve">
+    <value>Search (code, description, family...)</value>
+  </data>
+  <data name="Common_Cost" xml:space="preserve">
+    <value>Cost</value>
+  </data>
+  <data name="Common_Sale" xml:space="preserve">
+    <value>Sale</value>
+  </data>
+  <data name="Common_TotalSales" xml:space="preserve">
+    <value>Total Sales</value>
+  </data>
+  <data name="Common_Collaborator" xml:space="preserve">
+    <value>Collaborator</value>
+  </data>
+  <data name="Common_CollaboratorNamePlaceholder" xml:space="preserve">
+    <value>Collaborator Name</value>
+  </data>
+  <data name="Common_Description" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="Common_Family" xml:space="preserve">
+    <value>Family</value>
+  </data>
+  <data name="Common_Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="Common_Search" xml:space="preserve">
+    <value>Search...</value>
+  </data>
+  <data name="ProductsPage_CostPrice" xml:space="preserve">
+    <value>Cost Price (€)</value>
+  </data>
+  <data name="ProductsPage_SalePrice" xml:space="preserve">
+    <value>Sale Price (€)</value>
+  </data>
+  <data name="ProductsPage_ProductDescriptionPlaceholder" xml:space="preserve">
+    <value>Product Description</value>
+  </data>
+  <data name="ProductsPage_SelectFamily" xml:space="preserve">
+    <value>Select Family</value>
+  </data>
+  <data name="ProductsPage_AddFamily" xml:space="preserve">
+    <value>Add Family</value>
+  </data>
+  <data name="ProductsPage_NewFamily" xml:space="preserve">
+    <value>New Family</value>
+  </data>
+  <data name="ProductsPage_FamilyCodePlaceholder" xml:space="preserve">
+    <value>Family Code</value>
+  </data>
+  <data name="ProductsPage_FamilyDescriptionPlaceholder" xml:space="preserve">
+    <value>Family Description</value>
+  </data>
+  <data name="Hours_EditTitle" xml:space="preserve">
+    <value>EDITAR REGISTO</value>
+  </data>
+  <data name="Hours_NewTitle" xml:space="preserve">
+    <value>NOVO REGISTO</value>
+  </data>
+  <data name="Family_NewTitle" xml:space="preserve">
+    <value>Nova Família</value>
+  </data>
+  <data name="Common_Services" xml:space="preserve">
+    <value>Services</value>
+  </data>
+  <data name="Common_New" xml:space="preserve">
+    <value>New</value>
+  </data>
+  <data name="ServicePage_SearchPlaceholder" xml:space="preserve">
+    <value>Search by no., client or status...</value>
+  </data>
+  <data name="Common_RecordsCount" xml:space="preserve">
+    <value>Records: {0}</value>
+  </data>
+  <data name="ProductsPage_DeleteProduct" xml:space="preserve">
+    <value>Delete Product</value>
+  </data>
+  <data name="HoursEntryPage_Title" xml:space="preserve">
+    <value>Collaborator Hours</value>
+  </data>
+  <data name="Common_SelectCollaborator" xml:space="preserve">
+    <value>Select Collaborator</value>
+  </data>
+  <data name="Common_Year" xml:space="preserve">
+    <value>Year</value>
+  </data>
+  <data name="Common_Month" xml:space="preserve">
+    <value>Month</value>
+  </data>
+  <data name="Common_SelectMonth" xml:space="preserve">
+    <value>Select Month</value>
+  </data>
+  <data name="HoursEntryPage_HourRate" xml:space="preserve">
+    <value>Hour Rate</value>
+  </data>
+  <data name="Common_Load" xml:space="preserve">
+    <value>Load</value>
+  </data>
+  <data name="HoursEntryPage_DeleteMonth" xml:space="preserve">
+    <value>Delete Month</value>
+  </data>
+  <data name="Common_Copy" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="Common_Paste" xml:space="preserve">
+    <value>Paste</value>
+  </data>
+  <data name="HoursEntryPage_ExportMonth" xml:space="preserve">
+    <value>Export Month</value>
+  </data>
+  <data name="HoursEntryPage_ExportYear" xml:space="preserve">
+    <value>Export Year</value>
+  </data>
+  <data name="HoursEntryPage_HeaderSel" xml:space="preserve">
+    <value>Sel</value>
+  </data>
+  <data name="Common_Date" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="HoursEntryPage_HeaderPlusMinus" xml:space="preserve">
+    <value>+/-</value>
+  </data>
+  <data name="Common_Client" xml:space="preserve">
+    <value>Client</value>
+  </data>
+  <data name="Common_CostCenter" xml:space="preserve">
+    <value>Cost Center</value>
+  </data>
+  <data name="Common_Hours" xml:space="preserve">
+    <value>Hours</value>
+  </data>
+  <data name="Common_Extras" xml:space="preserve">
+    <value>Extras</value>
+  </data>
+  <data name="Common_Observations" xml:space="preserve">
+    <value>Obs.</value>
+  </data>
+  <data name="DbConfigPage_Title" xml:space="preserve">
+    <value>Connection Configuration</value>
+  </data>
+  <data name="DbConfigPage_Header" xml:space="preserve">
+    <value>Database Configuration</value>
+  </data>
+  <data name="Common_Server" xml:space="preserve">
+    <value>Server</value>
+  </data>
+  <data name="Common_Port" xml:space="preserve">
+    <value>Port</value>
+  </data>
+  <data name="Common_Database" xml:space="preserve">
+    <value>Database</value>
+  </data>
+  <data name="Common_User" xml:space="preserve">
+    <value>User</value>
+  </data>
+  <data name="Common_Password" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="DbConfigPage_ContactEmail" xml:space="preserve">
+    <value>Contact Email</value>
+  </data>
+  <data name="DbConfigPage_ContactEmailOptional" xml:space="preserve">
+    <value>Contact Email (Optional)</value>
+  </data>
+  <data name="Common_Optional" xml:space="preserve">
+    <value>Optional</value>
+  </data>
+  <data name="DbConfigPage_ErrorServer" xml:space="preserve">
+    <value>Server required</value>
+  </data>
+  <data name="DbConfigPage_ErrorPort" xml:space="preserve">
+    <value>Invalid port (1-65535)</value>
+  </data>
+  <data name="DbConfigPage_ErrorDatabase" xml:space="preserve">
+    <value>Database required</value>
+  </data>
+  <data name="DbConfigPage_ErrorUser" xml:space="preserve">
+    <value>User required</value>
+  </data>
+  <data name="DbConfigPage_ErrorPassword" xml:space="preserve">
+    <value>Password required</value>
+  </data>
+  <data name="DbConfigPage_ErrorEmail" xml:space="preserve">
+    <value>Invalid email</value>
+  </data>
+  <data name="DbConfigPage_SaveAndTest" xml:space="preserve">
+    <value>Save and Test</value>
+  </data>
+  <data name="DbConfigPage_TestConnection" xml:space="preserve">
+    <value>Test Connection</value>
+  </data>
+  <data name="AboutPage_Title" xml:space="preserve">
+    <value>About</value>
+  </data>
+  <data name="AboutPage_AppVersion" xml:space="preserve">
+    <value>Application Version</value>
+  </data>
+  <data name="AboutPage_CheckUpdates" xml:space="preserve">
+    <value>Check for Updates</value>
+  </data>
+  <data name="AboutPage_Info" xml:space="preserve">
+    <value>Information</value>
+  </data>
+  <data name="Common_NameLabel" xml:space="preserve">
+    <value>Name:</value>
+  </data>
+  <data name="MainPage_WelcomeTo" xml:space="preserve">
+    <value>Welcome to:</value>
+  </data>
+  <data name="MainPage_AdminAccess" xml:space="preserve">
+    <value>Admin Access</value>
+  </data>
+  <data name="Common_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="MainPage_Dashboard" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="MainPage_Swipe" xml:space="preserve">
+    <value>Swipe</value>
+  </data>
+  <data name="MainPage_Users" xml:space="preserve">
+    <value>Users</value>
+  </data>
+  <data name="MainPage_DbConnection" xml:space="preserve">
+    <value>DB Connection</value>
+  </data>
+  <data name="MainPage_Theme" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="MainPage_ThemeAuto" xml:space="preserve">
+    <value>Automatic</value>
+  </data>
+  <data name="MainPage_ThemeLight" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="MainPage_ThemeDark" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="Family_NamePlaceholder" xml:space="preserve">
+    <value>Nome da Família</value>
+  </data>
+  <data name="Sync_FolderTitle" xml:space="preserve">
+    <value>Sincronização de Pastas</value>
+  </data>
+  <data name="Sync_FolderMessage" xml:space="preserve">
+    <value>Detetados {0} clientes sem pastas sincronizadas.\nDeseja criar a estrutura de pastas para eles agora?</value>
+  </data>
+  <data name="Sync_Yes" xml:space="preserve">
+    <value>Sim, Sincronizar</value>
+  </data>
+  <data name="Sync_NotNow" xml:space="preserve">
+    <value>Agora não</value>
+  </data>
+  <data name="Sync_ReportTitle" xml:space="preserve">
+    <value>Relatório</value>
+  </data>
+  <data name="Sync_ReportMessage" xml:space="preserve">
+    <value>Sincronização concluída.\nSucesso: {0}\nErros/Ignorados: {1}</value>
+  </data>
+  <data name="Sync_Starting" xml:space="preserve">
+    <value>A iniciar sincronização...</value>
+  </data>
+  <data name="Dashboard_TotalHours" xml:space="preserve">
+    <value>Total Horas</value>
+  </data>
+  <data name="Dashboard_DailyAverage" xml:space="preserve">
+    <value>Média Diária</value>
+  </data>
+  <data name="Dashboard_WorkedDays" xml:space="preserve">
+    <value>Dias Trabalhados</value>
+  </data>
+  <data name="Dashboard_TopClients" xml:space="preserve">
+    <value>Top Clientes</value>
+  </data>
+  <data name="Dashboard_TopFamilies" xml:space="preserve">
+    <value>Top Famílias</value>
+  </data>
+  <data name="Dashboard_HoursByMonth" xml:space="preserve">
+    <value>Horas por Mês</value>
+  </data>
+  <data name="Dashboard_HoursByFamily" xml:space="preserve">
+    <value>Horas por Família</value>
+  </data>
+  <data name="Dashboard_Balance" xml:space="preserve">
+    <value>Saldo Horas</value>
+  </data>
+  <data name="Dashboard_Evolution" xml:space="preserve">
+    <value>Evolução</value>
+  </data>
+  <data name="Dashboard_Annual" xml:space="preserve">
+    <value>Anual</value>
+  </data>
+  <data name="Dashboard_RealHours" xml:space="preserve">
+    <value>Horas Reais</value>
+  </data>
+  <data name="Dashboard_IdealHours" xml:space="preserve">
+    <value>Horas Ideais</value>
+  </data>
+  <data name="Dashboard_ExtraHours" xml:space="preserve">
+    <value>Horas Extras</value>
+  </data>
+  <data name="Dashboard_Absences" xml:space="preserve">
+    <value>Ausências</value>
+  </data>
+  <data name="Dashboard_AbsencesAccumulated" xml:space="preserve">
+    <value>Acumulado de Ausências</value>
+  </data>
+  <data name="Dashboard_SelectCollaborator" xml:space="preserve">
+    <value>Selecione Colaborador</value>
+  </data>
+  <data name="Common_DeleteConfirmationTitle" xml:space="preserve">
+    <value>Eliminar</value>
+  </data>
+  <data name="Common_DeleteConfirmationMessage" xml:space="preserve">
+    <value>Tem a certeza que deseja eliminar este registo?</value>
+  </data>
+  <data name="Common_DeleteConfirmationMessageFormat" xml:space="preserve">
+    <value>Tem a certeza que deseja eliminar {0}?</value>
+  </data>
+
+  <data name="Login_Title" xml:space="preserve">
+    <value>Login</value>
+  </data>
+  <data name="Login_Welcome" xml:space="preserve">
+    <value>Welcome 👋</value>
+  </data>
+  <data name="Login_UserFound" xml:space="preserve">
+    <value>User found</value>
+  </data>
+  <data name="Login_Subtitle" xml:space="preserve">
+    <value>Sign in to continue</value>
+  </data>
+  <data name="Login_EmailPlaceholder" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="Login_PasswordPlaceholder" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="Login_Button" xml:space="preserve">
+    <value>Login</value>
+  </data>
+  <data name="Login_Biometric" xml:space="preserve">
+    <value>Login with Face ID</value>
+  </data>
+  <data name="Login_Config" xml:space="preserve">
+    <value>Configure Connection</value>
+  </data>
+  <data name="Login_UsernamePlaceholder" xml:space="preserve">
+    <value>Username</value>
+  </data>
+  <data name="Login_RememberMe" xml:space="preserve">
+    <value>Remember me on this device</value>
+  </data>
+  <data name="Common_Back" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="Login_ForgotPassword" xml:space="preserve">
+    <value>Forgot password (email)</value>
+  </data>
+  <data name="Login_HaveCode" xml:space="preserve">
+    <value>I have an email code</value>
+  </data>
+  <data name="Login_InternalReset" xml:space="preserve">
+    <value>Internal reset (admin)</value>
+  </data>
+  <data name="Login_UseBiometric" xml:space="preserve">
+    <value>Use biometrics (Face ID/Touch ID)</value>
+  </data>
+  <data name="Welcome_Connecting" xml:space="preserve">
+    <value>Connecting to database...</value>
+  </data>
+  <data name="Welcome_Subtitle" xml:space="preserve">
+    <value>Welcome to YAHPUBLICIDADE</value>
+  </data>
+  <data name="Welcome_Description" xml:space="preserve">
+    <value>Start managing your data simply and modernly.</value>
+  </data>
+  <data name="Welcome_ConnectionFailed" xml:space="preserve">
+    <value>Connection failed: {0}</value>
+  </data>
+  <data name="Welcome_ConnectionError" xml:space="preserve">
+    <value>Could not connect. Opening configuration...</value>
+  </data>
+  <data name="Welcome_Title" xml:space="preserve">
+    <value>Welcome</value>
+  </data>
+  <data name="Welcome_ChooseCompany" xml:space="preserve">
+    <value>Choose company</value>
+  </data>
+  <data name="Main_Logout" xml:space="preserve">
+    <value>Logout</value>
+  </data>
+  <data name="Main_Dashboard" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="Main_Clients" xml:space="preserve">
+    <value>Clients</value>
+  </data>
+  <data name="Main_Products" xml:space="preserve">
+    <value>Products</value>
+  </data>
+  <data name="Main_Hours" xml:space="preserve">
+    <value>Hours</value>
+  </data>
+  <data name="Main_Services" xml:space="preserve">
+    <value>Services</value>
+  </data>
+  <data name="Main_Theme" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="Main_ThemeAuto" xml:space="preserve">
+    <value>Automatic</value>
+  </data>
+  <data name="Main_ThemeLight" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="Main_ThemeDark" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="Main_WelcomeTo" xml:space="preserve">
+    <value>Welcome to</value>
+  </data>
+  <data name="Main_AdminAccess" xml:space="preserve">
+    <value>Admin Access</value>
+  </data>
+  <data name="Main_AdminUserPlaceholder" xml:space="preserve">
+    <value>Username</value>
+  </data>
+  <data name="Main_AdminPassPlaceholder" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="Main_LogoutTitle" xml:space="preserve">
+    <value>Logout</value>
+  </data>
+  <data name="Main_LogoutMessage" xml:space="preserve">
+    <value>Are you sure you want to exit?</value>
+  </data>
+  <data name="Main_LogoutConfirm" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="Main_CloseTitle" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="Main_CloseMessage" xml:space="preserve">
+    <value>On Android/iOS we don't close the app directly.</value>
+  </data>
+  <data name="Main_AccessDenied" xml:space="preserve">
+    <value>Access denied</value>
+  </data>
+  <data name="Main_AdminRequired" xml:space="preserve">
+    <value>ADMIN privileges required.</value>
+  </data>
+  <data name="Main_AdminEnterCredentials" xml:space="preserve">
+    <value>Enter username and password.</value>
+  </data>
+  <data name="Login_InvalidCredentials" xml:space="preserve">
+    <value>Invalid credentials.</value>
+  </data>
+  <data name="Main_NoContent" xml:space="preserve">
+    <value>{0} has no content.</value>
+  </data>
+  <data name="Settings_Title" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Settings_SystemSettings" xml:space="preserve">
+    <value>System Settings</value>
+  </data>
+  <data name="Settings_Users" xml:space="preserve">
+    <value>Users</value>
+  </data>
+  <data name="Settings_UsersDesc" xml:space="preserve">
+    <value>Manage accounts and permissions</value>
+  </data>
+  <data name="Settings_Database" xml:space="preserve">
+    <value>Database</value>
+  </data>
+  <data name="Settings_DatabaseDesc" xml:space="preserve">
+    <value>MariaDB / MySQL Connection</value>
+  </data>
+  <data name="Settings_FileServer" xml:space="preserve">
+    <value>File Server</value>
+  </data>
+  <data name="Settings_FileServerDesc" xml:space="preserve">
+    <value>Paths and Folders (NAS)</value>
+  </data>
+  <data name="Settings_Language" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="Settings_LanguageDesc" xml:space="preserve">
+    <value>Change Language</value>
+  </data>
+  <data name="Hours_TabSummary" xml:space="preserve">
+    <value>Resumo</value>
+  </data>
+  <data name="Hours_TabList" xml:space="preserve">
+    <value>Lista</value>
+  </data>
+  <data name="Hours_TabCalendar" xml:space="preserve">
+    <value>Calendário</value>
+  </data>
+  <data name="Hours_DailySummary" xml:space="preserve">
+    <value>Resumo Diário</value>
+  </data>
+  <data name="Hours_NormalHours" xml:space="preserve">
+    <value>Horas Normais</value>
+  </data>
+  <data name="Hours_ExtraHours" xml:space="preserve">
+    <value>Horas Extras</value>
+  </data>
+  <data name="Hours_Total" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="Hours_Weekend" xml:space="preserve">
+    <value>Fim de Semana</value>
+  </data>
+  <data name="Hours_NoRecords" xml:space="preserve">
+    <value>Sem registos neste período</value>
+  </data>
+  <data name="Hours_SelectPeriod" xml:space="preserve">
+    <value>Selecionar Período</value>
+  </data>
+  <data name="Hours_PeriodToday" xml:space="preserve">
+    <value>Hoje</value>
+  </data>
+  <data name="Hours_PeriodThisWeek" xml:space="preserve">
+    <value>Esta Semana</value>
+  </data>
+  <data name="Hours_PeriodThisMonth" xml:space="preserve">
+    <value>Este Mês</value>
+  </data>
+  <data name="Hours_PeriodLast30Days" xml:space="preserve">
+    <value>Últimos 30 dias</value>
+  </data>
+  <data name="Hours_CalendarMonth" xml:space="preserve">
+    <value>Calendário do Mês</value>
+  </data>
+  <data name="Hours_LegendNormal" xml:space="preserve">
+    <value>Normal</value>
+  </data>
+  <data name="Hours_LegendExtra" xml:space="preserve">
+    <value>Extra</value>
+  </data>
+  <data name="Hours_Work" xml:space="preserve">
+    <value>Trabalho</value>
+  </data>
+  <data name="Hours_Absence" xml:space="preserve">
+    <value>Ausência</value>
+  </data>
+  <data name="Hours_Reason" xml:space="preserve">
+    <value>Motivo</value>
+  </data>
+  <data name="Hours_Client" xml:space="preserve">
+    <value>Cliente</value>
+  </data>
+  <data name="Hours_Date" xml:space="preserve">
+    <value>Data</value>
+  </data>
+  <data name="Hours_Observations" xml:space="preserve">
+    <value>Observações</value>
+  </data>
+  <data name="Hours_SelectCollaborator" xml:space="preserve">
+    <value>Selecione Colaborador</value>
+  </data>
+  <data name="Hours_SelectClient" xml:space="preserve">
+    <value>Selecione Cliente</value>
+  </data>
+  <data name="Hours_SelectReason" xml:space="preserve">
+    <value>Selecione Motivo</value>
+  </data>
+  <data name="Hours_NoClient" xml:space="preserve">
+    <value>Sem cliente</value>
+  </data>
+  <data name="Hours_RecordType" xml:space="preserve">
+    <value>Tipo de Registo</value>
+  </data>
+  <data name="Common_Error" xml:space="preserve">
+    <value>Erro</value>
+  </data>
+  <data name="Hours_SavedSuccess" xml:space="preserve">
+    <value>Registo guardado com sucesso!</value>
+  </data>
+  <data name="Hours_ErrorSelectCollaborator" xml:space="preserve">
+    <value>Selecione um colaborador.</value>
+  </data>
+  <data name="Hours_ErrorSelectReason" xml:space="preserve">
+    <value>Selecione o motivo da ausência.</value>
+  </data>
+  <data name="Hours_ErrorEnterHours" xml:space="preserve">
+    <value>Insira horas normais ou extras.</value>
+  </data>
+  <data name="Hours_ErrorSaving" xml:space="preserve">
+    <value>Erro ao guardar: {0}</value>
+  </data>
+  <data name="Hours_ErrorOpeningPopup" xml:space="preserve">
+    <value>Erro ao abrir popup: {0}</value>
+  </data>
+  <data name="ProjectListPage_Title" xml:space="preserve">
+    <value>Projects</value>
+  </data>
+  <data name="ProjectDetailPage_Title" xml:space="preserve">
+    <value>Project</value>
+  </data>
+  <data name="ProjectDetailPage_Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="ProjectDetailPage_Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="ProjectDetailPage_Description" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="ProjectDetailPage_Category" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="ProjectDetailPage_Icon" xml:space="preserve">
+    <value>Icon</value>
+  </data>
+  <data name="TaskDetailPage_Title" xml:space="preserve">
+    <value>Task</value>
+  </data>
+  <data name="TaskDetailPage_Task" xml:space="preserve">
+    <value>Task</value>
+  </data>
+  <data name="TaskDetailPage_Completed" xml:space="preserve">
+    <value>Completed</value>
+  </data>
+  <data name="TaskDetailPage_Project" xml:space="preserve">
+    <value>Project</value>
+  </data>
+  <data name="SwipeProofPage_Title" xml:space="preserve">
+    <value>Swipe Proof</value>
+  </data>
+  <data name="SwipeProofPage_Folders" xml:space="preserve">
+    <value>Pastas</value>
+  </data>
+  <data name="SwipeProofPage_Edit" xml:space="preserve">
+    <value>Editar</value>
+  </data>
+  <data name="SwipeProofPage_Delete" xml:space="preserve">
+    <value>Eliminar</value>
+  </data>
+  <data name="RegisterPage_Title" xml:space="preserve">
+    <value>Utilizadores</value>
+  </data>
+  <data name="RegisterPage_List" xml:space="preserve">
+    <value>Lista</value>
+  </data>
+  <data name="RegisterPage_UserList" xml:space="preserve">
+    <value>Lista de Utilizadores</value>
+  </data>
+  <data name="RegisterPage_New" xml:space="preserve">
+    <value>Novo</value>
+  </data>
+  <data name="RegisterPage_ChangePhoto" xml:space="preserve">
+    <value>Alterar Foto</value>
+  </data>
+  <data name="RegisterPage_Username" xml:space="preserve">
+    <value>Username</value>
+  </data>
+  <data name="RegisterPage_UserPlaceholder" xml:space="preserve">
+    <value>utilizador</value>
+  </data>
+  <data name="ManageMetaPage_Title" xml:space="preserve">
+    <value>Categories and Tags</value>
+  </data>
+  <data name="ManageMetaPage_ResetApp" xml:space="preserve">
+    <value>Reset App</value>
+  </data>
+  <data name="ManageMetaPage_Categories" xml:space="preserve">
+    <value>Categories</value>
+  </data>
+  <data name="ManageMetaPage_Tags" xml:space="preserve">
+    <value>Tags</value>
+  </data>
+  <data name="HorasColaboradorPage_Title" xml:space="preserve">
+    <value>⏱️ Horas de Colaborador</value>
+  </data>
+  <data name="HorasColaboradorPage_Summary" xml:space="preserve">
+    <value>📊 Resumo</value>
+  </data>
+  <data name="HorasColaboradorPage_List" xml:space="preserve">
+    <value>📝 Lista</value>
+  </data>
+  <data name="HorasColaboradorPage_Calendar" xml:space="preserve">
+    <value>📅 Calendário</value>
+  </data>
+  <data name="WelcomePage_Connecting" xml:space="preserve">
+    <value>A ligar à base de dados…</value>
+  </data>
+  <data name="WelcomePage_ChooseCompany" xml:space="preserve">
+    <value>Escolhe a empresa</value>
+  </data>
+  <data name="WelcomePage_ConnectionFailed" xml:space="preserve">
+    <value>Ligação falhou: {0}</value>
+  </data>
+  <data name="WelcomePage_ConnectionFailedConfig" xml:space="preserve">
+    <value>Não foi possível ligar. A abrir configuração…</value>
+  </data>
+  <data name="Splash_Version" xml:space="preserve">
+    <value>Versão {0}</value>
+  </data>
+  <data name="AboutPage_CheckingUpdates" xml:space="preserve">
+    <value>Verificando...</value>
+  </data>
+  <data name="AboutPage_UpdateError" xml:space="preserve">
+    <value>⚠️ Erro ao verificar atualizações</value>
+  </data>
+  <data name="Common_Done" xml:space="preserve">
+    <value>Concluído</value>
+  </data>
+  <data name="Common_Add" xml:space="preserve">
+    <value>Adicionar</value>
+  </data>
+  <data name="ClientsPage_LoadError" xml:space="preserve">
+    <value>Falha ao carregar clientes.</value>
+  </data>
+  <data name="ClientsPage_ClientNotFound" xml:space="preserve">
+    <value>Erro: cliente não encontrado</value>
+  </data>
+  <data name="ClientsPage_InvalidClientCode" xml:space="preserve">
+    <value>Erro: código do cliente inválido</value>
+  </data>
+  <data name="ClientsPage_OpeningFolders" xml:space="preserve">
+    <value>A abrir pastas...</value>
+  </data>
+  <data name="ClientsPage_OpenFoldersError" xml:space="preserve">
+    <value>Erro ao abrir pastas: {0}</value>
+  </data>
+  <data name="Common_ErrorFormat" xml:space="preserve">
+    <value>Erro: {0}</value>
+  </data>
+  <data name="ClientsPage_DeleteConfirmTitle" xml:space="preserve">
+    <value>Eliminar Cliente</value>
+  </data>
+  <data name="DbConfigPage_FixErrors" xml:space="preserve">
+    <value>Corrija os campos destacados.</value>
+  </data>
+  <data name="DbConfigPage_TestingConnection" xml:space="preserve">
+    <value>A testar ligação...</value>
+  </data>
+  <data name="DbConfigPage_ConnectionSuccess" xml:space="preserve">
+    <value>✓ Ligação estabelecida com sucesso!</value>
+  </data>
+  <data name="DbConfigPage_ConnectionSuccessToast" xml:space="preserve">
+    <value>Ligação estabelecida com sucesso!</value>
+  </data>
+  <data name="DbConfigPage_ConnectionError" xml:space="preserve">
+    <value>✗ Não foi possível ligar à BD.</value>
+  </data>
+  <data name="DbConfigPage_ConnectionErrorToast" xml:space="preserve">
+    <value>Ainda não foi possível ligar à BD.</value>
+  </data>
+  <data name="HoursEntryPage_EditNotesMessage" xml:space="preserve">
+    <value>Editar observações da linha:</value>
+  </data>
+  <data name="Common_PlaceholderWriteHere" xml:space="preserve">
+    <value>Escreve aqui...</value>
+  </data>
+  <data name="Login_SearchingUser" xml:space="preserve">
+    <value>A procurar utilizador…</value>
+  </data>
+  <data name="Common_Info" xml:space="preserve">
+    <value>Info</value>
+  </data>
+  <data name="Main_PageNoContent" xml:space="preserve">
+    <value>{0} sem conteúdo.</value>
+  </data>
+  <data name="Common_Title" xml:space="preserve">
+    <value>Title</value>
+  </data>
+  <data name="Common_Color" xml:space="preserve">
+    <value>Color</value>
+  </data>
+  <data name="ManageMetaPage_ColorHint" xml:space="preserve">
+    <value>Color in HEX format (e.g. #FF0000)</value>
+  </data>
+  <data name="Login_UserNotFound" xml:space="preserve">
+    <value>Utilizador não encontrado</value>
+  </data>
+  <data name="Login_Msg_EnterUserAndPass" xml:space="preserve">
+    <value>Indica utilizador e palavra-passe.</value>
+  </data>
+  <data name="Login_Msg_InvalidCredentials" xml:space="preserve">
+    <value>Credenciais inválidas.</value>
+  </data>
+  <data name="Login_WelcomeUser" xml:space="preserve">
+    <value>Bem-vindo, {0}!</value>
+  </data>
+  <data name="Login_WelcomeSimple" xml:space="preserve">
+    <value>Bem-vindo!</value>
+  </data>
+  <data name="Login_Msg_LoginError" xml:space="preserve">
+    <value>Erro no login: {0}</value>
+  </data>
+  <data name="Login_Recovery_Title" xml:space="preserve">
+    <value>Recuperação</value>
+  </data>
+  <data name="Login_Recovery_EnterUserFirst" xml:space="preserve">
+    <value>Escreve primeiro o nome de utilizador.</value>
+  </data>
+  <data name="Login_Recovery_EmailCodeTitle" xml:space="preserve">
+    <value>Código do e-mail</value>
+  </data>
+  <data name="Login_Recovery_EmailCodeMsg" xml:space="preserve">
+    <value>Introduz o código de 6 dígitos recebido:</value>
+  </data>
+  <data name="Login_Recovery_NewPassTitle" xml:space="preserve">
+    <value>Nova palavra-passe</value>
+  </data>
+  <data name="Login_Recovery_NewPassMsg" xml:space="preserve">
+    <value>Introduz a nova password:</value>
+  </data>
+  <data name="Login_Recovery_Success" xml:space="preserve">
+    <value>Password alterada com sucesso.</value>
+  </data>
+  <data name="Login_Recovery_InvalidCode" xml:space="preserve">
+    <value>Código inválido ou expirado.</value>
+  </data>
+  <data name="Common_ErrorTitle" xml:space="preserve">
+    <value>Erro</value>
+  </data>
+  <data name="Login_Error_ResetFail" xml:space="preserve">
+    <value>Falha no reset: {0}</value>
+  </data>
+  <data name="Login_Recovery_NoEmail" xml:space="preserve">
+    <value>Não existe e-mail associado a este utilizador.</value>
+  </data>
+  <data name="Login_Recovery_EmailSent" xml:space="preserve">
+    <value>Enviámos um e-mail para {0} com um código de 6 dígitos.\nUsa 'Tenho um código do e-mail' para o aplicar.</value>
+  </data>
+  <data name="Login_Error_EmailFail" xml:space="preserve">
+    <value>Falha ao enviar e-mail: {0}</value>
+  </data>
+  <data name="Login_InternalReset_Title" xml:space="preserve">
+    <value>Reset interno</value>
+  </data>
+  <data name="Login_InternalReset_KeyPrompt" xml:space="preserve">
+    <value>Chave de reset (admin):</value>
+  </data>
+  <data name="Login_InternalReset_InvalidKey" xml:space="preserve">
+    <value>Chave inválida.</value>
+  </data>
+  <data name="Login_InternalReset_Success" xml:space="preserve">
+    <value>Password alterada.</value>
+  </data>
+  <data name="Login_InternalReset_Fail" xml:space="preserve">
+    <value>Falha no reset interno: {0}</value>
+  </data>
+  <data name="Login_Validation_Title" xml:space="preserve">
+    <value>Validação</value>
+  </data>
+  <data name="Login_Validation_EnterPass" xml:space="preserve">
+    <value>Indica a password.</value>
+  </data>
+  <data name="Login_Validation_MinChars" xml:space="preserve">
+    <value>Mínimo 4 caracteres.</value>
+  </data>
+  <data name="ProductsPage_ProductUnidentified" xml:space="preserve">
+    <value>Product not identified.</value>
+  </data>
+  <data name="ProductsPage_DeleteTitle" xml:space="preserve">
+    <value>Delete Product</value>
+  </data>
+  <data name="ProductsPage_DeleteMessage" xml:space="preserve">
+    <value>Are you sure you want to delete '{0}'?</value>
+  </data>
+  <data name="ProductsPage_EditProduct" xml:space="preserve">
+    <value>Edit Product</value>
+  </data>
+  <data name="ProductsPage_LoadError" xml:space="preserve">
+    <value>Failed to load products.</value>
+  </data>
+  <data name="Common_SaveError" xml:space="preserve">
+    <value>Error saving: {0}</value>
+  </data>
+  <data name="Common_DeleteError" xml:space="preserve">
+    <value>Error deleting: {0}</value>
+  </data>
+  <data name="ProjectDetailPage_IconHint" xml:space="preserve">
+    <value>Icon representing the type of task. Tap to select</value>
+  </data>
+  <data name="Common_Tags" xml:space="preserve">
+    <value>Tags</value>
+  </data>
+  <data name="Common_Tasks" xml:space="preserve">
+    <value>Tasks</value>
+  </data>
+  <data name="RegisterPage_Password" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="RegisterPage_FullName" xml:space="preserve">
+    <value>Full Name</value>
+  </data>
+  <data name="RegisterPage_NamePlaceholder" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="RegisterPage_Contact" xml:space="preserve">
+    <value>Contact</value>
+  </data>
+  <data name="RegisterPage_ContactPlaceholder" xml:space="preserve">
+    <value>912345678</value>
+  </data>
+  <data name="RegisterPage_Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="RegisterPage_EmailPlaceholder" xml:space="preserve">
+    <value>email@example.com</value>
+  </data>
+  <data name="RegisterPage_Category1" xml:space="preserve">
+    <value>Category 1</value>
+  </data>
+  <data name="RegisterPage_Category2" xml:space="preserve">
+    <value>Category 2</value>
+  </data>
+  <data name="RegisterPage_UserType" xml:space="preserve">
+    <value>User Type</value>
+  </data>
+  <data name="RegisterPage_UserTypePlaceholder" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="RegisterPage_SelectUser" xml:space="preserve">
+    <value>Select User</value>
+  </data>
+  <data name="RegisterPage_Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="RegisterPage_Error_UsernameRequired" xml:space="preserve">
+    <value>Username is required.</value>
+  </data>
+  <data name="RegisterPage_Error_PasswordRequired" xml:space="preserve">
+    <value>Password is required.</value>
+  </data>
+  <data name="RegisterPage_Error_NameRequired" xml:space="preserve">
+    <value>Name is required.</value>
+  </data>
+  <data name="RegisterPage_Error_ContactRequired" xml:space="preserve">
+    <value>Contact is required.</value>
+  </data>
+  <data name="RegisterPage_Error_EmailInvalid" xml:space="preserve">
+    <value>Invalid email.</value>
+  </data>
+  <data name="RegisterPage_Error_Category1Required" xml:space="preserve">
+    <value>Category 1 is required.</value>
+  </data>
+  <data name="RegisterPage_Error_Category2Required" xml:space="preserve">
+    <value>Category 2 is required.</value>
+  </data>
+  <data name="RegisterPage_Error_TypeRequired" xml:space="preserve">
+    <value>Type is required.</value>
+  </data>
+  <data name="RegisterPage_Error_FillRequired" xml:space="preserve">
+    <value>Please fill in the required fields.</value>
+  </data>
+  <data name="RegisterPage_Error_UserExists" xml:space="preserve">
+    <value>A user with this username already exists.</value>
+  </data>
+  <data name="RegisterPage_UserSaved" xml:space="preserve">
+    <value>User saved.</value>
+  </data>
+  <data name="RegisterPage_UserUpdated" xml:space="preserve">
+    <value>User updated.</value>
+  </data>
+  <data name="RegisterPage_NoChanges" xml:space="preserve">
+    <value>No changes.</value>
+  </data>
+  <data name="RegisterPage_Error_DeleteUsername" xml:space="preserve">
+    <value>Indicate the username to delete.</value>
+  </data>
+  <data name="RegisterPage_DeleteConfirmTitle" xml:space="preserve">
+    <value>Confirmation</value>
+  </data>
+  <data name="RegisterPage_DeleteConfirmMessage" xml:space="preserve">
+    <value>Delete user '{0}'?</value>
+  </data>
+  <data name="RegisterPage_UserDeleted" xml:space="preserve">
+    <value>User deleted.</value>
+  </data>
+  <data name="RegisterPage_UserDeleteFail" xml:space="preserve">
+    <value>No rows deleted (username does not exist).</value>
+  </data>
+  <data name="RegisterPage_PickImageTitle" xml:space="preserve">
+    <value>Pick image</value>
+  </data>
+  <data name="RegisterPage_ImageTooLarge" xml:space="preserve">
+    <value>The image is larger than 6 MB. Choose a smaller image.</value>
+  </data>
+  <data name="RegisterPage_ImageError" xml:space="preserve">
+    <value>Error picking image: {0}</value>
+  </data>
+  <data name="RegisterPage_LoadError" xml:space="preserve">
+    <value>Error loading list: {0}</value>
+  </data>
+  <data name="RegisterPage_ListUpdated" xml:space="preserve">
+    <value>User list updated.</value>
+  </data>
+  <data name="Common_Clear" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="Common_Yes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="Common_No" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="ServicePage_ZeroLoaded" xml:space="preserve">
+    <value>0 services loaded.</value>
+  </data>
+  <data name="ServicePage_ErrorBinding" xml:space="preserve">
+    <value>BindingContext is not ServicePageModel.</value>
+  </data>
+  <data name="ServicePage_LoadFailure" xml:space="preserve">
+    <value>Failed to load services.</value>
+  </data>
+  <data name="SwipeProofPage_EditTitle" xml:space="preserve">
+    <value>EDIT</value>
+  </data>
+  <data name="SwipeProofPage_EditMessage" xml:space="preserve">
+    <value>Open form for '{0}'</value>
+  </data>
+  <data name="SwipeProofPage_DeleteConfirm" xml:space="preserve">
+    <value>Delete '{0}'?</value>
+  </data>
+  <data name="SwipeProofPage_Deleted" xml:space="preserve">
+    <value>Deleted.</value>
+  </data>
+  <data name="SwipeProofPage_QfileError" xml:space="preserve">
+    <value>Qfile failed: {0}</value>
+  </data>
+  <data name="TaskDetailPage_Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="TaskDetailPage_CompletedHint" xml:space="preserve">
+    <value>Indicates if this task is completed</value>
+  </data>
+  <data name="TaskDetailPage_ProjectHint" xml:space="preserve">
+    <value>Which project this task belongs to</value>
+  </data>
+  <data name="AboutPage_Platform" xml:space="preserve">
+    <value>Platform:</value>
+  </data>
+  <data name="AboutPage_UpdateInfoError" xml:space="preserve">
+    <value>⚠️ Could not get information</value>
+  </data>
+  <data name="AboutPage_NewVersionAvailable" xml:space="preserve">
+    <value>New version available: {0}\n\n{1}</value>
+  </data>
+  <data name="AboutPage_CheckNotes" xml:space="preserve">
+    <value>Check the news!</value>
+  </data>
+  <data name="AboutPage_MandatoryUpdatePrefix" xml:space="preserve">
+    <value>⚠️ MANDATORY UPDATE ⚠️\n\n{0}</value>
+  </data>
+  <data name="AboutPage_MandatoryUpdateTitle" xml:space="preserve">
+    <value>Mandatory Update</value>
+  </data>
+  <data name="AboutPage_UpdateAvailableTitle" xml:space="preserve">
+    <value>Update Available</value>
+  </data>
+  <data name="AboutPage_UpdateNow" xml:space="preserve">
+    <value>Update Now</value>
+  </data>
+  <data name="AboutPage_Update" xml:space="preserve">
+    <value>Update</value>
+  </data>
+  <data name="AboutPage_Later" xml:space="preserve">
+    <value>Later</value>
+  </data>
+  <data name="ClientsPage_ErrorEdit" xml:space="preserve">
+    <value>Error opening edit: {0}</value>
+  </data>
+  <data name="ClientsPage_ErrorDelete" xml:space="preserve">
+    <value>Error deleting: {0}</value>
+  </data>
+  <data name="ClientsPage_ErrorFolders" xml:space="preserve">
+    <value>Error opening folders: {0}</value>
+  </data>
+  <data name="ClientsPage_ServicesToast" xml:space="preserve">
+    <value>{0}: {1}.</value>
+  </data>
+  <data name="ClientsPage_DeleteTitle" xml:space="preserve">
+    <value>Delete Client</value>
+  </data>
+  <data name="ClientsPage_DeleteConfirm" xml:space="preserve">
+    <value>Are you sure you want to delete '{0}'?</value>
+  </data>
+  <data name="ClientsPage_DeletedSuccess" xml:space="preserve">
+    <value>Client deleted successfully.</value>
+  </data>
+  <data name="ClientsPage_DeleteBlocked" xml:space="preserve">
+    <value>Could not delete (command blocked).</value>
+  </data>
+  <data name="ClientsPage_NoCode" xml:space="preserve">
+    <value>Client has no code defined.</value>
+  </data>
+  <data name="ClientsPage_OpeningFolder" xml:space="preserve">
+    <value>Opening folder for client {0}...\n\nPath: CLIENTES/{1}</value>
+  </data>
+  <data name="ClientsPage_QfileError" xml:space="preserve">
+    <value>Failed to open Qfile: {0}</value>
+  </data>
+  <data name="ClientsPage_SalespersonCreated" xml:space="preserve">
+    <value>Salesperson created.</value>
+  </data>
+  <data name="ClientsPage_NameRequired" xml:space="preserve">
+    <value>Client name is required.</value>
+  </data>
+  <data name="ClientsPage_AddedSuccess" xml:space="preserve">
+    <value>Client added successfully! (Folder to be created)</value>
+  </data>
+  <data name="ClientsPage_UpdatedSuccess" xml:space="preserve">
+    <value>Client updated successfully!</value>
+  </data>
+  <data name="ClientsPage_ErrorSave" xml:space="preserve">
+    <value>Error saving: {0}</value>
+  </data>
+  <data name="Common_Warning" xml:space="preserve">
+    <value>Warning</value>
+  </data>
+  <data name="DbConfigPage_TestingMulti" xml:space="preserve">
+    <value>Testing connection (multi-endpoints)...</value>
+  </data>
+  <data name="DbConfigPage_PrimaryOK" xml:space="preserve">
+    <value>Primary OK.</value>
+  </data>
+  <data name="DbConfigPage_ConnectionOK" xml:space="preserve">
+    <value>Connection OK with current configuration.</value>
+  </data>
+  <data name="DbConfigPage_Diagnostic" xml:space="preserve">
+    <value>Diagnostic</value>
+  </data>
+  <data name="DbConfigPage_Failed" xml:space="preserve">
+    <value>Failed: {0}\n{1}</value>
+  </data>
+  <data name="DbConfigPage_ErrorPrefix" xml:space="preserve">
+    <value>Error: {0}</value>
+  </data>
+  <data name="DbConfigPage_NoEndpoint" xml:space="preserve">
+    <value>No endpoint responded successfully.</value>
+  </data>
+  <data name="HorasColaboradorPage_AddHours" xml:space="preserve">
+    <value>➕ Horas</value>
+  </data>
+  <data name="HorasColaboradorPage_AbsenceTypes" xml:space="preserve">
+    <value>⚙️ Tipos Ausência</value>
+  </data>
+  <data name="HorasColaboradorPage_Collaborator" xml:space="preserve">
+    <value>Colaborador</value>
+  </data>
+  <data name="HorasColaboradorPage_Period" xml:space="preserve">
+    <value>📅 Período</value>
+  </data>
+  <data name="HorasColaboradorPage_NoRecords" xml:space="preserve">
+    <value>Sem registos neste período</value>
+  </data>
+  <data name="HorasColaboradorPage_SelectPeriod" xml:space="preserve">
+    <value>Selecionar Período</value>
+  </data>
+  <data name="HorasColaboradorPage_Today" xml:space="preserve">
+    <value>Hoje</value>
+  </data>
+  <data name="HorasColaboradorPage_ThisWeek" xml:space="preserve">
+    <value>Esta Semana</value>
+  </data>
+  <data name="HorasColaboradorPage_ThisMonth" xml:space="preserve">
+    <value>Este Mês</value>
+  </data>
+  <data name="HorasColaboradorPage_Last30Days" xml:space="preserve">
+    <value>Últimos 30 dias</value>
+  </data>
+  <data name="HorasColaboradorPage_MonthCalendar" xml:space="preserve">
+    <value>📅 Calendário do Mês</value>
+  </data>
+  <data name="HorasColaboradorPage_SelectCollaborator" xml:space="preserve">
+    <value>Selecione Colaborador</value>
+  </data>
+  <data name="HorasColaboradorPage_Normal" xml:space="preserve">
+    <value>Normal</value>
+  </data>
+  <data name="HorasColaboradorPage_Extra" xml:space="preserve">
+    <value>Extra</value>
+  </data>
+  <data name="HorasColaboradorPage_DayDetails" xml:space="preserve">
+    <value>Detalhes do Dia</value>
+  </data>
+  <data name="HorasColaboradorPage_PopupError" xml:space="preserve">
+    <value>(Erro ao abrir popup visual)</value>
+  </data>
+  <data name="Common_ErrorOpeningPopup" xml:space="preserve">
+    <value>Erro ao abrir popup</value>
+  </data>
+  <data name="Common_Mon" xml:space="preserve">
+    <value>Seg</value>
+  </data>
+  <data name="Common_Tue" xml:space="preserve">
+    <value>Ter</value>
+  </data>
+  <data name="Common_Wed" xml:space="preserve">
+    <value>Qua</value>
+  </data>
+  <data name="Common_Thu" xml:space="preserve">
+    <value>Qui</value>
+  </data>
+  <data name="Common_Fri" xml:space="preserve">
+    <value>Sex</value>
+  </data>
+  <data name="Common_Sat" xml:space="preserve">
+    <value>Sáb</value>
+  </data>
+  <data name="Common_Sun" xml:space="preserve">
+    <value>Dom</value>
+  </data>
+  <data name="HoursEntryPage_MonthTotals" xml:space="preserve">
+    <value>Totais do mês:</value>
+  </data>
+  <data name="Login_Recovery_CodePlaceholder" xml:space="preserve">
+    <value>000000</value>
+  </data>
+  <data name="Login_InternalReset_KeyPlaceholder" xml:space="preserve">
+    <value>chave</value>
+  </data>
+  <data name="Login_PasswordMaskPlaceholder" xml:space="preserve">
+    <value>••••••••</value>
+  </data>
+  <data name="Common_HoursOld" xml:space="preserve">
+    <value>Horas (Antigo)</value>
+  </data>
+  <data name="Common_CurrencyPlaceholder" xml:space="preserve">
+    <value>0,00</value>
+  </data>
+  <data name="Splash_VersionPrefix" xml:space="preserve">
+    <value>Versão</value>
+  </data>
+  <data name="Update_NewVersionAvailable" xml:space="preserve">
+    <value>Nova versão disponível: {0}</value>
+  </data>
+  <data name="Update_CheckNotes" xml:space="preserve">
+    <value>Verifique as novidades!</value>
+  </data>
+  <data name="Update_MandatoryHeader" xml:space="preserve">
+    <value>⚠️ ATUALIZAÇÃO OBRIGATÓRIA ⚠️</value>
+  </data>
+  <data name="Update_TitleMandatory" xml:space="preserve">
+    <value>Atualização Obrigatória</value>
+  </data>
+  <data name="Update_TitleAvailable" xml:space="preserve">
+    <value>Atualização Disponível</value>
+  </data>
+  <data name="Update_ButtonUpdateNow" xml:space="preserve">
+    <value>Atualizar Agora</value>
+  </data>
+  <data name="Update_ButtonUpdate" xml:space="preserve">
+    <value>Atualizar</value>
+  </data>
+  <data name="Update_ButtonExit" xml:space="preserve">
+    <value>Sair</value>
+  </data>
+  <data name="Update_ButtonLater" xml:space="preserve">
+    <value>Depois</value>
+  </data>
+  <data name="Splash_GifErrorTitle" xml:space="preserve">
+    <value>Erro GIF</value>
+  </data>
+  <data name="Splash_GifErrorMessage" xml:space="preserve">
+    <value>Não foi possível carregar o startup.gif. Verifique os logs.</value>
+  </data>
+  <data name="WelcomePage_NoActiveCompany" xml:space="preserve">
+    <value>Nenhuma empresa ativa encontrada.</value>
+  </data>
+  <data name="WelcomePage_WelcomeToCompany" xml:space="preserve">
+    <value>Bem-vindo à {0}</value>
+  </data>
+  <data name="WelcomePage_Loading" xml:space="preserve">
+    <value>A carregar…</value>
+  </data>
+  <data name="WelcomePage_LoginNavError" xml:space="preserve">
+    <value>Erro ao navegar para Login.</value>
+  </data>
+  <data name="Absence_Title" xml:space="preserve">
+    <value>Tipos de Ausência</value>
+  </data>
+  <data name="Absence_EmptyList" xml:space="preserve">
+    <value>Nenhum tipo de ausência definido.</value>
+  </data>
+  <data name="Absence_AddNew" xml:space="preserve">
+    <value>Adicionar Novo Tipo</value>
+  </data>
+  <data name="Absence_NewTypeTitle" xml:space="preserve">
+    <value>Novo Tipo</value>
+  </data>
+  <data name="Absence_NewTypeMessage" xml:space="preserve">
+    <value>Descrição do tipo de ausência (ex: Férias, Baixa):</value>
+  </data>
+  <data name="Absence_EditTypeTitle" xml:space="preserve">
+    <value>Editar Tipo</value>
+  </data>
+  <data name="Absence_DescriptionLabel" xml:space="preserve">
+    <value>Descrição:</value>
+  </data>
+  <data name="Absence_ErrorEmptyDescription" xml:space="preserve">
+    <value>A descrição não pode estar vazia.</value>
+  </data>
+  <data name="Absence_ConfirmDelete" xml:space="preserve">
+    <value>Tem a certeza que deseja eliminar '{0}'?</value>
+  </data>
+  <data name="Common_Open" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="Common_Logs" xml:space="preserve">
+    <value>Logs</value>
+  </data>
+  <data name="Common_Share" xml:space="preserve">
+    <value>Share</value>
+  </data>
+  <data name="Common_Copied" xml:space="preserve">
+    <value>Copied</value>
+  </data>
+  <data name="Common_DetailsCopied" xml:space="preserve">
+    <value>Details copied to clipboard.</value>
+  </data>
+  <data name="Common_Details" xml:space="preserve">
+    <value>Details</value>
+  </data>
+  <data name="ProductsPage_EditFamily" xml:space="preserve">
+    <value>Edit Family</value>
+  </data>
+  <data name="ProductsPage_FamilyDescriptionRequired" xml:space="preserve">
+    <value>Description required.</value>
+  </data>
+  <data name="ProductsPage_FamilySaveError" xml:space="preserve">
+    <value>Could not save family.</value>
+  </data>
+  <data name="ProductsPage_FamilyUpdated" xml:space="preserve">
+    <value>Family updated.</value>
+  </data>
+  <data name="ProductsPage_FamilyDeleteError" xml:space="preserve">
+    <value>Could not delete family.</value>
+  </data>
+  <data name="ProductsPage_FamilyDeleted" xml:space="preserve">
+    <value>Family deleted.</value>
+  </data>
+  <data name="ProductsPage_FamilyCodeRequired" xml:space="preserve">
+    <value>Code required.</value>
+  </data>
+  <data name="ProductsPage_FamilyCreated" xml:space="preserve">
+    <value>Family created successfully.</value>
+  </data>
+  <data name="ClientsPage_SalespersonFormError" xml:space="preserve">
+    <value>Error preparing salesperson form.</value>
+  </data>
+  <data name="ClientsPage_SalespersonNameRequired" xml:space="preserve">
+    <value>Enter salesperson name.</value>
+  </data>
+  <data name="ClientsPage_SalespersonSaveError" xml:space="preserve">
+    <value>Error saving salesperson.</value>
+  </data>
+  <data name="ClientsPage_SalespersonLoadError" xml:space="preserve">
+    <value>Error loading salespersons.</value>
+  </data>
+  <data name="ProductsPage_FamilyFormError" xml:space="preserve">
+    <value>Error preparing family form.</value>
+  </data>
+  <data name="ProductsPage_FamilyFillRequired" xml:space="preserve">
+    <value>Fill in code and description.</value>
+  </data>
+  <data name="ProductsPage_FamilyLoadError" xml:space="preserve">
+    <value>Error loading families.</value>
+  </data>
+  <data name="Hours_ErrorInvalidNormalHours" xml:space="preserve">
+    <value>Enter valid normal hours (0-24).</value>
+  </data>
+  <data name="Hours_ErrorInvalidExtraHours" xml:space="preserve">
+    <value>Enter valid extra hours (0-24).</value>
+  </data>
+  <data name="Hours_ErrorTotalHoursExceeded" xml:space="preserve">
+    <value>Total hours cannot exceed 24h.</value>
+  </data>
+</root>

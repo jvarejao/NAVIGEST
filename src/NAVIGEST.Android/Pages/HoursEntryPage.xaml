@@ -4,8 +4,9 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:vm="clr-namespace:NAVIGEST.Android.ViewModels"
+    xmlns:res="clr-namespace:NAVIGEST.Shared.Resources.Strings;assembly=NAVIGEST.Shared"
     BackgroundColor="{DynamicResource PageBackgroundColor}"
-    Title="Horas de Colaborador"
+    Title="{x:Static res:AppResources.HoursEntryPage_Title}"
     x:DataType="vm:HoursEntryViewModel"
     Shell.NavBarIsVisible="True"
     Shell.FlyoutBehavior="Disabled">
@@ -62,13 +63,13 @@
             <Frame Grid.Row="0" Style="{StaticResource CardFrame}">
                 <Grid ColumnDefinitions="*,120,160,140,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="10" RowSpacing="10">
                     <VerticalStackLayout Grid.Column="0">
-                        <Label Text="Colaborador" StyleClass="Caption" TextColor="{DynamicResource TextSecondaryColor}" />
+                        <Label Text="{x:Static res:AppResources.Common_Collaborator}" StyleClass="Caption" TextColor="{DynamicResource TextSecondaryColor}" />
                         <Grid>
                             <Border x:Name="BCol" Style="{StaticResource NeonBorder}"/>
                             <Picker x:Name="PickerColaborador" AutomationId="PickerColaborador"
                                     Style="{StaticResource PickerBase}"
                                     Margin="10,6"
-                                    Title="Selecionar colaborador"
+                                    Title="{x:Static res:AppResources.Common_SelectCollaborator}"
                                     ItemsSource="{Binding Collaborators}"
                                     ItemDisplayBinding="{Binding Name}"
                                     SelectedItem="{Binding SelectedCollaborator}" />
@@ -82,7 +83,7 @@
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Grid.Column="1">
-                        <Label Text="Ano" StyleClass="Caption" TextColor="{DynamicResource TextSecondaryColor}"/>
+                        <Label Text="{x:Static res:AppResources.Common_Year}" StyleClass="Caption" TextColor="{DynamicResource TextSecondaryColor}"/>
                         <Grid>
                             <Border x:Name="BAno" Style="{StaticResource NeonBorder}"/>
                             <Entry x:Name="EntryAno" AutomationId="EntryAno"
@@ -100,13 +101,13 @@
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Grid.Column="2">
-                        <Label Text="Mês" StyleClass="Caption" TextColor="{DynamicResource TextSecondaryColor}"/>
+                        <Label Text="{x:Static res:AppResources.Common_Month}" StyleClass="Caption" TextColor="{DynamicResource TextSecondaryColor}"/>
                         <Grid>
                             <Border x:Name="BMes" Style="{StaticResource NeonBorder}"/>
                             <Picker x:Name="PickerMes" AutomationId="PickerMes"
                                     Style="{StaticResource PickerBase}"
                                     Margin="10,6"
-                                    Title="Selecionar mês"
+                                    Title="{x:Static res:AppResources.Common_SelectMonth}"
                                     ItemsSource="{Binding Months}"
                                     SelectedItem="{Binding SelectedMonth}" />
                             <Grid.Triggers>
@@ -119,7 +120,7 @@
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Grid.Column="3" IsVisible="{Binding IsAdmin}">
-                        <Label Text="Valor Hora" StyleClass="Caption" TextColor="{DynamicResource TextSecondaryColor}"/>
+                        <Label Text="{x:Static res:AppResources.HoursEntryPage_HourRate}" StyleClass="Caption" TextColor="{DynamicResource TextSecondaryColor}"/>
                         <Grid>
                             <Border x:Name="BVh" Style="{StaticResource NeonBorder}"/>
                             <Entry x:Name="EntryValorHora" AutomationId="EntryValorHora"
@@ -137,7 +138,7 @@
                     </VerticalStackLayout>
 
                     <Grid Grid.Column="4" RowSpan="2" VerticalOptions="End" HorizontalOptions="End">
-                        <Button AutomationId="BtnLoad" Style="{StaticResource BtnBase}" Text="Carregar"
+                        <Button AutomationId="BtnLoad" Style="{StaticResource BtnBase}" Text="{x:Static res:AppResources.Common_Load}"
                                 Command="{Binding LoadMonthCommand}" />
                     </Grid>
 
@@ -148,22 +149,22 @@
             <!-- Barra de Ações -->
             <Frame Grid.Row="1" Style="{StaticResource CardFrame}" Margin="0,12,0,0">
                 <Grid ColumnDefinitions="Auto,8,Auto,8,Auto,8,Auto,8,Auto,*,Auto" VerticalOptions="Center">
-                    <Button AutomationId="BtnSave" Style="{StaticResource BtnBase}" Text="Guardar"
+                    <Button AutomationId="BtnSave" Style="{StaticResource BtnBase}" Text="{x:Static res:AppResources.Common_Save}"
                             Command="{Binding SaveMonthCommand}" IsEnabled="{Binding HasChanges}"/>
                     <BoxView Grid.Column="1" WidthRequest="8" />
-                    <Button Grid.Column="2" AutomationId="BtnDeleteMonth" Style="{StaticResource BtnBase}" Text="Eliminar mês"
+                    <Button Grid.Column="2" AutomationId="BtnDeleteMonth" Style="{StaticResource BtnBase}" Text="{x:Static res:AppResources.HoursEntryPage_DeleteMonth}"
                             Command="{Binding DeleteMonthCommand}"/>
                     <BoxView Grid.Column="3" WidthRequest="8" />
-                    <Button Grid.Column="4" AutomationId="BtnCopy" Style="{StaticResource BtnBase}" Text="Copiar"
+                    <Button Grid.Column="4" AutomationId="BtnCopy" Style="{StaticResource BtnBase}" Text="{x:Static res:AppResources.Common_Copy}"
                             Command="{Binding CopyRowsCommand}" />
                     <BoxView Grid.Column="5" WidthRequest="8" />
-                    <Button Grid.Column="6" AutomationId="BtnPaste" Style="{StaticResource BtnBase}" Text="Colar"
+                    <Button Grid.Column="6" AutomationId="BtnPaste" Style="{StaticResource BtnBase}" Text="{x:Static res:AppResources.Common_Paste}"
                             Command="{Binding PasteRowsCommand}" IsEnabled="{Binding CanPaste}" />
                     <BoxView Grid.Column="7" WidthRequest="8" />
-                    <Button Grid.Column="8" AutomationId="BtnExportMonth" Style="{StaticResource BtnBase}" Text="Exportar mês"
+                    <Button Grid.Column="8" AutomationId="BtnExportMonth" Style="{StaticResource BtnBase}" Text="{x:Static res:AppResources.HoursEntryPage_ExportMonth}"
                             Command="{Binding ExportMonthCommand}" />
                     <BoxView Grid.Column="9" WidthRequest="8" />
-                    <Button Grid.Column="10" AutomationId="BtnExportYear" Style="{StaticResource BtnBase}" Text="Exportar ano"
+                    <Button Grid.Column="10" AutomationId="BtnExportYear" Style="{StaticResource BtnBase}" Text="{x:Static res:AppResources.HoursEntryPage_ExportYear}"
                             Command="{Binding ExportYearCommand}" />
                 </Grid>
             </Frame>
@@ -176,14 +177,14 @@
                     <Grid x:Name="GridHeaderHours"
                           ColumnDefinitions="56,110,80,220,220,100,100,Auto"
                           Padding="6,0" ColumnSpacing="8">
-                        <Label Text="Sel" />
-                        <Label Grid.Column="1" Text="Data" />
-                        <Label Grid.Column="2" Text="+/–" />
-                        <Label Grid.Column="3" Text="Cliente" />
-                        <Label Grid.Column="4" Text="Centro Custo" />
-                        <Label Grid.Column="5" Text="Horas" />
-                        <Label Grid.Column="6" Text="Extras" />
-                        <Label Grid.Column="7" Text="Obs." />
+                        <Label Text="{x:Static res:AppResources.HoursEntryPage_HeaderSel}" />
+                        <Label Grid.Column="1" Text="{x:Static res:AppResources.Common_Date}" />
+                        <Label Grid.Column="2" Text="{x:Static res:AppResources.HoursEntryPage_HeaderPlusMinus}" />
+                        <Label Grid.Column="3" Text="{x:Static res:AppResources.Common_Client}" />
+                        <Label Grid.Column="4" Text="{x:Static res:AppResources.Common_CostCenter}" />
+                        <Label Grid.Column="5" Text="{x:Static res:AppResources.Common_Hours}" />
+                        <Label Grid.Column="6" Text="{x:Static res:AppResources.Common_Extras}" />
+                        <Label Grid.Column="7" Text="{x:Static res:AppResources.Common_Observations}" />
                     </Grid>
 
                     <!-- Itens -->
@@ -333,7 +334,7 @@
             <!-- Rodapé -->
             <Frame Grid.Row="3" Style="{StaticResource CardFrame}" Margin="0,12,0,36">
                 <Grid ColumnDefinitions="*,Auto,16,Auto,16,Auto" VerticalOptions="Center">
-                    <Label Text="Totais do mês:" VerticalTextAlignment="Center" />
+                    <Label Text="{x:Static res:AppResources.HoursEntryPage_MonthTotals}" VerticalTextAlignment="Center" />
                     <Label Grid.Column="1" AutomationId="LblTotalHoras" Text="{Binding TotalHoursText}" />
                     <BoxView Grid.Column="2" WidthRequest="16" />
                     <Label Grid.Column="3" AutomationId="LblTotalExtras" Text="{Binding TotalOvertimeText}" />

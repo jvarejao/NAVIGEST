@@ -7,6 +7,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Maui.Animations;
 using Microsoft.Extensions.DependencyInjection; // no topo
+using NAVIGEST.Shared.Resources.Strings;
 
 namespace NAVIGEST.Android.Pages
 {
@@ -64,7 +65,7 @@ namespace NAVIGEST.Android.Pages
 
             // ✅ Mostrar versão da app (usar versão guardada, não o manifest)
             string installedVersion = Preferences.Get(INSTALLED_VERSION_KEY, AppInfo.Current.VersionString ?? "1.0.0");
-            VersionLabel.Text = $"Versão {installedVersion}";
+            VersionLabel.Text = string.Format(AppResources.Splash_Version, installedVersion);
 
             // ✅ Inicializa tudo (biometria, auto-login, etc)
             // O InitCommand vai fazer TODO o trabalho: verificar bio_enabled, chamar Face ID se necessário
@@ -130,8 +131,8 @@ namespace NAVIGEST.Android.Pages
             int mySeq = ++_usernameLookupSeq;
 
             lblSub.Text = string.IsNullOrWhiteSpace(query)
-                ? "Inicia sessão para continuar"
-                : "A procurar utilizador…";
+                ? AppResources.Login_Subtitle
+                : AppResources.Login_SearchingUser;
 
             _currentUserEmail = null;
             _currentUserPhoto = null;
@@ -153,7 +154,7 @@ namespace NAVIGEST.Android.Pages
 
                 if (info is null)
                 {
-                    lblSub.Text = "Utilizador não encontrado";
+                    lblSub.Text = AppResources.Login_UserNotFound;
                     LoginAvatarImage.Source = "user_placeholder.png";
                     HideUserFoundLabels();
                     return;
@@ -166,7 +167,7 @@ namespace NAVIGEST.Android.Pages
                     ? ImageSource.FromStream(() => new MemoryStream(_currentUserPhoto))
                     : "user_placeholder.png";
 
-                lblSub.Text = "Inicia sessão para continuar";
+                lblSub.Text = AppResources.Login_Subtitle;
 
                 if (string.IsNullOrWhiteSpace(info.Email))
                     ShowUserFoundLabels(null);
@@ -176,7 +177,7 @@ namespace NAVIGEST.Android.Pages
             catch
             {
                 if (mySeq != _usernameLookupSeq) return;
-                lblSub.Text = "Inicia sessão para continuar";
+                lblSub.Text = AppResources.Login_Subtitle;
                 LoginAvatarImage.Source = "user_placeholder.png";
                 HideUserFoundLabels();
             }
@@ -188,7 +189,7 @@ namespace NAVIGEST.Android.Pages
 
         private void ShowUserFoundLabels(string? email)
         {
-            lblUserFound.Text = "Utilizador encontrado";
+            lblUserFound.Text = AppResources.Login_UserFound;
             lblUserFound.IsVisible = true;
 
             if (string.IsNullOrWhiteSpace(email))
@@ -251,7 +252,7 @@ namespace NAVIGEST.Android.Pages
 
             if (string.IsNullOrWhiteSpace(user) || string.IsNullOrWhiteSpace(pass))
             {
-                ShowMsg("Indica utilizador e palavra-passe.", false);
+                ShowMsg(AppResources.Login_Msg_EnterUserAndPass, false);
                 return;
             }
 
@@ -263,7 +264,7 @@ namespace NAVIGEST.Android.Pages
 
                 if (!ok)
                 {
-                    ShowMsg("Credenciais inválidas.", false);
+                    ShowMsg(AppResources.Login_Msg_InvalidCredentials, false);
                     return;
                 }
 
@@ -291,13 +292,16 @@ namespace NAVIGEST.Android.Pages
                     Preferences.Remove(PrefUsername);
                 }
 
-                ShowMsg($"Bem-vindo{(string.IsNullOrWhiteSpace(nome) ? "" : $", {nome}")}!", true);
+                string welcomeMsg = string.IsNullOrWhiteSpace(nome)
+                    ? AppResources.Login_WelcomeSimple
+                    : string.Format(AppResources.Login_WelcomeUser, nome);
+                ShowMsg(welcomeMsg, true);
 
                 await Shell.Current.GoToAsync("//mainpage");
             }
             catch (Exception ex)
             {
-                ShowMsg("Erro no login: " + ex.Message, false);
+                ShowMsg(string.Format(AppResources.Login_Msg_LoginError, ex.Message), false);
             }
             finally
             {
@@ -310,32 +314,32 @@ namespace NAVIGEST.Android.Pages
             var u = entryUsername.Text?.Trim();
             if (string.IsNullOrWhiteSpace(u))
             {
-                await DisplayAlert("Recuperação", "Escreve primeiro o nome de utilizador.", "OK");
+                await DisplayAlert(AppResources.Login_Recovery_Title, AppResources.Login_Recovery_EnterUserFirst, AppResources.Common_OK);
                 return;
             }
 
-            var code = await DisplayPromptAsync("Código do e-mail",
-                "Introduz o código de 6 dígitos recebido:",
-                accept: "OK", cancel: "Cancelar",
-                placeholder: "000000", maxLength: 6, keyboard: Keyboard.Numeric);
+            var code = await DisplayPromptAsync(AppResources.Login_Recovery_EmailCodeTitle,
+                AppResources.Login_Recovery_EmailCodeMsg,
+                accept: AppResources.Common_OK, cancel: AppResources.Common_Cancel,
+                placeholder: AppResources.Login_Recovery_CodePlaceholder, maxLength: 6, keyboard: Keyboard.Numeric);
 
             if (string.IsNullOrWhiteSpace(code))
                 return;
 
-            var newPass = await PromptMaskedPasswordAsync("Nova palavra-passe", "Introduz a nova password:");
+            var newPass = await PromptMaskedPasswordAsync(AppResources.Login_Recovery_NewPassTitle, AppResources.Login_Recovery_NewPassMsg);
             if (string.IsNullOrWhiteSpace(newPass))
                 return;
 
             try
             {
                 var ok = await DatabaseService.ValidateTokenAndResetPasswordAsync(u, code.Trim(), newPass.Trim());
-                await DisplayAlert("Recuperação",
-                    ok ? "Password alterada com sucesso." : "Código inválido ou expirado.",
-                    "OK");
+                await DisplayAlert(AppResources.Login_Recovery_Title,
+                    ok ? AppResources.Login_Recovery_Success : AppResources.Login_Recovery_InvalidCode,
+                    AppResources.Common_OK);
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Erro", "Falha no reset: " + ex.Message, "OK");
+                await DisplayAlert(AppResources.Common_ErrorTitle, string.Format(AppResources.Login_Error_ResetFail, ex.Message), AppResources.Common_OK);
             }
         }
 
@@ -344,7 +348,7 @@ namespace NAVIGEST.Android.Pages
             var u = entryUsername.Text?.Trim();
             if (string.IsNullOrWhiteSpace(u))
             {
-                await DisplayAlert("Recuperação", "Escreve primeiro o nome de utilizador.", "OK");
+                await DisplayAlert(AppResources.Login_Recovery_Title, AppResources.Login_Recovery_EnterUserFirst, AppResources.Common_OK);
                 return;
             }
 
@@ -353,20 +357,20 @@ namespace NAVIGEST.Android.Pages
                 var info = await DatabaseService.TryGetUserPhotoAndEmailAsync(u);
                 if (info is null || string.IsNullOrWhiteSpace(info.Email))
                 {
-                    await DisplayAlert("Recuperação", "Não existe e-mail associado a este utilizador.", "OK");
+                    await DisplayAlert(AppResources.Login_Recovery_Title, AppResources.Login_Recovery_NoEmail, AppResources.Common_OK);
                     return;
                 }
 
                 var token = await DatabaseService.CreatePasswordResetTokenAsync(u, TimeSpan.FromMinutes(15));
                 await EmailService.SendResetEmailAsync(info.Email!, u, token);
 
-                await DisplayAlert("Recuperação",
-                    $"Enviámos um e-mail para {info.Email} com um código de 6 dígitos.\nUsa 'Tenho um código do e-mail' para o aplicar.",
-                    "OK");
+                await DisplayAlert(AppResources.Login_Recovery_Title,
+                    string.Format(AppResources.Login_Recovery_EmailSent, info.Email),
+                    AppResources.Common_OK);
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Erro", "Falha ao enviar e-mail: " + ex.Message, "OK");
+                await DisplayAlert(AppResources.Common_ErrorTitle, string.Format(AppResources.Login_Error_EmailFail, ex.Message), AppResources.Common_OK);
             }
         }
 
@@ -375,33 +379,33 @@ namespace NAVIGEST.Android.Pages
             var u = entryUsername.Text?.Trim();
             if (string.IsNullOrWhiteSpace(u))
             {
-                await DisplayAlert("Reset interno", "Escreve primeiro o nome de utilizador.", "OK");
+                await DisplayAlert(AppResources.Login_InternalReset_Title, AppResources.Login_Recovery_EnterUserFirst, AppResources.Common_OK);
                 return;
             }
 
-            var key = await DisplayPromptAsync("Reset interno", "Chave de reset (admin):",
-                accept: "OK", cancel: "Cancelar", placeholder: "chave", keyboard: Keyboard.Text);
+            var key = await DisplayPromptAsync(AppResources.Login_InternalReset_Title, AppResources.Login_InternalReset_KeyPrompt,
+                accept: AppResources.Common_OK, cancel: AppResources.Common_Cancel, placeholder: AppResources.Login_InternalReset_KeyPlaceholder, keyboard: Keyboard.Text);
             if (string.IsNullOrWhiteSpace(key))
                 return;
 
             if (!string.Equals(key, AdminResetKey, StringComparison.Ordinal))
             {
-                await DisplayAlert("Reset interno", "Chave inválida.", "OK");
+                await DisplayAlert(AppResources.Login_InternalReset_Title, AppResources.Login_InternalReset_InvalidKey, AppResources.Common_OK);
                 return;
             }
 
-            var newPass = await PromptMaskedPasswordAsync("Nova palavra-passe", "Introduz a nova password:");
+            var newPass = await PromptMaskedPasswordAsync(AppResources.Login_Recovery_NewPassTitle, AppResources.Login_Recovery_NewPassMsg);
             if (string.IsNullOrWhiteSpace(newPass))
                 return;
 
             try
             {
                 var ok = await DatabaseService.ResetPasswordAsync(u, newPass.Trim());
-                await DisplayAlert("Reset interno", ok ? "Password alterada." : "Utilizador não encontrado.", "OK");
+                await DisplayAlert(AppResources.Login_InternalReset_Title, ok ? AppResources.Login_InternalReset_Success : AppResources.Login_UserNotFound, AppResources.Common_OK);
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Erro", "Falha no reset interno: " + ex.Message, "OK");
+                await DisplayAlert(AppResources.Common_ErrorTitle, string.Format(AppResources.Login_InternalReset_Fail, ex.Message), AppResources.Common_OK);
             }
         }
 
@@ -463,20 +467,20 @@ namespace NAVIGEST.Android.Pages
             var entry = new Entry
             {
                 IsPassword = true,
-                Placeholder = "••••••••",
+                Placeholder = AppResources.Login_PasswordMaskPlaceholder,
                 HorizontalOptions = LayoutOptions.Fill,
                 ClearButtonVisibility = ClearButtonVisibility.WhileEditing
             };
 
             var btnCancel = new Button
             {
-                Text = "Cancelar",
+                Text = AppResources.Common_Cancel,
                 BackgroundColor = Colors.Transparent
             };
 
             var btnOk = new Button
             {
-                Text = "OK"
+                Text = AppResources.Common_OK
             };
 
             var buttonsLayout = new HorizontalStackLayout
@@ -513,12 +517,12 @@ namespace NAVIGEST.Android.Pages
                 var pwd = entry.Text?.Trim() ?? "";
                 if (string.IsNullOrWhiteSpace(pwd))
                 {
-                    await DisplayAlert("Validação", "Indica a password.", "OK");
+                    await DisplayAlert(AppResources.Login_Validation_Title, AppResources.Login_Validation_EnterPass, AppResources.Common_OK);
                     return;
                 }
                 if (pwd.Length < 4)
                 {
-                    await DisplayAlert("Validação", "Mínimo 4 caracteres.", "OK");
+                    await DisplayAlert(AppResources.Login_Validation_Title, AppResources.Login_Validation_MinChars, AppResources.Common_OK);
                     return;
                 }
                 CloseOverlay(pwd);

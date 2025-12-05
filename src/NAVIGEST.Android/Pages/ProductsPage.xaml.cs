@@ -7,6 +7,7 @@ using System.Linq;
 using NAVIGEST.Android; // GlobalToast / GlobalErro
 using NAVIGEST.Android.Popups;
 using CommunityToolkit.Maui.Views;
+using NAVIGEST.Shared.Resources.Strings;
 
 namespace NAVIGEST.Android.Pages;
 
@@ -45,7 +46,7 @@ public partial class ProductsPage : ContentPage
         catch (Exception ex)
         {
             GlobalErro.TratarErro(ex, mostrarAlerta: false);
-            await GlobalToast.ShowAsync("Falha ao carregar produtos.", ToastTipo.Erro, 2500);
+            await GlobalToast.ShowAsync(AppResources.ProductsPage_LoadError, ToastTipo.Erro, 2500);
         }
     }
 
@@ -166,7 +167,7 @@ public partial class ProductsPage : ContentPage
             // Atualizar título do form
             if (FormTitle is not null)
             {
-                FormTitle.Text = string.IsNullOrWhiteSpace(vm.Editing?.Codigo) ? "Novo Produto" : "Editar Produto";
+                FormTitle.Text = string.IsNullOrWhiteSpace(vm.Editing?.Codigo) ? AppResources.ProductsPage_NewProduct : AppResources.ProductsPage_EditProduct;
             }
         }
     }
@@ -257,7 +258,7 @@ public partial class ProductsPage : ContentPage
                     catch (Exception ex)
                     {
                         GlobalErro.TratarErro(ex, mostrarAlerta: false);
-                        await AppShell.DisplayToastAsync($"Erro: {ex.Message}");
+                        await AppShell.DisplayToastAsync($"{AppResources.Common_Error}: {ex.Message}");
                     }
                 });
             }

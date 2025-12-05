@@ -5,6 +5,7 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using NAVIGEST.Android.Services;
 using NAVIGEST.Android.Models;
+using NAVIGEST.Shared.Resources.Strings;
 
 namespace NAVIGEST.Android.Popups;
 
@@ -46,7 +47,7 @@ public partial class AddProductFamilyPopup : Popup
         catch (Exception ex)
         {
             GlobalErro.TratarErro(ex);
-            await GlobalToast.ShowAsync("Erro ao preparar o formulário de família.", ToastTipo.Erro, 2500);
+            await GlobalToast.ShowAsync(AppResources.ProductsPage_FamilyFormError, ToastTipo.Erro, 2500);
             Close(null);
         }
         finally
@@ -76,7 +77,7 @@ public partial class AddProductFamilyPopup : Popup
 
         if (string.IsNullOrWhiteSpace(codigo) || string.IsNullOrWhiteSpace(descricao))
         {
-            ShowError("Preencha código e descrição.");
+            ShowError(AppResources.ProductsPage_FamilyFillRequired);
             return;
         }
 
@@ -164,7 +165,7 @@ public partial class AddProductFamilyPopup : Popup
         catch (Exception ex)
         {
             GlobalErro.TratarErro(ex);
-            await GlobalToast.ShowAsync("Erro ao carregar famílias.", ToastTipo.Erro, 2500);
+            await GlobalToast.ShowAsync(AppResources.ProductsPage_FamilyLoadError, ToastTipo.Erro, 2500);
         }
         finally
         {

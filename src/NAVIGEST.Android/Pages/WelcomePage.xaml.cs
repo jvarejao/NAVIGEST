@@ -7,6 +7,7 @@ using Microsoft.Maui.ApplicationModel; // MainThread
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls;        // SolidColorBrush
 using Microsoft.Maui.Storage;         // Preferences
+using NAVIGEST.Shared.Resources.Strings;
 
 namespace NAVIGEST.Android.Pages;
 
@@ -48,7 +49,7 @@ public partial class WelcomePage : ContentPage
         try
         {
             // 1) Teste de ligação
-            LoadingLabel.Text = "A ligar à base de dados…";
+            LoadingLabel.Text = AppResources.WelcomePage_Connecting;
             await ShowLoadingAsync(true);
 
             bool ok;
@@ -59,7 +60,7 @@ public partial class WelcomePage : ContentPage
             catch (Exception ex)
             {
                 await ShowLoadingAsync(false);
-                await ShowToastAsync($"Ligação falhou: {ex.Message}", success: false, ms: 1800);
+                await ShowToastAsync(string.Format(AppResources.WelcomePage_ConnectionFailed, ex.Message), success: false, ms: 1800);
                 await NavigateToConfigAsync();
                 return;
             }
@@ -68,7 +69,7 @@ public partial class WelcomePage : ContentPage
 
             if (!ok)
             {
-                await ShowToastAsync("Não foi possível ligar. A abrir configuração…", success: false, ms: 1400);
+                await ShowToastAsync(AppResources.WelcomePage_ConnectionFailedConfig, success: false, ms: 1400);
                 await NavigateToConfigAsync();
                 return;
             }
@@ -105,7 +106,7 @@ public partial class WelcomePage : ContentPage
 
         if (_companies.Count == 0)
         {
-            await ShowToastAsync("Nenhuma empresa ativa encontrada.", success: false, ms: 2000);
+            await ShowToastAsync(AppResources.WelcomePage_NoActiveCompany, success: false, ms: 2000);
             await NavigateToConfigAsync();
             return;
         }
@@ -187,8 +188,8 @@ public partial class WelcomePage : ContentPage
             var labelColor = theme == AppTheme.Dark ? Colors.White : Colors.Black;
             TituloLabel.TextColor = labelColor;
             DescricaoLabel.TextColor = labelColor;
-            TituloLabel.Text = $"Bem-vindo à {chosen.Empresa}";
-            DescricaoLabel.Text = "A carregar…";
+            TituloLabel.Text = string.Format(AppResources.WelcomePage_WelcomeToCompany, chosen.Empresa);
+            DescricaoLabel.Text = AppResources.WelcomePage_Loading;
             await ShowMainContentAsync();
             await Task.WhenAll(
                 LogoImage.ScaleTo(1.03, 240),

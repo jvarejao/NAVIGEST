@@ -4,7 +4,8 @@
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:models="clr-namespace:NAVIGEST.iOS.Models"
-             Title="Serviços"
+             xmlns:res="clr-namespace:NAVIGEST.Shared.Resources.Strings;assembly=NAVIGEST.Shared"
+             Title="{x:Static res:AppResources.Common_Services}"
              Padding="16"
              Loaded="OnPageLoaded">
     <Grid>
@@ -12,9 +13,9 @@
 
             <!-- Topo: Botão Novo (direita) + ícone -->
             <Grid ColumnDefinitions="*,Auto">
-                <Label Text="Serviços" FontAttributes="Bold" FontSize="18" VerticalOptions="Center"/>
+                <Label Text="{x:Static res:AppResources.Common_Services}" FontAttributes="Bold" FontSize="18" VerticalOptions="Center"/>
                 <Button Grid.Column="1"
-                Text="Novo"
+                Text="{x:Static res:AppResources.Common_New}"
                 Command="{Binding NewCommand}"
                 HeightRequest="40"
                 Margin="0,0,10,8"
@@ -27,7 +28,7 @@
 
             <!-- Pesquisa: aparece logo -->
             <Grid ColumnDefinitions="*,Auto">
-                <Entry Placeholder="Pesquisar por nº, cliente ou estado…"
+                <Entry Placeholder="{x:Static res:AppResources.ServicePage_SearchPlaceholder}"
                Text="{Binding Filter}"
                ReturnType="Search"/>
                 <Button Grid.Column="1"
@@ -39,7 +40,7 @@
                 </Button>
             </Grid>
             <!-- imediatamente por baixo do Grid de pesquisa -->
-            <Label Text="{Binding Orders.Count, StringFormat='Registos: {0}'}"
+            <Label Text="{Binding Orders.Count, StringFormat={x:Static res:AppResources.Common_RecordsCount}}"
        FontSize="12" Opacity="0.7"/>
 
             <!-- Lista: CustomerName (bold), por baixo OrderNo (esq) e TotalAmount (dir) -->

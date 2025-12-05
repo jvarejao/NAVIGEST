@@ -6,6 +6,7 @@ using NAVIGEST.Android.Models;
 using CommunityToolkit.Maui.Views;
 using NAVIGEST.Android.Popups;
 using NAVIGEST.Android;
+using NAVIGEST.Shared.Resources.Strings;
 using System.Threading.Tasks;
 
 namespace NAVIGEST.Android.Views
@@ -36,7 +37,7 @@ namespace NAVIGEST.Android.Views
             try
             {
                 // Show Alert about rotation
-                await Shell.Current.DisplayAlert("Rotação", "Para melhor visualização, o ecrã será rodado.", "OK");
+                await Shell.Current.DisplayAlert(AppResources.Common_Info, "Para melhor visualização, o ecrã será rodado.", AppResources.Common_OK);
                 
 #if ANDROID
                 if (Microsoft.Maui.ApplicationModel.Platform.CurrentActivity != null)

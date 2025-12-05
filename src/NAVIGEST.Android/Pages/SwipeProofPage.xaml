@@ -3,7 +3,8 @@
              x:Name="Root"
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             Title="Swipe Proof">
+             xmlns:res="clr-namespace:NAVIGEST.Shared.Resources.Strings;assembly=NAVIGEST.Shared"
+             Title="{x:Static res:AppResources.SwipeProofPage_Title}">
   <Grid BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}">
     <CollectionView ItemsSource="{Binding Items}" SelectionMode="None" Margin="16">
       <CollectionView.ItemTemplate>
@@ -12,7 +13,7 @@
             <SwipeView.RightItems>
               <SwipeItems Mode="Reveal" SwipeBehaviorOnInvoked="Close">
                 <!-- PASTAS -->
-                <SwipeItem Text="Pastas" BackgroundColor="#00A3FF"
+                <SwipeItem Text="{x:Static res:AppResources.SwipeProofPage_Folders}" BackgroundColor="#00A3FF"
                            Command="{Binding Source={x:Reference Root}, Path=OpenPastasCommand}"
                            CommandParameter="{Binding .}">
                   <SwipeItem.IconImageSource>
@@ -21,7 +22,7 @@
                 </SwipeItem>
 
                 <!-- EDITAR -->
-                <SwipeItem Text="Editar" BackgroundColor="#FFE400"
+                <SwipeItem Text="{x:Static res:AppResources.SwipeProofPage_Edit}" BackgroundColor="#FFE400"
                            Command="{Binding Source={x:Reference Root}, Path=EditClientCommand}"
                            CommandParameter="{Binding .}">
                   <SwipeItem.IconImageSource>
@@ -30,7 +31,7 @@
                 </SwipeItem>
 
                 <!-- ELIMINAR -->
-                <SwipeItem Text="Eliminar" BackgroundColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}"
+                <SwipeItem Text="{x:Static res:AppResources.SwipeProofPage_Delete}" BackgroundColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}"
                            Command="{Binding Source={x:Reference Root}, Path=DeleteClientCommand}"
                            CommandParameter="{Binding .}">
                   <SwipeItem.IconImageSource>

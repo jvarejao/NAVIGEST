@@ -15,7 +15,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 
 using NAVIGEST.macOS.Helpers;
-using NAVIGEST.macOS.Resources.Strings;
+using NAVIGEST.Shared.Resources.Strings;
 
 namespace NAVIGEST.macOS.PageModels;
 

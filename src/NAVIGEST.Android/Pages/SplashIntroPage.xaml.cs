@@ -16,6 +16,7 @@ using NAVIGEST.Shared.Services;
 using NAVIGEST.Shared.Helpers;
 using System.Diagnostics;
 using Application = Microsoft.Maui.Controls.Application;
+using NAVIGEST.Shared.Resources.Strings;
 
 namespace NAVIGEST.Android.Pages
 {
@@ -51,6 +52,7 @@ namespace NAVIGEST.Android.Pages
             });
 
             InitializeComponent();
+            VersionLabel.Text = string.Format(AppResources.Splash_Version, AppInfo.Current.VersionString);
 
             try
             {
@@ -129,7 +131,7 @@ namespace NAVIGEST.Android.Pages
                 string installedVersion = GetInstalledVersion();
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    VersionLabel.Text = $"Versão {installedVersion}";
+                    VersionLabel.Text = $"{AppResources.Splash_VersionPrefix} {installedVersion}";
                 });
 
                 MainThread.BeginInvokeOnMainThread(() =>
@@ -255,11 +257,11 @@ namespace NAVIGEST.Android.Pages
             {
                 bool isMandatory = VersionComparer.IsLessThan(GetInstalledVersion(), updateInfo.MinSupportedVersion ?? "0.0.0");
 
-                string message = $"Nova versão disponível: {updateInfo.Version}\n\n{updateInfo.Notes ?? "Verifique as novidades!"}";
+                string message = $"{string.Format(AppResources.Update_NewVersionAvailable, updateInfo.Version)}\n\n{updateInfo.Notes ?? AppResources.Update_CheckNotes}";
                 
                 if (isMandatory)
                 {
-                    message = $"⚠️ ATUALIZAÇÃO OBRIGATÓRIA ⚠️\n\n{message}";
+                    message = $"{AppResources.Update_MandatoryHeader}\n\n{message}";
                 }
 
 #if ANDROID
@@ -267,8 +269,8 @@ namespace NAVIGEST.Android.Pages
 #endif
 
                 // Usar DisplayAlert - é modal por padrão em MAUI
-                string title = isMandatory ? "Atualização Obrigatória" : "Atualização Disponível";
-                string buttonAccept = isMandatory ? "Atualizar Agora" : "Atualizar";
+                string title = isMandatory ? AppResources.Update_TitleMandatory : AppResources.Update_TitleAvailable;
+                string buttonAccept = isMandatory ? AppResources.Update_ButtonUpdateNow : AppResources.Update_ButtonUpdate;
                 
                 bool result = false;
                 
@@ -281,12 +283,12 @@ namespace NAVIGEST.Android.Pages
                         if (isMandatory)
                         {
                             // Apenas botão de atualizar - sem opção de ignorar
-                            result = await page.DisplayAlert(title, message, buttonAccept, "Sair");
+                            result = await page.DisplayAlert(title, message, buttonAccept, AppResources.Update_ButtonExit);
                         }
                         else
                         {
                             // Botão de atualizar e ignorar
-                            result = await page.DisplayAlert(title, message, buttonAccept, "Depois");
+                            result = await page.DisplayAlert(title, message, buttonAccept, AppResources.Update_ButtonLater);
                         }
                     }
                 });

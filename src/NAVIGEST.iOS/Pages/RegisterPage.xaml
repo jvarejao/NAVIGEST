@@ -3,9 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:conv="clr-namespace:NAVIGEST.iOS.Converters"
              xmlns:beh="clr-namespace:NAVIGEST.iOS.Behaviors"
+             xmlns:res="clr-namespace:NAVIGEST.Shared.Resources.Strings;assembly=NAVIGEST.Shared"
              x:Class="NAVIGEST.iOS.Pages.RegisterPage"
              BackgroundColor="{DynamicResource PageBackgroundColor}"
-             Title="Utilizadores">
+             Title="{x:Static res:AppResources.RegisterPage_Title}">
 
     <ContentPage.Resources>
         <conv:BytesToImageSourceConverter x:Key="BytesToImage"/>
@@ -20,20 +21,20 @@
                 <Grid Padding="16,16,16,12" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12"
                       BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}">
                     <Button Grid.Column="0" 
-                            Text="← Lista" 
+                            Text="{x:Static res:AppResources.RegisterPage_List}" 
                             Style="{StaticResource AppleTintedButton}"
                             Clicked="OnOpenUserPicker"
                             Padding="12,8"/>
                     
                     <Label Grid.Column="1" 
-                           Text="Lista de Utilizadores"
+                           Text="{x:Static res:AppResources.RegisterPage_UserList}"
                            FontSize="20"
                            FontAttributes="Bold"
                            VerticalOptions="Center"
                            TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
                     
                     <Button Grid.Column="2"
-                            Text="+ Novo"
+                            Text="{x:Static res:AppResources.RegisterPage_New}"
                             Style="{StaticResource AppleFilledButton}"
                             Clicked="OnNovoClicked"
                             Padding="12,8"/>
@@ -72,7 +73,7 @@
                         </Border>
                         
                         <!-- Change Photo Button -->
-                        <Button Text="Alterar Foto"
+                        <Button Text="{x:Static res:AppResources.RegisterPage_ChangePhoto}"
                                 Style="{StaticResource AppleTextButton}"
                                 Clicked="OnEscolherImagemClicked"/>
                     </VerticalStackLayout>
@@ -90,12 +91,12 @@
                             <VerticalStackLayout Spacing="0">
                                 <!-- Username -->
                                 <Grid Padding="16,12" ColumnDefinitions="120,*" MinimumHeightRequest="44">
-                                    <Label Text="Username" 
+                                    <Label Text="{x:Static res:AppResources.RegisterPage_Username}" 
                                            VerticalOptions="Center"
                                            TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
                                     <Entry Grid.Column="1"
                                            x:Name="entryUsername"
-                                           Placeholder="utilizador"
+                                           Placeholder="{x:Static res:AppResources.RegisterPage_UserPlaceholder}"
                                            Background="Transparent"
                                            TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
                                            PlaceholderColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"/>
@@ -107,12 +108,12 @@
                                 
                                 <!-- Password -->
                                 <Grid Padding="16,12" ColumnDefinitions="120,*" MinimumHeightRequest="44">
-                                    <Label Text="Palavra-passe" 
+                                    <Label Text="{x:Static res:AppResources.RegisterPage_Password}" 
                                            VerticalOptions="Center"
                                            TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
                                     <Entry Grid.Column="1"
                                            x:Name="entryPassword"
-                                           Placeholder="********"
+                                           Placeholder="{x:Static res:AppResources.Login_PasswordMaskPlaceholder}"
                                            IsPassword="True"
                                            Background="Transparent"
                                            TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
@@ -130,12 +131,12 @@
                             <VerticalStackLayout Spacing="0">
                                 <!-- Name -->
                                 <Grid Padding="16,12" ColumnDefinitions="120,*" MinimumHeightRequest="44">
-                                    <Label Text="Nome completo" 
+                                    <Label Text="{x:Static res:AppResources.RegisterPage_FullName}" 
                                            VerticalOptions="Center"
                                            TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
                                     <Entry Grid.Column="1"
                                            x:Name="entryName"
-                                           Placeholder="Nome"
+                                           Placeholder="{x:Static res:AppResources.RegisterPage_NamePlaceholder}"
                                            Background="Transparent"
                                            TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
                                            PlaceholderColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"/>
@@ -147,12 +148,12 @@
                                 
                                 <!-- Contact -->
                                 <Grid Padding="16,12" ColumnDefinitions="120,*" MinimumHeightRequest="44">
-                                    <Label Text="Contacto" 
+                                    <Label Text="{x:Static res:AppResources.RegisterPage_Contact}" 
                                            VerticalOptions="Center"
                                            TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
                                     <Entry Grid.Column="1"
                                            x:Name="entryContact"
-                                           Placeholder="912345678"
+                                           Placeholder="{x:Static res:AppResources.RegisterPage_ContactPlaceholder}"
                                            Keyboard="Telephone"
                                            Background="Transparent"
                                            TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
@@ -165,12 +166,12 @@
                                 
                                 <!-- Email -->
                                 <Grid Padding="16,12" ColumnDefinitions="120,*" MinimumHeightRequest="44">
-                                    <Label Text="Email" 
+                                    <Label Text="{x:Static res:AppResources.RegisterPage_Email}" 
                                            VerticalOptions="Center"
                                            TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
                                     <Entry Grid.Column="1"
                                            x:Name="entryEmail"
-                                           Placeholder="email@exemplo.com"
+                                           Placeholder="{x:Static res:AppResources.RegisterPage_EmailPlaceholder}"
                                            Keyboard="Email"
                                            Background="Transparent"
                                            TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
@@ -188,12 +189,12 @@
                             <VerticalStackLayout Spacing="0">
                                 <!-- Categoria 1 -->
                                 <Grid Padding="16,12" ColumnDefinitions="120,*" MinimumHeightRequest="44">
-                                    <Label Text="Categoria 1" 
+                                    <Label Text="{x:Static res:AppResources.RegisterPage_Category1}" 
                                            VerticalOptions="Center"
                                            TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
                                     <Entry Grid.Column="1"
                                            x:Name="entryCategoria1"
-                                           Placeholder="Categoria 1"
+                                           Placeholder="{x:Static res:AppResources.RegisterPage_Category1}"
                                            Background="Transparent"
                                            TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
                                            PlaceholderColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"/>
@@ -205,12 +206,12 @@
                                 
                                 <!-- Categoria 2 -->
                                 <Grid Padding="16,12" ColumnDefinitions="120,*" MinimumHeightRequest="44">
-                                    <Label Text="Categoria 2" 
+                                    <Label Text="{x:Static res:AppResources.RegisterPage_Category2}" 
                                            VerticalOptions="Center"
                                            TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
                                     <Entry Grid.Column="1"
                                            x:Name="entryCategoria2"
-                                           Placeholder="Categoria 2"
+                                           Placeholder="{x:Static res:AppResources.RegisterPage_Category2}"
                                            Background="Transparent"
                                            TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
                                            PlaceholderColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"/>
@@ -222,12 +223,12 @@
                                 
                                 <!-- Tipo Utilizador -->
                                 <Grid Padding="16,12" ColumnDefinitions="120,*" MinimumHeightRequest="44">
-                                    <Label Text="Tipo de utilizador" 
+                                    <Label Text="{x:Static res:AppResources.RegisterPage_UserType}" 
                                            VerticalOptions="Center"
                                            TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
                                     <Entry Grid.Column="1"
                                            x:Name="entryTipo"
-                                           Placeholder="Tipo"
+                                           Placeholder="{x:Static res:AppResources.RegisterPage_UserTypePlaceholder}"
                                            Background="Transparent"
                                            TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
                                            PlaceholderColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"/>
@@ -238,7 +239,7 @@
 
                     <!-- Action Buttons -->
                     <VerticalStackLayout Spacing="12" Padding="0,8,0,0">
-                        <Button Text="Guardar"
+                        <Button Text="{x:Static res:AppResources.Common_Save}"
                                 Style="{StaticResource AppleFilledButton}"
                                 Clicked="OnGuardarClicked">
                             <Button.ImageSource>
@@ -246,7 +247,7 @@
                             </Button.ImageSource>
                         </Button>
                         
-                        <Button Text="Atualizar"
+                        <Button Text="{x:Static res:AppResources.Common_Update}"
                                 Style="{StaticResource AppleTintedButton}"
                                 Clicked="OnAtualizarClicked">
                             <Button.ImageSource>
@@ -255,7 +256,7 @@
                             </Button.ImageSource>
                         </Button>
                         
-                        <Button Text="Eliminar"
+                        <Button Text="{x:Static res:AppResources.Common_Delete}"
                                 BackgroundColor="{AppThemeBinding Light=#FF3B30, Dark=#FF453A}"
                                 TextColor="White"
                                 FontSize="17"
@@ -268,7 +269,7 @@
                             </Button.ImageSource>
                         </Button>
                         
-                        <Button Text="Limpar"
+                        <Button Text="{x:Static res:AppResources.Common_Clear}"
                                 Style="{StaticResource AppleTintedButton}"
                                 Clicked="OnNovoClicked">
                             <Button.ImageSource>
@@ -294,7 +295,7 @@
                     VerticalOptions="Center" 
                     MaximumHeightRequest="700">
                 <Grid RowDefinitions="Auto,*,Auto" RowSpacing="12">
-                    <Label Text="Selecionar Utilizador" 
+                    <Label Text="{x:Static res:AppResources.RegisterPage_SelectUser}" 
                            FontAttributes="Bold" 
                            FontSize="18"
                            TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
@@ -345,7 +346,7 @@
                     </CollectionView>
                     
                     <Button Grid.Row="2" 
-                            Text="Fechar" 
+                            Text="{x:Static res:AppResources.RegisterPage_Close}" 
                             Clicked="OnCloseUserPicker" 
                             Style="{StaticResource AppleTintedButton}"/>
                 </Grid>

@@ -5,6 +5,7 @@ using Microsoft.Maui.Graphics;
 using MySqlConnector;
 using System.Net.Sockets;
 using System.Diagnostics;
+using NAVIGEST.Shared.Resources.Strings;
 
 namespace NAVIGEST.iOS.Pages;
 
@@ -164,7 +165,7 @@ public partial class DbConfigPage : ContentPage
 
         if (!allOk)
         {
-            await AppShell.DisplayToastAsync("Corrija os campos destacados.");
+            await AppShell.DisplayToastAsync(AppResources.DbConfigPage_FixErrors);
             return;
         }
 
@@ -177,19 +178,19 @@ public partial class DbConfigPage : ContentPage
         _settingsService.Save(_settings);
 
         ResultContainer.IsVisible = true;
-        LblResultado.Text = "A testar ligação...";
+        LblResultado.Text = AppResources.DbConfigPage_TestingConnection;
         
         bool ok = await DatabaseService.TestConnectionAsync();
         if (ok)
         {
-            LblResultado.Text = "✓ Ligação estabelecida com sucesso!";
-            await AppShell.DisplayToastAsync("Ligação estabelecida com sucesso!");
+            LblResultado.Text = AppResources.DbConfigPage_ConnectionSuccess;
+            await AppShell.DisplayToastAsync(AppResources.DbConfigPage_ConnectionSuccessToast);
             await Shell.Current.GoToAsync("//WelcomePage");
         }
         else
         {
-            LblResultado.Text = "✗ Não foi possível ligar à BD.";
-            await AppShell.DisplayToastAsync("Ainda não foi possível ligar à BD.");
+            LblResultado.Text = AppResources.DbConfigPage_ConnectionError;
+            await AppShell.DisplayToastAsync(AppResources.DbConfigPage_ConnectionErrorToast);
         }
     }
 
@@ -283,7 +284,7 @@ public partial class DbConfigPage : ContentPage
         }
 
         if (!anySuccess)
-            sb.AppendLine("Nenhum endpoint respondeu com sucesso.");
+            sb.AppendLine(AppResources.DbConfigPage_NoEndpoint);
         return (anySuccess, sb.ToString());
     }
 
@@ -291,27 +292,27 @@ public partial class DbConfigPage : ContentPage
     {
         BtnTestarDb.IsEnabled = false;
         ResultContainer.IsVisible = true;
-        LblResultado.Text = "A testar ligação (multi-endpoints)...";
+        LblResultado.Text = AppResources.DbConfigPage_TestingMulti;
         try
         {
             // Primeiro tenta o settings atual
             var primaryOk = await DatabaseService.TestConnectionAsync();
             if (primaryOk)
             {
-                await DisplayAlert("DB", "Ligação OK com configuração atual (TestConnection).", "Fechar");
-                LblResultado.Text = "Primário OK.";
+                await DisplayAlert("DB", AppResources.DbConfigPage_ConnectionOK, AppResources.Common_Close);
+                LblResultado.Text = AppResources.DbConfigPage_PrimaryOK;
                 return;
             }
 
             // Faz fallback multi-endpoint
             var (ok, log) = await TryEndpointsAsync();
             LblResultado.Text = log;
-            await DisplayAlert("Diagnóstico", log, "Fechar");
+            await DisplayAlert(AppResources.DbConfigPage_Diagnostic, log, AppResources.Common_Close);
         }
         catch (Exception ex)
         {
-            await DisplayAlert("DB", $"Falhou: {ex.GetType().Name}\n{ex.Message}", "Fechar");
-            LblResultado.Text = "Erro: " + ex.Message;
+            await DisplayAlert("DB", string.Format(AppResources.DbConfigPage_Failed, ex.GetType().Name, ex.Message), AppResources.Common_Close);
+            LblResultado.Text = string.Format(AppResources.DbConfigPage_ErrorPrefix, ex.Message);
         }
         finally
         {

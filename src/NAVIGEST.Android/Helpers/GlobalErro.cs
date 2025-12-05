@@ -7,6 +7,7 @@ using Microsoft.Maui.ApplicationModel; // MainThread, Device info
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Storage; // FileSystem
 using Microsoft.Maui.ApplicationModel.DataTransfer; // Share
+using NAVIGEST.Shared.Resources.Strings;
 #if ANDROID
 using Android.Content.Res;
 #endif
@@ -71,10 +72,10 @@ namespace NAVIGEST.Android
                         if (preview.Length > maxPreview)
                             preview = preview.Substring(0, maxPreview) + "…";
 
-                        string cancel = "OK";
-                        string btnAbrir = "Abrir Logs";
-                        string btnCopiar = "Copiar Detalhes";
-                        string btnPartilhar = "Partilhar Log";
+                        string cancel = AppResources.Common_OK;
+                        string btnAbrir = $"{AppResources.Common_Open} {AppResources.Common_Logs}";
+                        string btnCopiar = $"{AppResources.Common_Copy} {AppResources.Common_Details}";
+                        string btnPartilhar = $"{AppResources.Common_Share} {AppResources.Common_Logs}";
                         var escolha = await page.DisplayActionSheet(preview, cancel, null, btnAbrir, btnCopiar, btnPartilhar);
                         if (escolha == btnAbrir)
                         {
@@ -83,7 +84,7 @@ namespace NAVIGEST.Android
                         else if (escolha == btnCopiar)
                         {
                             try { await Clipboard.Default.SetTextAsync(full); } catch { }
-                            await page.DisplayAlert("Copiado", "Detalhes copiados para a área de transferência.", "OK");
+                            await page.DisplayAlert(AppResources.Common_Copied, AppResources.Common_DetailsCopied, AppResources.Common_OK);
                         }
                         else if (escolha == btnPartilhar)
                         {

@@ -6,6 +6,7 @@ using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls;
 using NAVIGEST.Android.Models;
 using NAVIGEST.Android.Services;
+using NAVIGEST.Shared.Resources.Strings;
 
 namespace NAVIGEST.Android.Popups;
 
@@ -33,7 +34,7 @@ public partial class NovaHoraPopup : Popup
     private async Task InicializarFormAsync()
     {
         // Configurar título
-        TituloLabel.Text = _isEdit ? "✏️ EDITAR REGISTO DE HORAS" : "➕ NOVO REGISTO DE HORAS";
+        TituloLabel.Text = _isEdit ? AppResources.Hours_EditTitle : AppResources.Hours_NewTitle;
         EliminarButton.IsVisible = _isEdit;
 
         // Carregar clientes da BD
@@ -43,7 +44,7 @@ public partial class NovaHoraPopup : Popup
             _clientes = clientesDb.OrderBy(c => c.CLINOME).ToList();
             
             // Adicionar opção "Sem cliente" no início
-            _clientes.Insert(0, new Cliente { CLICODIGO = "0", CLINOME = "Sem cliente" });
+            _clientes.Insert(0, new Cliente { CLICODIGO = "0", CLINOME = AppResources.Hours_NoClient });
         }
         catch (Exception ex)
         {
@@ -75,25 +76,25 @@ public partial class NovaHoraPopup : Popup
                 {
                     // Cliente não existe mais na BD - selecionar "Sem cliente"
                     _clienteSelecionado = _clientes[0];
-                    ClienteLabel.Text = "Sem cliente";
-                    await Shell.Current.DisplayAlert("⚠️ Aviso", 
+                    ClienteLabel.Text = AppResources.Hours_NoClient;
+                    await Shell.Current.DisplayAlert(AppResources.ClientsPage_ClientNotFound, 
                         $"O cliente '{idClienteTrim}' já não existe na base de dados.\n\n" +
                         $"Este registo tinha o cliente: {_hora.Cliente ?? "N/A"}", 
-                        "OK");
+                        AppResources.Common_OK);
                 }
             }
             else
             {
                 _clienteSelecionado = _clientes[0];
-                ClienteLabel.Text = "Sem cliente";
+                ClienteLabel.Text = AppResources.Hours_NoClient;
             }
         }
         else
         {
             // Novo registo - sem cliente por padrão
             _clienteSelecionado = _clientes[0];
-            ClienteLabel.Text = "Sem cliente";
-            ColaboradorLabel.Text = "Selecione colaborador";
+            ClienteLabel.Text = AppResources.Hours_NoClient;
+            ColaboradorLabel.Text = AppResources.Hours_SelectCollaborator;
         }
 
                 // Preencher campos
@@ -148,7 +149,7 @@ public partial class NovaHoraPopup : Popup
             // Validar colaborador
             if (_colaboradorSelecionado == null)
             {
-                MostrarErro("Selecione um colaborador");
+                MostrarErro(AppResources.Hours_ErrorSelectCollaborator);
                 return;
             }
             
@@ -167,25 +168,25 @@ public partial class NovaHoraPopup : Popup
             {
                 if (!float.TryParse(horasNormaisText, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out horasNormais) || horasNormais < 0)
                 {
-                    MostrarErro("Insira horas normais válidas (0-24)");
+                    MostrarErro(AppResources.Hours_ErrorInvalidNormalHours);
                     return;
                 }
 
                 if (!float.TryParse(horasExtrasText, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out horasExtras) || horasExtras < 0)
                 {
-                    MostrarErro("Insira horas extras válidas (0-24)");
+                    MostrarErro(AppResources.Hours_ErrorInvalidExtraHours);
                     return;
                 }
 
                 if (horasNormais + horasExtras > 24)
                 {
-                    MostrarErro("Total de horas não pode exceder 24h");
+                    MostrarErro(AppResources.Hours_ErrorTotalHoursExceeded);
                     return;
                 }
                 
                 if (horasNormais + horasExtras == 0)
                 {
-                    MostrarErro("Insira pelo menos 1 hora");
+                    MostrarErro(AppResources.Hours_ErrorEnterHours);
                     return;
                 }
             }
@@ -207,7 +208,7 @@ public partial class NovaHoraPopup : Popup
             {
                 if (AbsenceTypePicker.SelectedItem is not AbsenceType absence)
                 {
-                    MostrarErro("Selecione o motivo da ausência");
+                    MostrarErro(AppResources.Hours_ErrorSelectReason);
                     SetBusy(false);
                     return;
                 }
@@ -260,7 +261,7 @@ public partial class NovaHoraPopup : Popup
         catch (Exception ex)
         {
             GlobalErro.TratarErro(ex, mostrarAlerta: false);
-            MostrarErro("Erro ao guardar registo");
+            MostrarErro(AppResources.Hours_ErrorSaving);
         }
         finally
         {
@@ -273,10 +274,10 @@ public partial class NovaHoraPopup : Popup
         try
         {
             bool confirmacao = await Shell.Current.DisplayAlert(
-                "Confirmar",
-                "Eliminar este registo de horas?",
-                "Sim",
-                "Não"
+                AppResources.ClientsPage_DeleteConfirmTitle,
+                AppResources.ClientsPage_DeleteConfirm,
+                AppResources.Common_Yes,
+                AppResources.Common_No
             );
 
             if (!confirmacao) return;
@@ -292,7 +293,7 @@ public partial class NovaHoraPopup : Popup
         catch (Exception ex)
         {
             GlobalErro.TratarErro(ex, mostrarAlerta: false);
-            MostrarErro("Erro ao eliminar registo");
+            MostrarErro(AppResources.Common_DeleteError);
         }
         finally
         {

@@ -450,7 +450,7 @@ namespace NAVIGEST.macOS.Pages
                                         }
                                         catch (Exception ex) { TratarErro(ex); }
                                     }
-                                    else await DisplayToastAsync(string.Format(NAVIGEST.macOS.Resources.Strings.AppResources.Main_NoContent, "RegisterPage"));
+                                    else await DisplayToastAsync(string.Format(NAVIGEST.Shared.Resources.Strings.AppResources.Main_NoContent, "RegisterPage"));
                                 }
                                 catch (Exception ex) { TratarErro(ex); }
                                 CloseSidebarMobileIfNeeded();
@@ -468,7 +468,7 @@ namespace NAVIGEST.macOS.Pages
                                         pageContent.BindingContext = page.BindingContext ?? pageContent.BindingContext;
                                         ShowContent(pageContent);
                                     }
-                                    else await DisplayToastAsync(string.Format(NAVIGEST.macOS.Resources.Strings.AppResources.Main_NoContent, "DbConfigPage"));
+                                    else await DisplayToastAsync(string.Format(NAVIGEST.Shared.Resources.Strings.AppResources.Main_NoContent, "DbConfigPage"));
                                 }
                                 catch (Exception ex) { TratarErro(ex); }
                                 CloseSidebarMobileIfNeeded();
@@ -492,7 +492,7 @@ namespace NAVIGEST.macOS.Pages
                                         }
                                         catch (Exception ex) { TratarErro(ex); }
                                     }
-                                    else await DisplayToastAsync(string.Format(NAVIGEST.macOS.Resources.Strings.AppResources.Main_NoContent, "ClientsPage"));
+                                    else await DisplayToastAsync(string.Format(NAVIGEST.Shared.Resources.Strings.AppResources.Main_NoContent, "ClientsPage"));
                                 }
                                 catch (Exception ex) { TratarErro(ex); }
                                 CloseSidebarMobileIfNeeded();
@@ -516,7 +516,7 @@ namespace NAVIGEST.macOS.Pages
                                         }
                                         catch { }
                                     }
-                                    else await DisplayToastAsync(string.Format(NAVIGEST.macOS.Resources.Strings.AppResources.Main_NoContent, "ProductsPage"));
+                                    else await DisplayToastAsync(string.Format(NAVIGEST.Shared.Resources.Strings.AppResources.Main_NoContent, "ProductsPage"));
                                 }
                                 catch (Exception ex) { TratarErro(ex); }
                                 CloseSidebarMobileIfNeeded();
@@ -540,7 +540,7 @@ namespace NAVIGEST.macOS.Pages
                                         }
                                         catch (Exception ex) { TratarErro(ex); }
                                     }
-                                    else await DisplayToastAsync(string.Format(NAVIGEST.macOS.Resources.Strings.AppResources.Main_NoContent, "ServicePage"));
+                                    else await DisplayToastAsync(string.Format(NAVIGEST.Shared.Resources.Strings.AppResources.Main_NoContent, "ServicePage"));
                                 }
                                 catch (Exception ex) { TratarErro(ex); }
                                 CloseSidebarMobileIfNeeded();
@@ -586,7 +586,7 @@ namespace NAVIGEST.macOS.Pages
                                     }
                                     else
                                     {
-                                        await DisplayToastAsync(string.Format(NAVIGEST.macOS.Resources.Strings.AppResources.Main_NoContent, "HoursEntryPage"));
+                                        await DisplayToastAsync(string.Format(NAVIGEST.Shared.Resources.Strings.AppResources.Main_NoContent, "HoursEntryPage"));
                                     }
                                 }
                                 catch (Exception ex) { TratarErro(ex); }
@@ -633,10 +633,10 @@ namespace NAVIGEST.macOS.Pages
             try
             {
                 bool confirm = await DisplayAlert(
-                    NAVIGEST.macOS.Resources.Strings.AppResources.Main_LogoutTitle,
-                    NAVIGEST.macOS.Resources.Strings.AppResources.Main_LogoutMessage,
-                    NAVIGEST.macOS.Resources.Strings.AppResources.Main_LogoutConfirm,
-                    NAVIGEST.macOS.Resources.Strings.AppResources.Common_Cancel);
+                    NAVIGEST.Shared.Resources.Strings.AppResources.Main_LogoutTitle,
+                    NAVIGEST.Shared.Resources.Strings.AppResources.Main_LogoutMessage,
+                    NAVIGEST.Shared.Resources.Strings.AppResources.Main_LogoutConfirm,
+                    NAVIGEST.Shared.Resources.Strings.AppResources.Common_Cancel);
                 if (confirm)
                 {
                     CloseSidebarMobileIfNeeded();
@@ -655,9 +655,9 @@ namespace NAVIGEST.macOS.Pages
                 Application.Current?.Quit();
 #else
                 await DisplayAlert(
-                    NAVIGEST.macOS.Resources.Strings.AppResources.Main_CloseTitle,
-                    NAVIGEST.macOS.Resources.Strings.AppResources.Main_CloseMessage,
-                    NAVIGEST.macOS.Resources.Strings.AppResources.Common_OK);
+                    NAVIGEST.Shared.Resources.Strings.AppResources.Main_CloseTitle,
+                    NAVIGEST.Shared.Resources.Strings.AppResources.Main_CloseMessage,
+                    NAVIGEST.Shared.Resources.Strings.AppResources.Common_OK);
 #endif
                 CloseSidebarMobileIfNeeded();
             }
@@ -690,9 +690,9 @@ namespace NAVIGEST.macOS.Pages
                 if (!ok)
                 {
                     await DisplayAlert(
-                        NAVIGEST.macOS.Resources.Strings.AppResources.Main_AccessDenied,
-                        NAVIGEST.macOS.Resources.Strings.AppResources.Main_AdminRequired,
-                        NAVIGEST.macOS.Resources.Strings.AppResources.Common_OK);
+                        NAVIGEST.Shared.Resources.Strings.AppResources.Main_AccessDenied,
+                        NAVIGEST.Shared.Resources.Strings.AppResources.Main_AdminRequired,
+                        NAVIGEST.Shared.Resources.Strings.AppResources.Common_OK);
                     return;
                 }
                 vm.IsAdminUnlocked = true; vm.IsConfigExpanded = true;
@@ -741,20 +741,20 @@ namespace NAVIGEST.macOS.Pages
                 var pass = AdminPassEntry.Text ?? "";
                 if (string.IsNullOrWhiteSpace(user) || string.IsNullOrWhiteSpace(pass))
                 { 
-                    AdminErrorLabel.Text = NAVIGEST.macOS.Resources.Strings.AppResources.Main_AdminEnterCredentials; 
+                    AdminErrorLabel.Text = NAVIGEST.Shared.Resources.Strings.AppResources.Main_AdminEnterCredentials; 
                     AdminErrorLabel.IsVisible = true; 
                     return; 
                 }
                 (bool ok, string _nome, string tipo) = await DatabaseService.CheckLoginAsync(user, pass);
                 if (!ok) 
                 { 
-                    AdminErrorLabel.Text = NAVIGEST.macOS.Resources.Strings.AppResources.Login_InvalidCredentials; 
+                    AdminErrorLabel.Text = NAVIGEST.Shared.Resources.Strings.AppResources.Login_InvalidCredentials; 
                     AdminErrorLabel.IsVisible = true; 
                     return; 
                 }
                 if (!string.Equals(tipo, "ADMIN", StringComparison.OrdinalIgnoreCase)) 
                 { 
-                    AdminErrorLabel.Text = NAVIGEST.macOS.Resources.Strings.AppResources.Main_AdminRequired; 
+                    AdminErrorLabel.Text = NAVIGEST.Shared.Resources.Strings.AppResources.Main_AdminRequired; 
                     AdminErrorLabel.IsVisible = true; 
                     return; 
                 }

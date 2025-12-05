@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
 using NAVIGEST.Android.ViewModels;
+using NAVIGEST.Shared.Resources.Strings;
 
 namespace NAVIGEST.Android.Pages
 {
@@ -31,11 +32,11 @@ namespace NAVIGEST.Android.Pages
         private async Task<string?> EditNotesAsync(TimeEntry entry)
         {
             var newText = await DisplayPromptAsync(
-                "Observaes",
-                "Editar observaes da linha:",
-                accept: "Guardar",
-                cancel: "Cancelar",
-                placeholder: "Escreve aqui",
+                AppResources.Common_Observations,
+                AppResources.HoursEntryPage_EditNotesMessage,
+                accept: AppResources.Common_Save,
+                cancel: AppResources.Common_Cancel,
+                placeholder: AppResources.Common_PlaceholderWriteHere,
                 initialValue: entry?.Notes,
                 maxLength: 1000,
                 keyboard: Keyboard.Text);

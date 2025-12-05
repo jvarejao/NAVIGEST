@@ -6,7 +6,7 @@
              xmlns:models="clr-namespace:NAVIGEST.macOS.Models"
              xmlns:converters="clr-namespace:NAVIGEST.macOS.Converters"
              xmlns:pages="clr-namespace:NAVIGEST.macOS.Pages"
-             xmlns:res="clr-namespace:NAVIGEST.macOS.Resources.Strings"
+             xmlns:res="clr-namespace:NAVIGEST.Shared.Resources.Strings;assembly=NAVIGEST.Shared"
              x:DataType="vm:HorasColaboradorViewModel"
              BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#000000}"
              Title="⏱️ Horas de Colaborador">

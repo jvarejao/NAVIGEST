@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Devices;
+using NAVIGEST.Shared.Resources.Strings;
 
 namespace NAVIGEST.iOS.Pages
 {
@@ -17,6 +18,7 @@ namespace NAVIGEST.iOS.Pages
         public SplashIntroPage()
         {
             InitializeComponent();
+            VersionLabel.Text = string.Format(AppResources.Splash_Version, AppInfo.Current.VersionString);
         }
 
         protected override async void OnAppearing()
@@ -72,7 +74,7 @@ namespace NAVIGEST.iOS.Pages
                     // Fallback imediato se o ficheiro não existir - não bloqueia o arranque
                     System.Diagnostics.Debug.WriteLine("[SplashIntroPage] ❌ GIF não encontrado em nenhum caminho");
                     // DEBUG: Mostrar alerta se falhar
-                    await DisplayAlert("Erro GIF", "Não foi possível carregar o startup.gif. Verifique os logs.", "OK");
+                    await DisplayAlert(AppResources.Splash_GifErrorTitle, AppResources.Splash_GifErrorMessage, AppResources.Common_OK);
                     await Shell.Current.GoToAsync("//WelcomePage");
                     return;
                 }

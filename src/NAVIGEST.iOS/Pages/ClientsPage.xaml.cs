@@ -12,6 +12,7 @@ using NAVIGEST.iOS.Models;
 using NAVIGEST.iOS.PageModels;
 using NAVIGEST.iOS.Popups;
 using NAVIGEST.iOS;
+using NAVIGEST.Shared.Resources.Strings;
 #if IOS
 using Microsoft.Maui.Platform;
 using UIKit;
@@ -60,14 +61,14 @@ namespace NAVIGEST.iOS.Pages
             };
         }
 
-        private static Task ShowAlertAsync(string title, string message, string cancel = "OK") =>
+        private static Task ShowAlertAsync(string title, string message, string? cancel = null) =>
             MainThread.InvokeOnMainThreadAsync(async () =>
             {
                 var root = GetRootPage();
                 if (root is null)
                     return;
 
-                await root.DisplayAlert(title, message, cancel);
+                await root.DisplayAlert(title, message, cancel ?? AppResources.Common_OK);
             });
 
         private static Task<bool> ShowConfirmAsync(string title, string message, string accept, string cancel) =>
@@ -93,7 +94,7 @@ namespace NAVIGEST.iOS.Pages
 
             var doneButton = new Button
             {
-                Text = "Concluído",
+                Text = AppResources.Common_Done,
                 FontSize = 16,
                 TextColor = Color.FromArgb("#007AFF"),
                 BackgroundColor = Colors.Transparent,
@@ -121,7 +122,7 @@ namespace NAVIGEST.iOS.Pages
                 catch (Exception ex)
                 {
                     GlobalErro.TratarErro(ex, mostrarAlerta: false);
-                    await GlobalToast.ShowAsync("Falha ao carregar clientes.", ToastTipo.Erro, 2500);
+                    await GlobalToast.ShowAsync(AppResources.ClientsPage_LoadError, ToastTipo.Erro, 2500);
                 }
                 _loadedOnce = true;
             }
@@ -142,8 +143,8 @@ namespace NAVIGEST.iOS.Pages
             FormViewContainer.IsVisible = true;
             _isEditMode = true;
 
-            FormTitle.Text = isNew ? "Novo Cliente" : "Editar Cliente";
-            SaveButton.Text = isNew ? "Adicionar" : "Atualizar";
+            FormTitle.Text = isNew ? AppResources.ClientsPage_NewClient : AppResources.ClientsPage_EditClient;
+            SaveButton.Text = isNew ? AppResources.Common_Add : AppResources.Common_Update;
             
             // Mostrar grid de ações (Pastas + Eliminar) apenas em modo edição
             var actionGrid = FindByName("ActionButtonsGrid") as View;
@@ -225,7 +226,7 @@ namespace NAVIGEST.iOS.Pages
             }
             catch (Exception ex)
             {
-                await ShowAlertAsync("Erro", $"Erro ao abrir edição: {ex.Message}");
+                await ShowAlertAsync(AppResources.Common_Error, string.Format(AppResources.ClientsPage_ErrorEdit, ex.Message));
             }
         }
 
@@ -241,7 +242,7 @@ namespace NAVIGEST.iOS.Pages
             }
             catch (Exception ex)
             {
-                await ShowAlertAsync("Erro", $"Erro ao eliminar: {ex.Message}");
+                await ShowAlertAsync(AppResources.Common_Error, string.Format(AppResources.ClientsPage_ErrorDelete, ex.Message));
             }
         }
 
@@ -257,7 +258,7 @@ namespace NAVIGEST.iOS.Pages
             }
             catch (Exception ex)
             {
-                await ShowAlertAsync("Erro", $"Erro ao abrir pastas: {ex.Message}");
+                await ShowAlertAsync(AppResources.Common_Error, string.Format(AppResources.ClientsPage_ErrorFolders, ex.Message));
             }
         }
 
@@ -301,7 +302,7 @@ namespace NAVIGEST.iOS.Pages
                 ? (cliente.CLICODIGO ?? "Cliente")
                 : cliente.CLINOME;
 
-            await AppShell.DisplayToastAsync($"{nome}: {cliente.ServicosCountDisplay}.");
+            await AppShell.DisplayToastAsync(string.Format(AppResources.ClientsPage_ServicesToast, nome, cliente.ServicosCountDisplay));
         }
         private void HandleEditar(Cliente cliente)
         {
@@ -324,9 +325,9 @@ namespace NAVIGEST.iOS.Pages
         {
             try
             {
-                var confirm = await ShowConfirmAsync("Eliminar Cliente",
-                    $"Tem a certeza que deseja eliminar '{cliente.CLINOME}'?",
-                    "Eliminar", "Cancelar");
+                var confirm = await ShowConfirmAsync(AppResources.ClientsPage_DeleteTitle,
+                    string.Format(AppResources.ClientsPage_DeleteConfirm, cliente.CLINOME),
+                    AppResources.Common_Delete, AppResources.Common_Cancel);
 
                 if (!confirm) return;
 
@@ -337,21 +338,19 @@ namespace NAVIGEST.iOS.Pages
                     bool canParam = vm.DeleteCommand?.CanExecute(cliente) == true;
                     bool canNull  = vm.DeleteCommand?.CanExecute(null) == true;
 
-                    await ShowAlertAsync("[DBG]", $"CanExec(param)={canParam} | CanExec(null)={canNull}");
-
                     if (canParam)
                     {
                         vm.DeleteCommand!.Execute(cliente);
-                        await GlobalToast.ShowAsync("Cliente eliminado com sucesso.", ToastTipo.Sucesso, 2000);
+                        await GlobalToast.ShowAsync(AppResources.ClientsPage_DeletedSuccess, ToastTipo.Sucesso, 2000);
                     }
                     else if (canNull)
                     {
                         vm.DeleteCommand!.Execute(null);
-                        await GlobalToast.ShowAsync("Cliente eliminado com sucesso.", ToastTipo.Sucesso, 2000);
+                        await GlobalToast.ShowAsync(AppResources.ClientsPage_DeletedSuccess, ToastTipo.Sucesso, 2000);
                     }
                     else
                     {
-                        await ShowAlertAsync("Aviso", "Não foi possível eliminar (command bloqueado).");
+                        await ShowAlertAsync(AppResources.Common_Warning, AppResources.ClientsPage_DeleteBlocked);
                     }
                 }
             }
@@ -367,28 +366,26 @@ namespace NAVIGEST.iOS.Pages
             {
                 if (string.IsNullOrWhiteSpace(cliente.CLICODIGO))
                 {
-                    await ShowAlertAsync("Aviso", "Cliente sem código definido.");
+                    await ShowAlertAsync(AppResources.Common_Warning, AppResources.ClientsPage_NoCode);
                     return;
                 }
 
                 var uri = new Uri($"qfile://open?path=/mnt/remote/CLIENTES/{cliente.CLICODIGO}");
                 var can = await Launcher.CanOpenAsync(uri);
-                await ShowAlertAsync("[DBG]", $"CanOpen qfile = {can}");
 
                 if (can)
                 {
                     await Launcher.OpenAsync(uri);
-                    await ShowAlertAsync("[DBG]", "OpenAsync(qfile) OK");
                 }
                 else
                 {
-                    await ShowAlertAsync("Qfile",
-                        $"A abrir pasta do cliente {cliente.CLINOME}...\n\nCaminho: CLIENTES/{cliente.CLICODIGO}");
+                    await ShowAlertAsync(AppResources.Common_Info,
+                        string.Format(AppResources.ClientsPage_OpeningFolder, cliente.CLINOME, cliente.CLICODIGO));
                 }
             }
             catch (Exception ex)
             {
-                await ShowAlertAsync("Erro", $"Falhou abrir Qfile: {ex.Message}");
+                await ShowAlertAsync(AppResources.Common_Error, string.Format(AppResources.ClientsPage_QfileError, ex.Message));
             }
         }
 
@@ -422,7 +419,7 @@ namespace NAVIGEST.iOS.Pages
                 if (result is Vendedor vendedor)
                 {
                     vm.UpsertVendedor(vendedor);
-                    await GlobalToast.ShowAsync("Vendedor criado.", ToastTipo.Sucesso, 2000);
+                    await GlobalToast.ShowAsync(AppResources.ClientsPage_SalespersonCreated, ToastTipo.Sucesso, 2000);
                 }
 
                 if (popup.VendedoresDirty)
@@ -629,15 +626,13 @@ namespace NAVIGEST.iOS.Pages
         // Guardar
         private async void OnSaveClientTapped(object sender, EventArgs e)
         {
-            await ShowAlertAsync("SAVE BUTTON", "Botão Save foi clicado!");
-            
             try
             {
                 if (BindingContext is not ClientsPageModel vm || vm.Editing is null) return;
 
                 if (string.IsNullOrWhiteSpace(vm.Editing.CLINOME))
                 {
-                    await ShowAlertAsync("Aviso", "O nome do cliente é obrigatório.");
+                    await ShowAlertAsync(AppResources.Common_Warning, AppResources.ClientsPage_NameRequired);
                     return;
                 }
 
@@ -650,10 +645,10 @@ namespace NAVIGEST.iOS.Pages
                 }
 
                 if (isNew)
-                    await GlobalToast.ShowAsync("Cliente adicionado com sucesso! (Pasta a criar)", ToastTipo.Sucesso, 2000);
+                    await GlobalToast.ShowAsync(AppResources.ClientsPage_AddedSuccess, ToastTipo.Sucesso, 2000);
                 else
                 {
-                    await GlobalToast.ShowAsync("Cliente atualizado com sucesso!", ToastTipo.Sucesso, 2000);
+                    await GlobalToast.ShowAsync(AppResources.ClientsPage_UpdatedSuccess, ToastTipo.Sucesso, 2000);
                     
                     // Se estamos editando (não é novo), abrir a pasta do cliente
                     await HandlePastasAsync(vm.Editing);
@@ -663,7 +658,7 @@ namespace NAVIGEST.iOS.Pages
             }
             catch (Exception ex)
             {
-                await ShowAlertAsync("Erro", $"Erro ao guardar: {ex.Message}");
+                await ShowAlertAsync(AppResources.Common_Error, string.Format(AppResources.ClientsPage_ErrorSave, ex.Message));
                 GlobalErro.TratarErro(ex, mostrarAlerta: false);
             }
         }
@@ -671,27 +666,20 @@ namespace NAVIGEST.iOS.Pages
         // Pastas do formulário
         private async void OnPastasFormTapped(object sender, EventArgs e)
         {
-            await ShowAlertAsync("PASTAS BUTTON", "Botão Pastas foi clicado!");
-            
             try
             {
                 if (BindingContext is not ClientsPageModel vm || vm.Editing is null)
                 {
-                    await ShowAlertAsync("[DEBUG] Pastas", "VM ou Editing é null");
                     return;
                 }
 
-                await ShowAlertAsync("[DEBUG] Pastas", "Antes de OnPastasAsync");
-                
                 // Chamar diretamente o OnPastasAsync
                 vm.SelectedCliente = vm.Editing;
                 await vm.OnPastasAsync();
-                
-                await ShowAlertAsync("[DEBUG] Pastas", "Depois de OnPastasAsync");
             }
             catch (Exception ex)
             {
-                await ShowAlertAsync("Erro", $"Erro ao abrir pastas: {ex.Message}\n\n{ex.StackTrace}");
+                await ShowAlertAsync(AppResources.Common_Error, string.Format(AppResources.ClientsPage_ErrorFolders, ex.Message));
                 GlobalErro.TratarErro(ex, mostrarAlerta: false);
             }
         }
@@ -699,36 +687,29 @@ namespace NAVIGEST.iOS.Pages
         // Eliminar do formulário
         private async void OnDeleteFromFormTapped(object sender, EventArgs e)
         {
-            await ShowAlertAsync("DELETE BUTTON", "Botão Delete foi clicado!");
-            
             try
             {
                 if (BindingContext is not ClientsPageModel vm || vm.Editing is null)
                 {
-                    await ShowAlertAsync("[DEBUG] Delete", "VM ou Editing é null");
                     return;
                 }
 
-                var confirm = await ShowConfirmAsync("Eliminar Cliente",
-                    $"Tem a certeza que deseja eliminar '{vm.Editing.CLINOME}'?",
-                    "Eliminar", "Cancelar");
+                var confirm = await ShowConfirmAsync(AppResources.ClientsPage_DeleteTitle,
+                    string.Format(AppResources.ClientsPage_DeleteConfirm, vm.Editing.CLINOME),
+                    AppResources.Common_Delete, AppResources.Common_Cancel);
 
                 if (!confirm) return;
 
-                await ShowAlertAsync("[DEBUG] Delete", "Antes de OnDeleteAsync");
-                
                 // Chamar diretamente o OnDeleteAsync (que já está no ViewModel)
                 vm.SelectedCliente = vm.Editing;
                 await vm.OnDeleteAsync();
                 
-                await ShowAlertAsync("[DEBUG] Delete", "Depois de OnDeleteAsync");
-                
                 ShowListView();
-                await GlobalToast.ShowAsync("Cliente eliminado com sucesso!", ToastTipo.Sucesso, 2000);
+                await GlobalToast.ShowAsync(AppResources.ClientsPage_DeletedSuccess, ToastTipo.Sucesso, 2000);
             }
             catch (Exception ex)
             {
-                await ShowAlertAsync("Erro", $"Erro ao eliminar: {ex.Message}\n\n{ex.StackTrace}");
+                await ShowAlertAsync(AppResources.Common_Error, string.Format(AppResources.ClientsPage_ErrorDelete, ex.Message) + $"\n\n{ex.StackTrace}");
                 GlobalErro.TratarErro(ex, mostrarAlerta: false);
             }
         }

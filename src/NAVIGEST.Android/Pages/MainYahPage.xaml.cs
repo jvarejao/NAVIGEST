@@ -6,6 +6,7 @@ using Microsoft.Maui.Controls;
 using NAVIGEST.Android;
 using NAVIGEST.Android.Services;
 using static NAVIGEST.Android.GlobalErro;
+using NAVIGEST.Shared.Resources.Strings;
 
 namespace NAVIGEST.Android.Pages
 {
@@ -177,7 +178,7 @@ namespace NAVIGEST.Android.Pages
                                         }
                                         catch (Exception ex) { TratarErro(ex); }
                                     }
-                                    else await DisplayToastAsync("RegisterPage sem conteúdo.");
+                                    else await DisplayToastAsync(string.Format(AppResources.Main_PageNoContent, "RegisterPage"));
                                 }
                                 catch (Exception ex) { TratarErro(ex); }
                                 CloseSidebarMobileIfNeeded();
@@ -195,7 +196,7 @@ namespace NAVIGEST.Android.Pages
                                         pageContent.BindingContext = page.BindingContext ?? pageContent.BindingContext;
                                         ShowContent(pageContent);
                                     }
-                                    else await DisplayToastAsync("DbConfigPage sem conteúdo.");
+                                    else await DisplayToastAsync(string.Format(AppResources.Main_PageNoContent, "DbConfigPage"));
                                 }
                                 catch (Exception ex) { TratarErro(ex); }
                                 CloseSidebarMobileIfNeeded();
@@ -219,7 +220,7 @@ namespace NAVIGEST.Android.Pages
                                         }
                                         catch (Exception ex) { TratarErro(ex); }
                                     }
-                                    else await DisplayToastAsync("ClientsPage sem conteúdo.");
+                                    else await DisplayToastAsync(string.Format(AppResources.Main_PageNoContent, "ClientsPage"));
                                 }
                                 catch (Exception ex) { TratarErro(ex); }
                                 CloseSidebarMobileIfNeeded();
@@ -243,7 +244,7 @@ namespace NAVIGEST.Android.Pages
                                         }
                                         catch { }
                                     }
-                                    else await DisplayToastAsync("ProductsPage sem conteúdo.");
+                                    else await DisplayToastAsync(string.Format(AppResources.Main_PageNoContent, "ProductsPage"));
                                 }
                                 catch (Exception ex) { TratarErro(ex); }
                                 CloseSidebarMobileIfNeeded();
@@ -267,7 +268,7 @@ namespace NAVIGEST.Android.Pages
                                         }
                                         catch (Exception ex) { TratarErro(ex); }
                                     }
-                                    else await DisplayToastAsync("ServicePage sem conteúdo.");
+                                    else await DisplayToastAsync(string.Format(AppResources.Main_PageNoContent, "ServicePage"));
                                 }
                                 catch (Exception ex) { TratarErro(ex); }
                                 CloseSidebarMobileIfNeeded();
@@ -313,7 +314,7 @@ namespace NAVIGEST.Android.Pages
                                     }
                                     else
                                     {
-                                        await DisplayToastAsync("HorasColaboradorPage sem conteúdo.");
+                                        await DisplayToastAsync(string.Format(AppResources.Main_PageNoContent, "HorasColaboradorPage"));
                                     }
                                 }
                                 catch (Exception ex) { TratarErro(ex); }
@@ -357,7 +358,7 @@ namespace NAVIGEST.Android.Pages
                                     }
                                     else
                                     {
-                                        await DisplayToastAsync("HorasColaboradorPageOld sem conteúdo.");
+                                        await DisplayToastAsync(string.Format(AppResources.Main_PageNoContent, "HorasColaboradorPageOld"));
                                     }
                                 }
                                 catch (Exception ex) { TratarErro(ex); }
@@ -403,7 +404,7 @@ namespace NAVIGEST.Android.Pages
                 bool ok = await ShowAdminOverlayAsync();
                 if (!ok)
                 {
-                    await DisplayAlert("Acesso negado", "Precisa de privilégios ADMIN.", "OK");
+                    await DisplayAlert(AppResources.Main_AccessDenied, AppResources.Main_AdminRequired, AppResources.Common_OK);
                     return;
                 }
                 vm.IsAdminUnlocked = true; vm.IsConfigExpanded = true;
@@ -451,21 +452,21 @@ namespace NAVIGEST.Android.Pages
                 var user = AdminUserEntry.Text?.Trim() ?? "";
                 var pass = AdminPassEntry.Text ?? "";
                 if (string.IsNullOrWhiteSpace(user) || string.IsNullOrWhiteSpace(pass))
-                { AdminErrorLabel.Text = "Indica utilizador e palavra-passe."; AdminErrorLabel.IsVisible = true; return; }
+                { AdminErrorLabel.Text = AppResources.Login_Msg_EnterUserAndPass; AdminErrorLabel.IsVisible = true; return; }
                 var loginResult = await DatabaseService.CheckLoginAsync(user, pass);
                 if (!loginResult.Ok)
                 {
-                    AdminErrorLabel.Text = "Credenciais inválidas.";
+                    AdminErrorLabel.Text = AppResources.Login_Msg_InvalidCredentials;
                     AdminErrorLabel.IsVisible = true;
                     return;
                 }
                 var tipo = loginResult.Tipo ?? string.Empty;
-                if (!string.Equals(tipo, "ADMIN", StringComparison.OrdinalIgnoreCase)) { AdminErrorLabel.Text = "Precisa de privilégios ADMIN."; AdminErrorLabel.IsVisible = true; return; }
+                if (!string.Equals(tipo, "ADMIN", StringComparison.OrdinalIgnoreCase)) { AdminErrorLabel.Text = AppResources.Main_AdminRequired; AdminErrorLabel.IsVisible = true; return; }
                 AdminOverlay.IsVisible = false; _adminTcs?.TrySetResult(true);
             }
             catch (Exception ex) { TratarErro(ex); }
         }
 
-        private Task DisplayToastAsync(string message) => DisplayAlert("Info", message, "OK");
+        private Task DisplayToastAsync(string message) => DisplayAlert(AppResources.Common_Info, message, AppResources.Common_OK);
     }
 }

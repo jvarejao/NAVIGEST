@@ -9,6 +9,7 @@ using Microsoft.Maui.Storage;
 using Microsoft.Maui.Devices;
 using NAVIGEST.iOS.Models;
 using NAVIGEST.iOS.Services;
+using NAVIGEST.Shared.Resources.Strings;
 
 namespace NAVIGEST.iOS.Pages
 {
@@ -167,14 +168,14 @@ namespace NAVIGEST.iOS.Pages
             }
             catch (Exception ex)
             {
-                await GlobalToast.ShowAsync("Erro ao carregar lista: " + ex.Message, ToastTipo.Erro, 2000);
+                await GlobalToast.ShowAsync(string.Format(AppResources.RegisterPage_LoadError, ex.Message), ToastTipo.Erro, 2000);
             }
         }
 
         private async void OnAtualizarListaClicked(object sender, EventArgs e)
         {
             await CarregarListaAsync();
-            await ShowToastAsync("Lista de utilizadores atualizada.", true);
+            await ShowToastAsync(AppResources.RegisterPage_ListUpdated, true);
         }
 
         private void OnAvatarContainerSizeChanged(object sender, EventArgs e)
@@ -224,7 +225,7 @@ namespace NAVIGEST.iOS.Pages
             {
                 var result = await FilePicker.PickAsync(new PickOptions
                 {
-                    PickerTitle = "Escolher imagem",
+                    PickerTitle = AppResources.RegisterPage_PickImageTitle,
                     FileTypes = FilePickerFileType.Images
                 });
                 if (result == null) return;
@@ -237,7 +238,7 @@ namespace NAVIGEST.iOS.Pages
                 if (_imagemBytes.Length > 6_000_000)
                 {
                     _imagemBytes = null;
-                    await ShowToastAsync("A imagem tem mais de 6 MB. Escolhe uma imagem mais pequena.", false);
+                    await ShowToastAsync(AppResources.RegisterPage_ImageTooLarge, false);
                     AtualizarAvatar();
                     return;
                 }
@@ -247,7 +248,7 @@ namespace NAVIGEST.iOS.Pages
             }
             catch (Exception ex)
             {
-                await ShowToastAsync("Erro ao escolher imagem: " + ex.Message, false);
+                await ShowToastAsync(string.Format(AppResources.RegisterPage_ImageError, ex.Message), false);
             }
         }
 
@@ -290,13 +291,13 @@ namespace NAVIGEST.iOS.Pages
                 var username = GetCurrentEntryText("entryUsername");
                 if (string.IsNullOrWhiteSpace(username))
                 {
-                    await ShowToastAsync("Indique o username para eliminar.", false);
+                    await ShowToastAsync(AppResources.RegisterPage_Error_DeleteUsername, false);
                     return;
                 }
 
                 await MainThread.InvokeOnMainThreadAsync(async () =>
                 {
-                    bool confirmar = await DisplayAlert("Confirmação", $"Eliminar o utilizador '{username}'?", "Sim", "Não");
+                    bool confirmar = await DisplayAlert(AppResources.RegisterPage_DeleteConfirmTitle, string.Format(AppResources.RegisterPage_DeleteConfirmMessage, username), AppResources.Common_Yes, AppResources.Common_No);
                     if (!confirmar)
                         return;
 
@@ -305,7 +306,7 @@ namespace NAVIGEST.iOS.Pages
             }
             catch (Exception ex)
             {
-                await ShowToastAsync("Erro ao eliminar: " + ex.Message, false);
+                await ShowToastAsync(string.Format(AppResources.Common_DeleteError, ex.Message), false);
             }
         }
 
@@ -319,11 +320,11 @@ namespace NAVIGEST.iOS.Pages
                     OnNovoClicked(null!, EventArgs.Empty); // Limpa campos e seleção
                     await CarregarListaAsync();
                 }
-                await ShowToastAsync(ok ? "Utilizador eliminado." : "Nenhuma linha eliminada (username inexistente).", ok);
+                await ShowToastAsync(ok ? AppResources.RegisterPage_UserDeleted : AppResources.RegisterPage_UserDeleteFail, ok);
             }
             catch (Exception ex)
             {
-                await ShowToastAsync("Erro: " + ex.Message, false);
+                await ShowToastAsync($"{AppResources.Common_Error}: {ex.Message}", false);
             }
         }
 
@@ -349,20 +350,20 @@ namespace NAVIGEST.iOS.Pages
             _categoria2Error = string.Empty;
             _tipoError = string.Empty;
 
-            if (string.IsNullOrWhiteSpace(username)) { _usernameError = "Username é obrigatório."; temErro = true; }
-            if (string.IsNullOrWhiteSpace(password)) { _passwordError = "Password é obrigatória."; temErro = true; }
-            if (string.IsNullOrWhiteSpace(name)) { _nameError = "Nome é obrigatório."; temErro = true; }
-            if (string.IsNullOrWhiteSpace(contact)) { _contactError = "Contacto é obrigatório."; temErro = true; }
-            if (string.IsNullOrWhiteSpace(email) || !email.Contains("@")) { _emailError = "Email inválido."; temErro = true; }
-            if (string.IsNullOrWhiteSpace(categoria1)) { _categoria1Error = "Categoria 1 é obrigatória."; temErro = true; }
-            if (string.IsNullOrWhiteSpace(categoria2)) { _categoria2Error = "Categoria 2 é obrigatória."; temErro = true; }
-            if (string.IsNullOrWhiteSpace(tipo)) { _tipoError = "Tipo é obrigatório."; temErro = true; }
+            if (string.IsNullOrWhiteSpace(username)) { _usernameError = AppResources.RegisterPage_Error_UsernameRequired; temErro = true; }
+            if (string.IsNullOrWhiteSpace(password)) { _passwordError = AppResources.RegisterPage_Error_PasswordRequired; temErro = true; }
+            if (string.IsNullOrWhiteSpace(name)) { _nameError = AppResources.RegisterPage_Error_NameRequired; temErro = true; }
+            if (string.IsNullOrWhiteSpace(contact)) { _contactError = AppResources.RegisterPage_Error_ContactRequired; temErro = true; }
+            if (string.IsNullOrWhiteSpace(email) || !email.Contains("@")) { _emailError = AppResources.RegisterPage_Error_EmailInvalid; temErro = true; }
+            if (string.IsNullOrWhiteSpace(categoria1)) { _categoria1Error = AppResources.RegisterPage_Error_Category1Required; temErro = true; }
+            if (string.IsNullOrWhiteSpace(categoria2)) { _categoria2Error = AppResources.RegisterPage_Error_Category2Required; temErro = true; }
+            if (string.IsNullOrWhiteSpace(tipo)) { _tipoError = AppResources.RegisterPage_Error_TypeRequired; temErro = true; }
 
             AtualizarMensagensErro();
 
             if (temErro)
             {
-                await ShowToastAsync("Preencha os campos obrigatórios.", false);
+                await ShowToastAsync(AppResources.RegisterPage_Error_FillRequired, false);
                 return;
             }
 
@@ -386,9 +387,9 @@ namespace NAVIGEST.iOS.Pages
                 {
                     if (await DatabaseService.UserExistsAsync(reg.Username))
                     {
-                        _usernameError = "Já existe um utilizador com esse username.";
+                        _usernameError = AppResources.RegisterPage_Error_UserExists;
                         AtualizarMensagensErro();
-                        await ShowToastAsync("Já existe um utilizador com esse username.", false);
+                        await ShowToastAsync(AppResources.RegisterPage_Error_UserExists, false);
                         return;
                     }
                     ok = await DatabaseService.GravarUtilizadorAsync(reg);
@@ -403,11 +404,11 @@ namespace NAVIGEST.iOS.Pages
                     OnNovoClicked(null!, EventArgs.Empty); // Limpa campos e seleção
                     await CarregarListaAsync();
                 }
-                await ShowToastAsync(ok ? (inserir ? "Utilizador guardado." : "Utilizador atualizado.") : "Nenhuma alteração.", ok);
+                await ShowToastAsync(ok ? (inserir ? AppResources.RegisterPage_UserSaved : AppResources.RegisterPage_UserUpdated) : AppResources.RegisterPage_NoChanges, ok);
             }
             catch (Exception ex)
             {
-                await ShowToastAsync("Erro: " + ex.Message, false);
+                await ShowToastAsync($"{AppResources.Common_Error}: {ex.Message}", false);
             }
         }
 

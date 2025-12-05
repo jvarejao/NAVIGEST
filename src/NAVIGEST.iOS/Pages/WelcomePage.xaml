@@ -2,13 +2,14 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:beh="clr-namespace:NAVIGEST.iOS.Behaviors"
+             xmlns:res="clr-namespace:NAVIGEST.Shared.Resources.Strings;assembly=NAVIGEST.Shared"
              x:Class="NAVIGEST.iOS.Pages.WelcomePage"
-             Title="Bem-vindo"
+             Title="{x:Static res:AppResources.Welcome_Title}"
              BackgroundColor="{DynamicResource PageBackgroundColor}">
 
     <!-- Toolbar com ação para abrir a DbConfigPage manualmente -->
     <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Configurar"
+        <ToolbarItem Text="{x:Static res:AppResources.Login_Config}"
                      Order="Primary"
                      Priority="0"
                      Clicked="OnOpenConfigClicked">
@@ -38,7 +39,7 @@
                    Margin="0,20" />
 
             <Label x:Name="TituloLabel"
-                   Text="Bem-vindo à YAHPUBLICIDADE"
+                   Text="{x:Static res:AppResources.Welcome_Subtitle}"
                    FontSize="28"
                    FontAttributes="Bold"
                    HorizontalOptions="Center"
@@ -46,7 +47,7 @@
                    Opacity="0" />
 
             <Label x:Name="DescricaoLabel"
-                   Text="Comece agora a gerir os seus dados de forma simples e moderna."
+                   Text="{x:Static res:AppResources.Welcome_Description}"
                    FontSize="16"
                    HorizontalOptions="Center"
                    HorizontalTextAlignment="Center"
@@ -71,7 +72,7 @@
                     <ActivityIndicator IsRunning="True"
                                        WidthRequest="32" HeightRequest="32"/>
                     <Label x:Name="LoadingLabel"
-                           Text="A ligar à base de dados…"
+                           Text="{x:Static res:AppResources.WelcomePage_Connecting}"
                            FontSize="14"
                            TextColor="{AppThemeBinding Light=#111827, Dark=White}"
                            HorizontalTextAlignment="Center"/>
@@ -89,7 +90,7 @@
                     Padding="14,10"
                     BackgroundColor="#8022C55E">
                 <Label x:Name="StatusText"
-                       Text="mensagem"
+                       Text=""
                        FontSize="14"
                        TextColor="White"
                        HorizontalTextAlignment="Center"/>
@@ -116,7 +117,7 @@
                     x:Name="CompanyListContainer"
                     WidthRequest="{OnPlatform Default=600, Android=250, iOS=250}"
                     MaximumWidthRequest="{OnPlatform Default=600, Android=250, iOS=250}">
-                    <Label Text="Escolhe a empresa"
+                    <Label Text="{x:Static res:AppResources.WelcomePage_ChooseCompany}"
                            FontSize="20"
                            FontAttributes="Bold"
                            HorizontalOptions="Center"

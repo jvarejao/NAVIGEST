@@ -5,9 +5,10 @@
              xmlns:vm="clr-namespace:NAVIGEST.Android.PageModels"
              xmlns:models="clr-namespace:NAVIGEST.Android.Models"
              xmlns:converters="clr-namespace:NAVIGEST.Android.Converters"
+             xmlns:res="clr-namespace:NAVIGEST.Shared.Resources.Strings;assembly=NAVIGEST.Shared"
              x:DataType="vm:HorasColaboradorViewModel"
              BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#000000}"
-             Title="⏱️ Horas de Colaborador">
+             Title="{x:Static res:AppResources.HorasColaboradorPage_Title}">
 
     <ContentPage.Resources>
         <ResourceDictionary>
@@ -34,7 +35,7 @@
                     <TapGestureRecognizer Tapped="OnTab1Tapped"/>
                 </Border.GestureRecognizers>
                 <Label x:Name="Tab1Label"
-                       Text="📊 Resumo"
+                       Text="{x:Static res:AppResources.HorasColaboradorPage_Summary}"
                        TextColor="White"
                        FontSize="14"
                        FontAttributes="Bold"
@@ -52,7 +53,7 @@
                     <TapGestureRecognizer Tapped="OnTab2Tapped"/>
                 </Border.GestureRecognizers>
                 <Label x:Name="Tab2Label"
-                       Text="�� Lista"
+                       Text="{x:Static res:AppResources.HorasColaboradorPage_List}"
                        TextColor="{AppThemeBinding Light=#6E6E73, Dark=#8E8E93}"
                        FontSize="14"
                        HorizontalTextAlignment="Center"/>
@@ -68,7 +69,7 @@
                     <TapGestureRecognizer Tapped="OnTab3Tapped"/>
                 </Border.GestureRecognizers>
                 <Label x:Name="Tab3Label"
-                       Text="📅 Calendário"
+                       Text="{x:Static res:AppResources.HorasColaboradorPage_Calendar}"
                        TextColor="{AppThemeBinding Light=#6E6E73, Dark=#8E8E93}"
                        FontSize="14"
                        HorizontalTextAlignment="Center"/>

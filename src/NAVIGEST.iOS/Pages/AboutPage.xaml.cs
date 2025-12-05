@@ -4,6 +4,7 @@ using Microsoft.Maui.Controls;
 using NAVIGEST.Shared.Services;
 using NAVIGEST.Shared.Models;
 using NAVIGEST.Shared.Helpers;
+using NAVIGEST.Shared.Resources.Strings;
 
 namespace NAVIGEST.iOS.Pages
 {
@@ -22,7 +23,7 @@ namespace NAVIGEST.iOS.Pages
 
             // ✅ Mostrar versão instalada
             string installedVersion = Preferences.Get(INSTALLED_VERSION_KEY, AppInfo.Current.VersionString ?? "1.0.0");
-            VersionLabel.Text = $"Versão {installedVersion}";
+            VersionLabel.Text = string.Format(AppResources.Splash_Version, installedVersion);
 
             // ✅ Mostrar plataforma
             PlatformLabel.Text = "iOS";
@@ -37,7 +38,7 @@ namespace NAVIGEST.iOS.Pages
         {
             CheckUpdatesButton.IsEnabled = false;
             UpdateStatusLabel.IsVisible = true;
-            UpdateStatusLabel.Text = "Verificando...";
+            UpdateStatusLabel.Text = AppResources.AboutPage_CheckingUpdates;
 
             try
             {
@@ -47,7 +48,7 @@ namespace NAVIGEST.iOS.Pages
 
                 if (updateService == null)
                 {
-                    UpdateStatusLabel.Text = "⚠️ Erro ao verificar atualizações";
+                    UpdateStatusLabel.Text = AppResources.AboutPage_UpdateError;
                     UpdateStatusLabel.TextColor = Colors.Red;
                     return;
                 }
@@ -57,7 +58,7 @@ namespace NAVIGEST.iOS.Pages
 
                 if (updateInfo == null)
                 {
-                    UpdateStatusLabel.Text = "⚠️ Não foi possível obter informações";
+                    UpdateStatusLabel.Text = AppResources.AboutPage_UpdateInfoError;
                     UpdateStatusLabel.TextColor = Colors.Orange;
                     return;
                 }
@@ -73,17 +74,17 @@ namespace NAVIGEST.iOS.Pages
                     // Atualização disponível
                     bool isMandatory = VersionComparer.IsLessThan(currentVersion, updateInfo.MinSupportedVersion ?? "0.0.0");
                     
-                    string message = $"Nova versão disponível: {updateInfo.Version}\n\n{updateInfo.Notes ?? "Verifique as novidades!"}";
+                    string message = string.Format(AppResources.AboutPage_NewVersionAvailable, updateInfo.Version, updateInfo.Notes ?? AppResources.AboutPage_CheckNotes);
                     
                     if (isMandatory)
                     {
-                        message = $"⚠️ ATUALIZAÇÃO OBRIGATÓRIA ⚠️\n\n{message}";
+                        message = string.Format(AppResources.AboutPage_MandatoryUpdatePrefix, message);
                     }
 
-                    string title = isMandatory ? "Atualização Obrigatória" : "Atualização Disponível";
-                    string buttonAccept = isMandatory ? "Atualizar Agora" : "Atualizar";
+                    string title = isMandatory ? AppResources.AboutPage_MandatoryUpdateTitle : AppResources.AboutPage_UpdateAvailableTitle;
+                    string buttonAccept = isMandatory ? AppResources.AboutPage_UpdateNow : AppResources.AboutPage_Update;
 
-                    bool result = await DisplayAlert(title, message, buttonAccept, "Depois");
+                    bool result = await DisplayAlert(title, message, buttonAccept, AppResources.AboutPage_Later);
 
                     if (result && !string.IsNullOrWhiteSpace(updateInfo.DownloadUrl))
                     {

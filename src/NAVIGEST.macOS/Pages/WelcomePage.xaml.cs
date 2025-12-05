@@ -60,7 +60,7 @@ public partial class WelcomePage : ContentPage
         try
         {
             // 1) Teste de ligação
-            LoadingLabel.Text = NAVIGEST.macOS.Resources.Strings.AppResources.Welcome_Connecting;
+            LoadingLabel.Text = NAVIGEST.Shared.Resources.Strings.AppResources.Welcome_Connecting;
             await ShowLoadingAsync(true);
 
             bool ok;
@@ -71,7 +71,7 @@ public partial class WelcomePage : ContentPage
             catch (Exception ex)
             {
                 await ShowLoadingAsync(false);
-                await ShowToastAsync(string.Format(NAVIGEST.macOS.Resources.Strings.AppResources.Welcome_ConnectionFailed, ex.Message), success: false, ms: 1800);
+                await ShowToastAsync(string.Format(NAVIGEST.Shared.Resources.Strings.AppResources.Welcome_ConnectionFailed, ex.Message), success: false, ms: 1800);
                 await NavigateToConfigAsync();
                 return;
             }
@@ -80,7 +80,7 @@ public partial class WelcomePage : ContentPage
 
             if (!ok)
             {
-                await ShowToastAsync(NAVIGEST.macOS.Resources.Strings.AppResources.Welcome_ConnectionError, success: false, ms: 1400);
+                await ShowToastAsync(NAVIGEST.Shared.Resources.Strings.AppResources.Welcome_ConnectionError, success: false, ms: 1400);
                 await NavigateToConfigAsync();
                 return;
             }

@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:res="clr-namespace:NAVIGEST.Shared.Resources.Strings;assembly=NAVIGEST.Shared"
              x:Class="NAVIGEST.iOS.Pages.DbConfigPage"
-             Title="Configuração da Ligação"
+             Title="{x:Static res:AppResources.DbConfigPage_Title}"
              BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}"
              Shell.FlyoutBehavior="Disabled"
              Shell.NavBarIsVisible="False">
@@ -13,7 +14,7 @@
             <!-- Header -->
             <Grid Padding="16,16,16,12" 
                   BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}">
-                <Label Text="Configuração da Base de Dados"
+                <Label Text="{x:Static res:AppResources.DbConfigPage_Header}"
                        FontSize="20"
                        FontAttributes="Bold"
                        VerticalOptions="Center"
@@ -32,7 +33,7 @@
                         <VerticalStackLayout Spacing="0">
                             <!-- Servidor -->
                             <Grid Padding="16,12" ColumnDefinitions="100,*" MinimumHeightRequest="44">
-                                <Label Text="Servidor" 
+                                <Label Text="{x:Static res:AppResources.Common_Server}" 
                                        VerticalOptions="Center"
                                        TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
                                 <Entry Grid.Column="1"
@@ -54,7 +55,7 @@
                             
                             <!-- Porta -->
                             <Grid Padding="16,12" ColumnDefinitions="100,*" MinimumHeightRequest="44">
-                                <Label Text="Porta" 
+                                <Label Text="{x:Static res:AppResources.Common_Port}" 
                                        VerticalOptions="Center"
                                        TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
                                 <Entry Grid.Column="1"
@@ -77,7 +78,7 @@
                             
                             <!-- Base de Dados -->
                             <Grid Padding="16,12" ColumnDefinitions="100,*" MinimumHeightRequest="44">
-                                <Label Text="Base de Dados" 
+                                <Label Text="{x:Static res:AppResources.Common_Database}" 
                                        VerticalOptions="Center"
                                        TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
                                 <Entry Grid.Column="1"
@@ -104,7 +105,7 @@
                         <VerticalStackLayout Spacing="0">
                             <!-- Utilizador -->
                             <Grid Padding="16,12" ColumnDefinitions="100,*" MinimumHeightRequest="44">
-                                <Label Text="Utilizador" 
+                                <Label Text="{x:Static res:AppResources.Common_User}" 
                                        VerticalOptions="Center"
                                        TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
                                 <Entry Grid.Column="1"
@@ -126,7 +127,7 @@
                             
                             <!-- Password -->
                             <Grid Padding="16,12" ColumnDefinitions="100,*" MinimumHeightRequest="44">
-                                <Label Text="Password" 
+                                <Label Text="{x:Static res:AppResources.Common_Password}" 
                                        VerticalOptions="Center"
                                        TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
                                 <Entry Grid.Column="1"
@@ -152,7 +153,7 @@
                             BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
                             Stroke="Transparent">
                         <Grid Padding="16,12" ColumnDefinitions="140,*" MinimumHeightRequest="44">
-                            <Label Text="Email de contacto" 
+                            <Label Text="{x:Static res:AppResources.DbConfigPage_ContactEmail}" 
                                    VerticalOptions="Center"
                                    TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"/>
                             <Entry Grid.Column="1"
@@ -168,7 +169,7 @@
                                    TextChanged="OnEntryTextChanged"/>
                         </Grid>
                     </Border>
-                    <Label Text="Opcional"
+                    <Label Text="{x:Static res:AppResources.Common_Optional}"
                            FontSize="13"
                            Padding="16,4,0,0"
                            TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"/>
@@ -176,18 +177,18 @@
 
                 <!-- Error Messages (Hidden by default) -->
                 <VerticalStackLayout Spacing="8" x:Name="ErrorContainer" IsVisible="False">
-                    <Label x:Name="ServerError" Text="Servidor obrigatório" TextColor="#FF3B30" IsVisible="False" FontSize="13" Padding="16,0"/>
-                    <Label x:Name="PortError" Text="Porta inválida (1-65535)" TextColor="#FF3B30" IsVisible="False" FontSize="13" Padding="16,0"/>
-                    <Label x:Name="DbError" Text="Base de dados obrigatória" TextColor="#FF3B30" IsVisible="False" FontSize="13" Padding="16,0"/>
-                    <Label x:Name="UserError" Text="Utilizador obrigatório" TextColor="#FF3B30" IsVisible="False" FontSize="13" Padding="16,0"/>
-                    <Label x:Name="PasswordError" Text="Password obrigatória" TextColor="#FF3B30" IsVisible="False" FontSize="13" Padding="16,0"/>
-                    <Label x:Name="EmailErrorLabel" Text="Email inválido" TextColor="#FF3B30" IsVisible="False" FontSize="13" Padding="16,0"/>
+                    <Label x:Name="ServerError" Text="{x:Static res:AppResources.DbConfigPage_ErrorServer}" TextColor="#FF3B30" IsVisible="False" FontSize="13" Padding="16,0"/>
+                    <Label x:Name="PortError" Text="{x:Static res:AppResources.DbConfigPage_ErrorPort}" TextColor="#FF3B30" IsVisible="False" FontSize="13" Padding="16,0"/>
+                    <Label x:Name="DbError" Text="{x:Static res:AppResources.DbConfigPage_ErrorDatabase}" TextColor="#FF3B30" IsVisible="False" FontSize="13" Padding="16,0"/>
+                    <Label x:Name="UserError" Text="{x:Static res:AppResources.DbConfigPage_ErrorUser}" TextColor="#FF3B30" IsVisible="False" FontSize="13" Padding="16,0"/>
+                    <Label x:Name="PasswordError" Text="{x:Static res:AppResources.DbConfigPage_ErrorPassword}" TextColor="#FF3B30" IsVisible="False" FontSize="13" Padding="16,0"/>
+                    <Label x:Name="EmailErrorLabel" Text="{x:Static res:AppResources.DbConfigPage_ErrorEmail}" TextColor="#FF3B30" IsVisible="False" FontSize="13" Padding="16,0"/>
                 </VerticalStackLayout>
 
                 <!-- Action Buttons -->
                 <VerticalStackLayout Spacing="12" Padding="0,8,0,0">
                     <Button x:Name="SaveTestButton"
-                            Text="Guardar e Testar"
+                            Text="{x:Static res:AppResources.DbConfigPage_SaveAndTest}"
                             Style="{StaticResource AppleFilledButton}"
                             Clicked="OnSaveAndTestClicked">
                         <Button.ImageSource>
@@ -196,7 +197,7 @@
                     </Button>
                     
                     <Button x:Name="BtnTestarDb"
-                            Text="Testar Ligação"
+                            Text="{x:Static res:AppResources.DbConfigPage_TestConnection}"
                             Style="{StaticResource AppleTintedButton}"
                             Clicked="BtnTestarDb_Clicked">
                         <Button.ImageSource>

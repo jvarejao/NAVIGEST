@@ -6,7 +6,7 @@ using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls;
 using NAVIGEST.macOS.Models;
 using NAVIGEST.macOS.Services;
-using NAVIGEST.macOS.Resources.Strings;
+using NAVIGEST.Shared.Resources.Strings;
 
 namespace NAVIGEST.macOS.Popups;
 

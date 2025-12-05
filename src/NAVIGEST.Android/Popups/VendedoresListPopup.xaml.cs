@@ -8,6 +8,7 @@ using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls;
 using NAVIGEST.Android.Models;
 using NAVIGEST.Android.Services;
+using NAVIGEST.Shared.Resources.Strings;
 
 namespace NAVIGEST.Android.Popups;
 
@@ -182,10 +183,10 @@ public partial class VendedoresListPopup : Popup
         var initial = vendedor.Nome?.Trim().ToUpperInvariant();
 
         var novoNome = await AppShell.Current.DisplayPromptAsync(
-            "Editar vendedor",
-            "Nome do vendedor",
-            accept: "Guardar",
-            cancel: "Cancelar",
+            string.Format(AppResources.ClientsPage_EditClient, AppResources.ClientsPage_Salesperson),
+            AppResources.Common_Name,
+            accept: AppResources.Common_Save,
+            cancel: AppResources.Common_Cancel,
             initialValue: initial,
             maxLength: 120,
             keyboard: Keyboard.Create(KeyboardFlags.CapitalizeCharacter));
@@ -196,7 +197,7 @@ public partial class VendedoresListPopup : Popup
         novoNome = novoNome.Trim().ToUpperInvariant();
         if (string.IsNullOrWhiteSpace(novoNome))
         {
-            await GlobalToast.ShowAsync("Nome obrigatório.", ToastTipo.Aviso, 2500);
+            await GlobalToast.ShowAsync(AppResources.ClientsPage_NameRequired, ToastTipo.Aviso, 2500);
             return;
         }
 
@@ -205,13 +206,13 @@ public partial class VendedoresListPopup : Popup
             var updated = await DatabaseService.UpdateVendedorAsync(vendedor.Id, novoNome);
             if (!updated)
             {
-                await GlobalToast.ShowAsync("Não foi possível atualizar o vendedor.", ToastTipo.Erro, 2500);
+                await GlobalToast.ShowAsync(AppResources.Common_SaveError, ToastTipo.Erro, 2500);
                 return;
             }
 
             _refreshRequested = true;
             ReplaceInCache(vendedor.Id, novoNome);
-            await GlobalToast.ShowAsync("Vendedor atualizado.", ToastTipo.Sucesso, 1800);
+            await GlobalToast.ShowAsync(AppResources.Common_Done, ToastTipo.Sucesso, 1800);
         });
     }
 
@@ -224,10 +225,10 @@ public partial class VendedoresListPopup : Popup
             return;
 
         var confirm = await AppShell.Current.DisplayAlert(
-            "Eliminar vendedor",
-            $"Pretende eliminar '{vendedor.Nome}'?",
-            "Eliminar",
-            "Cancelar");
+            AppResources.Common_Delete,
+            string.Format(AppResources.Common_DeleteConfirmationMessageFormat, vendedor.Nome),
+            AppResources.Common_Delete,
+            AppResources.Common_Cancel);
 
         if (!confirm)
             return;
@@ -237,13 +238,13 @@ public partial class VendedoresListPopup : Popup
             var deleted = await DatabaseService.DeleteVendedorAsync(vendedor.Id);
             if (!deleted)
             {
-                await GlobalToast.ShowAsync("Não foi possível eliminar o vendedor.", ToastTipo.Erro, 2500);
+                await GlobalToast.ShowAsync(AppResources.Common_DeleteError, ToastTipo.Erro, 2500);
                 return;
             }
 
             _refreshRequested = true;
             RemoveFromCache(vendedor.Id);
-            await GlobalToast.ShowAsync("Vendedor eliminado.", ToastTipo.Sucesso, 1800);
+            await GlobalToast.ShowAsync(AppResources.Common_Done, ToastTipo.Sucesso, 1800);
         });
     }
 

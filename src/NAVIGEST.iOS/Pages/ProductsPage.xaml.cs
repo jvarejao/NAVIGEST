@@ -11,6 +11,7 @@ using NAVIGEST.iOS.PageModels;
 using NAVIGEST.iOS.Models;
 using NAVIGEST.iOS;
 using NAVIGEST.iOS.Popups;
+using NAVIGEST.Shared.Resources.Strings;
 
 namespace NAVIGEST.iOS.Pages
 {
@@ -48,14 +49,14 @@ namespace NAVIGEST.iOS.Pages
             };
         }
 
-        private static Task ShowAlertAsync(string title, string message, string cancel = "OK") =>
+        private static Task ShowAlertAsync(string title, string message, string? cancel = null) =>
             MainThread.InvokeOnMainThreadAsync(async () =>
             {
                 var root = GetRootPage();
                 if (root is null)
                     return;
 
-                await root.DisplayAlert(title, message, cancel);
+                await root.DisplayAlert(title, message, cancel ?? AppResources.Common_OK);
             });
 
         private static Task<bool> ShowConfirmAsync(string title, string message, string accept, string cancel) =>
@@ -81,7 +82,7 @@ namespace NAVIGEST.iOS.Pages
 
             var doneButton = new Button
             {
-                Text = "Concluído",
+                Text = AppResources.Common_Done,
                 FontSize = 16,
                 TextColor = Color.FromArgb("#007AFF"),
                 BackgroundColor = Colors.Transparent,
@@ -109,7 +110,7 @@ namespace NAVIGEST.iOS.Pages
                 catch (Exception ex)
                 {
                     GlobalErro.TratarErro(ex, mostrarAlerta: false);
-                    await GlobalToast.ShowAsync("Falha ao carregar produtos.", ToastTipo.Erro, 2500);
+                    await GlobalToast.ShowAsync(AppResources.ProductsPage_LoadError, ToastTipo.Erro, 2500);
                 }
                 _loadedOnce = true;
             }
@@ -129,9 +130,9 @@ namespace NAVIGEST.iOS.Pages
             FormViewContainer.IsVisible = true;
             _isEditMode = true;
 
-            FormTitle.Text = isNew ? "Novo Produto" : "Editar Produto";
+            FormTitle.Text = isNew ? AppResources.ProductsPage_NewProduct : AppResources.ProductsPage_EditProduct;
             DeleteFormButton.IsVisible = !isNew;
-            SaveButton.Text = "Guardar";
+            SaveButton.Text = AppResources.Common_Save;
         }
 
         // --- SWIPE BUTTONS ---
@@ -143,7 +144,7 @@ namespace NAVIGEST.iOS.Pages
             var product = ResolveProductFrom(sender);
             if (product == null)
             {
-                await ShowAlertAsync("Erro", "Produto não identificado.");
+                await ShowAlertAsync(AppResources.Common_ErrorTitle, AppResources.ProductsPage_ProductUnidentified);
                 return;
             }
 
@@ -163,13 +164,13 @@ namespace NAVIGEST.iOS.Pages
             var product = ResolveProductFrom(sender);
             if (product == null)
             {
-                await ShowAlertAsync("Erro", "Produto não identificado.");
+                await ShowAlertAsync(AppResources.Common_ErrorTitle, AppResources.ProductsPage_ProductUnidentified);
                 return;
             }
 
-            var confirm = await ShowConfirmAsync("Eliminar produto",
-                $"Tem a certeza que deseja eliminar '{product.Descricao}'?",
-                "Eliminar", "Cancelar");
+            var confirm = await ShowConfirmAsync(AppResources.ProductsPage_DeleteTitle,
+                string.Format(AppResources.ProductsPage_DeleteMessage, product.Descricao),
+                AppResources.Common_Delete, AppResources.Common_Cancel);
 
             if (!confirm) return;
 
@@ -276,7 +277,7 @@ namespace NAVIGEST.iOS.Pages
                     if (!ok)
                     {
                         if (!string.IsNullOrWhiteSpace(message))
-                            await ShowAlertAsync("Família", message);
+                            await ShowAlertAsync(AppResources.Common_Family, message);
 
                         if (popup.FamiliesDirty)
                         {
@@ -335,7 +336,7 @@ namespace NAVIGEST.iOS.Pages
             }
             catch (Exception ex)
             {
-                await ShowAlertAsync("Erro", $"Erro ao guardar: {ex.Message}");
+                await ShowAlertAsync(AppResources.Common_ErrorTitle, string.Format(AppResources.Common_SaveError, ex.Message));
                 GlobalErro.TratarErro(ex, mostrarAlerta: false);
             }
         }
@@ -347,15 +348,15 @@ namespace NAVIGEST.iOS.Pages
             {
                 if (BindingContext is not ProductsPageModel vm || vm.Editing is null)
                 {
-                    await ShowAlertAsync("Erro", "Não foi possível identificar o produto.");
+                    await ShowAlertAsync(AppResources.Common_ErrorTitle, AppResources.ProductsPage_ProductUnidentified);
                     return;
                 }
 
                 var product = vm.Editing;
                 var confirm = await ShowConfirmAsync(
-                    "Eliminar produto",
-                    $"Tem a certeza que deseja eliminar '{product.Descricao}'?",
-                    "Eliminar", "Cancelar");
+                    AppResources.ProductsPage_DeleteTitle,
+                    string.Format(AppResources.ProductsPage_DeleteMessage, product.Descricao),
+                    AppResources.Common_Delete, AppResources.Common_Cancel);
 
                 if (!confirm)
                     return;
@@ -367,7 +368,7 @@ namespace NAVIGEST.iOS.Pages
             }
             catch (Exception ex)
             {
-                await ShowAlertAsync("Erro", $"Erro ao eliminar: {ex.Message}");
+                await ShowAlertAsync(AppResources.Common_ErrorTitle, string.Format(AppResources.Common_DeleteError, ex.Message));
                 GlobalErro.TratarErro(ex, mostrarAlerta: false);
             }
         }

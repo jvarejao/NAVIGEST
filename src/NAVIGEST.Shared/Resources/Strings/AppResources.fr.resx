@@ -104,7 +104,7 @@
     <value>ANNULÉ</value>
   </data>
   <data name="ClientsPage_Salesperson" xml:space="preserve">
-    <value>Vendeur</value>
+    <value>Collaborateur</value>
   </data>
   <data name="ClientsPage_ClientNamePlaceholder" xml:space="preserve">
     <value>Nom du Client</value>
@@ -131,10 +131,10 @@
     <value>Rechercher (code, description, famille...)</value>
   </data>
   <data name="Common_Cost" xml:space="preserve">
-    <value>Coût</value>
+    <value>Prix de Revient</value>
   </data>
   <data name="Common_Sale" xml:space="preserve">
-    <value>Vente</value>
+    <value>Prix de Vente</value>
   </data>
   <data name="Common_TotalSales" xml:space="preserve">
     <value>Ventes Totales</value>

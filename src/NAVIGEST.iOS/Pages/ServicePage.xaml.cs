@@ -1,7 +1,8 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
-using NAVIGEST.iOS.PageModels; // ou ViewModels, conforme está o teu VM
+using NAVIGEST.Shared.Resources.Strings;
+using NAVIGEST.iOS.PageModels; // ou ViewModels, conforme est o teu VM
 
 namespace NAVIGEST.iOS.Pages
 {
@@ -29,28 +30,28 @@ namespace NAVIGEST.iOS.Pages
                 {
                     await m.LoadAsync(force: true);
                     if (m.Orders.Count == 0)
-                        await NAVIGEST.iOS.AppShell.DisplayToastAsync("0 serviços carregados.");
+                        await NAVIGEST.iOS.AppShell.DisplayToastAsync(AppResources.ServicePage_ZeroLoaded);
                 }
                 else
                 {
-                    await DisplayAlert("Erro", "BindingContext não é ServicePageModel.", "OK");
+                    await DisplayAlert(AppResources.Common_Error, AppResources.ServicePage_ErrorBinding, AppResources.Common_OK);
                 }
             }
             catch (Exception ex)
             {
                 NAVIGEST.iOS.GlobalErro.TratarErro(ex, mostrarAlerta: false);
-                await NAVIGEST.iOS.AppShell.DisplayToastAsync("Falha ao carregar serviços.");
+                await NAVIGEST.iOS.AppShell.DisplayToastAsync(AppResources.ServicePage_LoadFailure);
             }
         }
 
 #if WINDOWS
-        // Código Windows específico (exemplo: animações, navegação, layouts)
+        // Cï¿½digo Windows especï¿½fico (exemplo: animaï¿½ï¿½es, navegaï¿½ï¿½o, layouts)
 #endif
 #if ANDROID
-        // Código Android específico (exemplo: animações, navegação, layouts)
+        // Cï¿½digo Android especï¿½fico (exemplo: animaï¿½ï¿½es, navegaï¿½ï¿½o, layouts)
 #endif
 #if IOS
-        // Código iOS específico (exemplo: animações, navegação, layouts)
+        // Cï¿½digo iOS especï¿½fico (exemplo: animaï¿½ï¿½es, navegaï¿½ï¿½o, layouts)
 #endif
     }
 }

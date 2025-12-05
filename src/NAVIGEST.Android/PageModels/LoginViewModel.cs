@@ -5,6 +5,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Storage;
 using NAVIGEST.Android.Services;
 using NAVIGEST.Android.Services.Auth;
+using NAVIGEST.Shared.Resources.Strings;
 
 namespace NAVIGEST.Android.PageModels
 {
@@ -118,7 +119,7 @@ namespace NAVIGEST.Android.PageModels
             // ✅ Validação de campos
             if (!CanLogin())
             {
-                await Application.Current!.MainPage!.DisplayAlert("Login", "Introduza utilizador e palavra-passe.", "OK");
+                await Application.Current!.MainPage!.DisplayAlert(AppResources.Login_Title, AppResources.Login_Msg_EnterUserAndPass, AppResources.Common_OK);
                 return;
             }
 
@@ -129,7 +130,7 @@ namespace NAVIGEST.Android.PageModels
                 
                 if (!ok)
                 {
-                    await Application.Current!.MainPage!.DisplayAlert("Login", "Credenciais inválidas. Tente novamente.", "OK");
+                    await Application.Current!.MainPage!.DisplayAlert(AppResources.Login_Title, AppResources.Login_Msg_InvalidCredentials, AppResources.Common_OK);
                     return;
                 }
 
@@ -152,10 +153,10 @@ namespace NAVIGEST.Android.PageModels
                 if (BiometricAvailable && !BiometricEnabled)
                 {
                     var response = await Application.Current!.MainPage!.DisplayAlert(
-                        "Face ID",
-                        "Deseja usar Face ID no próximo login?",
-                        "Sim",
-                        "Não"
+                        AppResources.Login_Biometric,
+                        AppResources.Login_UseBiometric + "?",
+                        AppResources.Common_Yes,
+                        AppResources.Common_No
                     );
 
                     if (response)
@@ -175,7 +176,7 @@ namespace NAVIGEST.Android.PageModels
             }
             catch (Exception ex)
             {
-                await Application.Current!.MainPage!.DisplayAlert("Login", $"Erro: {ex.Message}", "OK");
+                await Application.Current!.MainPage!.DisplayAlert(AppResources.Login_Title, string.Format(AppResources.Login_Msg_LoginError, ex.Message), AppResources.Common_OK);
             }
         }
 
@@ -192,7 +193,7 @@ namespace NAVIGEST.Android.PageModels
             try
             {
                 // 🔐 Autenticar com Face ID
-                var authenticated = await _bio.AuthenticateAsync("Entrar com Face ID");
+                var authenticated = await _bio.AuthenticateAsync(AppResources.Login_Biometric);
                 if (!authenticated)
                 {
                     // Utilizador cancelou ou falhou - volta ao login manual
@@ -216,9 +217,9 @@ namespace NAVIGEST.Android.PageModels
                 {
                     // ⚠️ Credenciais já não são válidas (password mudada)
                     await Application.Current!.MainPage!.DisplayAlert(
-                        "Aviso",
-                        "Sua password foi alterada. Por favor, introduza novamente.",
-                        "OK"
+                        AppResources.Common_Info,
+                        AppResources.Login_Msg_InvalidCredentials,
+                        AppResources.Common_OK
                     );
                     // ✅ NÃO desativa Face ID, apenas volta ao login manual
                     return;
@@ -263,7 +264,7 @@ namespace NAVIGEST.Android.PageModels
             try
             {
                 // 🔐 Autenticar com Face ID
-                var authenticated = await _bio.AuthenticateAsync("Entrar com Face ID");
+                var authenticated = await _bio.AuthenticateAsync(AppResources.Login_Biometric);
                 if (!authenticated)
                 {
                     return;
@@ -273,9 +274,9 @@ namespace NAVIGEST.Android.PageModels
                 if (!CanLogin())
                 {
                     await Application.Current!.MainPage!.DisplayAlert(
-                        "Erro",
-                        "Por favor, introduza utilizador e palavra-passe.",
-                        "OK"
+                        AppResources.Common_Error,
+                        AppResources.Login_Msg_EnterUserAndPass,
+                        AppResources.Common_OK
                     );
                     return;
                 }
@@ -286,9 +287,9 @@ namespace NAVIGEST.Android.PageModels
                 if (!ok)
                 {
                     await Application.Current!.MainPage!.DisplayAlert(
-                        "Erro",
-                        "Credenciais inválidas.",
-                        "OK"
+                        AppResources.Common_Error,
+                        AppResources.Login_Msg_InvalidCredentials,
+                        AppResources.Common_OK
                     );
                     return;
                 }
@@ -323,7 +324,7 @@ namespace NAVIGEST.Android.PageModels
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"BiometricLoginAsync error: {ex}");
-                await Application.Current!.MainPage!.DisplayAlert("Erro", $"Erro: {ex.Message}", "OK");
+                await Application.Current!.MainPage!.DisplayAlert(AppResources.Common_Error, string.Format(AppResources.Login_Msg_LoginError, ex.Message), AppResources.Common_OK);
             }
         }
 

@@ -6,6 +6,8 @@ using System.Windows.Input;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 
+using NAVIGEST.Shared.Resources.Strings;
+
 namespace NAVIGEST.Android.Pages
 {
     public partial class SwipeProofPage : ContentPage
@@ -32,7 +34,7 @@ namespace NAVIGEST.Android.Pages
 
         private async Task DoPastasAsync(string? nome)
         {
-            await DisplayAlert("[DBG]", "PASTAS (Command) CLICKED", "OK");
+            await DisplayAlert("[DBG]", "PASTAS (Command) CLICKED", AppResources.Common_OK);
 
             // Simula esquema externo (troca por qfile:// quando testares no teu projeto)
             var uri = new Uri("qfile://open?path=/mnt/remote/CLIENTES/ABC123");
@@ -40,38 +42,38 @@ namespace NAVIGEST.Android.Pages
             try
             {
                 var can = await Launcher.CanOpenAsync(uri);
-                await DisplayAlert("[DBG]", $"CanOpen qfile = {can}", "OK");
+                await DisplayAlert("[DBG]", $"CanOpen qfile = {can}", AppResources.Common_OK);
                 if (can)
                 {
                     await Launcher.OpenAsync(uri);
-                    await DisplayAlert("[DBG]", "OpenAsync(qfile) OK", "OK");
+                    await DisplayAlert("[DBG]", "OpenAsync(qfile) OK", AppResources.Common_OK);
                 }
                 else
                 {
-                    await DisplayAlert("Qfile", $"Fallback visual para '{nome}'", "OK");
+                    await DisplayAlert("Qfile", $"Fallback visual para '{nome}'", AppResources.Common_OK);
                 }
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Erro", $"Qfile falhou: {ex.Message}", "OK");
+                await DisplayAlert(AppResources.Common_Error, string.Format(AppResources.SwipeProofPage_QfileError, ex.Message), AppResources.Common_OK);
             }
         }
 
         private void DoEdit(string? nome)
         {
-            DisplayAlert("EDITAR", $"Abrir form de '{nome}'", "OK");
+            DisplayAlert(AppResources.SwipeProofPage_EditTitle, string.Format(AppResources.SwipeProofPage_EditMessage, nome), AppResources.Common_OK);
         }
 
         private async Task DoDeleteAsync(string? nome)
         {
-            await DisplayAlert("[DBG]", "DELETE (Command) CLICKED", "OK");
-            var confirm = await DisplayAlert("Eliminar", $"Apagar '{nome}'?", "Eliminar", "Cancelar");
+            await DisplayAlert("[DBG]", "DELETE (Command) CLICKED", AppResources.Common_OK);
+            var confirm = await DisplayAlert(AppResources.Common_Delete, string.Format(AppResources.SwipeProofPage_DeleteConfirm, nome), AppResources.Common_Delete, AppResources.Common_Cancel);
             if (!confirm) return;
 
             if (nome != null && Items.Contains(nome))
             {
                 Items.Remove(nome);
-                await DisplayAlert("OK", "Eliminado.", "Fechar");
+                await DisplayAlert(AppResources.Common_OK, AppResources.SwipeProofPage_Deleted, AppResources.Common_Close);
             }
         }
     }

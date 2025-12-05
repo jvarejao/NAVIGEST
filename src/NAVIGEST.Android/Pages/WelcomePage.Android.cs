@@ -32,7 +32,7 @@ public partial class WelcomePage
         {
             Log.Error(LogTag, $"NavigateToLoginPageAndroidAsync failed: {ex.Message}");
             GlobalErro.TratarErro(ex);
-            await ShowToastAsync("Erro ao navegar para Login.", false, 2000);
+            await ShowToastAsync(NAVIGEST.Shared.Resources.Strings.AppResources.WelcomePage_LoginNavError, false, 2000);
         }
     }
 }

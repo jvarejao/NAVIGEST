@@ -8,6 +8,7 @@ using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls;
 using NAVIGEST.Android.Models;
 using NAVIGEST.Android.Services;
+using NAVIGEST.Shared.Resources.Strings;
 
 namespace NAVIGEST.Android.Popups;
 
@@ -147,10 +148,10 @@ public partial class ProductFamiliesListPopup : Popup
         var initialValue = option.Nome?.Trim().ToUpperInvariant();
 
         var newDescription = await AppShell.Current.DisplayPromptAsync(
-            "Editar família",
-            "Descrição da família",
-            accept: "Guardar",
-            cancel: "Cancelar",
+            AppResources.ProductsPage_EditFamily,
+            AppResources.ProductsPage_FamilyDescriptionPlaceholder,
+            accept: AppResources.Common_Save,
+            cancel: AppResources.Common_Cancel,
             initialValue: initialValue,
             maxLength: 120,
             keyboard: Keyboard.Create(KeyboardFlags.CapitalizeCharacter));
@@ -161,7 +162,7 @@ public partial class ProductFamiliesListPopup : Popup
         newDescription = newDescription.Trim().ToUpperInvariant();
         if (string.IsNullOrWhiteSpace(newDescription))
         {
-            await GlobalToast.ShowAsync("Descrição obrigatória.", ToastTipo.Aviso, 2500);
+            await GlobalToast.ShowAsync(AppResources.ProductsPage_FamilyDescriptionRequired, ToastTipo.Aviso, 2500);
             return;
         }
 
@@ -170,13 +171,13 @@ public partial class ProductFamiliesListPopup : Popup
             var saved = await DatabaseService.UpsertProductFamilyAsync(option.Codigo, newDescription);
             if (!saved)
             {
-                await GlobalToast.ShowAsync("Não foi possível guardar a família.", ToastTipo.Erro, 2500);
+                await GlobalToast.ShowAsync(AppResources.ProductsPage_FamilySaveError, ToastTipo.Erro, 2500);
                 return;
             }
 
             _refreshRequested = true;
             ReplaceInCache(option.Codigo, newDescription);
-            await GlobalToast.ShowAsync("Família atualizada.", ToastTipo.Sucesso, 1800);
+            await GlobalToast.ShowAsync(AppResources.ProductsPage_FamilyUpdated, ToastTipo.Sucesso, 1800);
         });
     }
 
@@ -189,10 +190,10 @@ public partial class ProductFamiliesListPopup : Popup
             return;
 
         var confirm = await AppShell.Current.DisplayAlert(
-            "Eliminar família",
-            $"Pretende eliminar '{option.NomeDisplay}'?",
-            "Eliminar",
-            "Cancelar");
+            AppResources.Common_Delete,
+            string.Format(AppResources.Common_DeleteConfirmationMessageFormat, option.NomeDisplay),
+            AppResources.Common_Delete,
+            AppResources.Common_Cancel);
 
         if (!confirm)
             return;
@@ -202,13 +203,13 @@ public partial class ProductFamiliesListPopup : Popup
             var deleted = await DatabaseService.DeleteProductFamilyAsync(option.Codigo);
             if (!deleted)
             {
-                await GlobalToast.ShowAsync("Não foi possível eliminar a família.", ToastTipo.Erro, 2500);
+                await GlobalToast.ShowAsync(AppResources.ProductsPage_FamilyDeleteError, ToastTipo.Erro, 2500);
                 return;
             }
 
             _refreshRequested = true;
             RemoveFromCache(option.Codigo);
-            await GlobalToast.ShowAsync("Família eliminada.", ToastTipo.Sucesso, 1800);
+            await GlobalToast.ShowAsync(AppResources.ProductsPage_FamilyDeleted, ToastTipo.Sucesso, 1800);
         });
     }
 
@@ -264,13 +265,13 @@ public partial class ProductFamiliesListPopup : Popup
 
         if (string.IsNullOrWhiteSpace(codigo))
         {
-            await GlobalToast.ShowAsync("Código obrigatório.", ToastTipo.Aviso, 2500);
+            await GlobalToast.ShowAsync(AppResources.ProductsPage_FamilyCodeRequired, ToastTipo.Aviso, 2500);
             return;
         }
 
         if (string.IsNullOrWhiteSpace(descricao))
         {
-            await GlobalToast.ShowAsync("Descrição obrigatória.", ToastTipo.Aviso, 2500);
+            await GlobalToast.ShowAsync(AppResources.ProductsPage_FamilyDescriptionRequired, ToastTipo.Aviso, 2500);
             return;
         }
 
@@ -279,14 +280,14 @@ public partial class ProductFamiliesListPopup : Popup
             var saved = await DatabaseService.UpsertProductFamilyAsync(codigo, descricao);
             if (!saved)
             {
-                await GlobalToast.ShowAsync("Não foi possível guardar a família.", ToastTipo.Erro, 2500);
+                await GlobalToast.ShowAsync(AppResources.ProductsPage_FamilySaveError, ToastTipo.Erro, 2500);
                 return;
             }
 
             _refreshRequested = true;
             ReplaceInCache(codigo, descricao);
             HideNewFamilyForm();
-            await GlobalToast.ShowAsync("Família criada com sucesso.", ToastTipo.Sucesso, 1800);
+            await GlobalToast.ShowAsync(AppResources.ProductsPage_FamilyCreated, ToastTipo.Sucesso, 1800);
         });
     }
 

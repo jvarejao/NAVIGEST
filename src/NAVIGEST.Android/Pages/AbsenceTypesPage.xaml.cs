@@ -1,6 +1,7 @@
 using NAVIGEST.Android.Models;
 using NAVIGEST.Android.Services;
 using System.Collections.ObjectModel;
+using NAVIGEST.Shared.Resources.Strings;
 
 namespace NAVIGEST.Android.Pages;
 
@@ -32,7 +33,7 @@ public partial class AbsenceTypesPage : ContentPage
 
     private async void OnAddClicked(object sender, EventArgs e)
     {
-        string result = await DisplayPromptAsync("Novo Tipo", "Descrição do tipo de ausência (ex: Férias, Baixa):");
+        string result = await DisplayPromptAsync(AppResources.Absence_NewTypeTitle, AppResources.Absence_NewTypeMessage);
         if (!string.IsNullOrWhiteSpace(result))
         {
             var newType = new AbsenceType { Descricao = result.Trim() };
@@ -45,12 +46,12 @@ public partial class AbsenceTypesPage : ContentPage
     {
         if (e.Parameter is AbsenceType type)
         {
-            string result = await DisplayPromptAsync("Editar Tipo", "Descrição:", initialValue: type.Descricao);
+            string result = await DisplayPromptAsync(AppResources.Absence_EditTypeTitle, AppResources.Absence_DescriptionLabel, initialValue: type.Descricao);
             if (result != null) // Cancel returns null
             {
                 if (string.IsNullOrWhiteSpace(result))
                 {
-                    await DisplayAlert("Erro", "A descrição não pode estar vazia.", "OK");
+                    await DisplayAlert(AppResources.Common_Error, AppResources.Absence_ErrorEmptyDescription, AppResources.Common_OK);
                     return;
                 }
 
@@ -65,7 +66,7 @@ public partial class AbsenceTypesPage : ContentPage
     {
         if (sender is SwipeItem swipeItem && swipeItem.CommandParameter is AbsenceType type)
         {
-            bool confirm = await DisplayAlert("Eliminar", $"Tem a certeza que deseja eliminar '{type.Descricao}'?", "Sim", "Não");
+            bool confirm = await DisplayAlert(AppResources.Common_Delete, string.Format(AppResources.Absence_ConfirmDelete, type.Descricao), AppResources.Common_Yes, AppResources.Common_No);
             if (confirm)
             {
                 await DatabaseService.DeleteAbsenceTypeAsync(type.Id);

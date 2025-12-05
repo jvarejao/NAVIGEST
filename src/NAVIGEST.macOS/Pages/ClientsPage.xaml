@@ -6,7 +6,7 @@
              xmlns:models="clr-namespace:NAVIGEST.macOS.Models"
              xmlns:behaviors="clr-namespace:NAVIGEST.macOS.Behaviors"
              xmlns:pages="clr-namespace:NAVIGEST.macOS.Pages"
-             xmlns:strings="clr-namespace:NAVIGEST.macOS.Resources.Strings"
+             xmlns:strings="clr-namespace:NAVIGEST.Shared.Resources.Strings;assembly=NAVIGEST.Shared"
              BackgroundColor="{DynamicResource PageBackgroundColor}"
              Title="{x:Static strings:AppResources.ClientsPage_Title}"
              SizeChanged="OnPageSizeChanged"

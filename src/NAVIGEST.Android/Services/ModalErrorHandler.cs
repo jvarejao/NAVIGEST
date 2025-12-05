@@ -1,3 +1,5 @@
+using NAVIGEST.Shared.Resources.Strings;
+
 namespace NAVIGEST.Android.Services
 {
     /// <summary>
@@ -22,7 +24,7 @@ namespace NAVIGEST.Android.Services
             {
                 await _semaphore.WaitAsync();
                 if (Shell.Current is Shell shell)
-                    await shell.DisplayAlert("Error", ex.Message, "OK");
+                    await shell.DisplayAlert(AppResources.Common_Error, ex.Message, AppResources.Common_OK);
             }
             finally
             {

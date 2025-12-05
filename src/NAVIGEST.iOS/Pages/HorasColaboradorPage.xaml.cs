@@ -13,6 +13,7 @@ using NAVIGEST.iOS.Services;
 using NAVIGEST.iOS.Converters;
 using Foundation;
 using NAVIGEST.iOS.Popups;
+using NAVIGEST.Shared.Resources.Strings;
 
 namespace NAVIGEST.iOS.Pages;
 
@@ -179,7 +180,7 @@ public partial class HorasColaboradorPage : ContentPage
         // Botão Adicionar
         var btnAdicionar = new Button
         {
-            Text = "➕ Horas",
+            Text = AppResources.HorasColaboradorPage_AddHours,
             BackgroundColor = Color.FromArgb("#0A84FF"),
             TextColor = Colors.White,
             FontAttributes = FontAttributes.Bold,
@@ -191,7 +192,7 @@ public partial class HorasColaboradorPage : ContentPage
         // Botão Gerir Tipos
         var btnTipos = new Button
         {
-            Text = "⚙️ Tipos Ausência",
+            Text = AppResources.HorasColaboradorPage_AbsenceTypes,
             BackgroundColor = Color.FromArgb("#E5E5EA"),
             TextColor = Colors.Black,
             FontAttributes = FontAttributes.Bold,
@@ -217,7 +218,7 @@ public partial class HorasColaboradorPage : ContentPage
         // Picker Colaborador
         var colabPicker = new Picker
         {
-            Title = "Colaborador",
+            Title = AppResources.HorasColaboradorPage_Collaborator,
             ItemsSource = _vm.Colaboradores.ToList(),
             ItemDisplayBinding = new Binding("Nome"),
             SelectedItem = _vm.ColaboradorSelecionado,
@@ -237,7 +238,7 @@ public partial class HorasColaboradorPage : ContentPage
         // Botão Período (ActionSheet)
         var btnPeriodo = new Button
         {
-            Text = "📅 Período",
+            Text = AppResources.HorasColaboradorPage_Period,
             BackgroundColor = Application.Current?.RequestedTheme == AppTheme.Dark ? Color.FromArgb("#2C2C2E") : Color.FromArgb("#F5F5F7"),
             TextColor = Color.FromArgb("#0A84FF"),
             CornerRadius = 8,
@@ -263,7 +264,7 @@ public partial class HorasColaboradorPage : ContentPage
             HorizontalOptions = LayoutOptions.Center
         };
         emptyView.Add(new Label { Text = "📭", FontSize = 48, HorizontalTextAlignment = TextAlignment.Center });
-        emptyView.Add(new Label { Text = "Sem registos neste período", FontSize = 16, TextColor = Color.FromArgb("#8E8E93"), HorizontalTextAlignment = TextAlignment.Center });
+        emptyView.Add(new Label { Text = AppResources.HorasColaboradorPage_NoRecords, FontSize = 16, TextColor = Color.FromArgb("#8E8E93"), HorizontalTextAlignment = TextAlignment.Center });
         listaCollection.EmptyView = emptyView;
         
         mainGrid.Add(listaCollection, 0, 2);
@@ -429,13 +430,13 @@ public partial class HorasColaboradorPage : ContentPage
         var page = Application.Current?.Windows[0]?.Page;
         if (page == null) return;
         
-        var action = await page.DisplayActionSheet("Selecionar Período", "Cancelar", null, 
-            "Hoje", "Esta Semana", "Este Mês", "Últimos 30 dias");
+        var action = await page.DisplayActionSheet(AppResources.HorasColaboradorPage_SelectPeriod, AppResources.Common_Cancel, null, 
+            AppResources.HorasColaboradorPage_Today, AppResources.HorasColaboradorPage_ThisWeek, AppResources.HorasColaboradorPage_ThisMonth, AppResources.HorasColaboradorPage_Last30Days);
         
-        if (action == "Hoje") _vm.SelecionarHojeCommand.Execute(null);
-        else if (action == "Esta Semana") _vm.SelecionarEstaSemanaCommand.Execute(null);
-        else if (action == "Este Mês") _vm.SelecionarEsteMesCommand.Execute(null);
-        else if (action == "Últimos 30 dias") _vm.SelecionarUltimos30DiasCommand.Execute(null);
+        if (action == AppResources.HorasColaboradorPage_Today) _vm.SelecionarHojeCommand.Execute(null);
+        else if (action == AppResources.HorasColaboradorPage_ThisWeek) _vm.SelecionarEstaSemanaCommand.Execute(null);
+        else if (action == AppResources.HorasColaboradorPage_ThisMonth) _vm.SelecionarEsteMesCommand.Execute(null);
+        else if (action == AppResources.HorasColaboradorPage_Last30Days) _vm.SelecionarUltimos30DiasCommand.Execute(null);
     }
 
     // ==================== TAB 3: CALENDÁRIO ====================
@@ -446,7 +447,7 @@ public partial class HorasColaboradorPage : ContentPage
         
         var lblTitulo = new Label 
         { 
-            Text = "📅 Calendário do Mês", 
+            Text = AppResources.HorasColaboradorPage_MonthCalendar, 
             FontSize = 20, 
             FontAttributes = FontAttributes.Bold,
             HorizontalTextAlignment = TextAlignment.Center 
@@ -469,7 +470,7 @@ public partial class HorasColaboradorPage : ContentPage
 
         var picker = new Picker
         {
-            Title = "Selecione Colaborador",
+            Title = AppResources.HorasColaboradorPage_SelectCollaborator,
             ItemsSource = _vm.Colaboradores,
             ItemDisplayBinding = new Binding("Nome"),
             SelectedItem = _vm.ColaboradorSelecionado,
@@ -543,7 +544,7 @@ public partial class HorasColaboradorPage : ContentPage
             }
         };
         
-        string[] diasSemana = { "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom" };
+        string[] diasSemana = { AppResources.Common_Mon, AppResources.Common_Tue, AppResources.Common_Wed, AppResources.Common_Thu, AppResources.Common_Fri, AppResources.Common_Sat, AppResources.Common_Sun };
         for (int i = 0; i < 7; i++)
         {
             gridDiasSemana.Add(new Label 
@@ -569,8 +570,8 @@ public partial class HorasColaboradorPage : ContentPage
             Margin = new Thickness(0, 16, 0, 0)
         };
         
-        legendaStack.Add(CriarItemLegenda("#34C759", "Normal"));
-        legendaStack.Add(CriarItemLegenda("#FF9500", "Extra"));
+        legendaStack.Add(CriarItemLegenda("#34C759", AppResources.HorasColaboradorPage_Normal));
+        legendaStack.Add(CriarItemLegenda("#FF9500", AppResources.HorasColaboradorPage_Extra));
         
         mainStack.Add(legendaStack);
         
@@ -837,7 +838,7 @@ public partial class HorasColaboradorPage : ContentPage
             {
                 Console.WriteLine($"[CalendarioIOS] ERRO CRÍTICO ao abrir popup: {exPopup}");
                 // Fallback: DisplayAlert se o popup falhar
-                await DisplayAlert("Detalhes do Dia", $"Data: {data:dd/MM/yyyy}\n(Erro ao abrir popup visual)", "OK");
+                await DisplayAlert(AppResources.HorasColaboradorPage_DayDetails, $"Data: {data:dd/MM/yyyy}\n{AppResources.HorasColaboradorPage_PopupError}", AppResources.Common_OK);
                 return;
             }
 
@@ -909,7 +910,7 @@ public partial class HorasColaboradorPage : ContentPage
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"Erro ao abrir popup nova hora: {ex.Message}");
-            await DisplayAlert("Erro", $"Erro ao abrir popup: {ex.Message}", "OK");
+            await DisplayAlert(AppResources.Common_Error, $"{AppResources.Common_ErrorOpeningPopup}: {ex.Message}", AppResources.Common_OK);
         }
     }
     

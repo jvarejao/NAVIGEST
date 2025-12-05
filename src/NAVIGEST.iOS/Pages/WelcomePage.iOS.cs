@@ -4,13 +4,13 @@ using Microsoft.Maui.ApplicationModel;
 namespace NAVIGEST.iOS.Pages;
 public partial class WelcomePage
 {
-    // Código iOS específico: navegação rápida após escolha da empresa
+    // Cï¿½digo iOS especï¿½fico: navegaï¿½ï¿½o rï¿½pida apï¿½s escolha da empresa
     private async Task NavigateToLoginPageiOSAsync()
     {
         try
         {
             await ShowMainContentAsync();
-            await Task.Delay(50); // animação mínima
+            await Task.Delay(50); // animaï¿½ï¿½o mï¿½nima
             if (MainThread.IsMainThread)
                 await Shell.Current.GoToAsync("Login"); // Corrigido: rota relativa
             else
@@ -19,7 +19,7 @@ public partial class WelcomePage
         catch (Exception ex)
         {
             GlobalErro.TratarErro(ex);
-            await ShowToastAsync("Erro ao navegar para Login.", false, 2000);
+            await ShowToastAsync(NAVIGEST.Shared.Resources.Strings.AppResources.WelcomePage_LoginNavError, false, 2000);
         }
     }
 }

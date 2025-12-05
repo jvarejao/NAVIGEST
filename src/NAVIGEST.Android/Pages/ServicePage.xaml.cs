@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using NAVIGEST.Shared.Resources.Strings;
 using NAVIGEST.Android.PageModels; // ou ViewModels, conforme est o teu VM
 
 namespace NAVIGEST.Android.Pages
@@ -29,17 +30,17 @@ namespace NAVIGEST.Android.Pages
                 {
                     await m.LoadAsync(force: true);
                     if (m.Orders.Count == 0)
-                        await NAVIGEST.Android.AppShell.DisplayToastAsync("0 servios carregados.");
+                        await NAVIGEST.Android.AppShell.DisplayToastAsync(AppResources.ServicePage_ZeroLoaded);
                 }
                 else
                 {
-                    await DisplayAlert("Erro", "BindingContext no  ServicePageModel.", "OK");
+                    await DisplayAlert(AppResources.Common_Error, AppResources.ServicePage_ErrorBinding, AppResources.Common_OK);
                 }
             }
             catch (Exception ex)
             {
                 NAVIGEST.Android.GlobalErro.TratarErro(ex, mostrarAlerta: false);
-                await NAVIGEST.Android.AppShell.DisplayToastAsync("Falha ao carregar servios.");
+                await NAVIGEST.Android.AppShell.DisplayToastAsync(AppResources.ServicePage_LoadFailure);
             }
         }
 

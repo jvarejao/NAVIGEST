@@ -3,9 +3,10 @@
              xmlns:pm="clr-namespace:NAVIGEST.Android.PageModels"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:beh="clr-namespace:NAVIGEST.Android.Behaviors"
+             xmlns:res="clr-namespace:NAVIGEST.Shared.Resources.Strings;assembly=NAVIGEST.Shared"
              x:Class="NAVIGEST.Android.Pages.LoginPage"
              BackgroundColor="Transparent"
-             Title="Entrar"
+             Title="{x:Static res:AppResources.Login_Title}"
              SizeChanged="OnPageSizeChanged"
              Shell.FlyoutBehavior="Disabled"
              Shell.NavBarIsVisible="False">
@@ -67,7 +68,7 @@
                                 </Border>
                             </Grid>
 
-                            <Label Text="Bem-vindo 👋"
+                            <Label Text="{x:Static res:AppResources.Login_Welcome}"
                                    FontFamily="InterSemiBold"
                                    FontSize="28"
                                    TextColor="#4F46E5"
@@ -76,7 +77,7 @@
 
                             <Label x:Name="lblUserFound"
                                    IsVisible="False"
-                                   Text="Utilizador encontrado"
+                                   Text="{x:Static res:AppResources.Login_UserFound}"
                                    FontFamily="InterSemiBold"
                                    FontSize="14"
                                    TextColor="#22C55E"
@@ -91,7 +92,7 @@
                                    HorizontalTextAlignment="Center"/>
 
                             <Label x:Name="lblSub"
-                                   Text="Inicia sessão para continuar"
+                                   Text="{x:Static res:AppResources.Login_Subtitle}"
                                    FontFamily="Inter"
                                    FontSize="15"
                                    TextColor="#6B7280"
@@ -121,7 +122,7 @@
                                         </Border.StrokeShape>
                                         <Grid>
                                             <Entry x:Name="entryUsername"
-                                                   Placeholder="Utilizador"
+                                                   Placeholder="{x:Static res:AppResources.Login_UsernamePlaceholder}"
                                                    Text="{Binding Username, Mode=TwoWay}"
                                                    TextChanged="OnUsernameChanged"
                                                    Completed="OnEntryCompleted"
@@ -164,7 +165,7 @@
                                         </Border.StrokeShape>
                                         <Grid>
                                             <Entry x:Name="entryPassword"
-                                                   Placeholder="Palavra-passe"
+                                                   Placeholder="{x:Static res:AppResources.Login_PasswordPlaceholder}"
                                                    IsPassword="True"
                                                    Text="{Binding Password, Mode=TwoWay}"
                                                    Completed="OnEntryCompleted"
@@ -214,7 +215,7 @@
                                                   WidthRequest="18"
                                                   Margin="0,0,0,15"/>
                                     </Frame>
-                                    <Label Text="Lembrar-me neste dispositivo"
+                                    <Label Text="{x:Static res:AppResources.Login_RememberMe}"
                                            VerticalTextAlignment="Center"
                                            FontFamily="Inter"
                                            FontSize="14"
@@ -227,7 +228,7 @@
                                       Padding="0"
                                       Margin="40,0,0,0"
                                       IsVisible="{Binding BiometricEnabled}">
-                                    <Label Text="Usar biometria (Face ID/Touch ID)"
+                                    <Label Text="{x:Static res:AppResources.Login_UseBiometric}"
                                            VerticalTextAlignment="Center"
                                            FontFamily="Inter"
                                            FontSize="14"/>
@@ -237,7 +238,7 @@
 
                                 <!-- Entrar -->
                                 <Button x:Name="btnLogin"
-                                        Text=" Entrar"
+                                        Text="{x:Static res:AppResources.Login_Button}"
                                         Clicked="OnLoginClicked"
                                         HorizontalOptions="Fill"
                                         FontSize="18"
@@ -253,7 +254,7 @@
                                 </Button>
 
                                 <!-- Entrar com Face ID / Biometria (só aparece após Face ID ativado) -->
-                                <Button Text=" Entrar com Face ID"
+                                <Button Text="{x:Static res:AppResources.Login_Biometric}"
                                         Command="{Binding BiometricLoginCommand}"
                                         IsVisible="{Binding BiometricEnabled}"
                                         IsEnabled="{Binding BiometricAvailable}"
@@ -287,21 +288,21 @@
 
                             <!-- Links -->
                             <VerticalStackLayout Spacing="8" HorizontalOptions="Center" Margin="0,12,0,0">
-                                <Label Text="Esqueci-me da palavra-passe (e-mail)" TextColor="#4F46E5" FontSize="14" FontFamily="Inter">
+                                <Label Text="{x:Static res:AppResources.Login_ForgotPassword}" TextColor="#4F46E5" FontSize="14" FontFamily="Inter">
                                     <Label.GestureRecognizers>
                                         <TapGestureRecognizer Tapped="OnForgotByEmailTapped" NumberOfTapsRequired="1"/>
                                     </Label.GestureRecognizers>
                                     <Label.Behaviors>
                                     </Label.Behaviors>
                                 </Label>
-                                <Label Text="Tenho um código do e-mail" TextColor="#4F46E5" FontSize="14" FontFamily="Inter">
+                                <Label Text="{x:Static res:AppResources.Login_HaveCode}" TextColor="#4F46E5" FontSize="14" FontFamily="Inter">
                                     <Label.GestureRecognizers>
                                         <TapGestureRecognizer Tapped="OnHaveCodeTapped" NumberOfTapsRequired="1"/>
                                         </Label.GestureRecognizers>
                                         <Label.Behaviors>
                                         </Label.Behaviors>
                                 </Label>
-                                <Label Text="Reset interno (admin)" TextColor="#4F46E5" FontSize="14" FontFamily="Inter">
+                                <Label Text="{x:Static res:AppResources.Login_InternalReset}" TextColor="#4F46E5" FontSize="14" FontFamily="Inter">
                                     <Label.GestureRecognizers>
                                         <TapGestureRecognizer Tapped="OnInternalResetTapped" NumberOfTapsRequired="1"/>
                                     </Label.GestureRecognizers>

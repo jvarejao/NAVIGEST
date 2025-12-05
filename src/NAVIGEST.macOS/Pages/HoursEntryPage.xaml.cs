@@ -12,7 +12,7 @@ using NAVIGEST.macOS.Models;
 using NAVIGEST.macOS.Services;
 using NAVIGEST.macOS.Views;
 using NAVIGEST.macOS.Popups;
-using NAVIGEST.macOS.Resources.Strings;
+using NAVIGEST.Shared.Resources.Strings;
 
 namespace NAVIGEST.macOS.Pages;
 

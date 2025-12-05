@@ -7,6 +7,7 @@ using Microsoft.Maui.Controls;
 using NAVIGEST.Android;
 using NAVIGEST.Android.Models;
 using NAVIGEST.Android.Services;
+using NAVIGEST.Shared.Resources.Strings;
 
 namespace NAVIGEST.Android.Popups;
 
@@ -39,7 +40,7 @@ public partial class AddVendedorPopup : Popup
         catch (Exception ex)
         {
             GlobalErro.TratarErro(ex);
-            await GlobalToast.ShowAsync("Erro ao preparar o formulário de vendedor.", ToastTipo.Erro, 2500);
+            await GlobalToast.ShowAsync(AppResources.ClientsPage_SalespersonFormError, ToastTipo.Erro, 2500);
             Close(null);
         }
         finally
@@ -67,7 +68,7 @@ public partial class AddVendedorPopup : Popup
         var nome = NomeEntry.Text?.Trim().ToUpperInvariant();
         if (string.IsNullOrWhiteSpace(nome))
         {
-            ShowError("Introduza o nome do vendedor.");
+            ShowError(AppResources.ClientsPage_SalespersonNameRequired);
             return;
         }
 
@@ -82,7 +83,7 @@ public partial class AddVendedorPopup : Popup
         catch (Exception ex)
         {
             GlobalErro.TratarErro(ex);
-            await GlobalToast.ShowAsync("Erro ao guardar o vendedor.", ToastTipo.Erro, 2500);
+            await GlobalToast.ShowAsync(AppResources.ClientsPage_SalespersonSaveError, ToastTipo.Erro, 2500);
         }
         finally
         {
@@ -169,7 +170,7 @@ public partial class AddVendedorPopup : Popup
         catch (Exception ex)
         {
             GlobalErro.TratarErro(ex);
-            await GlobalToast.ShowAsync("Erro ao carregar vendedores.", ToastTipo.Erro, 2500);
+            await GlobalToast.ShowAsync(AppResources.ClientsPage_SalespersonLoadError, ToastTipo.Erro, 2500);
         }
         finally
         {

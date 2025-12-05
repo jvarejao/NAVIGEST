@@ -7,6 +7,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Storage;
 using NAVIGEST.Android.Models;
 using NAVIGEST.Android.Services;
+using NAVIGEST.Shared.Resources.Strings;
 
 namespace NAVIGEST.Android.Pages
 {
@@ -131,7 +132,7 @@ namespace NAVIGEST.Android.Pages
                 return;
             }
 
-            bool confirmar = await DisplayAlert("Confirmação", $"Eliminar o utilizador '{username}'?", "Sim", "Não");
+            bool confirmar = await DisplayAlert(AppResources.RegisterPage_DeleteConfirmTitle, string.Format(AppResources.RegisterPage_DeleteConfirmMessage, username), AppResources.Common_Yes, AppResources.Common_No);
             if (!confirmar)
                 return;
 
