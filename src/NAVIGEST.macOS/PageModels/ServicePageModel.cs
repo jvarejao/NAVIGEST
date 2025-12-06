@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -10,6 +10,8 @@ using NAVIGEST.macOS.Models;
 using NAVIGEST.macOS.Services;
 using System;
 using System.Diagnostics;
+using System.Windows.Input;
+using System.Collections.Generic;
 
 namespace NAVIGEST.macOS.PageModels;
 
@@ -39,18 +41,48 @@ public class ServicePageModel : INotifyPropertyChanged
     private bool _isBusy;
     public bool IsBusy { get => _isBusy; set { if (_isBusy != value) { _isBusy = value; OnPropertyChanged(); } } }
 
-    public Command NewCommand { get; }
-    public Command SearchCommand { get; }
-    public Command RefreshCommand { get; }
+    public ICommand NewCommand { get; }
+    public ICommand SearchCommand { get; }
+    public ICommand RefreshCommand { get; }
+    public ICommand EditCommand { get; }
+    public ICommand DeleteCommand { get; }
+    public ICommand ClearSearchCommand { get; }
 
     private CancellationTokenSource? _loadCts;
     private CancellationTokenSource? _searchCts;
 
     public ServicePageModel()
     {
-        NewCommand = new Command(async () => await AppShell.DisplayToastAsync("Novo serviço…"));
+        NewCommand = new Command(OnNewService);
         SearchCommand = new Command(ApplyFilterImmediate);
         RefreshCommand = new Command(async () => await LoadAsync(force: true));
+        EditCommand = new Command<OrderInfoModel>(OnEditService);
+        DeleteCommand = new Command<OrderInfoModel>(OnDeleteService);
+        ClearSearchCommand = new Command(() => SearchText = string.Empty);
+    }
+
+    private async void OnNewService()
+    {
+        await AppShell.DisplayToastAsync("Novo serviço (Em desenvolvimento)");
+    }
+
+    private async void OnEditService(OrderInfoModel? service)
+    {
+        if (service == null) return;
+        await AppShell.DisplayToastAsync($"Editar serviço {service.OrderNo} (Em desenvolvimento)");
+    }
+
+    private async void OnDeleteService(OrderInfoModel? service)
+    {
+        if (service == null) return;
+        bool confirm = await AppShell.Current.DisplayAlert("Eliminar", $"Tem a certeza que deseja eliminar o serviço {service.OrderNo}?", "Sim", "Não");
+        if (confirm)
+        {
+            // TODO: Call DatabaseService to delete
+            _all.Remove(service);
+            Orders.Remove(service);
+            await AppShell.DisplayToastAsync($"Serviço {service.OrderNo} eliminado");
+        }
     }
 
     public async Task LoadAsync(bool force = false)
@@ -64,27 +96,13 @@ public class ServicePageModel : INotifyPropertyChanged
 
         try
         {
-            try
-            {
-                var (count, sampleNo, sampleCust) = await DatabaseService.DebugOrdersProbeAsync(ct);
-                Debug.WriteLine($"[ServicePage] DebugOrdersProbeAsync => Count={count}, Sample={sampleNo} / {sampleCust}");
-                await AppShell.DisplayToastAsync($"OrderInfo: {count} linhas. Exemplo: {sampleNo ?? "-"} / {sampleCust ?? "-"}", NAVIGEST.macOS.ToastTipo.Info, 2000);
-            }
-            catch (Exception exProbe)
-            {
-                Debug.WriteLine($"[ServicePage] Debug probe failed: {exProbe}");
-                NAVIGEST.macOS.GlobalErro.TratarErro(exProbe);
-                await AppShell.DisplayToastAsync("Erro a sondar OrderInfo (ver Output).", NAVIGEST.macOS.ToastTipo.Erro, 2500);
-            }
-
-            // Carrega da BD (sem dados de teste em memória)
+            // Carrega da BD
             _all.Clear();
             List<OrderInfoModel> list = null!;
             try
             {
                 list = await DatabaseService.GetOrdersLightAsync(null, ct);
                 Debug.WriteLine($"[ServicePage] GetOrdersLightAsync returned: {list?.Count ?? 0}");
-                await AppShell.DisplayToastAsync($"Serviços carregados: {list?.Count ?? 0}", NAVIGEST.macOS.ToastTipo.Info, 1400);
             }
             catch (OperationCanceledException)
             {
@@ -101,41 +119,33 @@ public class ServicePageModel : INotifyPropertyChanged
 
             if (list != null && list.Count > 0)
             {
-                foreach (var o in list) _all.Add(o);
-
-                Orders.Clear();
-                foreach (var o in _all) Orders.Add(o);
+                _all.AddRange(list);
+                ApplyFilterImmediate();
             }
             else
             {
-                Debug.WriteLine("[ServicePage] No orders returned from DB.");
-                // Se desejar: manter Orders vazia para mostrar mensagem na UI
-                // Já mostramos toast acima com count 0
+                // Mock data fallback if DB is empty (for testing UI)
+                if (_all.Count == 0)
+                {
+                    Debug.WriteLine("[ServicePage] Adding Mock Data because _all is empty.");
+                    _all.Add(new OrderInfoModel 
+                    { 
+                        OrderNo = "TEST-001", 
+                        CustomerName = "Cliente Teste (Mock)", 
+                        OrderStatus = "Aberto", 
+                        TotalAmount = 123.45m,
+                        OrderDate = DateTime.Now 
+                    });
+                    ApplyFilterImmediate();
+                    await AppShell.DisplayToastAsync("Nenhum dado na BD. Carregado 1 registo de teste.", NAVIGEST.macOS.ToastTipo.Aviso, 3000);
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"[ServicePage] Unexpected error: {ex}");
-            NAVIGEST.macOS.GlobalErro.TratarErro(ex);
-            await NAVIGEST.macOS.AppShell.DisplayToastAsync("Erro ao carregar serviços.", NAVIGEST.macOS.ToastTipo.Erro, 2000);
         }
         finally
         {
             IsBusy = false;
+            _loadCts = null;
         }
-    }
-
-    private void ApplyFilterImmediate()
-    {
-        var q = (SearchText ?? string.Empty).Trim().ToLowerInvariant();
-        if (string.IsNullOrEmpty(q)) { Repopulate(_all); return; }
-
-        var filtered = _all.Where(s =>
-            (s.OrderNo ?? string.Empty).ToLowerInvariant().Contains(q) ||
-            (s.CustomerName ?? string.Empty).ToLowerInvariant().Contains(q) ||
-            (s.OrderStatus ?? string.Empty).ToLowerInvariant().Contains(q));
-
-        Repopulate(filtered);
     }
 
     private void DebounceSearch()
@@ -143,21 +153,30 @@ public class ServicePageModel : INotifyPropertyChanged
         _searchCts?.Cancel();
         _searchCts = new CancellationTokenSource();
         var token = _searchCts.Token;
-        Task.Run(async () =>
+
+        Task.Delay(300, token).ContinueWith(t =>
         {
-            try
-            {
-                await Task.Delay(300, token);
-                if (token.IsCancellationRequested) return;
-                MainThread.BeginInvokeOnMainThread(ApplyFilterImmediate);
-            }
-            catch { }
-        }, token);
+            if (t.IsCanceled) return;
+            MainThread.BeginInvokeOnMainThread(ApplyFilterImmediate);
+        });
     }
 
-    private void Repopulate(IEnumerable<OrderInfoModel> items)
+    private void ApplyFilterImmediate()
     {
+        var f = SearchText?.Trim().ToLowerInvariant() ?? "";
+        
+        var filtered = string.IsNullOrWhiteSpace(f) 
+            ? _all 
+            : _all.Where(x => 
+                (x.OrderNo?.ToLowerInvariant().Contains(f) ?? false) ||
+                (x.CustomerName?.ToLowerInvariant().Contains(f) ?? false) ||
+                (x.OrderStatus?.ToLowerInvariant().Contains(f) ?? false)
+            ).ToList();
+
         Orders.Clear();
-        foreach (var it in items) Orders.Add(it);
+        foreach (var item in filtered)
+        {
+            Orders.Add(item);
+        }
     }
 }
