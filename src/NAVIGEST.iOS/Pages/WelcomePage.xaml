@@ -22,7 +22,7 @@
 
     <Grid>
         <!-- Fundo -->
-        <Image Source="background.jpg"
+        <Image Source="background.png"
                Aspect="AspectFill"
                Opacity="0.2"
                IsVisible="True" />

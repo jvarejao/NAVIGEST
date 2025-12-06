@@ -28,7 +28,6 @@
 
     <!-- iOS Platform -->
     <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
-    <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
 
     <!-- Code Signing -->
     <CodesignKey>Apple Development: Created via API (HRXXM344JN)</CodesignKey>
@@ -43,9 +42,9 @@
 
   <!-- Debug Configuration -->
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <BuildIpa>True</BuildIpa>
-    <IpaIncludeArtwork>True</IpaIncludeArtwork>
-    <MtouchUseLlvm>True</MtouchUseLlvm>
+    <BuildIpa>False</BuildIpa>
+    <IpaIncludeArtwork>False</IpaIncludeArtwork>
+    <MtouchUseLlvm>False</MtouchUseLlvm>
   </PropertyGroup>
 
   <!-- Release Configuration -->
@@ -64,7 +63,7 @@
   <ItemGroup>
     <MauiIcon Include="Resources\AppIcon\appicon.png" />
     <MauiSplashScreen Include="Resources\Splash\appicon.png" Color="#17171a" BaseSize="128,128" />
-    <MauiAsset Include="Resources\Images\startup.gif" />
+    <MauiAsset Include="Resources\Images\startup.gif" LogicalName="startup.gif" />
     <MauiImage Include="Resources\Images\*.png" />
   </ItemGroup>
 
