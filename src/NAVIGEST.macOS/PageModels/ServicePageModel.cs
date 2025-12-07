@@ -124,6 +124,21 @@ public class ServicePageModel : INotifyPropertyChanged
             }
             else
             {
+                // PROBE DEBUG
+                try 
+                {
+                    var probe = await DatabaseService.DebugOrdersProbeAsync(ct);
+                    if (probe.Count > 0)
+                    {
+                         await AppShell.DisplayToastAsync($"DEBUG: Tabela tem {probe.Count} registos, mas query retornou 0.", NAVIGEST.macOS.ToastTipo.Aviso, 5000);
+                    }
+                    else
+                    {
+                         await AppShell.DisplayToastAsync($"DEBUG: Tabela OrderInfo vazia (0 registos).", NAVIGEST.macOS.ToastTipo.Info, 3000);
+                    }
+                }
+                catch { }
+
                 // Mock data fallback if DB is empty (for testing UI)
                 if (_all.Count == 0)
                 {

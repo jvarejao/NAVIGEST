@@ -14,59 +14,54 @@
           MaximumWidthRequest="1200"
           HorizontalOptions="Center">
         
-        <!-- Header Section -->
-        <VerticalStackLayout Grid.Row="0" Spacing="14">
-            <!-- Topo: Botão Novo (direita) + ícone -->
-            <Grid ColumnDefinitions="*,Auto">
-                <Label Text="Serviços" FontAttributes="Bold" FontSize="24" VerticalOptions="Center" TextColor="{DynamicResource BodyTextColor}"/>
-                <Button Grid.Column="1"
-                        Text="Novo"
-                        Command="{Binding NewCommand}"
-                        HeightRequest="40"
-                        CornerRadius="10"
-                        BackgroundColor="#0A84FF"
-                        TextColor="White"
-                        Padding="16,0">
-                    <Button.ImageSource>
-                        <FontImageSource Glyph="&#xf067;" FontFamily="FA7Solid" Size="16" Color="White"/>
-                    </Button.ImageSource>
-                </Button>
-            </Grid>
-
-            <!-- Pesquisa -->
-            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+            <!-- HEADER: Search & Add -->
+            <Grid ColumnDefinitions="*, Auto" ColumnSpacing="16">
+                <!-- Search -->
                 <Border StrokeShape="RoundRectangle 10" 
                         BackgroundColor="{DynamicResource CardBackgroundColor}"
                         StrokeThickness="0"
-                        Padding="12,0"
+                        Padding="8,0"
+                        HeightRequest="44"
+                        VerticalOptions="Center">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Entry Placeholder="Pesquisar por nº, cliente ou estado…" 
+                               Text="{Binding Filter}" 
+                               BackgroundColor="Transparent"
+                               TextColor="{DynamicResource BodyTextColor}"
+                               HeightRequest="44"
+                               VerticalOptions="Center"
+                               Style="{StaticResource AppleEntry}"
+                               Margin="0"/>
+                        
+                        <Button Grid.Column="1"
+                                Text="✕"
+                                TextColor="{DynamicResource EntryPlaceholderColor}"
+                                BackgroundColor="Transparent"
+                                Command="{Binding ClearSearchCommand}"
+                                IsVisible="{Binding Filter, Converter={StaticResource IsNotNullOrEmptyConverter}}"
+                                WidthRequest="30"
+                                HeightRequest="30"
+                                Padding="0"
+                                VerticalOptions="Center"/>
+                    </Grid>
+                </Border>
+
+                <!-- Add Button -->
+                <Button Grid.Column="1" 
+                        Text="Novo Serviço" 
+                        Command="{Binding NewCommand}"
+                        BackgroundColor="#0A84FF" 
+                        TextColor="White" 
+                        FontAttributes="Bold" 
+                        CornerRadius="12" 
                         HeightRequest="44"
                         VerticalOptions="Center"
-                        Grid.Column="0">
-                     <Entry Placeholder="Pesquisar por nº, cliente ou estado…"
-                            Text="{Binding Filter}"
-                            ReturnType="Search"
-                            BackgroundColor="Transparent"
-                            TextColor="{DynamicResource BodyTextColor}"
-                            HeightRequest="44"
-                            VerticalOptions="Center"/>
-                </Border>
-                
-                <Button Grid.Column="1"
-                        Command="{Binding SearchCommand}"
-                        Padding="0"
-                        HeightRequest="44"
-                        WidthRequest="44"
-                        CornerRadius="10"
-                        BackgroundColor="{DynamicResource CardBackgroundColor}">
-                    <Button.ImageSource>
-                        <FontImageSource Glyph="&#xf002;" FontFamily="FA7Solid" Size="18" Color="{DynamicResource BodyTextColor}"/>
-                    </Button.ImageSource>
+                        Padding="20,0">
+                    <Button.Behaviors>
+                        <behaviors:ButtonMicroAnimationsBehavior />
+                    </Button.Behaviors>
                 </Button>
             </Grid>
-            
-            <Label Text="{Binding Orders.Count, StringFormat='Registos: {0}'}"
-                   FontSize="12" Opacity="0.7" TextColor="{DynamicResource BodyTextColor}"/>
-        </VerticalStackLayout>
 
         <!-- Lista -->
         <CollectionView Grid.Row="1" ItemsSource="{Binding Orders}" SelectionMode="None" ItemSizingStrategy="MeasureFirstItem" Margin="0,0,0,20">
