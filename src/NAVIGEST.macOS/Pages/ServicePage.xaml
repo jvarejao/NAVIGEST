@@ -135,7 +135,7 @@
                                             WidthRequest="40"
                                             HeightRequest="40"
                                             Padding="0"
-                                            Command="{Binding BindingContext.ViewCommand, Source={RelativeSource AncestorType={x:Type pages:ServicePage}}}"
+                                            Clicked="OnViewClicked"
                                             CommandParameter="{Binding .}">
                                         <Button.Behaviors>
                                             <behaviors:ButtonMicroAnimationsBehavior />
@@ -152,7 +152,7 @@
                                             WidthRequest="40"
                                             HeightRequest="40"
                                             Padding="0"
-                                            Command="{Binding Source={x:Reference ServicePageRoot}, Path=BindingContext.EditCommand}"
+                                            Clicked="OnEditClicked"
                                             CommandParameter="{Binding .}">
                                         <Button.Behaviors>
                                             <behaviors:ButtonMicroAnimationsBehavior />
@@ -169,7 +169,7 @@
                                             WidthRequest="40"
                                             HeightRequest="40"
                                             Padding="0"
-                                            Command="{Binding Source={x:Reference ServicePageRoot}, Path=BindingContext.DeleteCommand}"
+                                            Clicked="OnDeleteClicked"
                                             CommandParameter="{Binding .}">
                                         <Button.Behaviors>
                                             <behaviors:ButtonMicroAnimationsBehavior />

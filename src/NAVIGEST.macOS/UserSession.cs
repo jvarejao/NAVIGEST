@@ -13,6 +13,12 @@ namespace NAVIGEST.macOS
             public byte[]? Photo { get; set; }
             public string CompanyName { get; set; } = "";
             public byte[]? CompanyLogo { get; set; }
+            
+            // Company Address Info
+            public string CompanyAddress { get; set; } = "";
+            public string CompanyCity { get; set; } = "";
+            public string CompanyZip { get; set; } = "";
+            public string CompanyNif { get; set; } = "";
 
             public bool IsAdmin => string.Equals(Role, "ADMIN", StringComparison.OrdinalIgnoreCase);
             public bool IsFinancial => IsAdmin || string.Equals(Role, "FINANCEIRA", StringComparison.OrdinalIgnoreCase);

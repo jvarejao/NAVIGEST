@@ -41,6 +41,11 @@ public partial class WelcomePage : ContentPage
         public string CodEmp { get; init; } = "";
         public string Empresa { get; init; } = "";
         public ImageSource? LogoSrc { get; init; }
+        public byte[]? LogoBytes { get; init; }
+        public string Morada { get; init; } = "";
+        public string Localidade { get; init; } = "";
+        public string CodPostal { get; init; } = "";
+        public string Nif { get; init; } = "";
     }
 
     private readonly ObservableCollection<CompanyDisplay> _companies = new();
@@ -110,7 +115,12 @@ public partial class WelcomePage : ContentPage
             {
                 CodEmp = c.CodEmp,
                 Empresa = c.Empresa ?? c.CodEmp,
-                LogoSrc = src
+                LogoSrc = src,
+                LogoBytes = c.Logotipo,
+                Morada = c.Morada ?? "",
+                Localidade = c.Localidade ?? "",
+                CodPostal = c.CodPostal ?? "",
+                Nif = c.Nif ?? ""
             });
         }
 
@@ -175,6 +185,16 @@ public partial class WelcomePage : ContentPage
         {
             Preferences.Default.Set(KeyCompanyCode, chosen.CodEmp);
             Preferences.Default.Set(KeyCompanyName, chosen.Empresa);
+            
+            // Populate UserSession immediately so it's available
+            if (UserSession.Current.User == null) UserSession.Current.User = new UserSession.UserData();
+            UserSession.Current.User.CompanyName = chosen.Empresa;
+            UserSession.Current.User.CompanyLogo = chosen.LogoBytes;
+            UserSession.Current.User.CompanyAddress = chosen.Morada;
+            UserSession.Current.User.CompanyCity = chosen.Localidade;
+            UserSession.Current.User.CompanyZip = chosen.CodPostal;
+            UserSession.Current.User.CompanyNif = chosen.Nif;
+
             await CompanyPickerPanel.FadeTo(0, 120, Easing.CubicIn);
             CompanyPickerPanel.IsVisible = false;
             var theme = Application.Current?.RequestedTheme ?? AppTheme.Light;

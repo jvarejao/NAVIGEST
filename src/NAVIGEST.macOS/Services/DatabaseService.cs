@@ -358,6 +358,10 @@ namespace NAVIGEST.macOS.Services
             public string? Empresa { get; init; }
             public string? Ano { get; init; }
             public byte[]? Logotipo { get; init; }
+            public string? Morada { get; init; }
+            public string? Localidade { get; init; }
+            public string? CodPostal { get; init; }
+            public string? Nif { get; init; }
         }
 
         public static async Task<List<CompanyInfo>> GetActiveCompaniesAsync()
@@ -367,21 +371,33 @@ namespace NAVIGEST.macOS.Services
             await conn.OpenAsync();
 
             const string sql = @"
-                SELECT CodEmp, Empresa, Ano, Logotipo
+                SELECT *
                 FROM SETUP
                 WHERE Ativa = '1'
                 ORDER BY Empresa;";
 
             using var cmd = new MySqlCommand(sql, conn);
             using var rd = await cmd.ExecuteReaderAsync();
+            
+            // Helpers
+            static string S(MySqlConnector.MySqlDataReader r, string col) 
+            {
+                try { return r.IsDBNull(r.GetOrdinal(col)) ? "" : r.GetString(col); }
+                catch { return ""; } // Column might not exist
+            }
+
             while (await rd.ReadAsync())
             {
                 list.Add(new CompanyInfo
                 {
-                    CodEmp = rd.GetString("CodEmp"),
-                    Empresa = rd.IsDBNull(rd.GetOrdinal("Empresa")) ? null : rd.GetString("Empresa"),
-                    Ano = rd.IsDBNull(rd.GetOrdinal("Ano")) ? null : rd.GetString("Ano"),
-                    Logotipo = rd.IsDBNull(rd.GetOrdinal("Logotipo")) ? null : (byte[])rd["Logotipo"]
+                    CodEmp = S(rd, "CodEmp"),
+                    Empresa = S(rd, "Empresa"),
+                    Ano = S(rd, "Ano"),
+                    Logotipo = rd.IsDBNull(rd.GetOrdinal("Logotipo")) ? null : (byte[])rd["Logotipo"],
+                    Morada = S(rd, "Morada"),
+                    Localidade = S(rd, "Localidade"),
+                    CodPostal = S(rd, "CodPostal"),
+                    Nif = S(rd, "Nif") // Assuming column name is Nif or NIF
                 });
             }
             return list;
@@ -1280,10 +1296,10 @@ FROM OrderInfo";
             const string sql = @"
                 SELECT * 
                 FROM ORDEREDPRODUCT 
-                WHERE OrderNo = @no";
+                WHERE LOWER(TRIM(OrderNo)) = LOWER(@no)";
 
             using var cmd = new MySqlConnector.MySqlCommand(sql, conn);
-            cmd.Parameters.AddWithValue("@no", orderNo);
+            cmd.Parameters.AddWithValue("@no", orderNo?.Trim() ?? "");
 
             using var rd = await cmd.ExecuteReaderAsync();
             
@@ -1291,6 +1307,7 @@ FROM OrderInfo";
             static string S(MySqlConnector.MySqlDataReader r, string col) => r.IsDBNull(r.GetOrdinal(col)) ? "" : r.GetString(col);
             static decimal D(MySqlConnector.MySqlDataReader r, string col) => r.IsDBNull(r.GetOrdinal(col)) ? 0m : r.GetDecimal(col);
             static long L(MySqlConnector.MySqlDataReader r, string col) => r.IsDBNull(r.GetOrdinal(col)) ? 0L : r.GetInt64(col);
+            static DateTime? DT(MySqlConnector.MySqlDataReader r, string col) => r.IsDBNull(r.GetOrdinal(col)) ? null : r.GetDateTime(col);
 
             while (await rd.ReadAsync())
             {
@@ -1307,10 +1324,75 @@ FROM OrderInfo";
                     Largura = D(rd, "Largura"),
                     M2 = D(rd, "M2"),
                     PrecoUnit = D(rd, "PrecoUnit"),
-                    SUBTOTAIS = D(rd, "SUBTOTAIS")
+                    SUBTOTAIS = D(rd, "SUBTOTAIS"),
+                    PrecoCusto = D(rd, "PrecoCusto"),
+                    SubtotalCusto = D(rd, "SubtotalCusto"),
+                    DATACOMPRA = DT(rd, "DATACOMPRA"),
+                    SubTotal = S(rd, "SubTotal"),
+                    SUBTOTALNUM = D(rd, "SUBTOTALNUM")
                 });
             }
             return list;
+        }
+
+        public static async Task<string> DebugCheckOrderAsync(string orderNo)
+        {
+            try
+            {
+                using var conn = new MySqlConnector.MySqlConnection(GetConnectionString());
+                await conn.OpenAsync();
+
+                var sb = new System.Text.StringBuilder();
+                sb.AppendLine($"A verificar Nº Encomenda: '{orderNo}'");
+
+                // 1. Check Table Name and Case
+                sb.AppendLine("--- Tabelas ---");
+                using (var cmd = new MySqlConnector.MySqlCommand("SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME LIKE '%ORDER%'", conn))
+                {
+                    using var rd = await cmd.ExecuteReaderAsync();
+                    while (await rd.ReadAsync())
+                    {
+                        sb.AppendLine($"Tabela Encontrada: {rd.GetString(0)}");
+                    }
+                }
+
+                // 2. Dump Sample Data from ORDEREDPRODUCT
+                sb.AppendLine("--- Dados de Exemplo (ORDEREDPRODUCT) ---");
+                try 
+                {
+                    using (var cmd = new MySqlConnector.MySqlCommand("SELECT OrderNo FROM ORDEREDPRODUCT LIMIT 5", conn))
+                    {
+                        using var rd = await cmd.ExecuteReaderAsync();
+                        while (await rd.ReadAsync())
+                        {
+                            var val = rd.IsDBNull(0) ? "NULL" : rd.GetString(0);
+                            sb.AppendLine($"Linha: '{val}'");
+                        }
+                    }
+                }
+                catch (Exception ex) { sb.AppendLine($"Erro ao ler ORDEREDPRODUCT: {ex.Message}"); }
+
+                // 3. Try to find the number part
+                var numberPart = System.Text.RegularExpressions.Regex.Match(orderNo, @"\d+").Value;
+                if (!string.IsNullOrEmpty(numberPart))
+                {
+                    sb.AppendLine($"--- A pesquisar pelo número '{numberPart}' ---");
+                    using (var cmd = new MySqlConnector.MySqlCommand($"SELECT OrderNo FROM ORDEREDPRODUCT WHERE OrderNo LIKE '%{numberPart}%' LIMIT 5", conn))
+                    {
+                        using var rd = await cmd.ExecuteReaderAsync();
+                        while (await rd.ReadAsync())
+                        {
+                            sb.AppendLine($"Correspondência encontrada: '{rd.GetString(0)}'");
+                        }
+                    }
+                }
+
+                return sb.ToString();
+            }
+            catch (Exception ex)
+            {
+                return $"Erro de Debug: {ex.Message}";
+            }
         }
 
         public static async Task<(int Count, string? SampleOrderNo, string? SampleCustomer)> DebugOrdersProbeAsync(CancellationToken ct = default)

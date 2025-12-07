@@ -73,12 +73,11 @@ public class ServicePageModel : INotifyPropertyChanged
         if (service == null) return;
         try
         {
-            // await AppShell.DisplayToastAsync("A abrir documento...");
             await AppShell.Current.Navigation.PushAsync(new Pages.ServiceDetailPage(service));
         }
         catch (Exception ex)
         {
-            await AppShell.Current.DisplayAlert("Erro", $"Não foi possível abrir o detalhe: {ex.Message}", "OK");
+            NAVIGEST.macOS.GlobalErro.TratarErro(ex);
         }
     }
 
