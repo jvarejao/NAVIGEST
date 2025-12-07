@@ -1270,6 +1270,49 @@ FROM OrderInfo";
 
             return list;
         }
+
+        public static async Task<List<OrderedProduct>> GetOrderedProductsAsync(string orderNo)
+        {
+            var list = new List<OrderedProduct>();
+            using var conn = new MySqlConnector.MySqlConnection(GetConnectionString());
+            await conn.OpenAsync();
+
+            const string sql = @"
+                SELECT * 
+                FROM ORDEREDPRODUCT 
+                WHERE OrderNo = @no";
+
+            using var cmd = new MySqlConnector.MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@no", orderNo);
+
+            using var rd = await cmd.ExecuteReaderAsync();
+            
+            // Helpers locais
+            static string S(MySqlConnector.MySqlDataReader r, string col) => r.IsDBNull(r.GetOrdinal(col)) ? "" : r.GetString(col);
+            static decimal D(MySqlConnector.MySqlDataReader r, string col) => r.IsDBNull(r.GetOrdinal(col)) ? 0m : r.GetDecimal(col);
+            static long L(MySqlConnector.MySqlDataReader r, string col) => r.IsDBNull(r.GetOrdinal(col)) ? 0L : r.GetInt64(col);
+
+            while (await rd.ReadAsync())
+            {
+                list.Add(new OrderedProduct
+                {
+                    Id = L(rd, "Id"),
+                    OrderNo = S(rd, "OrderNo"),
+                    ProductCode = S(rd, "ProductCode"),
+                    ProductName = S(rd, "ProductName"),
+                    Cor = S(rd, "Cor"),
+                    Tam = S(rd, "Tam"),
+                    Quantidade = D(rd, "Quantidade"),
+                    Altura = D(rd, "Altura"),
+                    Largura = D(rd, "Largura"),
+                    M2 = D(rd, "M2"),
+                    PrecoUnit = D(rd, "PrecoUnit"),
+                    SUBTOTAIS = D(rd, "SUBTOTAIS")
+                });
+            }
+            return list;
+        }
+
         public static async Task<(int Count, string? SampleOrderNo, string? SampleCustomer)> DebugOrdersProbeAsync(CancellationToken ct = default)
         {
             using var conn = new MySqlConnector.MySqlConnection(GetConnectionString());

@@ -1,20 +1,33 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
 <ContentPage x:Class="NAVIGEST.macOS.Pages.ServicePage"
              x:Name="ServicePageRoot"
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:models="clr-namespace:NAVIGEST.macOS.Models"
              xmlns:behaviors="clr-namespace:NAVIGEST.macOS.Behaviors"
-             Title="Serviços"
+             xmlns:pages="clr-namespace:NAVIGEST.macOS.Pages"
              BackgroundColor="{DynamicResource PageBackgroundColor}"
+             Title="Serviços"
              Loaded="OnPageLoaded">
 
-    <Grid RowDefinitions="Auto, *" 
-          Padding="24,24,24,0" 
-          RowSpacing="16"
-          MaximumWidthRequest="1200"
-          HorizontalOptions="Center">
-        
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Style TargetType="Entry" x:Key="FormEntry">
+                <Setter Property="HeightRequest" Value="44"/>
+                <Setter Property="FontSize" Value="15"/>
+                <Setter Property="Margin" Value="0,4,0,0"/>
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid>
+        <!-- MAIN CONTENT -->
+        <Grid RowDefinitions="Auto, *" 
+              Padding="24,24,24,0" 
+              RowSpacing="16"
+              MaximumWidthRequest="1200"
+              HorizontalOptions="Center">
+            
             <!-- HEADER: Search & Add -->
             <Grid ColumnDefinitions="*, Auto" ColumnSpacing="16">
                 <!-- Search -->
@@ -23,8 +36,7 @@
                         StrokeThickness="0"
                         Padding="8,0"
                         HeightRequest="44"
-                        VerticalOptions="Center"
-                        MinimumWidthRequest="400">
+                        VerticalOptions="Center">
                     <Grid ColumnDefinitions="*,Auto">
                         <Entry Placeholder="Pesquisar por nº, cliente ou estado…" 
                                Text="{Binding Filter}" 
@@ -65,62 +77,117 @@
                 </Button>
             </Grid>
 
-        <!-- Lista -->
-        <CollectionView Grid.Row="1" ItemsSource="{Binding Orders}" SelectionMode="None" ItemSizingStrategy="MeasureFirstItem" Margin="0,0,0,20">
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="models:OrderInfoModel">
-                    <Border Padding="16" Margin="0,0,0,12" StrokeThickness="0" StrokeShape="RoundRectangle 12" BackgroundColor="{DynamicResource CardBackgroundColor}">
-                        <Grid ColumnDefinitions="*, Auto, Auto" ColumnSpacing="16">
-                            <!-- Info -->
-                            <VerticalStackLayout Grid.Column="0" Spacing="4" VerticalOptions="Center">
-                                <Label Text="{Binding CustomerName}" FontAttributes="Bold" FontSize="16" TextColor="{DynamicResource ListRowTextColor}" LineBreakMode="TailTruncation"/>
-                                <HorizontalStackLayout Spacing="8">
-                                    <Label Text="{Binding OrderNo}" FontSize="14" Opacity="0.8" TextColor="{DynamicResource ListRowTextColor}"/>
-                                    <Label Text="|" FontSize="14" Opacity="0.4" TextColor="{DynamicResource ListRowTextColor}"/>
-                                    <Label Text="{Binding OrderStatus}" FontSize="14" Opacity="0.8" TextColor="{DynamicResource ListRowTextColor}"/>
+            <!-- LIST -->
+            <CollectionView Grid.Row="1" ItemsSource="{Binding Orders}" SelectionMode="None" Margin="0,0,0,20">
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="12"/>
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:OrderInfoModel">
+                        <Border StrokeThickness="0"
+                                BackgroundColor="{DynamicResource CardBackgroundColor}"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="16">
+                            <Grid ColumnDefinitions="*, Auto, Auto" ColumnSpacing="16">
+                                
+                                <!-- INFO (Left) -->
+                                <VerticalStackLayout Spacing="4" Grid.Column="0" VerticalOptions="Center">
+                                    <!-- Customer Name -->
+                                    <Label Text="{Binding CustomerName}" 
+                                           FontSize="16" 
+                                           FontAttributes="Bold" 
+                                           TextColor="{DynamicResource BodyTextColor}"
+                                           LineBreakMode="TailTruncation"/>
+                                    
+                                    <!-- Details Row -->
+                                    <HorizontalStackLayout Spacing="8">
+                                        <Label Text="{Binding OrderNo}" 
+                                               FontSize="14" 
+                                               TextColor="{DynamicResource EntryPlaceholderColor}"/>
+                                        <Label Text="•" 
+                                               FontSize="14" 
+                                               TextColor="{DynamicResource EntryPlaceholderColor}"/>
+                                        <Label Text="{Binding OrderStatus}" 
+                                               FontSize="14" 
+                                               TextColor="{DynamicResource BodyTextColor}"/>
+                                    </HorizontalStackLayout>
+                                </VerticalStackLayout>
+
+                                <!-- AMOUNT (Middle) -->
+                                <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" HorizontalOptions="End" Spacing="4" MinimumWidthRequest="100">
+                                    <Label Text="{Binding TotalAmount, StringFormat='{}{0:N2} €'}" 
+                                           FontSize="16" 
+                                           FontAttributes="Bold" 
+                                           TextColor="{DynamicResource BodyTextColor}"
+                                           HorizontalTextAlignment="End"/>
+                                </VerticalStackLayout>
+
+                                <!-- ACTIONS (Right) -->
+                                <HorizontalStackLayout Grid.Column="2" Spacing="8" VerticalOptions="Center">
+                                    
+                                    <!-- View (PDF) -->
+                                    <Button Text="&#xF1C1;" 
+                                            FontFamily="FA7Solid" 
+                                            FontSize="16"
+                                            BackgroundColor="#1900BCD4" 
+                                            TextColor="#00BCD4"
+                                            CornerRadius="8"
+                                            WidthRequest="40"
+                                            HeightRequest="40"
+                                            Padding="0"
+                                            Command="{Binding BindingContext.ViewCommand, Source={RelativeSource AncestorType={x:Type pages:ServicePage}}}"
+                                            CommandParameter="{Binding .}">
+                                        <Button.Behaviors>
+                                            <behaviors:ButtonMicroAnimationsBehavior />
+                                        </Button.Behaviors>
+                                    </Button>
+
+                                    <!-- Edit -->
+                                    <Button Text="&#xF044;" 
+                                            FontFamily="FA7Solid" 
+                                            FontSize="16"
+                                            BackgroundColor="#190A84FF" 
+                                            TextColor="#0A84FF"
+                                            CornerRadius="8"
+                                            WidthRequest="40"
+                                            HeightRequest="40"
+                                            Padding="0"
+                                            Command="{Binding Source={x:Reference ServicePageRoot}, Path=BindingContext.EditCommand}"
+                                            CommandParameter="{Binding .}">
+                                        <Button.Behaviors>
+                                            <behaviors:ButtonMicroAnimationsBehavior />
+                                        </Button.Behaviors>
+                                    </Button>
+
+                                    <!-- Delete -->
+                                    <Button Text="&#xF1F8;" 
+                                            FontFamily="FA7Solid" 
+                                            FontSize="16"
+                                            BackgroundColor="#19FF3B30" 
+                                            TextColor="#FF3B30"
+                                            CornerRadius="8"
+                                            WidthRequest="40"
+                                            HeightRequest="40"
+                                            Padding="0"
+                                            Command="{Binding Source={x:Reference ServicePageRoot}, Path=BindingContext.DeleteCommand}"
+                                            CommandParameter="{Binding .}">
+                                        <Button.Behaviors>
+                                            <behaviors:ButtonMicroAnimationsBehavior />
+                                        </Button.Behaviors>
+                                    </Button>
                                 </HorizontalStackLayout>
-                            </VerticalStackLayout>
-
-                            <!-- Total -->
-                            <Label Grid.Column="1" 
-                                   Text="{Binding TotalAmount, StringFormat='{}{0:N2} €'}" 
-                                   VerticalOptions="Center" 
-                                   FontAttributes="Bold"
-                                   FontSize="16"
-                                   TextColor="{DynamicResource ListRowTextColor}"/>
-
-                            <!-- Actions -->
-                            <HorizontalStackLayout Grid.Column="2" Spacing="8" VerticalOptions="Center">
-                                <Button Text="Editar" 
-                                        Command="{Binding Source={x:Reference ServicePageRoot}, Path=BindingContext.EditCommand}"
-                                        CommandParameter="{Binding .}"
-                                        FontSize="13"
-                                        HeightRequest="36"
-                                        Padding="12,0"
-                                        BackgroundColor="#007AFF"
-                                        TextColor="White"
-                                        CornerRadius="8"/>
-                                <Button Text="Eliminar" 
-                                        Command="{Binding Source={x:Reference ServicePageRoot}, Path=BindingContext.DeleteCommand}"
-                                        CommandParameter="{Binding .}"
-                                        FontSize="13"
-                                        HeightRequest="36"
-                                        Padding="12,0"
-                                        BackgroundColor="#FF3B30"
-                                        TextColor="White"
-                                        CornerRadius="8"/>
-                            </HorizontalStackLayout>
-                        </Grid>
-                    </Border>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-            <CollectionView.EmptyView>
-                <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="10">
-                    <Label Text="Sem serviços para mostrar" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource BodyTextColor}" HorizontalOptions="Center"/>
-                    <Label Text="Verifique a ligação à base de dados ou crie um novo serviço." FontSize="14" TextColor="{DynamicResource BodyTextColor}" Opacity="0.7" HorizontalOptions="Center"/>
-                </VerticalStackLayout>
-            </CollectionView.EmptyView>
-        </CollectionView>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="10">
+                        <Label Text="Sem serviços para mostrar" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource BodyTextColor}" HorizontalOptions="Center"/>
+                        <Label Text="Verifique a ligação à base de dados ou crie um novo serviço." FontSize="14" TextColor="{DynamicResource BodyTextColor}" Opacity="0.7" HorizontalOptions="Center"/>
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+            </CollectionView>
+        </Grid>
 
         <!-- Overlay -->
         <Grid Grid.RowSpan="2" IsVisible="{Binding IsBusy}" BackgroundColor="#80000000" ZIndex="999">

@@ -44,6 +44,7 @@ public class ServicePageModel : INotifyPropertyChanged
     public ICommand NewCommand { get; }
     public ICommand SearchCommand { get; }
     public ICommand RefreshCommand { get; }
+    public ICommand ViewCommand { get; }
     public ICommand EditCommand { get; }
     public ICommand DeleteCommand { get; }
     public ICommand ClearSearchCommand { get; }
@@ -56,6 +57,7 @@ public class ServicePageModel : INotifyPropertyChanged
         NewCommand = new Command(OnNewService);
         SearchCommand = new Command(ApplyFilterImmediate);
         RefreshCommand = new Command(async () => await LoadAsync(force: true));
+        ViewCommand = new Command<OrderInfoModel>(OnViewService);
         EditCommand = new Command<OrderInfoModel>(OnEditService);
         DeleteCommand = new Command<OrderInfoModel>(OnDeleteService);
         ClearSearchCommand = new Command(() => SearchText = string.Empty);
@@ -64,6 +66,20 @@ public class ServicePageModel : INotifyPropertyChanged
     private async void OnNewService()
     {
         await AppShell.DisplayToastAsync("Novo serviço (Em desenvolvimento)");
+    }
+
+    private async void OnViewService(OrderInfoModel? service)
+    {
+        if (service == null) return;
+        try
+        {
+            // await AppShell.DisplayToastAsync("A abrir documento...");
+            await AppShell.Current.Navigation.PushAsync(new Pages.ServiceDetailPage(service));
+        }
+        catch (Exception ex)
+        {
+            await AppShell.Current.DisplayAlert("Erro", $"Não foi possível abrir o detalhe: {ex.Message}", "OK");
+        }
     }
 
     private async void OnEditService(OrderInfoModel? service)
@@ -92,7 +108,7 @@ public class ServicePageModel : INotifyPropertyChanged
 
         _loadCts?.Cancel();
         _loadCts = new CancellationTokenSource();
-        var ct = _loadCts.Token;
+        var token = _loadCts.Token;
 
         try
         {
@@ -101,8 +117,7 @@ public class ServicePageModel : INotifyPropertyChanged
             List<OrderInfoModel> list = null!;
             try
             {
-                list = await DatabaseService.GetOrdersLightAsync(null, ct);
-                Debug.WriteLine($"[ServicePage] GetOrdersLightAsync returned: {list?.Count ?? 0}");
+                list = await DatabaseService.GetOrdersLightAsync(null, token);
             }
             catch (OperationCanceledException)
             {
@@ -113,7 +128,7 @@ public class ServicePageModel : INotifyPropertyChanged
             {
                 Debug.WriteLine($"[ServicePage] Error loading orders: {exLoad}");
                 NAVIGEST.macOS.GlobalErro.TratarErro(exLoad);
-                await AppShell.DisplayToastAsync("Erro ao carregar serviços (ver Output).", NAVIGEST.macOS.ToastTipo.Erro, 2000);
+                await AppShell.DisplayToastAsync("Erro ao carregar serviços.", NAVIGEST.macOS.ToastTipo.Erro, 2000);
                 list = new List<OrderInfoModel>();
             }
 
@@ -121,39 +136,6 @@ public class ServicePageModel : INotifyPropertyChanged
             {
                 _all.AddRange(list);
                 ApplyFilterImmediate();
-            }
-            else
-            {
-                // PROBE DEBUG
-                try 
-                {
-                    var probe = await DatabaseService.DebugOrdersProbeAsync(ct);
-                    if (probe.Count > 0)
-                    {
-                         await AppShell.DisplayToastAsync($"DEBUG: Tabela tem {probe.Count} registos, mas query retornou 0.", NAVIGEST.macOS.ToastTipo.Aviso, 5000);
-                    }
-                    else
-                    {
-                         await AppShell.DisplayToastAsync($"DEBUG: Tabela OrderInfo vazia (0 registos).", NAVIGEST.macOS.ToastTipo.Info, 3000);
-                    }
-                }
-                catch { }
-
-                // Mock data fallback if DB is empty (for testing UI)
-                if (_all.Count == 0)
-                {
-                    Debug.WriteLine("[ServicePage] Adding Mock Data because _all is empty.");
-                    _all.Add(new OrderInfoModel 
-                    { 
-                        OrderNo = "TEST-001", 
-                        CustomerName = "Cliente Teste (Mock)", 
-                        OrderStatus = "Aberto", 
-                        TotalAmount = 123.45m,
-                        OrderDate = DateTime.Now 
-                    });
-                    ApplyFilterImmediate();
-                    await AppShell.DisplayToastAsync("Nenhum dado na BD. Carregado 1 registo de teste.", NAVIGEST.macOS.ToastTipo.Aviso, 3000);
-                }
             }
         }
         finally
