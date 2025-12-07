@@ -4,6 +4,7 @@
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:models="clr-namespace:NAVIGEST.macOS.Models"
+             xmlns:behaviors="clr-namespace:NAVIGEST.macOS.Behaviors"
              Title="Serviços"
              BackgroundColor="{DynamicResource PageBackgroundColor}"
              Loaded="OnPageLoaded">
@@ -22,7 +23,8 @@
                         StrokeThickness="0"
                         Padding="8,0"
                         HeightRequest="44"
-                        VerticalOptions="Center">
+                        VerticalOptions="Center"
+                        MinimumWidthRequest="400">
                     <Grid ColumnDefinitions="*,Auto">
                         <Entry Placeholder="Pesquisar por nº, cliente ou estado…" 
                                Text="{Binding Filter}" 
