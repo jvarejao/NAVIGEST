@@ -178,4 +178,56 @@
   <data name="ProductsPage_FamilyDescriptionPlaceholder" xml:space="preserve">
     <value>Descripción Familia</value>
   </data>
+  <data name="Common_Success" xml:space="preserve">
+    <value>Éxito</value>
+  </data>
+  <data name="Pdf_FolderCreatedButNotFound" xml:space="preserve">
+    <value>Carpeta creada pero no encontrada: {0}</value>
+  </data>
+  <data name="Pdf_FileExists" xml:space="preserve">
+    <value>Archivo existente</value>
+  </data>
+  <data name="Pdf_FileExistsMessage" xml:space="preserve">
+    <value>¿Ya existe un archivo con este nombre. Sobrescribir?</value>
+  </data>
+  <data name="Pdf_SavedSuccess" xml:space="preserve">
+    <value>PDF guardado en:
+{0}</value>
+  </data>
+  <data name="Pdf_GenerationError" xml:space="preserve">
+    <value>No se pudo generar el PDF.</value>
+  </data>
+  <data name="Pdf_SaveError" xml:space="preserve">
+    <value>Error al guardar el PDF: {0}</value>
+  </data>
+  <data name="Pdf_ShareTitle" xml:space="preserve">
+    <value>Compartir PDF</value>
+  </data>
+  <data name="Pdf_ShareError" xml:space="preserve">
+    <value>Error al compartir el PDF: {0}</value>
+  </data>
+  <data name="Pdf_FolderNotFound" xml:space="preserve">
+    <value>Carpeta no encontrada</value>
+  </data>
+  <data name="Pdf_FolderNotFoundMessage" xml:space="preserve">
+    <value>No se encontró la carpeta del cliente. ¿Desea crearla?</value>
+  </data>
+  <data name="Print_Error" xml:space="preserve">
+    <value>Error al imprimir: {0}</value>
+  </data>
+  <data name="Print_ViewAccessError" xml:space="preserve">
+    <value>No se pudo acceder a la vista de impresión.</value>
+  </data>
+  <data name="Print_StartError" xml:space="preserve">
+    <value>Error al iniciar la impresión: {0}</value>
+  </data>
+  <data name="Feature_MacOSOnly" xml:space="preserve">
+    <value>Función disponible solo en macOS.</value>
+  </data>
+  <data name="Feature_MacIOSOnly" xml:space="preserve">
+    <value>Impresión disponible solo en macOS/iOS.</value>
+  </data>
+  <data name="Products_LoadError" xml:space="preserve">
+    <value>Error al cargar productos: {0}</value>
+  </data>
 </root>

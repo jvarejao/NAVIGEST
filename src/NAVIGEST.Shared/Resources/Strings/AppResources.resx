@@ -1514,4 +1514,56 @@
   <data name="Hours_ErrorTotalHoursExceeded" xml:space="preserve">
     <value>Total hours cannot exceed 24h.</value>
   </data>
+  <data name="Common_Success" xml:space="preserve">
+    <value>Success</value>
+  </data>
+  <data name="Pdf_FolderCreatedButNotFound" xml:space="preserve">
+    <value>Folder created but not found: {0}</value>
+  </data>
+  <data name="Pdf_FileExists" xml:space="preserve">
+    <value>File Exists</value>
+  </data>
+  <data name="Pdf_FileExistsMessage" xml:space="preserve">
+    <value>A file with this name already exists. Overwrite?</value>
+  </data>
+  <data name="Pdf_SavedSuccess" xml:space="preserve">
+    <value>PDF saved to:
+{0}</value>
+  </data>
+  <data name="Pdf_GenerationError" xml:space="preserve">
+    <value>Could not generate PDF.</value>
+  </data>
+  <data name="Pdf_SaveError" xml:space="preserve">
+    <value>Error saving PDF: {0}</value>
+  </data>
+  <data name="Pdf_ShareTitle" xml:space="preserve">
+    <value>Share PDF</value>
+  </data>
+  <data name="Pdf_ShareError" xml:space="preserve">
+    <value>Error sharing PDF: {0}</value>
+  </data>
+  <data name="Pdf_FolderNotFound" xml:space="preserve">
+    <value>Folder Not Found</value>
+  </data>
+  <data name="Pdf_FolderNotFoundMessage" xml:space="preserve">
+    <value>Client folder not found. Create it?</value>
+  </data>
+  <data name="Print_Error" xml:space="preserve">
+    <value>Print Failed: {0}</value>
+  </data>
+  <data name="Print_ViewAccessError" xml:space="preserve">
+    <value>Could not access print view.</value>
+  </data>
+  <data name="Print_StartError" xml:space="preserve">
+    <value>Error starting print: {0}</value>
+  </data>
+  <data name="Feature_MacOSOnly" xml:space="preserve">
+    <value>Feature available only on macOS.</value>
+  </data>
+  <data name="Feature_MacIOSOnly" xml:space="preserve">
+    <value>Printing available only on macOS/iOS.</value>
+  </data>
+  <data name="Products_LoadError" xml:space="preserve">
+    <value>Failed to load products: {0}</value>
+  </data>
 </root>

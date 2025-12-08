@@ -1,6 +1,7 @@
 using Microsoft.Maui.Controls;
 using NAVIGEST.macOS.Models;
 using NAVIGEST.macOS.Services;
+using NAVIGEST.Shared.Resources.Strings;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
@@ -121,21 +122,21 @@ public partial class ServiceDetailPage : ContentPage
                     if (error != null)
                     {
                         MainThread.BeginInvokeOnMainThread(() => 
-                            DisplayAlert("Erro", $"Falha ao imprimir: {error.LocalizedDescription}", "OK"));
+                            DisplayAlert(AppResources.Common_Error, string.Format(AppResources.Print_Error, error.LocalizedDescription), AppResources.Common_OK));
                     }
                 });
             }
             else
             {
-                await DisplayAlert("Erro", "Não foi possível aceder à vista de impressão.", "OK");
+                await DisplayAlert(AppResources.Common_Error, AppResources.Print_ViewAccessError, AppResources.Common_OK);
             }
         }
         catch (Exception ex)
         {
-            await DisplayAlert("Erro", $"Erro ao iniciar impressão: {ex.Message}", "OK");
+            await DisplayAlert(AppResources.Common_Error, string.Format(AppResources.Print_StartError, ex.Message), AppResources.Common_OK);
         }
 #else
-        await DisplayAlert("Aviso", "Impressão disponível apenas em macOS/iOS.", "OK");
+        await DisplayAlert(AppResources.Common_Warning, AppResources.Feature_MacIOSOnly, AppResources.Common_OK);
 #endif
     }
 
@@ -200,7 +201,7 @@ public partial class ServiceDetailPage : ContentPage
                 
                 if (string.IsNullOrEmpty(clientFolder))
                 {
-                    bool create = await DisplayAlert("Pasta não encontrada", "A pasta do cliente não foi encontrada. Deseja criar?", "Sim", "Não");
+                    bool create = await DisplayAlert(AppResources.Pdf_FolderNotFound, AppResources.Pdf_FolderNotFoundMessage, AppResources.Common_Yes, AppResources.Common_No);
                     if (create)
                     {
                         var client = new Cliente { CLINOME = Order.CustomerName, CLICODIGO = Order.CustomerNo };
@@ -211,13 +212,13 @@ public partial class ServiceDetailPage : ContentPage
                             clientFolder = await FolderService.GetClientFolderPathAsync(Order.CustomerName, Order.CustomerNo);
                             if (string.IsNullOrEmpty(clientFolder))
                             {
-                                await DisplayAlert("Erro", "Pasta criada mas não encontrada: " + msg, "OK");
+                                await DisplayAlert(AppResources.Common_Error, string.Format(AppResources.Pdf_FolderCreatedButNotFound, msg), AppResources.Common_OK);
                                 return;
                             }
                         }
                         else
                         {
-                            await DisplayAlert("Erro", msg, "OK");
+                            await DisplayAlert(AppResources.Common_Error, msg, AppResources.Common_OK);
                             return;
                         }
                     }
@@ -233,13 +234,13 @@ public partial class ServiceDetailPage : ContentPage
                 
                 if (System.IO.File.Exists(filePath))
                 {
-                    bool overwrite = await DisplayAlert("Ficheiro Existente", "Já existe um ficheiro com este nome. Substituir?", "Sim", "Não");
+                    bool overwrite = await DisplayAlert(AppResources.Pdf_FileExists, AppResources.Pdf_FileExistsMessage, AppResources.Common_Yes, AppResources.Common_No);
                     if (!overwrite) return;
                 }
 
                 data.Save(filePath, true);
                 
-                await DisplayAlert("Sucesso", $"PDF guardado em:\n{filePath}", "OK");
+                await DisplayAlert(AppResources.Common_Success, string.Format(AppResources.Pdf_SavedSuccess, filePath), AppResources.Common_OK);
                 
                 // Open folder
                 try 
@@ -250,15 +251,15 @@ public partial class ServiceDetailPage : ContentPage
             }
             else
             {
-                await DisplayAlert("Erro", "Não foi possível gerar o PDF.", "OK");
+                await DisplayAlert(AppResources.Common_Error, AppResources.Pdf_GenerationError, AppResources.Common_OK);
             }
         }
         catch (Exception ex)
         {
-            await DisplayAlert("Erro", $"Erro ao guardar PDF: {ex.Message}", "OK");
+            await DisplayAlert(AppResources.Common_Error, string.Format(AppResources.Pdf_SaveError, ex.Message), AppResources.Common_OK);
         }
 #else
-        await DisplayAlert("Aviso", "Funcionalidade disponível apenas em macOS.", "OK");
+        await DisplayAlert(AppResources.Common_Warning, AppResources.Feature_MacOSOnly, AppResources.Common_OK);
 #endif
     }
 
@@ -276,21 +277,21 @@ public partial class ServiceDetailPage : ContentPage
                 
                 await Share.RequestAsync(new ShareFileRequest
                 {
-                    Title = "Partilhar PDF",
+                    Title = AppResources.Pdf_ShareTitle,
                     File = new ShareFile(fn)
                 });
             }
             else
             {
-                await DisplayAlert("Erro", "Não foi possível gerar o PDF.", "OK");
+                await DisplayAlert(AppResources.Common_Error, AppResources.Pdf_GenerationError, AppResources.Common_OK);
             }
         }
         catch (Exception ex)
         {
-            await DisplayAlert("Erro", $"Erro ao partilhar PDF: {ex.Message}", "OK");
+            await DisplayAlert(AppResources.Common_Error, string.Format(AppResources.Pdf_ShareError, ex.Message), AppResources.Common_OK);
         }
 #else
-        await DisplayAlert("Aviso", "Funcionalidade disponível apenas em macOS.", "OK");
+        await DisplayAlert(AppResources.Common_Warning, AppResources.Feature_MacOSOnly, AppResources.Common_OK);
 #endif
     }
 
@@ -316,7 +317,7 @@ public partial class ServiceDetailPage : ContentPage
         catch (System.Exception ex)
         {
             DebugInfo += $"Erro: {ex.Message}\n";
-            await DisplayAlert("Erro", "Falha ao carregar produtos: " + ex.Message, "OK");
+            await DisplayAlert(AppResources.Common_Error, string.Format(AppResources.Products_LoadError, ex.Message), AppResources.Common_OK);
         }
     }
 

@@ -2783,5 +2783,21 @@ namespace NAVIGEST.Shared.Resources.Strings {
         public static string ClientsPage_SalespersonSaveError { get { return ResourceManager.GetString("ClientsPage_SalespersonSaveError", resourceCulture); } }
         public static string ClientsPage_SalespersonLoadError { get { return ResourceManager.GetString("ClientsPage_SalespersonLoadError", resourceCulture); } }
 
+        public static string Common_Success { get { return ResourceManager.GetString("Common_Success", resourceCulture); } }
+        public static string Pdf_FolderCreatedButNotFound { get { return ResourceManager.GetString("Pdf_FolderCreatedButNotFound", resourceCulture); } }
+        public static string Pdf_FileExists { get { return ResourceManager.GetString("Pdf_FileExists", resourceCulture); } }
+        public static string Pdf_FileExistsMessage { get { return ResourceManager.GetString("Pdf_FileExistsMessage", resourceCulture); } }
+        public static string Pdf_SavedSuccess { get { return ResourceManager.GetString("Pdf_SavedSuccess", resourceCulture); } }
+        public static string Pdf_GenerationError { get { return ResourceManager.GetString("Pdf_GenerationError", resourceCulture); } }
+        public static string Pdf_SaveError { get { return ResourceManager.GetString("Pdf_SaveError", resourceCulture); } }
+        public static string Pdf_ShareTitle { get { return ResourceManager.GetString("Pdf_ShareTitle", resourceCulture); } }
+        public static string Pdf_ShareError { get { return ResourceManager.GetString("Pdf_ShareError", resourceCulture); } }
+        public static string Pdf_FolderNotFound { get { return ResourceManager.GetString("Pdf_FolderNotFound", resourceCulture); } }
+        public static string Pdf_FolderNotFoundMessage { get { return ResourceManager.GetString("Pdf_FolderNotFoundMessage", resourceCulture); } }
+        public static string Print_Error { get { return ResourceManager.GetString("Print_Error", resourceCulture); } }
+        public static string Print_ViewAccessError { get { return ResourceManager.GetString("Print_ViewAccessError", resourceCulture); } }
+        public static string Print_StartError { get { return ResourceManager.GetString("Print_StartError", resourceCulture); } }
+        public static string Products_LoadError { get { return ResourceManager.GetString("Products_LoadError", resourceCulture); } }
+
     }
 }

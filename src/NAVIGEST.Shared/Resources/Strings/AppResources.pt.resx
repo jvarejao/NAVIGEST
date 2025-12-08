@@ -529,4 +529,56 @@
   <data name="Hours_ErrorTotalHoursExceeded" xml:space="preserve">
     <value>Total de horas não pode exceder 24h.</value>
   </data>
+  <data name="Common_Success" xml:space="preserve">
+    <value>Sucesso</value>
+  </data>
+  <data name="Pdf_FolderCreatedButNotFound" xml:space="preserve">
+    <value>Pasta criada mas não encontrada: {0}</value>
+  </data>
+  <data name="Pdf_FileExists" xml:space="preserve">
+    <value>Ficheiro Existente</value>
+  </data>
+  <data name="Pdf_FileExistsMessage" xml:space="preserve">
+    <value>Já existe um ficheiro com este nome. Substituir?</value>
+  </data>
+  <data name="Pdf_SavedSuccess" xml:space="preserve">
+    <value>PDF guardado em:
+{0}</value>
+  </data>
+  <data name="Pdf_GenerationError" xml:space="preserve">
+    <value>Não foi possível gerar o PDF.</value>
+  </data>
+  <data name="Pdf_SaveError" xml:space="preserve">
+    <value>Erro ao guardar PDF: {0}</value>
+  </data>
+  <data name="Pdf_ShareTitle" xml:space="preserve">
+    <value>Partilhar PDF</value>
+  </data>
+  <data name="Pdf_ShareError" xml:space="preserve">
+    <value>Erro ao partilhar PDF: {0}</value>
+  </data>
+  <data name="Pdf_FolderNotFound" xml:space="preserve">
+    <value>Pasta não encontrada</value>
+  </data>
+  <data name="Pdf_FolderNotFoundMessage" xml:space="preserve">
+    <value>A pasta do cliente não foi encontrada. Deseja criar?</value>
+  </data>
+  <data name="Print_Error" xml:space="preserve">
+    <value>Falha ao imprimir: {0}</value>
+  </data>
+  <data name="Print_ViewAccessError" xml:space="preserve">
+    <value>Não foi possível aceder à vista de impressão.</value>
+  </data>
+  <data name="Print_StartError" xml:space="preserve">
+    <value>Erro ao iniciar impressão: {0}</value>
+  </data>
+  <data name="Feature_MacOSOnly" xml:space="preserve">
+    <value>Funcionalidade disponível apenas em macOS.</value>
+  </data>
+  <data name="Feature_MacIOSOnly" xml:space="preserve">
+    <value>Impressão disponível apenas em macOS/iOS.</value>
+  </data>
+  <data name="Products_LoadError" xml:space="preserve">
+    <value>Falha ao carregar produtos: {0}</value>
+  </data>
 </root>

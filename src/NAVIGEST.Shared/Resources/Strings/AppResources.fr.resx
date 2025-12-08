@@ -352,4 +352,56 @@
   <data name="Settings_LanguageDesc" xml:space="preserve">
     <value>Changer de langue</value>
   </data>
+  <data name="Common_Success" xml:space="preserve">
+    <value>Succès</value>
+  </data>
+  <data name="Pdf_FolderCreatedButNotFound" xml:space="preserve">
+    <value>Dossier créé mais introuvable : {0}</value>
+  </data>
+  <data name="Pdf_FileExists" xml:space="preserve">
+    <value>Fichier existant</value>
+  </data>
+  <data name="Pdf_FileExistsMessage" xml:space="preserve">
+    <value>Un fichier portant ce nom existe déjà. Remplacer ?</value>
+  </data>
+  <data name="Pdf_SavedSuccess" xml:space="preserve">
+    <value>PDF enregistré sous :
+{0}</value>
+  </data>
+  <data name="Pdf_GenerationError" xml:space="preserve">
+    <value>Impossible de générer le PDF.</value>
+  </data>
+  <data name="Pdf_SaveError" xml:space="preserve">
+    <value>Erreur lors de l'enregistrement du PDF : {0}</value>
+  </data>
+  <data name="Pdf_ShareTitle" xml:space="preserve">
+    <value>Partager le PDF</value>
+  </data>
+  <data name="Pdf_ShareError" xml:space="preserve">
+    <value>Erreur lors du partage du PDF : {0}</value>
+  </data>
+  <data name="Pdf_FolderNotFound" xml:space="preserve">
+    <value>Dossier introuvable</value>
+  </data>
+  <data name="Pdf_FolderNotFoundMessage" xml:space="preserve">
+    <value>Le dossier client est introuvable. Voulez-vous le créer ?</value>
+  </data>
+  <data name="Print_Error" xml:space="preserve">
+    <value>Échec de l'impression : {0}</value>
+  </data>
+  <data name="Print_ViewAccessError" xml:space="preserve">
+    <value>Impossible d'accéder à la vue d'impression.</value>
+  </data>
+  <data name="Print_StartError" xml:space="preserve">
+    <value>Erreur lors du lancement de l'impression : {0}</value>
+  </data>
+  <data name="Feature_MacOSOnly" xml:space="preserve">
+    <value>Fonctionnalité disponible uniquement sur macOS.</value>
+  </data>
+  <data name="Feature_MacIOSOnly" xml:space="preserve">
+    <value>Impression disponible uniquement sur macOS/iOS.</value>
+  </data>
+  <data name="Products_LoadError" xml:space="preserve">
+    <value>Échec du chargement des produits : {0}</value>
+  </data>
 </root>
