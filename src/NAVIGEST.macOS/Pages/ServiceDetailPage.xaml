@@ -2,123 +2,240 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:models="clr-namespace:NAVIGEST.macOS.Models"
+             xmlns:behaviors="clr-namespace:NAVIGEST.macOS.Behaviors"
              x:Class="NAVIGEST.macOS.Pages.ServiceDetailPage"
              Title="Detalhe do Serviço"
-             BackgroundColor="{DynamicResource PageBackgroundColor}">
+             BackgroundColor="{DynamicResource PageBackgroundColor}"
+             Shell.NavBarIsVisible="False">
 
-    <ScrollView>
-        <VerticalStackLayout Padding="40" Spacing="20" MaximumWidthRequest="900" HorizontalOptions="Center">
+    <Grid RowDefinitions="60, *">
+        
+        <!-- TOP BAR -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto, *, Auto" Padding="20,0" BackgroundColor="{DynamicResource PageBackgroundColor}">
+            <!-- Back Button -->
+            <Button Text="&#xF053;" 
+                    FontFamily="FA7Solid" 
+                    FontSize="20"
+                    BackgroundColor="Transparent" 
+                    TextColor="{DynamicResource BodyTextColor}"
+                    Clicked="OnBackClicked"
+                    VerticalOptions="Center"
+                    HorizontalOptions="Start"
+                    WidthRequest="50"
+                    HeightRequest="50"/>
+
+            <!-- Action Buttons -->
+            <HorizontalStackLayout Grid.Column="2" Spacing="10" VerticalOptions="Center">
+                <!-- Print -->
+                <Button Text="&#xF02F;" 
+                        FontFamily="FA7Solid" 
+                        FontSize="16"
+                        BackgroundColor="#190A84FF" 
+                        TextColor="#0A84FF"
+                        CornerRadius="8"
+                        WidthRequest="40"
+                        HeightRequest="40"
+                        Padding="0"
+                        Clicked="OnPrintClicked"
+                        ToolTipProperties.Text="Imprimir">
+                     <Button.Behaviors>
+                         <behaviors:ButtonMicroAnimationsBehavior />
+                     </Button.Behaviors>
+                </Button>
+
+                <!-- Save PDF -->
+                <Button Text="&#xF0C7;" 
+                        FontFamily="FA7Solid" 
+                        FontSize="16"
+                        BackgroundColor="#1900BCD4" 
+                        TextColor="#00BCD4"
+                        CornerRadius="8"
+                        WidthRequest="40"
+                        HeightRequest="40"
+                        Padding="0"
+                        Clicked="OnSavePdfClicked"
+                        ToolTipProperties.Text="Salvar na Pasta do Cliente">
+                     <Button.Behaviors>
+                         <behaviors:ButtonMicroAnimationsBehavior />
+                     </Button.Behaviors>
+                </Button>
+
+                <!-- Share -->
+                <Button Text="&#xF1E0;" 
+                        FontFamily="FA7Solid" 
+                        FontSize="16"
+                        BackgroundColor="#19AF52DE" 
+                        TextColor="#AF52DE"
+                        CornerRadius="8"
+                        WidthRequest="40"
+                        HeightRequest="40"
+                        Padding="0"
+                        Clicked="OnSharePdfClicked"
+                        ToolTipProperties.Text="Partilhar">
+                     <Button.Behaviors>
+                         <behaviors:ButtonMicroAnimationsBehavior />
+                     </Button.Behaviors>
+                </Button>
+            </HorizontalStackLayout>
+        </Grid>
+
+        <ScrollView Grid.Row="1">
+            <!-- A4 Sheet Container (Approx 96 DPI: 794x1123 px) -->
+            <Border x:Name="InvoiceSheet"
+                    BackgroundColor="White" 
+                    StrokeThickness="0" 
+                    StrokeShape="RoundRectangle 0"
+                    WidthRequest="794"
+                    MinimumHeightRequest="1123"
+                    HorizontalOptions="Center" 
+                    Margin="20"
+                    Padding="0">
             
-            <!-- Company Header -->
-            <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,10">
-                <VerticalStackLayout Spacing="4" VerticalOptions="Center">
-                    <Label Text="{Binding CurrentUser.CompanyName}" FontSize="28" FontAttributes="Bold" TextColor="{DynamicResource AccentColor}"/>
-                    <Label Text="{Binding CurrentUser.CompanyAddress}" FontSize="14" TextColor="{DynamicResource BodyTextColor}" IsVisible="{Binding CurrentUser.CompanyAddress, Converter={StaticResource IsNotNullOrEmptyConverter}}"/>
-                    <HorizontalStackLayout Spacing="5">
-                        <Label Text="{Binding CurrentUser.CompanyZip}" FontSize="14" TextColor="{DynamicResource BodyTextColor}" IsVisible="{Binding CurrentUser.CompanyZip, Converter={StaticResource IsNotNullOrEmptyConverter}}"/>
-                        <Label Text="{Binding CurrentUser.CompanyCity}" FontSize="14" TextColor="{DynamicResource BodyTextColor}" IsVisible="{Binding CurrentUser.CompanyCity, Converter={StaticResource IsNotNullOrEmptyConverter}}"/>
-                    </HorizontalStackLayout>
-                    <Label Text="{Binding CurrentUser.CompanyNif, StringFormat='NIF: {0}'}" FontSize="14" TextColor="{DynamicResource BodyTextColor}" IsVisible="{Binding CurrentUser.CompanyNif, Converter={StaticResource IsNotNullOrEmptyConverter}}"/>
-                </VerticalStackLayout>
-                <!-- Logo -->
-                <Border Grid.Column="1" StrokeShape="RoundRectangle 8" Stroke="{DynamicResource SeparatorColor}" StrokeThickness="1" HeightRequest="100" WidthRequest="100" BackgroundColor="White" IsVisible="{Binding CompanyLogoSource, Converter={StaticResource IsNotNullOrEmptyConverter}}">
-                    <Image Source="{Binding CompanyLogoSource}" Aspect="AspectFit" HorizontalOptions="Center" VerticalOptions="Center"/>
-                </Border>
-            </Grid>
+            <Border.Shadow>
+                <Shadow Brush="Black" Offset="2,2" Radius="10" Opacity="0.2"/>
+            </Border.Shadow>
 
-            <BoxView HeightRequest="1" Color="{DynamicResource SeparatorColor}" Margin="0,0,0,10"/>
+            <VerticalStackLayout Spacing="0">
+                
+                <!-- HEADER SECTION -->
+                <Grid HeightRequest="180">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="1.5*"/>
+                    </Grid.ColumnDefinitions>
 
-            <!-- Invoice Info & Customer -->
-            <Grid ColumnDefinitions="*, *" ColumnSpacing="20">
-                <!-- Left: Customer Info -->
-                <Border StrokeShape="RoundRectangle 12" BackgroundColor="{DynamicResource CardBackgroundColor}" StrokeThickness="0" Padding="24">
-                    <VerticalStackLayout Spacing="8">
-                        <Label Text="CLIENTE" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource EntryPlaceholderColor}" CharacterSpacing="1"/>
-                        <Label Text="{Binding Order.CustomerName}" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource BodyTextColor}" />
-                        <Label Text="{Binding Order.CustomerNo, StringFormat='Nº Cliente: {0}'}" FontSize="14" TextColor="{DynamicResource BodyTextColor}" />
+                    <!-- Left: Title -->
+                    <VerticalStackLayout VerticalOptions="Center" Margin="40,0,0,0">
+                        <Label Text="NOTA DE" FontSize="20" TextColor="#1B264F" CharacterSpacing="2"/>
+                        <Label Text="ENCOMENDA" FontSize="36" FontAttributes="Bold" TextColor="#1B264F"/>
                     </VerticalStackLayout>
-                </Border>
 
-                <!-- Right: Order Info -->
-                <Border Grid.Column="1" StrokeShape="RoundRectangle 12" BackgroundColor="{DynamicResource CardBackgroundColor}" StrokeThickness="0" Padding="24">
-                    <VerticalStackLayout Spacing="8">
-                        <Label Text="DETALHES DO SERVIÇO" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource EntryPlaceholderColor}" CharacterSpacing="1"/>
-                        
-                        <Grid ColumnDefinitions="*, Auto" RowDefinitions="Auto, Auto, Auto">
-                            <Label Text="Nº Documento:" TextColor="{DynamicResource BodyTextColor}"/>
-                            <Label Grid.Column="1" Text="{Binding Order.OrderNo}" FontAttributes="Bold" TextColor="{DynamicResource AccentColor}"/>
+                    <!-- Right: Logo (Yellow removed) -->
+                    <Grid Grid.Column="1" BackgroundColor="White">
+                        <!-- Logo centered -->
+                        <Image Source="{Binding CompanyLogoSource}" 
+                               Aspect="AspectFit" 
+                               WidthRequest="250" 
+                               HeightRequest="140" 
+                               HorizontalOptions="Center" 
+                               VerticalOptions="Center"
+                               Margin="20"
+                               IsVisible="{Binding CompanyLogoSource, Converter={StaticResource IsNotNullOrEmptyConverter}}"/>
+                    </Grid>
+                </Grid>
 
-                            <Label Grid.Row="1" Text="Data:" TextColor="{DynamicResource BodyTextColor}"/>
-                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding Order.OrderDate, StringFormat='{0:dd/MM/yyyy}'}" TextColor="{DynamicResource BodyTextColor}"/>
+                <!-- Blue Bar Separator -->
+                <BoxView HeightRequest="15" Color="#1B264F" Margin="0,0,0,30"/>
 
-                            <Label Grid.Row="2" Text="Estado:" TextColor="{DynamicResource BodyTextColor}"/>
-                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding Order.OrderStatus}" FontAttributes="Bold" TextColor="{DynamicResource BodyTextColor}"/>
+                <!-- CONTENT PADDING WRAPPER -->
+                <VerticalStackLayout Padding="40" Spacing="30">
+                    
+                    <!-- INFO ROW: Invoice To (Left) | Invoice Details (Right) -->
+                    <Grid ColumnDefinitions="*, Auto">
+                        <!-- Left: Invoice To (Larger Fonts) -->
+                        <VerticalStackLayout Spacing="5">
+                            <Label Text="CLIENTE:" TextColor="#999" FontSize="14" FontAttributes="Bold"/>
+                            <Label Text="{Binding Order.CustomerName}" TextColor="#1B264F" FontSize="24" FontAttributes="Bold"/>
+                            <Label Text="{Binding Order.CustomerNo, StringFormat='Nº Cliente: {0}'}" TextColor="#333" FontSize="16"/>
+                            <Label Text="{Binding CurrentUser.CompanyAddress}" TextColor="#555" FontSize="16" IsVisible="False"/> 
+                        </VerticalStackLayout>
+
+                        <!-- Right: Invoice Details -->
+                        <Grid Grid.Column="1" RowDefinitions="Auto, Auto" ColumnDefinitions="Auto, 100" RowSpacing="10" ColumnSpacing="20">
+                            <Label Text="Nº Documento" TextColor="#555" FontSize="14" FontAttributes="Bold"/>
+                            <Label Grid.Column="1" Text="{Binding Order.OrderNo}" TextColor="#1B264F" HorizontalTextAlignment="End" FontAttributes="Bold"/>
+
+                            <Label Grid.Row="1" Text="Data" TextColor="#555" FontSize="14" FontAttributes="Bold"/>
+                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding Order.OrderDate, StringFormat='{0:dd/MM/yyyy}'}" TextColor="#1B264F" HorizontalTextAlignment="End" FontAttributes="Bold"/>
                         </Grid>
-                    </VerticalStackLayout>
-                </Border>
-            </Grid>
-
-            <!-- Products List -->
-            <Border StrokeShape="RoundRectangle 12" BackgroundColor="{DynamicResource CardBackgroundColor}" StrokeThickness="0" Padding="0">
-                <VerticalStackLayout>
-                    <!-- Table Header -->
-                    <Grid ColumnDefinitions="*, 60, 60, 60, 60, 90, 100" Padding="16" BackgroundColor="{DynamicResource PageBackgroundColor}">
-                        <Label Text="PRODUTO" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource EntryPlaceholderColor}" />
-                        <Label Grid.Column="1" Text="ALT." FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource EntryPlaceholderColor}" HorizontalTextAlignment="Center"/>
-                        <Label Grid.Column="2" Text="LARG." FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource EntryPlaceholderColor}" HorizontalTextAlignment="Center"/>
-                        <Label Grid.Column="3" Text="M²" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource EntryPlaceholderColor}" HorizontalTextAlignment="Center"/>
-                        <Label Grid.Column="4" Text="QTD" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource EntryPlaceholderColor}" HorizontalTextAlignment="Center"/>
-                        <Label Grid.Column="5" Text="PREÇO" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource EntryPlaceholderColor}" HorizontalTextAlignment="End"/>
-                        <Label Grid.Column="6" Text="TOTAL" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource EntryPlaceholderColor}" HorizontalTextAlignment="End"/>
                     </Grid>
 
-                    <CollectionView ItemsSource="{Binding Products}">
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate x:DataType="models:OrderedProduct">
-                                <Grid ColumnDefinitions="*, 60, 60, 60, 60, 90, 100" Padding="16" ColumnSpacing="8">
-                                    <VerticalStackLayout Spacing="2">
-                                        <Label Text="{Binding ProductName}" FontAttributes="Bold" TextColor="{DynamicResource BodyTextColor}" LineBreakMode="TailTruncation"/>
-                                        <Label Text="{Binding ProductCode}" FontSize="12" TextColor="{DynamicResource EntryPlaceholderColor}"/>
-                                        <HorizontalStackLayout Spacing="10">
-                                            <Label Text="{Binding Cor, StringFormat='Cor: {0}'}" FontSize="12" TextColor="{DynamicResource EntryPlaceholderColor}" IsVisible="{Binding Cor, Converter={StaticResource IsNotNullOrEmptyConverter}}"/>
-                                            <Label Text="{Binding Tam, StringFormat='Tam: {0}'}" FontSize="12" TextColor="{DynamicResource EntryPlaceholderColor}" IsVisible="{Binding Tam, Converter={StaticResource IsNotNullOrEmptyConverter}}"/>
-                                        </HorizontalStackLayout>
-                                    </VerticalStackLayout>
-                                    
-                                    <Label Grid.Column="1" Text="{Binding Altura, StringFormat='{0:N2}'}" VerticalOptions="Center" HorizontalTextAlignment="Center" TextColor="{DynamicResource BodyTextColor}" FontSize="13"/>
-                                    <Label Grid.Column="2" Text="{Binding Largura, StringFormat='{0:N2}'}" VerticalOptions="Center" HorizontalTextAlignment="Center" TextColor="{DynamicResource BodyTextColor}" FontSize="13"/>
-                                    <Label Grid.Column="3" Text="{Binding M2, StringFormat='{0:N2}'}" VerticalOptions="Center" HorizontalTextAlignment="Center" TextColor="{DynamicResource BodyTextColor}" FontSize="13"/>
-                                    <Label Grid.Column="4" Text="{Binding Quantidade, StringFormat='{0:N0}'}" VerticalOptions="Center" HorizontalTextAlignment="Center" TextColor="{DynamicResource BodyTextColor}" FontSize="13"/>
-                                    <Label Grid.Column="5" Text="{Binding PrecoUnit, StringFormat='{0:N2} €'}" VerticalOptions="Center" HorizontalTextAlignment="End" TextColor="{DynamicResource BodyTextColor}" FontSize="13"/>
-                                    <Label Grid.Column="6" Text="{Binding SUBTOTAIS, StringFormat='{0:N2} €'}" VerticalOptions="Center" HorizontalTextAlignment="End" FontAttributes="Bold" TextColor="{DynamicResource BodyTextColor}" FontSize="13"/>
+                    <!-- TABLE -->
+                    <Border StrokeThickness="0" BackgroundColor="Transparent">
+                        <VerticalStackLayout Spacing="0">
+                            <!-- Header -->
+                            <Grid ColumnDefinitions="*, 70, 70, 70, 60, 90, 100" BackgroundColor="#1B264F" Padding="15,10">
+                                <Label Text="DESCRIÇÃO" TextColor="White" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="1" Text="ALT." TextColor="White" FontAttributes="Bold" HorizontalTextAlignment="Center" FontSize="12"/>
+                                <Label Grid.Column="2" Text="LARG." TextColor="White" FontAttributes="Bold" HorizontalTextAlignment="Center" FontSize="12"/>
+                                <Label Grid.Column="3" Text="M²" TextColor="White" FontAttributes="Bold" HorizontalTextAlignment="Center" FontSize="12"/>
+                                <Label Grid.Column="4" Text="QTD" TextColor="White" FontAttributes="Bold" HorizontalTextAlignment="Center" FontSize="12"/>
+                                <Label Grid.Column="5" Text="PREÇO" TextColor="White" FontAttributes="Bold" HorizontalTextAlignment="End" FontSize="12"/>
+                                <Label Grid.Column="6" Text="TOTAL" TextColor="White" FontAttributes="Bold" HorizontalTextAlignment="End" FontSize="12"/>
+                            </Grid>
+
+                            <!-- Rows -->
+                            <CollectionView ItemsSource="{Binding Products}">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate x:DataType="models:OrderedProduct">
+                                        <Grid ColumnDefinitions="*, 70, 70, 70, 60, 90, 100" Padding="15,12" BackgroundColor="White">
+                                             <VerticalStackLayout Spacing="2">
+                                                <Label Text="{Binding ProductName}" TextColor="#333" FontSize="13" FontAttributes="Bold"/>
+                                                <Label Text="{Binding ProductCode}" TextColor="#777" FontSize="11"/>
+                                                <HorizontalStackLayout Spacing="5">
+                                                    <Label Text="{Binding Cor}" TextColor="#777" FontSize="11" IsVisible="{Binding Cor, Converter={StaticResource IsNotNullOrEmptyConverter}}"/>
+                                                    <Label Text="{Binding Tam}" TextColor="#777" FontSize="11" IsVisible="{Binding Tam, Converter={StaticResource IsNotNullOrEmptyConverter}}"/>
+                                                </HorizontalStackLayout>
+                                             </VerticalStackLayout>
+                                             
+                                             <Label Grid.Column="1" Text="{Binding Altura, StringFormat='{0:N2}'}" TextColor="#333" HorizontalTextAlignment="Center" VerticalOptions="Center" FontSize="13"/>
+                                             <Label Grid.Column="2" Text="{Binding Largura, StringFormat='{0:N2}'}" TextColor="#333" HorizontalTextAlignment="Center" VerticalOptions="Center" FontSize="13"/>
+                                             <Label Grid.Column="3" Text="{Binding M2, StringFormat='{0:N2}'}" TextColor="#333" HorizontalTextAlignment="Center" VerticalOptions="Center" FontSize="13"/>
+                                             <Label Grid.Column="4" Text="{Binding Quantidade, StringFormat='{0:N0}'}" TextColor="#333" HorizontalTextAlignment="Center" VerticalOptions="Center" FontSize="13"/>
+                                             <Label Grid.Column="5" Text="{Binding PrecoUnit, StringFormat='{0:N2} €'}" TextColor="#333" HorizontalTextAlignment="End" VerticalOptions="Center" FontSize="13"/>
+                                             <Label Grid.Column="6" Text="{Binding SUBTOTAIS, StringFormat='{0:N2} €'}" TextColor="#333" HorizontalTextAlignment="End" VerticalOptions="Center" FontSize="13"/>
+                                             
+                                             <BoxView Grid.ColumnSpan="7" HeightRequest="1" Color="#F0F0F0" VerticalOptions="End"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- TOTALS SECTION -->
+                    <Grid ColumnDefinitions="*, Auto" Margin="0,10,0,0">
+                        <!-- Left: Thank you msg -->
+                        <VerticalStackLayout Spacing="5" VerticalOptions="End">
+                            <Label Text="Obrigado pela sua preferência!" FontAttributes="Bold" TextColor="#1B264F" FontSize="14"/>
+                            <Label Text="Termos e Condições..." TextColor="#777" FontSize="10"/>
+                        </VerticalStackLayout>
+
+                        <!-- Right: Totals -->
+                        <Grid Grid.Column="1" RowDefinitions="Auto, Auto, Auto" ColumnDefinitions="100, 120" RowSpacing="8">
+                            <Label Text="Sub Total:" TextColor="#555" HorizontalTextAlignment="End"/>
+                            <Label Grid.Column="1" Text="{Binding Order.SubTotal, StringFormat='{0:N2} €'}" TextColor="#333" HorizontalTextAlignment="End" FontAttributes="Bold"/>
+
+                            <Label Grid.Row="1" Text="IVA:" TextColor="#555" HorizontalTextAlignment="End"/>
+                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding Order.TaxAmount, StringFormat='{0:N2} €'}" TextColor="#333" HorizontalTextAlignment="End" FontAttributes="Bold"/>
+
+                            <!-- Total Row (Yellow removed) -->
+                            <Border Grid.Row="2" Grid.ColumnSpan="2" BackgroundColor="#F5F5F5" StrokeThickness="0" Padding="10" Margin="0,10,0,0" StrokeShape="RoundRectangle 5">
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <Label Text="Total:" TextColor="#1B264F" FontAttributes="Bold" FontSize="16" VerticalOptions="Center"/>
+                                    <Label Grid.Column="1" Text="{Binding Order.TotalAmount, StringFormat='{0:N2} €'}" TextColor="#1B264F" FontAttributes="Bold" HorizontalTextAlignment="End" FontSize="18" VerticalOptions="Center"/>
                                 </Grid>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
-                </VerticalStackLayout>
-            </Border>
-
-            <!-- Totals -->
-            <Grid ColumnDefinitions="*, Auto">
-                <Border Grid.Column="1" StrokeShape="RoundRectangle 12" BackgroundColor="{DynamicResource CardBackgroundColor}" StrokeThickness="0" Padding="24" MinimumWidthRequest="300">
-                    <Grid ColumnDefinitions="*, Auto" RowDefinitions="Auto, Auto, Auto" RowSpacing="12">
-                        <Label Text="Subtotal" TextColor="{DynamicResource EntryPlaceholderColor}" />
-                        <Label Grid.Column="1" Text="{Binding Order.SubTotal, StringFormat='{0:N2} €'}" HorizontalOptions="End" TextColor="{DynamicResource BodyTextColor}"/>
-
-                        <Label Grid.Row="1" Text="IVA" TextColor="{DynamicResource EntryPlaceholderColor}" />
-                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding Order.TaxAmount, StringFormat='{0:N2} €'}" HorizontalOptions="End" TextColor="{DynamicResource BodyTextColor}"/>
-
-                        <BoxView Grid.Row="2" Grid.ColumnSpan="2" HeightRequest="1" Color="{DynamicResource SeparatorColor}" VerticalOptions="Start"/>
-                        
-                        <Label Grid.Row="2" Text="TOTAL" FontAttributes="Bold" FontSize="20" TextColor="{DynamicResource BodyTextColor}" VerticalOptions="End"/>
-                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding Order.TotalAmount, StringFormat='{0:N2} €'}" FontAttributes="Bold" FontSize="20" HorizontalOptions="End" TextColor="{DynamicResource AccentColor}" VerticalOptions="End"/>
+                            </Border>
+                        </Grid>
                     </Grid>
-                </Border>
-            </Grid>
 
-            <!-- DEBUG INFO -->
-            <Label Text="{Binding DebugInfo}" TextColor="Red" FontSize="12" Margin="0,20,0,0" />
+                </VerticalStackLayout>
 
-        </VerticalStackLayout>
+                <!-- FOOTER SHAPES -->
+                <Grid HeightRequest="60" VerticalOptions="End" Margin="0,40,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="100"/>
+                    </Grid.ColumnDefinitions>
+                    <!-- Blue Bar -->
+                    <BoxView Color="#1B264F" HorizontalOptions="Fill" VerticalOptions="Fill" Grid.ColumnSpan="2"/>
+                    
+                    <!-- Footer Text -->
+                    <Label Text="www.navigest.pt  |  (+351) 222 222 222" TextColor="White" VerticalOptions="Center" Margin="40,0,0,0" FontSize="12"/>
+                </Grid>
+
+            </VerticalStackLayout>
+        </Border>
     </ScrollView>
+    </Grid>
 </ContentPage>

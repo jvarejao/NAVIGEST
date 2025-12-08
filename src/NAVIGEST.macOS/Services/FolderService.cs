@@ -71,6 +71,44 @@ namespace NAVIGEST.macOS.Services
         }
 
         /// <summary>
+        /// Obtém o caminho da pasta do cliente (se existir).
+        /// </summary>
+        public static async Task<string?> GetClientFolderPathAsync(string clientName, string clientCode)
+        {
+            try
+            {
+                var setup = await DatabaseService.GetSetupAsync();
+                if (setup == null || string.IsNullOrWhiteSpace(setup.CaminhoServidor)) return null;
+
+                var rootPath = ResolvePath(setup.CaminhoServidor);
+                if (string.IsNullOrWhiteSpace(rootPath)) return null;
+
+                if (!Directory.Exists(rootPath))
+                {
+                    TryMountServer(setup);
+                    await Task.Delay(2000);
+                    if (!Directory.Exists(rootPath)) return null;
+                }
+
+                // Priority 1: Name
+                var folderName = SanitizeFileName(clientName ?? "");
+                var clientFolder = Path.Combine(rootPath, folderName);
+
+                if (Directory.Exists(clientFolder)) return clientFolder;
+
+                // Priority 2: Code
+                var found = Directory.GetDirectories(rootPath, $"{clientCode}*").FirstOrDefault();
+                if (!string.IsNullOrEmpty(found)) return found;
+
+                return null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Abre a pasta do cliente no Finder.
         /// </summary>
         public static async Task OpenClientFolderAsync(Cliente cliente)

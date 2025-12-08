@@ -1293,13 +1293,15 @@ FROM OrderInfo";
             using var conn = new MySqlConnector.MySqlConnection(GetConnectionString());
             await conn.OpenAsync();
 
+            // Tenta ser robusto: remove espaços, usa LOWER e TRIM
             const string sql = @"
                 SELECT * 
                 FROM ORDEREDPRODUCT 
-                WHERE LOWER(TRIM(OrderNo)) = LOWER(@no)";
+                WHERE LOWER(REPLACE(OrderNo, ' ', '')) = LOWER(REPLACE(@no, ' ', ''))
+                   OR TRIM(OrderNo) = TRIM(@no)";
 
             using var cmd = new MySqlConnector.MySqlCommand(sql, conn);
-            cmd.Parameters.AddWithValue("@no", orderNo?.Trim() ?? "");
+            cmd.Parameters.AddWithValue("@no", orderNo ?? "");
 
             using var rd = await cmd.ExecuteReaderAsync();
             
@@ -1335,6 +1337,114 @@ FROM OrderInfo";
             return list;
         }
 
+        public static async Task<List<OrderedProduct>> GetOrderedProductsExtendedAsync(OrderInfoModel order)
+        {
+            // 1. Tenta pelo OrderNo (Trimmed)
+            var list = await GetOrderedProductsAsync(order.OrderNo?.Trim());
+            if (list.Count > 0) return list;
+
+            // 2. Tenta pelo Numserv (se existir)
+            if (!string.IsNullOrWhiteSpace(order.Numserv) && order.Numserv?.Trim() != order.OrderNo?.Trim())
+            {
+                list = await GetOrderedProductsAsync(order.Numserv?.Trim());
+                if (list.Count > 0) return list;
+            }
+
+            // 3. Tenta pelo Servencomenda (se existir)
+            if (!string.IsNullOrWhiteSpace(order.Servencomenda) && order.Servencomenda?.Trim() != order.OrderNo?.Trim())
+            {
+                list = await GetOrderedProductsAsync(order.Servencomenda?.Trim());
+                if (list.Count > 0) return list;
+            }
+
+            // 4. Fallback: Se OrderNo tiver '/', tenta a parte direita (ex: "2024/123" -> "123")
+            if (!string.IsNullOrWhiteSpace(order.OrderNo) && order.OrderNo.Contains('/'))
+            {
+                var parts = order.OrderNo.Split('/');
+                if (parts.Length > 1)
+                {
+                    var suffix = parts.Last().Trim();
+                    if (!string.IsNullOrWhiteSpace(suffix) && suffix.Length > 1)
+                    {
+                        list = await GetOrderedProductsAsync(suffix);
+                        if (list.Count > 0) return list;
+                    }
+                }
+            }
+
+            return list;
+        }
+
+        public static async Task<string> DebugRawSearchAsync(string term)
+        {
+            term = term?.Trim();
+            try
+            {
+                using var conn = new MySqlConnector.MySqlConnection(GetConnectionString());
+                await conn.OpenAsync();
+                
+                var sb = new System.Text.StringBuilder();
+                sb.AppendLine($"--- DIAGNÓSTICO RAW SQL ---");
+                sb.AppendLine($"Termo: '{term}'");
+
+                // 1. Pesquisa ampla na ORDEREDPRODUCT
+                // Procura qualquer coisa que contenha o termo
+                var sql = "SELECT OrderNo, ProductCode, ProductName, Quantidade, PrecoUnit, SUBTOTAIS, SUBTOTALNUM FROM ORDEREDPRODUCT WHERE OrderNo LIKE @p LIMIT 10";
+                using (var cmd = new MySqlConnector.MySqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@p", $"%{term}%");
+                    using var rd = await cmd.ExecuteReaderAsync();
+                    if (!rd.HasRows)
+                    {
+                        sb.AppendLine("Nenhum registo encontrado com LIKE '%" + term + "%'");
+                    }
+                    else
+                    {
+                        while (await rd.ReadAsync())
+                        {
+                            var o = rd.IsDBNull(0) ? "NULL" : rd.GetString(0);
+                            var p = rd.IsDBNull(1) ? "NULL" : rd.GetString(1);
+                            var qtd = rd.IsDBNull(3) ? "NULL" : rd.GetDecimal(3).ToString();
+                            var pu = rd.IsDBNull(4) ? "NULL" : rd.GetDecimal(4).ToString();
+                            var sub = rd.IsDBNull(5) ? "NULL" : rd.GetDecimal(5).ToString();
+                            var subNum = rd.IsDBNull(6) ? "NULL" : rd.GetDecimal(6).ToString();
+                            
+                            sb.AppendLine($"Enc: {o} | Prod: {p}");
+                            sb.AppendLine($"   Qtd: {qtd} | PU: {pu} | Sub: {sub} | SubNum: {subNum}");
+                        }
+                    }
+                }
+                
+                // 2. Se tiver barra, tenta só a parte final
+                if (term.Contains('/'))
+                {
+                    var parts = term.Split('/');
+                    var suffix = parts.Last().Trim();
+                    if (suffix.Length > 1)
+                    {
+                        sb.AppendLine($"--- Tentando sufixo '{suffix}' ---");
+                        sql = "SELECT OrderNo, ProductCode FROM ORDEREDPRODUCT WHERE OrderNo LIKE @p LIMIT 5";
+                        using (var cmd2 = new MySqlConnector.MySqlCommand(sql, conn))
+                        {
+                            cmd2.Parameters.AddWithValue("@p", $"%{suffix}%");
+                            using var rd2 = await cmd2.ExecuteReaderAsync();
+                            while (await rd2.ReadAsync())
+                            {
+                                var o = rd2.IsDBNull(0) ? "NULL" : rd2.GetString(0);
+                                sb.AppendLine($"Encontrado (Sufixo): OrderNo='{o}'");
+                            }
+                        }
+                    }
+                }
+
+                return sb.ToString();
+            }
+            catch (Exception ex)
+            {
+                return $"Erro Diagnóstico: {ex.Message}";
+            }
+        }
+
         public static async Task<string> DebugCheckOrderAsync(string orderNo)
         {
             try
@@ -1344,6 +1454,28 @@ FROM OrderInfo";
 
                 var sb = new System.Text.StringBuilder();
                 sb.AppendLine($"A verificar Nº Encomenda: '{orderNo}'");
+
+                // 0. Obter detalhes da OrderInfo para ver chaves alternativas
+                string? numServ = null;
+                string? servEnc = null;
+                try
+                {
+                    using var cmdInfo = new MySqlConnector.MySqlCommand("SELECT Numserv, Servencomenda FROM OrderInfo WHERE REPLACE(OrderNo, ' ', '') = REPLACE(@no, ' ', '') LIMIT 1", conn);
+                    cmdInfo.Parameters.AddWithValue("@no", orderNo);
+                    using var rdInfo = await cmdInfo.ExecuteReaderAsync();
+                    if (await rdInfo.ReadAsync())
+                    {
+                        numServ = rdInfo.IsDBNull(0) ? null : rdInfo.GetString(0);
+                        servEnc = rdInfo.IsDBNull(1) ? null : rdInfo.GetString(1);
+                        sb.AppendLine($"OrderInfo Encontrada. Numserv='{numServ}', Servencomenda='{servEnc}'");
+                    }
+                    else
+                    {
+                        sb.AppendLine("AVISO: OrderInfo NÃO encontrada para este número!");
+                    }
+                }
+                catch (Exception ex) { sb.AppendLine($"Erro ao ler OrderInfo: {ex.Message}"); }
+
 
                 // 1. Check Table Name and Case
                 sb.AppendLine("--- Tabelas ---");

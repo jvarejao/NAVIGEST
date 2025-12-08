@@ -4,6 +4,12 @@ using NAVIGEST.macOS.Services;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
+#if MACCATALYST
+using UIKit;
+using Foundation;
+using CoreGraphics;
+#endif
+
 namespace NAVIGEST.macOS.Pages;
 
 public partial class ServiceDetailPage : ContentPage
@@ -32,15 +38,28 @@ public partial class ServiceDetailPage : ContentPage
     private async void InitializePageAsync()
     {
         // 1. Ensure Company Info
-        if (CurrentUser.CompanyLogo == null || CurrentUser.CompanyLogo.Length == 0)
+        // Only fetch if we don't have a Company Name OR Logo (UserSession should have it from WelcomePage)
+        var user = UserSession.Current.User;
+        if (user == null || string.IsNullOrEmpty(user.CompanyName) || user.CompanyLogo == null || user.CompanyLogo.Length == 0)
         {
             try 
             {
                 var companies = await DatabaseService.GetActiveCompaniesAsync();
-                var company = companies.FirstOrDefault(); // Fallback to first active company
+                
+                // FIX: Obter a empresa selecionada na WelcomePage (via Preferences)
+                var selectedCode = Microsoft.Maui.Storage.Preferences.Default.Get("company.code", string.Empty);
+                var company = companies.FirstOrDefault(c => c.CodEmp == selectedCode);
+
+                // Fallback apenas se não encontrar a seleção (ex: erro de estado), mas tenta honrar a escolha do utilizador
+                if (company == null) 
+                {
+                    company = companies.FirstOrDefault();
+                }
+
                 if (company != null)
                 {
                     if (UserSession.Current.User == null) UserSession.Current.User = new UserSession.UserData();
+                    
                     UserSession.Current.User.CompanyName = company.Empresa ?? "";
                     UserSession.Current.User.CompanyLogo = company.Logotipo;
                     UserSession.Current.User.CompanyAddress = company.Morada ?? "";
@@ -60,12 +79,219 @@ public partial class ServiceDetailPage : ContentPage
 
         if (CurrentUser.CompanyLogo != null && CurrentUser.CompanyLogo.Length > 0)
         {
+            DebugInfo += $"Logo encontrado: {CurrentUser.CompanyLogo.Length} bytes.\n";
             CompanyLogoSource = ImageSource.FromStream(() => new MemoryStream(CurrentUser.CompanyLogo));
             OnPropertyChanged(nameof(CompanyLogoSource));
+        }
+        else
+        {
+            DebugInfo += "Logo NÃO encontrado ou vazio no UserSession.\n";
         }
 
         // 2. Load Products
         await LoadProducts();
+    }
+
+    private async void OnBackClicked(object sender, EventArgs e)
+    {
+        await Navigation.PopAsync();
+    }
+
+    private async void OnPrintClicked(object sender, EventArgs e)
+    {
+#if MACCATALYST
+        try
+        {
+            if (InvoiceSheet.Handler?.PlatformView is UIView platformView)
+            {
+                var printInfo = UIPrintInfo.PrintInfo;
+                printInfo.OutputType = UIPrintInfoOutputType.General;
+                printInfo.JobName = $"Encomenda_{Order.OrderNo}";
+                printInfo.Orientation = UIPrintInfoOrientation.Portrait;
+
+                var printer = UIPrintInteractionController.SharedPrintController;
+                printer.PrintInfo = printInfo;
+                
+                // Use ViewPrintFormatter to print the specific view
+                var renderer = new UIPrintPageRenderer();
+                renderer.AddPrintFormatter(platformView.ViewPrintFormatter, 0);
+                printer.PrintPageRenderer = renderer;
+
+                printer.Present(true, (handler, completed, error) => {
+                    if (error != null)
+                    {
+                        MainThread.BeginInvokeOnMainThread(() => 
+                            DisplayAlert("Erro", $"Falha ao imprimir: {error.LocalizedDescription}", "OK"));
+                    }
+                });
+            }
+            else
+            {
+                await DisplayAlert("Erro", "Não foi possível aceder à vista de impressão.", "OK");
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Erro", $"Erro ao iniciar impressão: {ex.Message}", "OK");
+        }
+#else
+        await DisplayAlert("Aviso", "Impressão disponível apenas em macOS/iOS.", "OK");
+#endif
+    }
+
+    #if MACCATALYST
+    private NSData? GeneratePdfData()
+    {
+        if (InvoiceSheet.Handler?.PlatformView is UIView platformView)
+        {
+            // A4 size: 595 x 842 points
+            var pdfRect = new CGRect(0, 0, 595, 842);
+            var data = new NSMutableData();
+
+            UIGraphics.BeginPDFContext(data, pdfRect, null);
+            UIGraphics.BeginPDFPage();
+            
+            var ctx = UIGraphics.GetCurrentContext();
+            
+            // 1. Fill page with white background (fixes black background issue)
+            ctx.SetFillColor(UIColor.White.CGColor);
+            ctx.FillRect(pdfRect);
+
+            // Calculate scale to fit the view into A4 width with margins
+            var viewBounds = platformView.Bounds;
+            var availableWidth = 555f; // 595 - 20 - 20
+            var scale = availableWidth / viewBounds.Width;
+            
+            ctx.SaveState();
+            
+            // Apply margins and scale
+            ctx.TranslateCTM(20, 20);
+            ctx.ScaleCTM((nfloat)scale, (nfloat)scale);
+            
+            // Render the view
+            // DrawViewHierarchy is often more reliable for capturing the full visual state including subviews
+            // It handles transparency and complex hierarchies better than RenderInContext
+            if (!platformView.DrawViewHierarchy(platformView.Bounds, true))
+            {
+                // Fallback to RenderInContext if DrawViewHierarchy fails
+                Console.WriteLine("DrawViewHierarchy failed, falling back to RenderInContext");
+                platformView.Layer.RenderInContext(ctx);
+            }
+            
+            ctx.RestoreState();
+            
+            UIGraphics.EndPDFContext();
+            return data;
+        }
+        return null;
+    }
+#endif
+
+    private async void OnSavePdfClicked(object sender, EventArgs e)
+    {
+#if MACCATALYST
+        try
+        {
+            var data = GeneratePdfData();
+            if (data != null)
+            {
+                // 1. Get Client Folder
+                var clientFolder = await FolderService.GetClientFolderPathAsync(Order.CustomerName, Order.CustomerNo);
+                
+                if (string.IsNullOrEmpty(clientFolder))
+                {
+                    bool create = await DisplayAlert("Pasta não encontrada", "A pasta do cliente não foi encontrada. Deseja criar?", "Sim", "Não");
+                    if (create)
+                    {
+                        var client = new Cliente { CLINOME = Order.CustomerName, CLICODIGO = Order.CustomerNo };
+                        var (success, msg) = await FolderService.CreateClientFoldersAsync(client);
+                        if (success)
+                        {
+                            // Try to get path again
+                            clientFolder = await FolderService.GetClientFolderPathAsync(Order.CustomerName, Order.CustomerNo);
+                            if (string.IsNullOrEmpty(clientFolder))
+                            {
+                                await DisplayAlert("Erro", "Pasta criada mas não encontrada: " + msg, "OK");
+                                return;
+                            }
+                        }
+                        else
+                        {
+                            await DisplayAlert("Erro", msg, "OK");
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
+
+                // 2. Save File
+                var fileName = $"Encomenda_{Order.OrderNo}.pdf";
+                var filePath = System.IO.Path.Combine(clientFolder, fileName);
+                
+                if (System.IO.File.Exists(filePath))
+                {
+                    bool overwrite = await DisplayAlert("Ficheiro Existente", "Já existe um ficheiro com este nome. Substituir?", "Sim", "Não");
+                    if (!overwrite) return;
+                }
+
+                data.Save(filePath, true);
+                
+                await DisplayAlert("Sucesso", $"PDF guardado em:\n{filePath}", "OK");
+                
+                // Open folder
+                try 
+                {
+                    System.Diagnostics.Process.Start("open", $"{clientFolder}");
+                }
+                catch {}
+            }
+            else
+            {
+                await DisplayAlert("Erro", "Não foi possível gerar o PDF.", "OK");
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Erro", $"Erro ao guardar PDF: {ex.Message}", "OK");
+        }
+#else
+        await DisplayAlert("Aviso", "Funcionalidade disponível apenas em macOS.", "OK");
+#endif
+    }
+
+    private async void OnSharePdfClicked(object sender, EventArgs e)
+    {
+#if MACCATALYST
+        try
+        {
+            var data = GeneratePdfData();
+            if (data != null)
+            {
+                var fileName = $"Encomenda_{Order.OrderNo}.pdf";
+                var fn = System.IO.Path.Combine(FileSystem.CacheDirectory, fileName);
+                data.Save(fn, true);
+                
+                await Share.RequestAsync(new ShareFileRequest
+                {
+                    Title = "Partilhar PDF",
+                    File = new ShareFile(fn)
+                });
+            }
+            else
+            {
+                await DisplayAlert("Erro", "Não foi possível gerar o PDF.", "OK");
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Erro", $"Erro ao partilhar PDF: {ex.Message}", "OK");
+        }
+#else
+        await DisplayAlert("Aviso", "Funcionalidade disponível apenas em macOS.", "OK");
+#endif
     }
 
     private async Task LoadProducts()
@@ -78,8 +304,9 @@ public partial class ServiceDetailPage : ContentPage
             var debugResult = await DatabaseService.DebugCheckOrderAsync(Order.OrderNo);
             DebugInfo += debugResult + "\n";
 
-            var list = await DatabaseService.GetOrderedProductsAsync(Order.OrderNo);
-            DebugInfo += $"GetOrderedProductsAsync retornou {list.Count} itens.\n";
+            // Tenta carregar produtos usando OrderNo, Numserv ou Servencomenda
+            var list = await DatabaseService.GetOrderedProductsExtendedAsync(Order);
+            DebugInfo += $"GetOrderedProductsExtendedAsync retornou {list.Count} itens.\n";
             
             foreach (var item in list)
             {
@@ -90,6 +317,20 @@ public partial class ServiceDetailPage : ContentPage
         {
             DebugInfo += $"Erro: {ex.Message}\n";
             await DisplayAlert("Erro", "Falha ao carregar produtos: " + ex.Message, "OK");
+        }
+    }
+
+    private async void OnDebugClicked(object sender, EventArgs e)
+    {
+        try
+        {
+            var report = await DatabaseService.DebugRawSearchAsync(Order.OrderNo);
+            await DisplayAlert("Diagnóstico SQL", report, "OK");
+            DebugInfo += "\n" + report;
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Erro", ex.Message, "OK");
         }
     }
 }
