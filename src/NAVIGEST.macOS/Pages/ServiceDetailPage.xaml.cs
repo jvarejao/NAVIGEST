@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using UIKit;
 using Foundation;
 using CoreGraphics;
+using CoreAnimation;
 #endif
 
 namespace NAVIGEST.macOS.Pages;
@@ -27,10 +28,13 @@ public partial class ServiceDetailPage : ContentPage
         set { _debugInfo = value; OnPropertyChanged(); }
     }
 
-    public ServiceDetailPage(OrderInfoModel order)
+    private bool _autoOpenPdf;
+
+    public ServiceDetailPage(OrderInfoModel order, bool autoOpenPdf = false)
     {
         InitializeComponent();
         Order = order;
+        _autoOpenPdf = autoOpenPdf;
         
         BindingContext = this;
         InitializePageAsync();
@@ -91,6 +95,47 @@ public partial class ServiceDetailPage : ContentPage
 
         // 2. Load Products
         await LoadProducts();
+
+        if (_autoOpenPdf)
+        {
+            // Give UI time to render the products
+            Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(800), OpenPdfDirectly);
+        }
+    }
+
+    private async void OpenPdfDirectly()
+    {
+#if MACCATALYST
+        try
+        {
+            var data = GeneratePdfData();
+            if (data != null)
+            {
+                var fileName = $"Preview_{Order.OrderNo}.pdf";
+                var filePath = System.IO.Path.Combine(FileSystem.CacheDirectory, fileName);
+                
+                data.Save(NSUrl.FromFilename(filePath), true);
+                
+                try 
+                {
+                    System.Diagnostics.Process.Start("open", filePath);
+                }
+                catch (Exception ex)
+                {
+                    await DisplayAlert(AppResources.Common_Error, "Erro ao abrir PDF: " + ex.Message, AppResources.Common_OK);
+                }
+            }
+            else
+            {
+                // If data is null, maybe view isn't ready.
+                await DisplayAlert(AppResources.Common_Error, "Não foi possível gerar o PDF. A visualização pode não estar pronta.", AppResources.Common_OK);
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert(AppResources.Common_Error, "Erro ao gerar PDF: " + ex.Message, AppResources.Common_OK);
+        }
+#endif
     }
 
     private async void OnBackClicked(object sender, EventArgs e)
@@ -103,7 +148,8 @@ public partial class ServiceDetailPage : ContentPage
 #if MACCATALYST
         try
         {
-            if (InvoiceSheet.Handler?.PlatformView is UIView platformView)
+            var pdfData = GeneratePdfData();
+            if (pdfData != null)
             {
                 var printInfo = UIPrintInfo.PrintInfo;
                 printInfo.OutputType = UIPrintInfoOutputType.General;
@@ -113,10 +159,9 @@ public partial class ServiceDetailPage : ContentPage
                 var printer = UIPrintInteractionController.SharedPrintController;
                 printer.PrintInfo = printInfo;
                 
-                // Use ViewPrintFormatter to print the specific view
-                var renderer = new UIPrintPageRenderer();
-                renderer.AddPrintFormatter(platformView.ViewPrintFormatter, 0);
-                printer.PrintPageRenderer = renderer;
+                // Use the generated PDF data which we know works (has white background, correct scaling)
+                printer.PrintingItem = pdfData;
+                printer.ShowsPageRange = true;
 
                 printer.Present(true, (handler, completed, error) => {
                     if (error != null)
@@ -143,45 +188,235 @@ public partial class ServiceDetailPage : ContentPage
     #if MACCATALYST
     private NSData? GeneratePdfData()
     {
-        if (InvoiceSheet.Handler?.PlatformView is UIView platformView)
+        // Use the InvoiceSheet (Border) as the source
+        var sourceView = InvoiceSheet;
+
+        if (sourceView.Handler?.PlatformView is UIView platformView)
         {
-            // A4 size: 595 x 842 points
-            var pdfRect = new CGRect(0, 0, 595, 842);
-            var data = new NSMutableData();
+            Console.WriteLine($"[PDF Debug] Generating PDF using Component Snapshot Strategy for {sourceView.GetType().Name}");
 
-            UIGraphics.BeginPDFContext(data, pdfRect, null);
-            UIGraphics.BeginPDFPage();
-            
-            var ctx = UIGraphics.GetCurrentContext();
-            
-            // 1. Fill page with white background (fixes black background issue)
-            ctx.SetFillColor(UIColor.White.CGColor);
-            ctx.FillRect(pdfRect);
+            // 1. Define Sizes
+            var a4Width = 595.0f;
+            var a4Height = 842.0f;
+            var layoutWidth = 1200.0f; // Fixed width for consistent layout
+            var scaleFactor = a4Width / layoutWidth;
+            var pageRect = new CGRect(0, 0, a4Width, a4Height);
 
-            // Calculate scale to fit the view into A4 width with margins
-            var viewBounds = platformView.Bounds;
-            var availableWidth = 555f; // 595 - 20 - 20
-            var scale = availableWidth / viewBounds.Width;
+            // 2. Capture original state
+            var originalFrame = platformView.Frame;
+            var originalShadowOpacity = platformView.Layer.ShadowOpacity;
+            var originalMauiShadow = InvoiceSheet.Shadow;
+            var originalMasksToBounds = platformView.Layer.MasksToBounds;
             
-            ctx.SaveState();
+            // 3. Prepare for PDF Rendering
+            InvoiceSheet.Shadow = null;
             
-            // Apply margins and scale
-            ctx.TranslateCTM(20, 20);
-            ctx.ScaleCTM((nfloat)scale, (nfloat)scale);
-            
-            // Render the view
-            // DrawViewHierarchy is often more reliable for capturing the full visual state including subviews
-            // It handles transparency and complex hierarchies better than RenderInContext
-            if (!platformView.DrawViewHierarchy(platformView.Bounds, true))
+            void ClearShadows(CALayer layer)
             {
-                // Fallback to RenderInContext if DrawViewHierarchy fails
-                Console.WriteLine("DrawViewHierarchy failed, falling back to RenderInContext");
-                platformView.Layer.RenderInContext(ctx);
+                layer.ShadowOpacity = 0;
+                layer.ShadowColor = UIColor.Clear.CGColor;
+                layer.ShadowOffset = CGSize.Empty;
+                layer.ShadowRadius = 0;
+                if (layer.Sublayers != null)
+                    foreach (var sub in layer.Sublayers) ClearShadows(sub);
             }
+            ClearShadows(platformView.Layer);
+
+            platformView.Layer.MasksToBounds = true;
+            platformView.BackgroundColor = UIColor.White;
+            platformView.Layer.BackgroundColor = UIColor.White.CGColor;
+            platformView.Opaque = true;
+
+            // 4. Layout the view at 1200px width
+            // We need to measure and layout to ensure all children are sized correctly
+            var sizeRequest = sourceView.Measure(layoutWidth, double.PositiveInfinity);
+            var contentHeight = (float)sizeRequest.Height;
             
-            ctx.RestoreState();
-            
+            platformView.Frame = new CGRect(0, 0, layoutWidth, contentHeight);
+            platformView.SetNeedsLayout();
+            platformView.LayoutIfNeeded();
+
+            // 5. Helper to Snapshot a View
+            UIImage? Snapshot(View? view)
+            {
+                if (view == null) return null;
+                if (view.Handler?.PlatformView is UIView nativeView)
+                {
+                    UIGraphics.BeginImageContextWithOptions(nativeView.Bounds.Size, true, 0);
+                    nativeView.DrawViewHierarchy(nativeView.Bounds, true);
+                    var img = UIGraphics.GetImageFromCurrentImageContext();
+                    UIGraphics.EndImageContext();
+                    return img;
+                }
+                return null;
+            }
+
+            // 6. Snapshot Components
+            // We access the named views from XAML
+            var headerImg = Snapshot(HeaderView);
+            var clientInfoImg = Snapshot(ClientInfoView);
+            var tableHeaderImg = Snapshot(TableHeaderView);
+            var footerMessageImg = Snapshot(FooterMessageView);
+            var totalsValuesImg = Snapshot(TotalsValuesView);
+            var footerImg = Snapshot(FooterView);
+
+            // Snapshot Rows
+            var rowImages = new List<UIImage>();
+            // ItemsContainer is a VerticalStackLayout with BindableLayout
+            // We need to iterate its children (which are the rows)
+            // Since it's a Layout, its Children property contains the MAUI views
+            foreach (var child in ItemsContainer.Children)
+            {
+                if (child is View rowView)
+                {
+                    var img = Snapshot(rowView);
+                    if (img != null) rowImages.Add(img);
+                }
+            }
+
+            // 7. Generate PDF
+            var data = new NSMutableData();
+            UIGraphics.BeginPDFContext(data, pageRect, null);
+
+            using (var context = UIGraphics.GetCurrentContext())
+            {
+                // Layout Constants (Scaled)
+                float currentY = 0;
+                float paddingX = 40 * scaleFactor; // Padding from ContentWrapper
+                float contentWidth = (layoutWidth - 80) * scaleFactor; // Width inside padding
+                float fullWidth = layoutWidth * scaleFactor; // 595
+
+                // Heights (Scaled)
+                float headerH = (float)(headerImg?.Size.Height ?? 0) * scaleFactor;
+                float clientInfoH = (float)(clientInfoImg?.Size.Height ?? 0) * scaleFactor;
+                float tableHeaderH = (float)(tableHeaderImg?.Size.Height ?? 0) * scaleFactor;
+                float footerMessageH = (float)(footerMessageImg?.Size.Height ?? 0) * scaleFactor;
+                float totalsValuesH = (float)(totalsValuesImg?.Size.Height ?? 0) * scaleFactor;
+                float footerH = (float)(footerImg?.Size.Height ?? 0) * scaleFactor;
+
+                // Calculate Footer Area Height (Message + Blue Bar + Padding)
+                // We want the message to sit above the blue bar.
+                float footerAreaH = footerH + footerMessageH + 10; 
+
+                // Helper to Start New Page
+                void StartNewPage()
+                {
+                    UIGraphics.BeginPDFPage();
+                    context.SetFillColor(UIColor.White.CGColor);
+                    context.FillRect(pageRect);
+                    currentY = 0;
+
+                    // Draw Header (Always)
+                    if (headerImg != null)
+                    {
+                        headerImg.Draw(new CGRect(0, currentY, fullWidth, headerH));
+                        currentY += headerH;
+                    }
+
+                    // Draw Client Info (Always - per user request)
+                    if (clientInfoImg != null)
+                    {
+                        // Client Info is inside padding
+                        clientInfoImg.Draw(new CGRect(paddingX, currentY, contentWidth, clientInfoH));
+                        currentY += clientInfoH;
+                    }
+
+                    // Draw Table Header (Always)
+                    if (tableHeaderImg != null)
+                    {
+                        // Table Header is inside padding
+                        // Add a small margin before table header
+                        currentY += 10; 
+                        tableHeaderImg.Draw(new CGRect(paddingX, currentY, contentWidth, tableHeaderH));
+                        currentY += tableHeaderH;
+                    }
+                }
+
+                // Helper to Draw Standard Footer (Message + Blue Bar)
+                void DrawStandardFooter()
+                {
+                    // Draw Blue Bar at bottom
+                    if (footerImg != null)
+                    {
+                        footerImg.Draw(new CGRect(0, a4Height - footerH, fullWidth, footerH));
+                    }
+                    
+                    // Draw Message above Blue Bar (Left Aligned)
+                    if (footerMessageImg != null)
+                    {
+                        float msgY = a4Height - footerH - footerMessageH - 10;
+                        footerMessageImg.Draw(new CGRect(paddingX, msgY, contentWidth, footerMessageH));
+                    }
+                }
+
+                // Start Page 1
+                StartNewPage();
+
+                // Draw Rows
+                foreach (var rowImg in rowImages)
+                {
+                    float rowH = (float)rowImg.Size.Height * scaleFactor;
+
+                    // Check if row fits
+                    // We need space for Row + Footer Area
+                    if (currentY + rowH + footerAreaH > a4Height) 
+                    {
+                        // Draw Footer on current page
+                        DrawStandardFooter();
+
+                        // New Page
+                        StartNewPage();
+                    }
+
+                    // Draw Row
+                    rowImg.Draw(new CGRect(paddingX, currentY, contentWidth, rowH));
+                    currentY += rowH;
+                }
+
+                // Draw Totals (Last Page)
+                // We need space for Totals Block (Max of Message or Totals) + Footer Bar
+                float finalBlockH = Math.Max(footerMessageH, totalsValuesH) + 10;
+                
+                if (currentY + finalBlockH + footerH > a4Height)
+                {
+                    DrawStandardFooter();
+                    StartNewPage();
+                }
+
+                // Draw Footer Bar (Last Page)
+                if (footerImg != null)
+                {
+                    footerImg.Draw(new CGRect(0, a4Height - footerH, fullWidth, footerH));
+                }
+
+                // Draw Message (Left)
+                if (footerMessageImg != null)
+                {
+                    float msgY = a4Height - footerH - footerMessageH - 10;
+                    footerMessageImg.Draw(new CGRect(paddingX, msgY, contentWidth, footerMessageH));
+                }
+
+                // Draw Totals (Right)
+                if (totalsValuesImg != null)
+                {
+                    float totalsW = (float)totalsValuesImg.Size.Width * scaleFactor;
+                    float totalsX = paddingX + contentWidth - totalsW;
+                    float totalsY = a4Height - footerH - totalsValuesH - 10;
+                    
+                    totalsValuesImg.Draw(new CGRect(totalsX, totalsY, totalsW, totalsValuesH));
+                }
+            }
+
             UIGraphics.EndPDFContext();
+
+            // 9. Restore original state
+            InvoiceSheet.Shadow = originalMauiShadow;
+            platformView.Layer.ShadowOpacity = originalShadowOpacity;
+            platformView.Layer.MasksToBounds = originalMasksToBounds;
+            platformView.Frame = originalFrame;
+            platformView.SetNeedsLayout();
+            platformView.LayoutIfNeeded();
+
             return data;
         }
         return null;
@@ -238,14 +473,14 @@ public partial class ServiceDetailPage : ContentPage
                     if (!overwrite) return;
                 }
 
-                data.Save(filePath, true);
+                data.Save(NSUrl.FromFilename(filePath), true);
                 
                 await DisplayAlert(AppResources.Common_Success, string.Format(AppResources.Pdf_SavedSuccess, filePath), AppResources.Common_OK);
                 
-                // Open folder
+                // Open file directly
                 try 
                 {
-                    System.Diagnostics.Process.Start("open", $"{clientFolder}");
+                    System.Diagnostics.Process.Start("open", filePath);
                 }
                 catch {}
             }

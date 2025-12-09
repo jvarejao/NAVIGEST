@@ -73,7 +73,7 @@ public class ServicePageModel : INotifyPropertyChanged
         if (service == null) return;
         try
         {
-            await AppShell.Current.Navigation.PushAsync(new Pages.ServiceDetailPage(service));
+            await AppShell.Current.Navigation.PushAsync(new Pages.ServiceDetailPage(service, autoOpenPdf: true));
         }
         catch (Exception ex)
         {
