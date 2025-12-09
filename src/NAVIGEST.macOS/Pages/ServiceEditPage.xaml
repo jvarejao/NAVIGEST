@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:NAVIGEST.macOS.PageModels"
+             x:Class="NAVIGEST.macOS.Pages.ServiceEditPage"
+             Title="Novo Serviço"
+             BackgroundColor="{DynamicResource PageBackgroundColor}">
+
+    <ContentPage.BindingContext>
+        <models:ServiceEditPageModel />
+    </ContentPage.BindingContext>
+
+    <Grid RowDefinitions="Auto, *">
+        <!-- Toolbar -->
+        <Grid ColumnDefinitions="*, Auto" Padding="20,10" BackgroundColor="{DynamicResource PageBackgroundColor}">
+            <Label Text="Novo Serviço" FontSize="24" FontAttributes="Bold" VerticalOptions="Center"/>
+            <HorizontalStackLayout Grid.Column="1" Spacing="10">
+                <Button Text="Cancelar" Command="{Binding CancelCommand}" BackgroundColor="Transparent" TextColor="Red"/>
+                <Button Text="Guardar" Command="{Binding SaveCommand}" BackgroundColor="#0A84FF" TextColor="White" FontAttributes="Bold"/>
+            </HorizontalStackLayout>
+        </Grid>
+
+        <ScrollView Grid.Row="1" Padding="20">
+            <VerticalStackLayout Spacing="20" MaximumWidthRequest="1200" HorizontalOptions="Center">
+                
+                <!-- HEADER INFO -->
+                <Border StrokeShape="RoundRectangle 10" BackgroundColor="{DynamicResource CardBackgroundColor}" StrokeThickness="0" Padding="20">
+                    <Grid RowDefinitions="Auto, Auto" ColumnDefinitions="*, *, *" RowSpacing="20" ColumnSpacing="20">
+                        
+                        <!-- Client -->
+                        <VerticalStackLayout Grid.Column="0">
+                            <Label Text="Cliente" TextColor="Gray" FontSize="12"/>
+                            <Grid ColumnDefinitions="*, Auto">
+                                <VerticalStackLayout>
+                                    <Label Text="{Binding ClientName}" FontAttributes="Bold" FontSize="16"/>
+                                    <Label Text="{Binding ClientCode}" TextColor="Gray" FontSize="12"/>
+                                </VerticalStackLayout>
+                                <Button Grid.Column="1" Text="Selecionar" Command="{Binding SelectClientCommand}" HeightRequest="30" Padding="10,0" FontSize="12"/>
+                            </Grid>
+                        </VerticalStackLayout>
+
+                        <!-- Creation Date -->
+                        <VerticalStackLayout Grid.Column="1">
+                            <Label Text="Data Criação" TextColor="Gray" FontSize="12"/>
+                            <Label Text="{Binding CreationDate, StringFormat='{0:dd/MM/yyyy HH:mm}'}" FontAttributes="Bold" FontSize="16"/>
+                        </VerticalStackLayout>
+
+                        <!-- Delivery Date -->
+                        <VerticalStackLayout Grid.Column="2">
+                            <Label Text="Data Entrega" TextColor="Gray" FontSize="12"/>
+                            <DatePicker Date="{Binding DeliveryDate}" Format="dd/MM/yyyy"/>
+                        </VerticalStackLayout>
+
+                        <!-- Status -->
+                        <VerticalStackLayout Grid.Row="1" Grid.Column="0">
+                            <Label Text="Estado" TextColor="Gray" FontSize="12"/>
+                            <Picker ItemsSource="{Binding StatusOptions}" SelectedItem="{Binding Status}"/>
+                        </VerticalStackLayout>
+
+                        <!-- Observations -->
+                        <VerticalStackLayout Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2">
+                            <Label Text="Observações (Público)" TextColor="Gray" FontSize="12"/>
+                            <Editor Text="{Binding Observations}" HeightRequest="60" BackgroundColor="{DynamicResource CardBackgroundColor}" TextColor="{DynamicResource BodyTextColor}"/>
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
+
+                <!-- INTERNAL OBS (Admin Only) -->
+                <Border StrokeShape="RoundRectangle 10" BackgroundColor="{DynamicResource CardBackgroundColor}" Stroke="Red" StrokeThickness="1" Padding="20" IsVisible="{Binding IsAdminOrFinance}">
+                    <VerticalStackLayout>
+                        <Label Text="Observações Internas (Admin/Financeiro)" TextColor="Red" FontSize="12" FontAttributes="Bold"/>
+                        <Editor Text="{Binding InternalObservations}" HeightRequest="60" BackgroundColor="{DynamicResource CardBackgroundColor}" TextColor="{DynamicResource BodyTextColor}"/>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- PRODUCTS TABLE -->
+                <Border StrokeShape="RoundRectangle 10" BackgroundColor="{DynamicResource CardBackgroundColor}" StrokeThickness="0" Padding="0">
+                    <VerticalStackLayout>
+                        <!-- Table Header -->
+                        <Grid ColumnDefinitions="2*, *, *, 60, 60, 60, 60, 90, 90, 40" Padding="10" BackgroundColor="{DynamicResource PageBackgroundColor}">
+                            <Label Text="Produto" FontAttributes="Bold" FontSize="12" TextColor="{DynamicResource BodyTextColor}"/>
+                            <Label Grid.Column="1" Text="Cor" FontAttributes="Bold" FontSize="12" TextColor="{DynamicResource BodyTextColor}"/>
+                            <Label Grid.Column="2" Text="Tam" FontAttributes="Bold" FontSize="12" TextColor="{DynamicResource BodyTextColor}"/>
+                            <Label Grid.Column="3" Text="Qtd" FontAttributes="Bold" HorizontalTextAlignment="Center" FontSize="12" TextColor="{DynamicResource BodyTextColor}"/>
+                            <Label Grid.Column="4" Text="Alt (m)" FontAttributes="Bold" HorizontalTextAlignment="Center" FontSize="12" TextColor="{DynamicResource BodyTextColor}"/>
+                            <Label Grid.Column="5" Text="Larg (m)" FontAttributes="Bold" HorizontalTextAlignment="Center" FontSize="12" TextColor="{DynamicResource BodyTextColor}"/>
+                            <Label Grid.Column="6" Text="M²" FontAttributes="Bold" HorizontalTextAlignment="Center" FontSize="12" TextColor="{DynamicResource BodyTextColor}"/>
+                            <Label Grid.Column="7" Text="Preço" FontAttributes="Bold" HorizontalTextAlignment="End" FontSize="12" TextColor="{DynamicResource BodyTextColor}"/>
+                            <Label Grid.Column="8" Text="Total" FontAttributes="Bold" HorizontalTextAlignment="End" FontSize="12" TextColor="{DynamicResource BodyTextColor}"/>
+                            <Label Grid.Column="9" Text="" />
+                        </Grid>
+
+                        <!-- Items -->
+                        <CollectionView ItemsSource="{Binding Items}" HeightRequest="300">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="2*, *, *, 60, 60, 60, 60, 90, 90, 40" Padding="10" RowSpacing="0">
+                                        <VerticalStackLayout VerticalOptions="Center">
+                                            <Label Text="{Binding ProductName}" FontAttributes="Bold" LineBreakMode="TailTruncation" TextColor="{DynamicResource BodyTextColor}"/>
+                                            <Label Text="{Binding ProductCode}" FontSize="10" TextColor="Gray"/>
+                                        </VerticalStackLayout>
+                                        
+                                        <Entry Grid.Column="1" Text="{Binding Color}" Placeholder="Cor" FontSize="12" TextColor="{DynamicResource BodyTextColor}"/>
+                                        <Entry Grid.Column="2" Text="{Binding Size}" Placeholder="Tam" FontSize="12" TextColor="{DynamicResource BodyTextColor}"/>
+                                        <Entry Grid.Column="3" Text="{Binding Quantity}" Keyboard="Numeric" HorizontalTextAlignment="Center" FontSize="12" TextColor="{DynamicResource BodyTextColor}"/>
+                                        <Entry Grid.Column="4" Text="{Binding Height}" Keyboard="Numeric" HorizontalTextAlignment="Center" FontSize="12" TextColor="{DynamicResource BodyTextColor}"/>
+                                        <Entry Grid.Column="5" Text="{Binding Width}" Keyboard="Numeric" HorizontalTextAlignment="Center" FontSize="12" TextColor="{DynamicResource BodyTextColor}"/>
+                                        <Entry Grid.Column="6" Text="{Binding M2, StringFormat='{0:N2}'}" Keyboard="Numeric" HorizontalTextAlignment="Center" FontSize="12" TextColor="{DynamicResource BodyTextColor}"/>
+                                        
+                                        <!-- Price with Euro Symbol -->
+                                        <Grid Grid.Column="7" ColumnDefinitions="*, Auto">
+                                            <Entry Text="{Binding UnitPrice}" Keyboard="Numeric" HorizontalTextAlignment="End" FontSize="12" TextColor="{DynamicResource BodyTextColor}"/>
+                                            <Label Grid.Column="1" Text="€" VerticalOptions="Center" TextColor="Gray" FontSize="12" Margin="2,0,0,0"/>
+                                        </Grid>
+
+                                        <Label Grid.Column="8" Text="{Binding Subtotal, StringFormat='{0:N2} €'}" HorizontalTextAlignment="End" VerticalOptions="Center" FontAttributes="Bold" FontSize="12" TextColor="{DynamicResource BodyTextColor}"/>
+                                        
+                                        <Button Grid.Column="9" Text="✕" 
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type models:ServiceEditPageModel}}, Path=RemoveLineCommand}"
+                                                CommandParameter="{Binding .}"
+                                                BackgroundColor="Transparent" TextColor="Red" Padding="0"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+
+                        <!-- Add Button -->
+                        <Button Text="+ Adicionar Produto" Command="{Binding AddLineCommand}" Margin="10" BackgroundColor="{DynamicResource CardBackgroundColor}" TextColor="#0A84FF" BorderColor="#0A84FF" BorderWidth="1"/>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- TOTALS -->
+                <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,40">
+                    <Grid Grid.Column="1" RowDefinitions="Auto, Auto, Auto" ColumnDefinitions="120, 120" RowSpacing="10">
+                        <Label Text="Subtotal:" TextColor="Gray" HorizontalTextAlignment="End"/>
+                        <Label Grid.Column="1" Text="{Binding SubTotal, StringFormat='{0:N2} €'}" HorizontalTextAlignment="End" FontAttributes="Bold" TextColor="{DynamicResource BodyTextColor}"/>
+
+                        <Label Grid.Row="1" Text="IVA (23%):" TextColor="Gray" HorizontalTextAlignment="End"/>
+                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding TaxAmount, StringFormat='{0:N2} €'}" HorizontalTextAlignment="End" FontAttributes="Bold" TextColor="{DynamicResource BodyTextColor}"/>
+
+                        <Label Grid.Row="2" Text="TOTAL:" TextColor="{DynamicResource BodyTextColor}" FontAttributes="Bold" FontSize="18" HorizontalTextAlignment="End" VerticalOptions="Center"/>
+                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding TotalAmount, StringFormat='{0:N2} €'}" TextColor="{DynamicResource BodyTextColor}" FontAttributes="Bold" FontSize="18" HorizontalTextAlignment="End" VerticalOptions="Center"/>
+                    </Grid>
+                </Grid>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

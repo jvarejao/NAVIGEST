@@ -65,7 +65,8 @@ public class ServicePageModel : INotifyPropertyChanged
 
     private async void OnNewService()
     {
-        await AppShell.DisplayToastAsync("Novo serviço (Em desenvolvimento)");
+        // Navigate to the new ServiceEditPage
+        await AppShell.Current.Navigation.PushAsync(new Pages.ServiceEditPage());
     }
 
     private async void OnViewService(OrderInfoModel? service)
