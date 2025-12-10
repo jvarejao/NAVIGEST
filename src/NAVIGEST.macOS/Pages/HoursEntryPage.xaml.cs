@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Shapes;
 using CommunityToolkit.Maui.Views;
 using NAVIGEST.macOS.ViewModels;
@@ -549,10 +548,12 @@ public partial class HoursEntryPage : ContentPage
 
             var popup = new NovaHoraPopup(horaParaEditar, _vm.Colaboradores.ToList());
 
-            // Ensure we use a valid Page to host the popup and run on the UI thread
-            var hostPage = Application.Current?.Windows.FirstOrDefault()?.Page ?? this;
+            // On Mac Catalyst, prefer the active window/page as popup host to avoid null handler issues
+            var hostPage = this.Window?.Page ?? Application.Current?.Windows.FirstOrDefault()?.Page ?? Shell.Current?.CurrentPage;
             if (hostPage == null)
-                throw new InvalidOperationException("Não foi possível encontrar a página principal para abrir o popup.");
+            {
+                throw new InvalidOperationException("Não foi possível encontrar uma janela ativa para abrir o popup.");
+            }
 
             var result = await MainThread.InvokeOnMainThreadAsync(() => hostPage.ShowPopupAsync(popup));
 
@@ -583,7 +584,7 @@ public partial class HoursEntryPage : ContentPage
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Erro ao abrir popup nova hora: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"Erro ao abrir popup nova hora: {ex}");
             await DisplayAlert(AppResources.Common_Error, $"Erro ao abrir popup: {ex.Message}", AppResources.Common_OK);
         }
     }
