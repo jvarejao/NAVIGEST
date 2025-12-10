@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Views;
@@ -64,6 +65,10 @@ public class ServiceEditPageModel : INotifyPropertyChanged
 
     public bool IsAdminOrFinance => UserSession.Current.User?.IsFinancial ?? false;
 
+    // Lists for Pickers - No longer needed in ViewModel as Popups handle them
+    // public ObservableCollection<Cor> Colors { get; } = new();
+    // public ObservableCollection<Tamanho> Sizes { get; } = new();
+
     // Lines
     public ObservableCollection<OrderedProductViewModel> Items { get; } = new();
 
@@ -87,6 +92,13 @@ public class ServiceEditPageModel : INotifyPropertyChanged
         RemoveLineCommand = new Command<OrderedProductViewModel>(OnRemoveLine);
         SaveCommand = new Command(OnSave);
         CancelCommand = new Command(OnCancel);
+        LoadAuxData();
+    }
+
+    private async void LoadAuxData()
+    {
+        // Popups now load their own data
+        await Task.CompletedTask;
     }
 
     private async void OnSelectClient()
@@ -175,14 +187,44 @@ public class OrderedProductViewModel : INotifyPropertyChanged
     private string _color = "";
     public string Color { get => _color; set { _color = value; OnPropertyChanged(); } }
 
+    private Cor? _selectedColor;
+    public Cor? SelectedColor
+    {
+        get => _selectedColor;
+        set
+        {
+            _selectedColor = value;
+            OnPropertyChanged();
+            if (value != null) Color = value.NomeCor;
+        }
+    }
+
     private string _size = "";
     public string Size { get => _size; set { _size = value; OnPropertyChanged(); } }
+
+    private Tamanho? _selectedSize;
+    public Tamanho? SelectedSize
+    {
+        get => _selectedSize;
+        set
+        {
+            _selectedSize = value;
+            OnPropertyChanged();
+            if (value != null) Size = value.NomeTamanho;
+        }
+    }
 
     private decimal _quantity = 1;
     public decimal Quantity
     {
         get => _quantity;
-        set { _quantity = value; OnPropertyChanged(); CalculateTotal(); }
+        set 
+        { 
+            _quantity = value; 
+            OnPropertyChanged(); 
+            RecalculateM2();
+            CalculateTotal(); 
+        }
     }
 
     private decimal _height;
@@ -231,6 +273,8 @@ public class OrderedProductViewModel : INotifyPropertyChanged
     }
 
     private decimal _unitPrice;
+    private string? _unitPriceDisplayRaw;
+    private bool _suppressRawReset;
     public decimal UnitPrice
     {
         get => _unitPrice;
@@ -239,9 +283,84 @@ public class OrderedProductViewModel : INotifyPropertyChanged
             if (_unitPrice != value)
             {
                 _unitPrice = value; 
+                if (!_suppressRawReset)
+                {
+                    _unitPriceDisplayRaw = null;
+                }
                 OnPropertyChanged(); 
+                OnPropertyChanged(nameof(UnitPriceDisplay));
                 CalculateTotal(); 
             }
+        }
+    }
+
+    public string UnitPriceDisplay
+    {
+        get => _unitPriceDisplayRaw ?? UnitPrice.ToString("C2", CultureInfo.GetCultureInfo("pt-PT"));
+        set
+        {
+            // Preserve exactly what the user types while parsing in the background
+            _unitPriceDisplayRaw = value;
+
+            var culture = CultureInfo.GetCultureInfo("pt-PT");
+            var sanitized = (value ?? string.Empty)
+                .Replace("€", string.Empty)
+                .Replace(" ", string.Empty)
+                .Replace(".", ",")
+                .Trim();
+
+            if (string.IsNullOrEmpty(sanitized))
+            {
+                _suppressRawReset = true;
+                UnitPrice = 0;
+                _suppressRawReset = false;
+                OnPropertyChanged(nameof(UnitPriceDisplay));
+                return;
+            }
+
+            if (decimal.TryParse(sanitized, NumberStyles.Number, culture, out var result))
+            {
+                _suppressRawReset = true;
+                UnitPrice = result;
+                _suppressRawReset = false;
+                // Keep _unitPriceDisplayRaw so the UI shows the user input (e.g., "2,")
+            }
+
+            OnPropertyChanged(nameof(UnitPriceDisplay));
+        }
+    }
+
+    public void FormatUnitPriceOnUnfocus()
+    {
+        var culture = CultureInfo.GetCultureInfo("pt-PT");
+        var raw = _unitPriceDisplayRaw ?? UnitPrice.ToString(culture);
+        var sanitized = (raw ?? string.Empty)
+            .Replace("€", string.Empty)
+            .Replace(" ", string.Empty)
+            .Replace(".", ",")
+            .Trim();
+
+        if (string.IsNullOrWhiteSpace(sanitized))
+        {
+            _suppressRawReset = true;
+            UnitPrice = 0;
+            _suppressRawReset = false;
+            _unitPriceDisplayRaw = null;
+            OnPropertyChanged(nameof(UnitPriceDisplay));
+            return;
+        }
+
+        if (decimal.TryParse(sanitized, NumberStyles.Number, culture, out var result))
+        {
+            _suppressRawReset = true;
+            UnitPrice = result;
+            _suppressRawReset = false;
+            _unitPriceDisplayRaw = null; // force formatted display on blur
+            OnPropertyChanged(nameof(UnitPriceDisplay));
+        }
+        else
+        {
+            OnPropertyChanged(nameof(UnitPriceDisplay));
         }
     }
 
@@ -252,27 +371,47 @@ public class OrderedProductViewModel : INotifyPropertyChanged
         private set { _subtotal = value; OnPropertyChanged(); }
     }
 
+    public ICommand SelectColorCommand { get; }
+    public ICommand SelectSizeCommand { get; }
+
     public OrderedProductViewModel(Product product)
     {
         Product = product;
         UnitPrice = product.PRECOVENDA;
+        SelectColorCommand = new Command(OnSelectColor);
+        SelectSizeCommand = new Command(OnSelectSize);
         CalculateTotal();
+    }
+
+    private async void OnSelectColor()
+    {
+        var popup = new ColorPickerPopup();
+        var result = await AppShell.Current.ShowPopupAsync(popup);
+        if (result is Cor cor)
+        {
+            SelectedColor = cor;
+        }
+    }
+
+    private async void OnSelectSize()
+    {
+        var popup = new SizePickerPopup();
+        var result = await AppShell.Current.ShowPopupAsync(popup);
+        if (result is Tamanho tam)
+        {
+            SelectedSize = tam;
+        }
     }
 
     private void RecalculateM2()
     {
         if (Height > 0 && Width > 0)
         {
-            M2 = Height * Width;
+            // M2 field = Height * Width * Quantity (Total Area)
+            M2 = Height * Width * Quantity;
         }
-        // If H or W is 0, we don't force M2 to 0, allowing manual entry if needed? 
-        // Or we force it? Usually if dimensions change to 0, M2 should be 0.
         else if (Height == 0 || Width == 0)
         {
-             // Only reset M2 if it was previously calculated from dimensions?
-             // For simplicity, if user touches dimensions, we update M2.
-             // If they want manual M2, they should leave dimensions at 0 (or set them) then edit M2.
-             // But if they set H=0, M2 becomes 0.
              M2 = 0;
         }
     }
@@ -280,17 +419,17 @@ public class OrderedProductViewModel : INotifyPropertyChanged
     private void CalculateTotal()
     {
         // Logic:
-        // If M2 > 0 -> Total = M2 * Qty * UnitPrice
-        // Else -> Total = Qty * UnitPrice
+        // If Height > 0 and Width > 0
+        // Subtotal = M2 * UnitPrice (M2 already includes Quantity)
+        // Else
+        // Subtotal = Quantity * UnitPrice
 
-        if (M2 > 0)
+        if (Height > 0 && Width > 0)
         {
-            // Area based calculation
-            Subtotal = M2 * Quantity * UnitPrice;
+            Subtotal = M2 * UnitPrice;
         }
         else
         {
-            // Unit based calculation
             Subtotal = Quantity * UnitPrice;
         }
     }

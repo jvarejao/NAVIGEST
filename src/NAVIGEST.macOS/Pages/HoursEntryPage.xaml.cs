@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Shapes;
 using CommunityToolkit.Maui.Views;
 using NAVIGEST.macOS.ViewModels;
@@ -547,7 +548,13 @@ public partial class HoursEntryPage : ContentPage
             }
 
             var popup = new NovaHoraPopup(horaParaEditar, _vm.Colaboradores.ToList());
-            var result = await this.ShowPopupAsync(popup);
+
+            // Ensure we use a valid Page to host the popup and run on the UI thread
+            var hostPage = Application.Current?.Windows.FirstOrDefault()?.Page ?? this;
+            if (hostPage == null)
+                throw new InvalidOperationException("Não foi possível encontrar a página principal para abrir o popup.");
+
+            var result = await MainThread.InvokeOnMainThreadAsync(() => hostPage.ShowPopupAsync(popup));
 
             if (result is HoraColaborador horaSalva)
             {

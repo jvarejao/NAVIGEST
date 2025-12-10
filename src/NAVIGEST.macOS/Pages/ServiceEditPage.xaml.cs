@@ -9,4 +9,12 @@ public partial class ServiceEditPage : ContentPage
 	{
 		InitializeComponent();
 	}
+
+	private void UnitPrice_Unfocused(object sender, FocusEventArgs e)
+	{
+		if (sender is Entry entry && entry.BindingContext is OrderedProductViewModel vm)
+		{
+			vm.FormatUnitPriceOnUnfocus();
+		}
+	}
 }
