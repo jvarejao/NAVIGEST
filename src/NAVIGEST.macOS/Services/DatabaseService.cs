@@ -2250,5 +2250,58 @@ FROM OrderInfo";
                 throw;
             }
         }
+
+        // ================= CORES / TAMANHOS =================
+        public static async Task<List<Cor>> GetCoresAsync()
+        {
+            var list = new List<Cor>();
+            try
+            {
+                using var conn = new MySqlConnection(GetConnectionString());
+                await conn.OpenAsync();
+                const string sql = "SELECT idcor, nomecor FROM Cor ORDER BY nomecor";
+                using var cmd = new MySqlCommand(sql, conn);
+                using var rd = await cmd.ExecuteReaderAsync();
+                while (await rd.ReadAsync())
+                {
+                    list.Add(new Cor
+                    {
+                        IdCor = rd.IsDBNull(0) ? "" : rd.GetString(0),
+                        NomeCor = rd.IsDBNull(1) ? "" : rd.GetString(1)
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao obter cores: {ex.Message}");
+            }
+            return list;
+        }
+
+        public static async Task<List<Tamanho>> GetTamanhosAsync()
+        {
+            var list = new List<Tamanho>();
+            try
+            {
+                using var conn = new MySqlConnection(GetConnectionString());
+                await conn.OpenAsync();
+                const string sql = "SELECT idtamanho, nometamanho FROM Tamanhos ORDER BY nometamanho";
+                using var cmd = new MySqlCommand(sql, conn);
+                using var rd = await cmd.ExecuteReaderAsync();
+                while (await rd.ReadAsync())
+                {
+                    list.Add(new Tamanho
+                    {
+                        IdTamanho = rd.IsDBNull(0) ? "" : rd.GetString(0),
+                        NomeTamanho = rd.IsDBNull(1) ? "" : rd.GetString(1)
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao obter tamanhos: {ex.Message}");
+            }
+            return list;
+        }
     }
 }

@@ -182,7 +182,13 @@ public class OrderedProductViewModel : INotifyPropertyChanged
     public decimal Quantity
     {
         get => _quantity;
-        set { _quantity = value; OnPropertyChanged(); CalculateTotal(); }
+        set 
+        { 
+            _quantity = value; 
+            OnPropertyChanged(); 
+            RecalculateM2();
+            CalculateTotal(); 
+        }
     }
 
     private decimal _height;
@@ -230,6 +236,48 @@ public class OrderedProductViewModel : INotifyPropertyChanged
         }
     }
 
+    private string _unitPriceDisplayRaw = "";
+    private bool _suppressRawReset = false;
+
+    public string UnitPriceDisplay
+    {
+        get => _unitPriceDisplayRaw;
+        set
+        {
+            if (_unitPriceDisplayRaw != value)
+            {
+                _unitPriceDisplayRaw = value;
+                OnPropertyChanged();
+
+                // Try to parse and update the actual decimal UnitPrice without formatting back
+                // We replace . with , to allow user to type 2.50 and have it parsed as 2,50
+                if (decimal.TryParse(value.Replace(".", ","), System.Globalization.NumberStyles.Any, new System.Globalization.CultureInfo("pt-PT"), out decimal result))
+                {
+                    _suppressRawReset = true;
+                    UnitPrice = result;
+                    _suppressRawReset = false;
+                }
+            }
+        }
+    }
+
+    public void FormatUnitPriceOnUnfocus()
+    {
+        // 1. Sanitize: Replace . with ,
+        string sanitized = _unitPriceDisplayRaw.Replace(".", ",");
+        
+        // 2. Parse
+        if (decimal.TryParse(sanitized, System.Globalization.NumberStyles.Any, new System.Globalization.CultureInfo("pt-PT"), out decimal result))
+        {
+            // 3. Update Model
+            UnitPrice = result;
+            
+            // 4. Format Display (C2)
+            _unitPriceDisplayRaw = result.ToString("C2", new System.Globalization.CultureInfo("pt-PT"));
+            OnPropertyChanged(nameof(UnitPriceDisplay));
+        }
+    }
+
     private decimal _unitPrice;
     public decimal UnitPrice
     {
@@ -241,6 +289,12 @@ public class OrderedProductViewModel : INotifyPropertyChanged
                 _unitPrice = value; 
                 OnPropertyChanged(); 
                 CalculateTotal(); 
+                
+                if (!_suppressRawReset)
+                {
+                     _unitPriceDisplayRaw = _unitPrice.ToString("C2", new System.Globalization.CultureInfo("pt-PT"));
+                     OnPropertyChanged(nameof(UnitPriceDisplay));
+                }
             }
         }
     }
@@ -252,18 +306,46 @@ public class OrderedProductViewModel : INotifyPropertyChanged
         private set { _subtotal = value; OnPropertyChanged(); }
     }
 
+    public ICommand SelectColorCommand { get; }
+    public ICommand SelectSizeCommand { get; }
+
     public OrderedProductViewModel(Product product)
     {
         Product = product;
         UnitPrice = product.PRECOVENDA;
+        _unitPriceDisplayRaw = UnitPrice.ToString("C2", new System.Globalization.CultureInfo("pt-PT"));
+        
+        SelectColorCommand = new Command(OnSelectColor);
+        SelectSizeCommand = new Command(OnSelectSize);
+        
         CalculateTotal();
+    }
+
+    private async void OnSelectColor()
+    {
+        var popup = new ColorPickerPopup();
+        var result = await AppShell.Current.ShowPopupAsync(popup);
+        if (result is Cor cor)
+        {
+            Color = cor.NomeCor;
+        }
+    }
+
+    private async void OnSelectSize()
+    {
+        var popup = new SizePickerPopup();
+        var result = await AppShell.Current.ShowPopupAsync(popup);
+        if (result is Tamanho tamanho)
+        {
+            Size = tamanho.NomeTamanho;
+        }
     }
 
     private void RecalculateM2()
     {
         if (Height > 0 && Width > 0)
         {
-            M2 = Height * Width;
+            M2 = Height * Width * Quantity;
         }
         // If H or W is 0, we don't force M2 to 0, allowing manual entry if needed? 
         // Or we force it? Usually if dimensions change to 0, M2 should be 0.
@@ -280,13 +362,13 @@ public class OrderedProductViewModel : INotifyPropertyChanged
     private void CalculateTotal()
     {
         // Logic:
-        // If M2 > 0 -> Total = M2 * Qty * UnitPrice
-        // Else -> Total = Qty * UnitPrice
+        // If M2 > 0 -> Total = M2 * UnitPrice (M2 already includes Quantity)
+        // Else -> Total = Quantity * UnitPrice
 
         if (M2 > 0)
         {
             // Area based calculation
-            Subtotal = M2 * Quantity * UnitPrice;
+            Subtotal = M2 * UnitPrice;
         }
         else
         {

@@ -7,11 +7,14 @@
                Color="Transparent"
                CanBeDismissedByTappingOutsideOfPopup="True">
     
-    <Border StrokeShape="RoundRectangle 12" 
+    <Border StrokeShape="RoundRectangle 18" 
             BackgroundColor="{DynamicResource PageBackgroundColor}"
             WidthRequest="600"
             HeightRequest="600"
             Padding="20">
+        <Border.Shadow>
+            <Shadow Brush="Black" Offset="0,5" Radius="15" Opacity="0.2"/>
+        </Border.Shadow>
         
         <Grid RowDefinitions="Auto, Auto, *">
             <Label Text="Selecionar Produto" FontSize="18" FontAttributes="Bold" Margin="0,0,0,10"/>

@@ -3,38 +3,35 @@
                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
                xmlns:models="clr-namespace:NAVIGEST.macOS.Models"
-               x:Class="NAVIGEST.macOS.Popups.ClientPickerPopup"
+               x:Class="NAVIGEST.macOS.Popups.ColorPickerPopup"
                Color="Transparent"
                CanBeDismissedByTappingOutsideOfPopup="True">
     
     <Border StrokeShape="RoundRectangle 18" 
             BackgroundColor="{DynamicResource PageBackgroundColor}"
-            WidthRequest="500"
-            HeightRequest="600"
+            WidthRequest="320"
+            HeightRequest="450"
             Padding="20">
         <Border.Shadow>
             <Shadow Brush="Black" Offset="0,5" Radius="15" Opacity="0.2"/>
         </Border.Shadow>
         
         <Grid RowDefinitions="Auto, Auto, *">
-            <Label Text="Selecionar Cliente" FontSize="18" FontAttributes="Bold" Margin="0,0,0,10"/>
+            <Label Text="Selecionar Cor" FontSize="18" FontAttributes="Bold" Margin="0,0,0,10"/>
             
             <SearchBar Grid.Row="1" 
-                       Placeholder="Pesquisar cliente..." 
+                       Placeholder="Pesquisar cor..." 
                        TextChanged="OnSearchTextChanged"
                        Margin="0,0,0,10"/>
             
             <CollectionView Grid.Row="2" 
-                            x:Name="ClientsList" 
+                            x:Name="ColorsList" 
                             SelectionMode="Single"
                             SelectionChanged="OnSelectionChanged">
                 <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="models:Cliente">
+                    <DataTemplate x:DataType="models:Cor">
                         <Border StrokeThickness="0" Padding="10" Margin="0,2" BackgroundColor="{DynamicResource CardBackgroundColor}">
-                            <VerticalStackLayout>
-                                <Label Text="{Binding CLINOME}" FontAttributes="Bold" TextColor="{DynamicResource BodyTextColor}"/>
-                                <Label Text="{Binding CLICODIGO}" FontSize="12" TextColor="Gray"/>
-                            </VerticalStackLayout>
+                            <Label Text="{Binding NomeCor}" FontAttributes="Bold" TextColor="{DynamicResource BodyTextColor}"/>
                         </Border>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>

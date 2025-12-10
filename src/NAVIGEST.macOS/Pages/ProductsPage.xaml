@@ -247,19 +247,31 @@
                             <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
                                 <VerticalStackLayout Spacing="6" Grid.Column="0">
                                     <Label Text="{x:Static strings:AppResources.ProductsPage_CostPrice}" FontSize="13" TextColor="{DynamicResource EntryPlaceholderColor}" Margin="2,0,0,0"/>
-                                    <Entry Style="{StaticResource AppleEntry}" 
-                                           Placeholder="0,00 €" 
-                                           Text="{Binding Editing.PRECOCUSTO, Converter={StaticResource CurrencyConverter}}" 
-                                           Keyboard="Numeric"
-                                           Unfocused="OnPriceUnfocused"/>
+                                    <Grid>
+                                        <Entry Style="{StaticResource AppleEntry}" 
+                                               Placeholder="0,00" 
+                                               Text="{Binding CostPriceDisplay}" 
+                                               Keyboard="Numeric">
+                                            <Entry.Behaviors>
+                                                <behaviors:SelectAllOnFocusBehavior />
+                                            </Entry.Behaviors>
+                                        </Entry>
+                                        <Label Text="€" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,10,0" TextColor="Gray" InputTransparent="True"/>
+                                    </Grid>
                                 </VerticalStackLayout>
                                 <VerticalStackLayout Spacing="6" Grid.Column="1">
                                     <Label Text="{x:Static strings:AppResources.ProductsPage_SalePrice}" FontSize="13" TextColor="{DynamicResource EntryPlaceholderColor}" Margin="2,0,0,0"/>
-                                    <Entry Style="{StaticResource AppleEntry}" 
-                                           Placeholder="0,00 €" 
-                                           Text="{Binding Editing.PRECOVENDA, Converter={StaticResource CurrencyConverter}}" 
-                                           Keyboard="Numeric"
-                                           Unfocused="OnPriceUnfocused"/>
+                                    <Grid>
+                                        <Entry Style="{StaticResource AppleEntry}" 
+                                               Placeholder="0,00" 
+                                               Text="{Binding SalePriceDisplay}" 
+                                               Keyboard="Numeric">
+                                            <Entry.Behaviors>
+                                                <behaviors:SelectAllOnFocusBehavior />
+                                            </Entry.Behaviors>
+                                        </Entry>
+                                        <Label Text="€" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,10,0" TextColor="Gray" InputTransparent="True"/>
+                                    </Grid>
                                 </VerticalStackLayout>
                             </Grid>
 

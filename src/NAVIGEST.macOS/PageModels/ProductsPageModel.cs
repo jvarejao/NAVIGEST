@@ -7,6 +7,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -54,6 +55,40 @@ public class ProductsPageModel : INotifyPropertyChanged
             OnPropertyChanged();
             OnPropertyChanged(nameof(Editing));
             OnPropertyChanged(nameof(CanDelete));
+            OnPropertyChanged(nameof(CostPriceDisplay));
+            OnPropertyChanged(nameof(SalePriceDisplay));
+        }
+    }
+
+    public string CostPriceDisplay
+    {
+        get => Editing?.PRECOCUSTO.ToString("N2", CultureInfo.GetCultureInfo("pt-PT")) ?? "0,00";
+        set
+        {
+            if (Editing == null) return;
+            
+            var normalized = value?.Replace(".", ",") ?? "0";
+            if (decimal.TryParse(normalized, NumberStyles.Any, CultureInfo.GetCultureInfo("pt-PT"), out var result))
+            {
+                Editing.PRECOCUSTO = result;
+            }
+            OnPropertyChanged();
+        }
+    }
+
+    public string SalePriceDisplay
+    {
+        get => Editing?.PRECOVENDA.ToString("N2", CultureInfo.GetCultureInfo("pt-PT")) ?? "0,00";
+        set
+        {
+            if (Editing == null) return;
+            
+            var normalized = value?.Replace(".", ",") ?? "0";
+            if (decimal.TryParse(normalized, NumberStyles.Any, CultureInfo.GetCultureInfo("pt-PT"), out var result))
+            {
+                Editing.PRECOVENDA = result;
+            }
+            OnPropertyChanged();
         }
     }
 
