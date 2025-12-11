@@ -297,30 +297,22 @@ public class ClientsPageModel : INotifyPropertyChanged
         {
             if (c != null)
             {
-                // Navigate to ServicePage
-                // Assuming ServicePage takes a Cliente or we pass it via BindingContext
-                // For now, let's try to push the page
                 try 
                 {
-                    if (Application.Current?.MainPage is Shell shell)
-                    {
-                        // We might need to register the route or just push it
-                        // Let's assume we can push a new page instance
-                        // We need to find where ServicePage is. It is in Pages namespace.
-                        // We can't easily instantiate it here without reference, but we are in PageModels.
-                        // Ideally, use a NavigationService. 
-                        // For this quick fix, we will use AppShell.Current.Navigation
-                        
-                        // Since we can't reference the View from ViewModel easily without circular deps or DI,
-                        // We will use a weak approach or just show a toast for now if we can't find it.
-                        // Actually, we can use Shell navigation with route if registered.
-                        
-                        await Shell.Current.GoToAsync($"ServicePage?ClientId={c.CLICODIGO}");
-                    }
+                    var vm = new ServicePageModel 
+                    { 
+                        FilterClientId = c.CLICODIGO,
+                        FilterClientName = c.CLINOME
+                    };
+                    
+                    // Navegar para a página de serviços, passando o ViewModel configurado
+                    // O ServicePage irá chamar LoadAsync automaticamente
+                    await AppShell.Current.Navigation.PushAsync(new Pages.ServicePage(vm));
                 }
                 catch (Exception ex)
                 {
-                    await AppShell.DisplayToastAsync("Serviços: " + ex.Message);
+                    GlobalErro.TratarErro(ex);
+                    await AppShell.DisplayToastAsync("Erro ao abrir serviços: " + ex.Message);
                 }
             }
         });

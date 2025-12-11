@@ -49,6 +49,9 @@ public class ServicePageModel : INotifyPropertyChanged
     public ICommand DeleteCommand { get; }
     public ICommand ClearSearchCommand { get; }
 
+    public string? FilterClientId { get; set; }
+    public string? FilterClientName { get; set; }
+
     private CancellationTokenSource? _loadCts;
     private CancellationTokenSource? _searchCts;
 
@@ -117,7 +120,14 @@ public class ServicePageModel : INotifyPropertyChanged
             List<OrderInfoModel> list = null!;
             try
             {
-                list = await DatabaseService.GetOrdersLightAsync(null, token);
+                if (!string.IsNullOrEmpty(FilterClientId))
+                {
+                    list = await DatabaseService.GetOrdersByClientAsync(FilterClientId, token);
+                }
+                else
+                {
+                    list = await DatabaseService.GetOrdersLightAsync(null, token);
+                }
             }
             catch (OperationCanceledException)
             {

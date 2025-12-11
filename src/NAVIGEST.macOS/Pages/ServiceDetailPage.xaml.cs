@@ -21,13 +21,6 @@ public partial class ServiceDetailPage : ContentPage
     public UserSession.UserData CurrentUser => UserSession.Current.User;
     public ImageSource? CompanyLogoSource { get; private set; }
     
-    private string _debugInfo = "";
-    public string DebugInfo
-    {
-        get => _debugInfo;
-        set { _debugInfo = value; OnPropertyChanged(); }
-    }
-
     private bool _autoOpenPdf;
 
     public ServiceDetailPage(OrderInfoModel order, bool autoOpenPdf = false)
@@ -78,19 +71,18 @@ public partial class ServiceDetailPage : ContentPage
             }
             catch (Exception ex)
             {
-                DebugInfo += $"Erro no Logo: {ex.Message}\n";
+                System.Diagnostics.Debug.WriteLine($"Erro no Logo: {ex.Message}");
             }
         }
 
         if (CurrentUser.CompanyLogo != null && CurrentUser.CompanyLogo.Length > 0)
         {
-            DebugInfo += $"Logo encontrado: {CurrentUser.CompanyLogo.Length} bytes.\n";
             CompanyLogoSource = ImageSource.FromStream(() => new MemoryStream(CurrentUser.CompanyLogo));
             OnPropertyChanged(nameof(CompanyLogoSource));
         }
         else
         {
-            DebugInfo += "Logo NÃO encontrado ou vazio no UserSession.\n";
+            // Logo not found
         }
 
         // 2. Load Products
@@ -534,15 +526,8 @@ public partial class ServiceDetailPage : ContentPage
     {
         try
         {
-            DebugInfo += $"A carregar produtos para a Encomenda Nº: '{Order.OrderNo}'\n";
-            
-            // Run Debug Check
-            var debugResult = await DatabaseService.DebugCheckOrderAsync(Order.OrderNo);
-            DebugInfo += debugResult + "\n";
-
             // Tenta carregar produtos usando OrderNo, Numserv ou Servencomenda
             var list = await DatabaseService.GetOrderedProductsExtendedAsync(Order);
-            DebugInfo += $"GetOrderedProductsExtendedAsync retornou {list.Count} itens.\n";
             
             foreach (var item in list)
             {
@@ -551,22 +536,8 @@ public partial class ServiceDetailPage : ContentPage
         }
         catch (System.Exception ex)
         {
-            DebugInfo += $"Erro: {ex.Message}\n";
             await DisplayAlert(AppResources.Common_Error, string.Format(AppResources.Products_LoadError, ex.Message), AppResources.Common_OK);
         }
     }
 
-    private async void OnDebugClicked(object sender, EventArgs e)
-    {
-        try
-        {
-            var report = await DatabaseService.DebugRawSearchAsync(Order.OrderNo);
-            await DisplayAlert("Diagnóstico SQL", report, "OK");
-            DebugInfo += "\n" + report;
-        }
-        catch (Exception ex)
-        {
-            await DisplayAlert("Erro", ex.Message, "OK");
-        }
-    }
 }
