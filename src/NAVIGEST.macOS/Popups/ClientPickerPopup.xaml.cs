@@ -14,6 +14,11 @@ public partial class ClientPickerPopup : Popup
         LoadClients();
     }
 
+    private void OnCloseClicked(object sender, EventArgs e)
+    {
+        Close(null);
+    }
+
     private async void LoadClients()
     {
         LoadingIndicator.IsRunning = true;

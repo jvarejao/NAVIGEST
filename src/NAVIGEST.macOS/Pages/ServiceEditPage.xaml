@@ -26,51 +26,82 @@
                 
                 <!-- HEADER INFO -->
                 <Border StrokeShape="RoundRectangle 10" BackgroundColor="{DynamicResource CardBackgroundColor}" StrokeThickness="0" Padding="20">
-                    <Grid RowDefinitions="Auto, Auto" ColumnDefinitions="*, *, *" RowSpacing="20" ColumnSpacing="20">
+                    <Grid ColumnDefinitions="*, 180, 160, 160" ColumnSpacing="20">
                         
                         <!-- Client -->
                         <VerticalStackLayout Grid.Column="0">
                             <Label Text="Cliente" TextColor="Gray" FontSize="12"/>
                             <Grid ColumnDefinitions="*, Auto">
                                 <VerticalStackLayout>
-                                    <Label Text="{Binding ClientName}" FontAttributes="Bold" FontSize="16"/>
+                                    <Label Text="{Binding ClientName}" FontAttributes="Bold" FontSize="16" LineBreakMode="TailTruncation"/>
                                     <Label Text="{Binding ClientCode}" TextColor="Gray" FontSize="12"/>
                                 </VerticalStackLayout>
-                                <Button Grid.Column="1" Text="Selecionar" Command="{Binding SelectClientCommand}" HeightRequest="30" Padding="10,0" FontSize="12"/>
+                                <Button Grid.Column="1" 
+                                        Text="&#xF002;" 
+                                        FontFamily="FA7Solid" 
+                                        FontSize="16"
+                                        BackgroundColor="#190A84FF" 
+                                        TextColor="#0A84FF"
+                                        CornerRadius="8"
+                                        WidthRequest="40"
+                                        HeightRequest="40"
+                                        Padding="0"
+                                        Command="{Binding SelectClientCommand}" 
+                                        VerticalOptions="Center"
+                                        Margin="10,0,0,0"/>
                             </Grid>
                         </VerticalStackLayout>
 
-                        <!-- Creation Date -->
+                        <!-- Status -->
                         <VerticalStackLayout Grid.Column="1">
+                            <Label Text="Estado" TextColor="Gray" FontSize="12"/>
+                            <Border StrokeShape="RoundRectangle 8" 
+                                    StrokeThickness="1" 
+                                    Stroke="{DynamicResource EntryBorderColor}"
+                                    BackgroundColor="{DynamicResource EntryBackgroundColor}"
+                                    HeightRequest="34"
+                                    Padding="10,0">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding OpenStatusPickerCommand}"/>
+                                </Border.GestureRecognizers>
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <Label Text="{Binding Status}" VerticalOptions="Center" TextColor="{DynamicResource BodyTextColor}" LineBreakMode="TailTruncation"/>
+                                    <Label Grid.Column="1" Text="▼" FontSize="10" VerticalOptions="Center" TextColor="Gray" Margin="5,0,0,0"/>
+                                </Grid>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Creation Date -->
+                        <VerticalStackLayout Grid.Column="2">
                             <Label Text="Data Criação" TextColor="Gray" FontSize="12"/>
-                            <Label Text="{Binding CreationDate, StringFormat='{0:dd/MM/yyyy HH:mm}'}" FontAttributes="Bold" FontSize="16"/>
+                            <Label Text="{Binding CreationDate, StringFormat='{0:dd/MM/yyyy HH:mm}'}" FontAttributes="Bold" FontSize="16" VerticalOptions="Center" HeightRequest="34" VerticalTextAlignment="Center"/>
                         </VerticalStackLayout>
 
                         <!-- Delivery Date -->
-                        <VerticalStackLayout Grid.Column="2">
+                        <VerticalStackLayout Grid.Column="3">
                             <Label Text="Data Entrega" TextColor="Gray" FontSize="12"/>
-                            <DatePicker Date="{Binding DeliveryDate}" Format="dd/MM/yyyy"/>
-                        </VerticalStackLayout>
-
-                        <!-- Status -->
-                        <VerticalStackLayout Grid.Row="1" Grid.Column="0">
-                            <Label Text="Estado" TextColor="Gray" FontSize="12"/>
-                            <Picker ItemsSource="{Binding StatusOptions}" SelectedItem="{Binding Status}"/>
-                        </VerticalStackLayout>
-
-                        <!-- Observations -->
-                        <VerticalStackLayout Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2">
-                            <Label Text="Observações (Público)" TextColor="Gray" FontSize="12"/>
-                            <Editor Text="{Binding Observations}" HeightRequest="60" BackgroundColor="{DynamicResource CardBackgroundColor}" TextColor="{DynamicResource BodyTextColor}"/>
+                            <DatePicker Date="{Binding DeliveryDate}" 
+                                        Format="dd/MM/yyyy" 
+                                        HeightRequest="34" 
+                                        TextColor="{DynamicResource EntryTextColor}"
+                                        BackgroundColor="{DynamicResource EntryBackgroundColor}"/>
                         </VerticalStackLayout>
                     </Grid>
+                </Border>
+
+                <!-- PUBLIC OBS -->
+                <Border StrokeShape="RoundRectangle 10" BackgroundColor="{DynamicResource CardBackgroundColor}" StrokeThickness="0" Padding="20">
+                    <VerticalStackLayout>
+                        <Label Text="Observações (Público)" TextColor="Gray" FontSize="12"/>
+                        <Editor Text="{Binding Observations}" HeightRequest="80" BackgroundColor="{DynamicResource CardBackgroundColor}" TextColor="{DynamicResource BodyTextColor}" AutoSize="TextChanges"/>
+                    </VerticalStackLayout>
                 </Border>
 
                 <!-- INTERNAL OBS (Admin Only) -->
                 <Border StrokeShape="RoundRectangle 10" BackgroundColor="{DynamicResource CardBackgroundColor}" Stroke="Red" StrokeThickness="1" Padding="20" IsVisible="{Binding IsAdminOrFinance}">
                     <VerticalStackLayout>
                         <Label Text="Observações Internas (Admin/Financeiro)" TextColor="Red" FontSize="12" FontAttributes="Bold"/>
-                        <Editor Text="{Binding InternalObservations}" HeightRequest="60" BackgroundColor="{DynamicResource CardBackgroundColor}" TextColor="{DynamicResource BodyTextColor}"/>
+                        <Editor Text="{Binding InternalObservations}" HeightRequest="80" BackgroundColor="{DynamicResource CardBackgroundColor}" TextColor="{DynamicResource BodyTextColor}" AutoSize="TextChanges"/>
                     </VerticalStackLayout>
                 </Border>
 
@@ -78,7 +109,19 @@
                 <Border StrokeShape="RoundRectangle 10" BackgroundColor="{DynamicResource CardBackgroundColor}" StrokeThickness="0" Padding="0">
                     <VerticalStackLayout>
                         <!-- Table Header -->
-                        <Grid ColumnDefinitions="3*, 0.65*, 0.35*, 60, 60, 60, 80, 90, 90, 40" Padding="10" BackgroundColor="{DynamicResource PageBackgroundColor}">
+                        <Grid Padding="10" BackgroundColor="{DynamicResource PageBackgroundColor}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="3*" />
+                                <ColumnDefinition Width="0.65*" />
+                                <ColumnDefinition Width="0.35*" />
+                                <ColumnDefinition Width="60" />
+                                <ColumnDefinition Width="60" />
+                                <ColumnDefinition Width="60" />
+                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="{Binding FinancialColumnWidth}" />
+                                <ColumnDefinition Width="{Binding FinancialColumnWidth}" />
+                                <ColumnDefinition Width="40" />
+                            </Grid.ColumnDefinitions>
                             <Label Text="Produto" FontAttributes="Bold" FontSize="12" TextColor="{DynamicResource BodyTextColor}"/>
                             <Label Grid.Column="1" Text="Cor" FontAttributes="Bold" FontSize="12" TextColor="{DynamicResource BodyTextColor}"/>
                             <Label Grid.Column="2" Text="Tam" FontAttributes="Bold" FontSize="12" TextColor="{DynamicResource BodyTextColor}"/>
@@ -86,8 +129,8 @@
                             <Label Grid.Column="4" Text="Alt (m)" FontAttributes="Bold" HorizontalTextAlignment="Center" FontSize="12" TextColor="{DynamicResource BodyTextColor}"/>
                             <Label Grid.Column="5" Text="Larg (m)" FontAttributes="Bold" HorizontalTextAlignment="Center" FontSize="12" TextColor="{DynamicResource BodyTextColor}"/>
                             <Label Grid.Column="6" Text="M²" FontAttributes="Bold" HorizontalTextAlignment="Center" FontSize="12" TextColor="{DynamicResource BodyTextColor}"/>
-                            <Label Grid.Column="7" Text="Preço" FontAttributes="Bold" HorizontalTextAlignment="End" FontSize="12" TextColor="{DynamicResource BodyTextColor}"/>
-                            <Label Grid.Column="8" Text="Total" FontAttributes="Bold" HorizontalTextAlignment="End" FontSize="12" TextColor="{DynamicResource BodyTextColor}"/>
+                            <Label Grid.Column="7" Text="Preço" FontAttributes="Bold" HorizontalTextAlignment="End" FontSize="12" TextColor="{DynamicResource BodyTextColor}" IsVisible="{Binding ShowFinancials}"/>
+                            <Label Grid.Column="8" Text="Total" FontAttributes="Bold" HorizontalTextAlignment="End" FontSize="12" TextColor="{DynamicResource BodyTextColor}" IsVisible="{Binding ShowFinancials}"/>
                             <Label Grid.Column="9" Text="" />
                         </Grid>
 
@@ -95,7 +138,19 @@
                         <CollectionView ItemsSource="{Binding Items}" HeightRequest="300">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate>
-                                    <Grid ColumnDefinitions="3*, 0.65*, 0.35*, 60, 60, 60, 80, 90, 90, 40" Padding="5" RowSpacing="0">
+                                    <Grid Padding="5" RowSpacing="0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="3*" />
+                                            <ColumnDefinition Width="0.65*" />
+                                            <ColumnDefinition Width="0.35*" />
+                                            <ColumnDefinition Width="60" />
+                                            <ColumnDefinition Width="60" />
+                                            <ColumnDefinition Width="60" />
+                                            <ColumnDefinition Width="80" />
+                                            <ColumnDefinition Width="{Binding FinancialColumnWidth}" />
+                                            <ColumnDefinition Width="{Binding FinancialColumnWidth}" />
+                                            <ColumnDefinition Width="40" />
+                                        </Grid.ColumnDefinitions>
                                         <VerticalStackLayout VerticalOptions="Center">
                                             <Label Text="{Binding ProductName}" FontAttributes="Bold" LineBreakMode="TailTruncation" TextColor="{DynamicResource BodyTextColor}"/>
                                             <Label Text="{Binding ProductCode}" FontSize="10" TextColor="Gray"/>
@@ -133,7 +188,7 @@
                                         <Entry Grid.Column="6" Text="{Binding M2, StringFormat='{0:N2}'}" IsReadOnly="True" HorizontalTextAlignment="Center" FontSize="12" TextColor="{DynamicResource BodyTextColor}" BackgroundColor="Transparent" HeightRequest="30"/>
                                         
                                         <!-- Price with Euro Symbol -->
-                                        <Grid Grid.Column="7" ColumnDefinitions="*, Auto">
+                                        <Grid Grid.Column="7" ColumnDefinitions="*, Auto" IsVisible="{Binding ShowFinancials}">
                                             <Entry Text="{Binding UnitPriceDisplay}" Keyboard="Numeric" HorizontalTextAlignment="End" FontSize="12" TextColor="{DynamicResource BodyTextColor}" BackgroundColor="Transparent" HeightRequest="30" Unfocused="UnitPrice_Unfocused">
                                                 <Entry.Behaviors>
                                                     <behaviors:SelectAllOnFocusBehavior />
@@ -141,10 +196,10 @@
                                             </Entry>
                                         </Grid>
 
-                                        <Label Grid.Column="8" Text="{Binding Subtotal, StringFormat='{0:N2} €'}" HorizontalTextAlignment="End" VerticalOptions="Center" FontAttributes="Bold" FontSize="12" TextColor="{DynamicResource BodyTextColor}"/>
+                                        <Label Grid.Column="8" Text="{Binding Subtotal, StringFormat='{0:N2} €'}" HorizontalTextAlignment="End" VerticalOptions="Center" FontAttributes="Bold" FontSize="12" TextColor="{DynamicResource BodyTextColor}" IsVisible="{Binding ShowFinancials}"/>
                                         
                                         <Button Grid.Column="9" Text="✕" 
-                                                Command="{Binding Source={RelativeSource AncestorType={x:Type models:ServiceEditPageModel}}, Path=RemoveLineCommand}"
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.RemoveLineCommand}"
                                                 CommandParameter="{Binding .}"
                                                 BackgroundColor="Transparent" TextColor="Red" Padding="0"/>
                                     </Grid>
@@ -158,7 +213,7 @@
                 </Border>
 
                 <!-- TOTALS -->
-                <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,40">
+                <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,40" IsVisible="{Binding ShowFinancials}">
                     <Grid Grid.Column="1" RowDefinitions="Auto, Auto, Auto" ColumnDefinitions="120, 120" RowSpacing="10">
                         <Label Text="Subtotal:" TextColor="Gray" HorizontalTextAlignment="End"/>
                         <Label Grid.Column="1" Text="{Binding SubTotal, StringFormat='{0:N2} €'}" HorizontalTextAlignment="End" FontAttributes="Bold" TextColor="{DynamicResource BodyTextColor}"/>

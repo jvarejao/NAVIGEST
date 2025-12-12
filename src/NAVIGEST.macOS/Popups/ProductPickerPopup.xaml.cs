@@ -6,12 +6,34 @@ namespace NAVIGEST.macOS.Popups;
 
 public partial class ProductPickerPopup : Popup
 {
-    private List<Product> _allProducts = new();
+    private List<ProductItemViewModel> _allProducts = new();
+    private Cliente? _contextClient;
 
-    public ProductPickerPopup()
+    public ProductPickerPopup(Cliente? client = null)
     {
         InitializeComponent();
+        _contextClient = client;
         LoadProducts();
+    }
+
+    public bool ShowFinancials
+    {
+        get
+        {
+            var user = UserSession.Current.User;
+            if (user == null) return false;
+            if (user.IsAdmin || user.IsFinancial) return true;
+
+            if (string.Equals(user.Role, "VENDEDOR", StringComparison.OrdinalIgnoreCase))
+            {
+                if (_contextClient != null && !string.IsNullOrWhiteSpace(_contextClient.VENDEDOR) &&
+                    string.Equals(_contextClient.VENDEDOR.Trim(), user.Name.Trim(), StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 
     private async void LoadProducts()
@@ -19,7 +41,9 @@ public partial class ProductPickerPopup : Popup
         LoadingIndicator.IsRunning = true;
         try
         {
-            _allProducts = await DatabaseService.GetProductsAsync();
+            var products = await DatabaseService.GetProductsAsync();
+            var show = ShowFinancials;
+            _allProducts = products.Select(p => new ProductItemViewModel { Product = p, ShowPrice = show }).ToList();
             ProductsList.ItemsSource = _allProducts;
         }
         catch (Exception ex)
@@ -42,16 +66,22 @@ public partial class ProductPickerPopup : Popup
         {
             var lower = e.NewTextValue.ToLower();
             ProductsList.ItemsSource = _allProducts.Where(p => 
-                (p.PRODNOME?.ToLower().Contains(lower) ?? false) || 
-                (p.PRODCODIGO?.ToLower().Contains(lower) ?? false)).ToList();
+                (p.Product.PRODNOME?.ToLower().Contains(lower) ?? false) || 
+                (p.Product.PRODCODIGO?.ToLower().Contains(lower) ?? false)).ToList();
         }
     }
 
     private void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (e.CurrentSelection.FirstOrDefault() is Product selected)
+        if (e.CurrentSelection.FirstOrDefault() is ProductItemViewModel selected)
         {
-            Close(selected);
+            Close(selected.Product);
         }
     }
+}
+
+public class ProductItemViewModel
+{
+    public Product Product { get; set; } = new();
+    public bool ShowPrice { get; set; }
 }

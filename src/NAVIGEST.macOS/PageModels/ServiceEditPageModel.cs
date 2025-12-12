@@ -25,6 +25,14 @@ public class ServiceEditPageModel : INotifyPropertyChanged
             OnPropertyChanged();
             OnPropertyChanged(nameof(ClientCode));
             OnPropertyChanged(nameof(ClientName));
+            OnPropertyChanged(nameof(ShowFinancials));
+            OnPropertyChanged(nameof(FinancialColumnWidth));
+
+            foreach (var item in Items)
+            {
+                item.ShowFinancials = ShowFinancials;
+                item.FinancialColumnWidth = FinancialColumnWidth;
+            }
         }
     }
 
@@ -64,6 +72,28 @@ public class ServiceEditPageModel : INotifyPropertyChanged
 
     public bool IsAdminOrFinance => UserSession.Current.User?.IsFinancial ?? false;
 
+    public bool ShowFinancials
+    {
+        get
+        {
+            var user = UserSession.Current.User;
+            if (user == null) return false;
+            if (user.IsAdmin || user.IsFinancial) return true;
+
+            if (string.Equals(user.Role, "VENDEDOR", StringComparison.OrdinalIgnoreCase))
+            {
+                if (SelectedClient != null && !string.IsNullOrWhiteSpace(SelectedClient.VENDEDOR) &&
+                    string.Equals(SelectedClient.VENDEDOR.Trim(), user.Name.Trim(), StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    public GridLength FinancialColumnWidth => ShowFinancials ? new GridLength(90) : new GridLength(0);
+
     // Lines
     public ObservableCollection<OrderedProductViewModel> Items { get; } = new();
 
@@ -75,6 +105,7 @@ public class ServiceEditPageModel : INotifyPropertyChanged
 
     // Commands
     public ICommand SelectClientCommand { get; }
+    public ICommand OpenStatusPickerCommand { get; }
     public ICommand AddLineCommand { get; }
     public ICommand RemoveLineCommand { get; }
     public ICommand SaveCommand { get; }
@@ -83,10 +114,21 @@ public class ServiceEditPageModel : INotifyPropertyChanged
     public ServiceEditPageModel()
     {
         SelectClientCommand = new Command(OnSelectClient);
+        OpenStatusPickerCommand = new Command(OnOpenStatusPicker);
         AddLineCommand = new Command(OnAddLine);
         RemoveLineCommand = new Command<OrderedProductViewModel>(OnRemoveLine);
         SaveCommand = new Command(OnSave);
         CancelCommand = new Command(OnCancel);
+    }
+
+    private async void OnOpenStatusPicker()
+    {
+        var popup = new StatusPickerPopup(StatusOptions);
+        var result = await AppShell.Current.ShowPopupAsync(popup);
+        if (result is string status)
+        {
+            Status = status;
+        }
     }
 
     private async void OnSelectClient()
@@ -101,11 +143,13 @@ public class ServiceEditPageModel : INotifyPropertyChanged
 
     private async void OnAddLine()
     {
-        var popup = new ProductPickerPopup();
+        var popup = new ProductPickerPopup(SelectedClient);
         var result = await AppShell.Current.ShowPopupAsync(popup);
         if (result is Product product)
         {
             var newItem = new OrderedProductViewModel(product);
+            newItem.ShowFinancials = ShowFinancials;
+            newItem.FinancialColumnWidth = FinancialColumnWidth;
             newItem.PropertyChanged += OnItemPropertyChanged;
             Items.Add(newItem);
             RecalculateTotals();
@@ -166,6 +210,20 @@ public class OrderedProductViewModel : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler? PropertyChanged;
     void OnPropertyChanged([CallerMemberName] string? n = null) => PropertyChanged?.Invoke(this, new(n));
+
+    private GridLength _financialColumnWidth = new GridLength(0);
+    public GridLength FinancialColumnWidth
+    {
+        get => _financialColumnWidth;
+        set { _financialColumnWidth = value; OnPropertyChanged(); }
+    }
+
+    private bool _showFinancials;
+    public bool ShowFinancials
+    {
+        get => _showFinancials;
+        set { _showFinancials = value; OnPropertyChanged(); }
+    }
 
     public Product Product { get; }
 

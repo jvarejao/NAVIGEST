@@ -2,11 +2,10 @@
 <toolkit:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-               xmlns:models="clr-namespace:NAVIGEST.macOS.Models"
-               x:Class="NAVIGEST.macOS.Popups.ClientPickerPopup"
+               x:Class="NAVIGEST.macOS.Popups.StatusPickerPopup"
                Color="Transparent"
                CanBeDismissedByTappingOutsideOfPopup="True">
-    
+
     <Border StrokeShape="RoundRectangle 18" 
             BackgroundColor="{DynamicResource PageBackgroundColor}"
             WidthRequest="500"
@@ -16,9 +15,10 @@
             <Shadow Brush="Black" Offset="0,5" Radius="15" Opacity="0.2"/>
         </Border.Shadow>
         
-        <Grid RowDefinitions="Auto, Auto, *">
+        <Grid RowDefinitions="Auto, *">
+            <!-- Header -->
             <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,10">
-                <Label Text="Selecionar Cliente" FontSize="18" FontAttributes="Bold" VerticalOptions="Center"/>
+                <Label Text="Selecionar Estado" FontSize="18" FontAttributes="Bold" VerticalOptions="Center"/>
                 <Button Grid.Column="1" 
                         Text="✕" 
                         Clicked="OnCloseClicked"
@@ -29,28 +29,19 @@
                         HeightRequest="40"/>
             </Grid>
             
-            <SearchBar Grid.Row="1" 
-                       Placeholder="Pesquisar cliente..." 
-                       TextChanged="OnSearchTextChanged"
-                       Margin="0,0,0,10"/>
-            
-            <CollectionView Grid.Row="2" 
-                            x:Name="ClientsList" 
+            <!-- List -->
+            <CollectionView Grid.Row="1" 
+                            x:Name="StatusList" 
                             SelectionMode="Single"
                             SelectionChanged="OnSelectionChanged">
                 <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="models:Cliente">
-                        <Border StrokeThickness="0" Padding="10" Margin="0,2" BackgroundColor="{DynamicResource CardBackgroundColor}">
-                            <VerticalStackLayout>
-                                <Label Text="{Binding CLINOME}" FontAttributes="Bold" TextColor="{DynamicResource BodyTextColor}"/>
-                                <Label Text="{Binding CLICODIGO}" FontSize="12" TextColor="Gray"/>
-                            </VerticalStackLayout>
+                    <DataTemplate>
+                        <Border StrokeThickness="0" Padding="15" Margin="0,2" BackgroundColor="{DynamicResource CardBackgroundColor}" StrokeShape="RoundRectangle 8">
+                            <Label Text="{Binding .}" FontAttributes="Bold" TextColor="{DynamicResource BodyTextColor}" VerticalOptions="Center"/>
                         </Border>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
-            
-            <ActivityIndicator Grid.Row="2" x:Name="LoadingIndicator" IsRunning="False" HorizontalOptions="Center" VerticalOptions="Center"/>
         </Grid>
     </Border>
 </toolkit:Popup>

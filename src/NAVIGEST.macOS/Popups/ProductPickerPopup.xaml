@@ -3,6 +3,7 @@
                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
                xmlns:models="clr-namespace:NAVIGEST.macOS.Models"
+               xmlns:popups="clr-namespace:NAVIGEST.macOS.Popups"
                x:Class="NAVIGEST.macOS.Popups.ProductPickerPopup"
                Color="Transparent"
                CanBeDismissedByTappingOutsideOfPopup="True">
@@ -29,14 +30,15 @@
                             SelectionMode="Single"
                             SelectionChanged="OnSelectionChanged">
                 <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="models:Product">
+                    <DataTemplate>
                         <Border StrokeThickness="0" Padding="10" Margin="0,2" BackgroundColor="{DynamicResource CardBackgroundColor}">
                             <Grid ColumnDefinitions="*, Auto">
                                 <VerticalStackLayout>
-                                    <Label Text="{Binding PRODNOME}" FontAttributes="Bold" TextColor="{DynamicResource BodyTextColor}"/>
-                                    <Label Text="{Binding PRODCODIGO}" FontSize="12" TextColor="Gray"/>
+                                    <Label Text="{Binding Product.PRODNOME}" FontAttributes="Bold" TextColor="{DynamicResource BodyTextColor}"/>
+                                    <Label Text="{Binding Product.PRODCODIGO}" FontSize="12" TextColor="Gray"/>
                                 </VerticalStackLayout>
-                                <Label Grid.Column="1" Text="{Binding PRECOVENDA, StringFormat='{0:C}'}" VerticalOptions="Center" TextColor="{DynamicResource BodyTextColor}"/>
+                                <Label Grid.Column="1" Text="{Binding Product.PRECOVENDA, StringFormat='{0:C}'}" VerticalOptions="Center" TextColor="{DynamicResource BodyTextColor}"
+                                       IsVisible="{Binding ShowPrice}"/>
                             </Grid>
                         </Border>
                     </DataTemplate>
