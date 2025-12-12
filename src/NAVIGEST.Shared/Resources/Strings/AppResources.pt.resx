@@ -581,4 +581,61 @@
   <data name="Products_LoadError" xml:space="preserve">
     <value>Falha ao carregar produtos: {0}</value>
   </data>
+  <data name="ServicePage_Title" xml:space="preserve">
+    <value>Serviços</value>
+  </data>
+  <data name="ServicePage_SearchPlaceholder" xml:space="preserve">
+    <value>Pesquisar por nº, cliente ou estado…</value>
+  </data>
+  <data name="ServicePage_NewService" xml:space="preserve">
+    <value>Novo Serviço</value>
+  </data>
+  <data name="ServicePage_CreatedLabel" xml:space="preserve">
+    <value>Criado: {0:dd/MM/yyyy}</value>
+  </data>
+  <data name="ServicePage_DeliveryLabel" xml:space="preserve">
+    <value>Entrega: {0:dd/MM/yyyy}</value>
+  </data>
+  <data name="ServicePage_ReceivedLabel" xml:space="preserve">
+    <value>Recebido: {0:N2} €</value>
+  </data>
+  <data name="ServicePage_OwedLabel" xml:space="preserve">
+    <value>Deve: {0:N2} €</value>
+  </data>
+  <data name="ServicePage_EmptyTitle" xml:space="preserve">
+    <value>Sem serviços para mostrar</value>
+  </data>
+  <data name="ServicePage_EmptyMessage" xml:space="preserve">
+    <value>Verifique a ligação à base de dados ou crie um novo serviço.</value>
+  </data>
+  <data name="Sync_FolderTitle" xml:space="preserve">
+    <value>Sincronização de Pastas</value>
+  </data>
+  <data name="Sync_FolderMessage" xml:space="preserve">
+    <value>Detetados {0} clientes sem pastas sincronizadas.\nDeseja criar a estrutura de pastas para eles agora?</value>
+  </data>
+  <data name="Sync_Yes" xml:space="preserve">
+    <value>Sim, Sincronizar</value>
+  </data>
+  <data name="Sync_NotNow" xml:space="preserve">
+    <value>Agora não</value>
+  </data>
+  <data name="Sync_ReportTitle" xml:space="preserve">
+    <value>Relatório</value>
+  </data>
+  <data name="Sync_ReportMessage" xml:space="preserve">
+    <value>Sincronização concluída.\nSucesso: {0}\nErros/Ignorados: {1}</value>
+  </data>
+  <data name="Sync_Starting" xml:space="preserve">
+    <value>A iniciar sincronização...</value>
+  </data>
+  <data name="ClientsPage_VendorPrefix" xml:space="preserve">
+    <value>Vend:</value>
+  </data>
+  <data name="ClientsPage_PreviousYear" xml:space="preserve">
+    <value>Ano Anterior</value>
+  </data>
+  <data name="ClientsPage_CurrentYear" xml:space="preserve">
+    <value>Ano Atual</value>
+  </data>
 </root>

@@ -124,23 +124,30 @@
                                 <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" HorizontalOptions="End" Spacing="4" MinimumWidthRequest="100">
                                     
                                     <!-- Vendedor -->
-                                    <Label Text="{Binding VENDEDOR, StringFormat='Vend: {0}'}" 
-                                           FontSize="14" 
+                                    <Label FontSize="14" 
                                            TextColor="{DynamicResource EntryPlaceholderColor}" 
                                            HorizontalOptions="End"
-                                           IsVisible="{Binding VENDEDOR, Converter={StaticResource IsNotNullOrEmptyConverter}}"/>
+                                           IsVisible="{Binding VENDEDOR, Converter={StaticResource IsNotNullOrEmptyConverter}}">
+                                        <Label.FormattedText>
+                                            <FormattedString>
+                                                <Span Text="{x:Static strings:AppResources.ClientsPage_VendorPrefix}" />
+                                                <Span Text=" " />
+                                                <Span Text="{Binding VENDEDOR}" />
+                                            </FormattedString>
+                                        </Label.FormattedText>
+                                    </Label>
 
                                     <!-- Sales Stats -->
                                     <HorizontalStackLayout Spacing="16" HorizontalOptions="End" IsVisible="{Binding CanSeeFinancials}">
                                         <!-- Previous Year -->
                                         <VerticalStackLayout Spacing="0">
-                                            <Label Text="Ano Anterior" FontSize="10" TextColor="{DynamicResource EntryPlaceholderColor}" HorizontalOptions="End"/>
+                                            <Label Text="{x:Static strings:AppResources.ClientsPage_PreviousYear}" FontSize="10" TextColor="{DynamicResource EntryPlaceholderColor}" HorizontalOptions="End"/>
                                             <Label Text="{Binding VendasAnoAnterior, StringFormat='{0:N2} €'}" FontSize="14" FontAttributes="Bold" TextColor="{DynamicResource BodyTextColor}" HorizontalOptions="End"/>
                                         </VerticalStackLayout>
 
                                         <!-- Current Year -->
                                         <VerticalStackLayout Spacing="0">
-                                            <Label Text="Ano Atual" FontSize="10" TextColor="{DynamicResource EntryPlaceholderColor}" HorizontalOptions="End"/>
+                                            <Label Text="{x:Static strings:AppResources.ClientsPage_CurrentYear}" FontSize="10" TextColor="{DynamicResource EntryPlaceholderColor}" HorizontalOptions="End"/>
                                             <Label Text="{Binding VendasAnoAtual, StringFormat='{0:N2} €'}" FontSize="14" FontAttributes="Bold" TextColor="#28CD41" HorizontalOptions="End"/>
                                         </VerticalStackLayout>
                                     </HorizontalStackLayout>

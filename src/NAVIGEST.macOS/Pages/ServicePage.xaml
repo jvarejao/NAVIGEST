@@ -7,13 +7,15 @@
              xmlns:behaviors="clr-namespace:NAVIGEST.macOS.Behaviors"
              xmlns:pages="clr-namespace:NAVIGEST.macOS.Pages"
              xmlns:converters="clr-namespace:NAVIGEST.macOS.Converters"
+             xmlns:strings="clr-namespace:NAVIGEST.Shared.Resources.Strings;assembly=NAVIGEST.Shared"
              BackgroundColor="{DynamicResource PageBackgroundColor}"
-             Title="Serviços"
+             Title="{x:Static strings:AppResources.ServicePage_Title}"
              Loaded="OnPageLoaded">
 
     <ContentPage.Resources>
         <ResourceDictionary>
             <converters:DoubleComparisonConverter x:Key="DoubleComparisonConverter" />
+            <converters:StringFormatConverter x:Key="StringFormatConverter" />
             <Style TargetType="Entry" x:Key="FormEntry">
                 <Setter Property="HeightRequest" Value="44"/>
                 <Setter Property="FontSize" Value="15"/>
@@ -40,7 +42,7 @@
                         HeightRequest="44"
                         VerticalOptions="Center">
                     <Grid ColumnDefinitions="*,Auto">
-                        <Entry Placeholder="Pesquisar por nº, cliente ou estado…" 
+                        <Entry Placeholder="{x:Static strings:AppResources.ServicePage_SearchPlaceholder}" 
                                Text="{Binding Filter}" 
                                BackgroundColor="Transparent"
                                TextColor="{DynamicResource BodyTextColor}"
@@ -64,7 +66,7 @@
 
                 <!-- Add Button -->
                 <Button Grid.Column="1" 
-                        Text="Novo Serviço" 
+                        Text="{x:Static strings:AppResources.ServicePage_NewService}" 
                         Command="{Binding NewCommand}"
                         BackgroundColor="#0A84FF" 
                         TextColor="White" 
@@ -116,11 +118,11 @@
                                                TextColor="{DynamicResource BodyTextColor}"/>
                                     </HorizontalStackLayout>
 
-                                    <Label Text="{Binding OrderDate, StringFormat='Criado: {0:dd/MM/yyyy}'}" 
+                                    <Label Text="{Binding OrderDate, Converter={StaticResource StringFormatConverter}, ConverterParameter={x:Static strings:AppResources.ServicePage_CreatedLabel}}" 
                                            FontSize="14" 
                                            TextColor="{DynamicResource EntryPlaceholderColor}"/>
 
-                                    <Label Text="{Binding OrderDateEnt, StringFormat='Entrega: {0:dd/MM/yyyy}', TargetNullValue='-'}" 
+                                    <Label Text="{Binding OrderDateEnt, Converter={StaticResource StringFormatConverter}, ConverterParameter={x:Static strings:AppResources.ServicePage_DeliveryLabel}, TargetNullValue='-'}" 
                                            FontSize="14" 
                                            TextColor="{DynamicResource EntryPlaceholderColor}"/>
                                 </VerticalStackLayout>
@@ -138,12 +140,12 @@
                                            TextColor="{DynamicResource BodyTextColor}"
                                            HorizontalTextAlignment="End"/>
                                     
-                                    <Label Text="{Binding VALORPAGO, StringFormat='Recebido: {0:N2} €'}" 
+                                    <Label Text="{Binding VALORPAGO, Converter={StaticResource StringFormatConverter}, ConverterParameter={x:Static strings:AppResources.ServicePage_ReceivedLabel}}" 
                                            FontSize="12" 
                                            TextColor="#28CD41"
                                            HorizontalTextAlignment="End"/>
 
-                                    <Label Text="{Binding VALORPENDENTE, StringFormat='Deve: {0:N2} €'}" 
+                                    <Label Text="{Binding VALORPENDENTE, Converter={StaticResource StringFormatConverter}, ConverterParameter={x:Static strings:AppResources.ServicePage_OwedLabel}}" 
                                            FontSize="12" 
                                            TextColor="#FF3B30"
                                            HorizontalTextAlignment="End"/>
@@ -228,8 +230,8 @@
                 </CollectionView.ItemTemplate>
                 <CollectionView.EmptyView>
                     <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="10">
-                        <Label Text="Sem serviços para mostrar" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource BodyTextColor}" HorizontalOptions="Center"/>
-                        <Label Text="Verifique a ligação à base de dados ou crie um novo serviço." FontSize="14" TextColor="{DynamicResource BodyTextColor}" Opacity="0.7" HorizontalOptions="Center"/>
+                        <Label Text="{x:Static strings:AppResources.ServicePage_EmptyTitle}" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource BodyTextColor}" HorizontalOptions="Center"/>
+                        <Label Text="{x:Static strings:AppResources.ServicePage_EmptyMessage}" FontSize="14" TextColor="{DynamicResource BodyTextColor}" Opacity="0.7" HorizontalOptions="Center"/>
                     </VerticalStackLayout>
                 </CollectionView.EmptyView>
             </CollectionView>

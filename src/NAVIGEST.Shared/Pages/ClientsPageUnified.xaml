@@ -3,8 +3,9 @@
              x:Name="ClientsPageRoot"
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:res="clr-namespace:NAVIGEST.Shared.Resources.Strings"
              BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}"
-             Title="Clientes">
+             Title="{x:Static res:AppResources.ClientsPage_Title}">
 
   <ContentPage.Resources>
     <ResourceDictionary>
@@ -18,7 +19,7 @@
       <!-- Header -->
       <Grid Padding="16,16,16,12" BackgroundColor="{AppThemeBinding Light=#F2F2F7, Dark=#000000}">
         <SearchBar x:Name="SearchBar"
-                   Placeholder="Pesquisar clientes..."
+                   Placeholder="{x:Static res:AppResources.Common_SearchPlaceholder}"
                    PlaceholderColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}"
                    TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
                    BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"
@@ -236,9 +237,9 @@
         <VerticalStackLayout Spacing="20" Padding="16">
 
           <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,8,0,0">
-            <Button Grid.Column="0" Text="Cancelar"
+            <Button Grid.Column="0" Text="{x:Static res:AppResources.Common_Cancel}"
                     Style="{StaticResource AppleTextButton}" Clicked="OnCancelEditTapped"/>
-            <Label Grid.Column="1" x:Name="FormTitle" Text="Novo Cliente"
+            <Label Grid.Column="1" x:Name="FormTitle" Text="{x:Static res:AppResources.ClientsPage_NewClient}"
                    FontSize="17" FontAttributes="Bold"
                    HorizontalOptions="Center" VerticalOptions="Center"
                    TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}">
@@ -255,7 +256,7 @@
             <VerticalStackLayout Spacing="0">
               <!-- Código -->
               <Grid Padding="16,12" ColumnDefinitions="100,*">
-                <Label Text="Código" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
+                <Label Text="{x:Static res:AppResources.Common_Code}" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
                 <Entry Grid.Column="1" x:Name="CodigoEntry" Text="{Binding Editing.CLICODIGO}" IsReadOnly="True"
                        BackgroundColor="Transparent" TextColor="{AppThemeBinding Light=#8E8E93, Dark=#8E8E93}" HorizontalTextAlignment="End"/>
               </Grid>
@@ -263,15 +264,15 @@
 
               <!-- Nome -->
               <Grid Padding="16,12" ColumnDefinitions="100,*">
-                <Label Text="Nome" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
+                <Label Text="{x:Static res:AppResources.Common_Name}" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
                 <Entry Grid.Column="1" x:Name="NomeEntry" Text="{Binding Editing.CLINOME}"
-                       BackgroundColor="Transparent" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" HorizontalTextAlignment="End" Placeholder="Nome completo" PlaceholderColor="{AppThemeBinding Light=#C6C6C8, Dark=#8E8E93}"/>
+                       BackgroundColor="Transparent" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" HorizontalTextAlignment="End" Placeholder="{x:Static res:AppResources.ClientsPage_ClientNamePlaceholder}" PlaceholderColor="{AppThemeBinding Light=#C6C6C8, Dark=#8E8E93}"/>
               </Grid>
               <BoxView HeightRequest="0.5" Color="{AppThemeBinding Light=#C6C6C8, Dark=#38383A}" Margin="16,0,0,0"/>
 
               <!-- Telefone -->
               <Grid Padding="16,12" ColumnDefinitions="100,*">
-                <Label Text="Telefone" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
+                <Label Text="{x:Static res:AppResources.Common_Phone}" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
                 <Grid Grid.Column="1" RowDefinitions="Auto,2" ColumnDefinitions="Auto,*" ColumnSpacing="8">
                   <Picker x:Name="DialCodePicker"
                           ItemsSource="{Binding DialCodes}"
@@ -282,7 +283,7 @@
                           WidthRequest="80"
                           BackgroundColor="Transparent"
                           TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}"
-                          Title="Indicativo"/>
+                          Title="{x:Static res:AppResources.Common_DialCode}"/>
                   <Entry Grid.Column="1" x:Name="TelefoneEntry" Text="{Binding PhoneBody}" Keyboard="Telephone"
                          BackgroundColor="Transparent" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" HorizontalTextAlignment="Start" Placeholder="916 000 000" PlaceholderColor="{AppThemeBinding Light=#C6C6C8, Dark=#8E8E93}"/>
                   <BoxView Grid.Row="1" Grid.ColumnSpan="2" HeightRequest="2"
@@ -295,7 +296,7 @@
 
               <!-- Email -->
               <Grid Padding="16,12" ColumnDefinitions="100,*">
-                <Label Text="Email" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
+                <Label Text="{x:Static res:AppResources.Common_Email}" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
                 <Grid Grid.Column="1" RowDefinitions="Auto,2">
                   <Entry x:Name="EmailEntry" Text="{Binding Editing.EMAIL}" Keyboard="Email"
                          BackgroundColor="Transparent" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" HorizontalTextAlignment="End" Placeholder="email@exemplo.com" PlaceholderColor="{AppThemeBinding Light=#C6C6C8, Dark=#8E8E93}"/>
@@ -309,7 +310,7 @@
 
               <!-- Vendedor -->
               <Grid Padding="16,12" ColumnDefinitions="100,*">
-                <Label Text="Vendedor" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
+                <Label Text="{x:Static res:AppResources.ClientsPage_Salesperson}" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
                 <Grid Grid.Column="1" ColumnDefinitions="Auto,*" ColumnSpacing="12">
                   <Button x:Name="AddVendedorButton"
                           WidthRequest="40"
@@ -339,7 +340,7 @@
 
               <!-- Valor Crédito -->
               <Grid Padding="16,12" ColumnDefinitions="100,*">
-                <Label Text="Valor Crédito" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
+                <Label Text="{x:Static res:AppResources.ClientsPage_CreditValue}" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
                 <Entry Grid.Column="1" x:Name="ValorCreditoEntry" Text="{Binding Editing.VALORCREDITO}" Keyboard="Numeric"
                        BackgroundColor="Transparent" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" HorizontalTextAlignment="End" Placeholder="0,00" PlaceholderColor="{AppThemeBinding Light=#C6C6C8, Dark=#8E8E93}"
                        Focused="OnValorCreditoFocused" Unfocused="OnValorCreditoUnfocused"/>
@@ -353,12 +354,12 @@
                   Stroke="Transparent" Padding="0">
             <VerticalStackLayout Spacing="0">
               <Grid Padding="16,12" ColumnDefinitions="*,Auto">
-                <Label Text="Cliente Externo" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
+                <Label Text="{x:Static res:AppResources.ClientsPage_ExternalLabel}" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
                 <Switch Grid.Column="1" x:Name="ExternoSwitch" IsToggled="{Binding Editing.EXTERNO, Mode=TwoWay}"/>
               </Grid>
               <BoxView HeightRequest="0.5" Color="{AppThemeBinding Light=#C6C6C8, Dark#38383A}" Margin="16,0,0,0"/>
               <Grid Padding="16,12" ColumnDefinitions="*,Auto">
-                <Label Text="Anulado" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
+                <Label Text="{x:Static res:AppResources.ClientsPage_CancelledLabel}" TextColor="{AppThemeBinding Light=#000000, Dark=#FFFFFF}" VerticalOptions="Center"/>
                 <Switch Grid.Column="1" x:Name="AnuladoSwitch" IsToggled="{Binding Editing.ANULADO, Mode=TwoWay}"/>
               </Grid>
             </VerticalStackLayout>
@@ -366,7 +367,7 @@
 
           <!-- ACTION BUTTONS -->
           <VerticalStackLayout Spacing="12">
-            <Button x:Name="SaveButton" Text="Guardar" Style="{StaticResource AppleFilledButton}"
+            <Button x:Name="SaveButton" Text="{x:Static res:AppResources.Common_Save}" Style="{StaticResource AppleFilledButton}"
                     Clicked="OnSaveClientTapped">
               <Button.ImageSource>
                 <FontImageSource Glyph="&#xF0C7;" FontFamily="FA7Solid" Size="16" Color="White"/>
@@ -374,7 +375,7 @@
             </Button>
 
             <Grid ColumnDefinitions="*,*" ColumnSpacing="8" IsVisible="False" x:Name="ActionButtonsGrid">
-              <Button Grid.Column="0" x:Name="PastasFormButton" Text="Pastas" Style="{StaticResource AppleTintedButton}"
+              <Button Grid.Column="0" x:Name="PastasFormButton" Text="{x:Static res:AppResources.Common_Folders}" Style="{StaticResource AppleTintedButton}"
                       TextColor="{OnPlatform iOS=#5AC8FA, Android=#2196F3, MacCatalyst=#5AC8FA}"
                       Clicked="OnPastasFormTapped">
                 <Button.ImageSource>

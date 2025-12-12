@@ -230,4 +230,52 @@
   <data name="Products_LoadError" xml:space="preserve">
     <value>Error al cargar productos: {0}</value>
   </data>
+  <data name="ServicePage_Title" xml:space="preserve">
+    <value>Servicios</value>
+  </data>
+  <data name="ServicePage_SearchPlaceholder" xml:space="preserve">
+    <value>Buscar por nº, cliente o estado...</value>
+  </data>
+  <data name="ServicePage_NewService" xml:space="preserve">
+    <value>Nuevo Servicio</value>
+  </data>
+  <data name="ServicePage_CreatedLabel" xml:space="preserve">
+    <value>Creado: {0:dd/MM/yyyy}</value>
+  </data>
+  <data name="ServicePage_DeliveryLabel" xml:space="preserve">
+    <value>Entrega: {0:dd/MM/yyyy}</value>
+  </data>
+  <data name="ServicePage_ReceivedLabel" xml:space="preserve">
+    <value>Recibido: {0:N2} €</value>
+  </data>
+  <data name="ServicePage_OwedLabel" xml:space="preserve">
+    <value>Debido: {0:N2} €</value>
+  </data>
+  <data name="ServicePage_EmptyTitle" xml:space="preserve">
+    <value>No hay servicios para mostrar</value>
+  </data>
+  <data name="ServicePage_EmptyMessage" xml:space="preserve">
+    <value>Verifique la conexión a la base de datos o cree un nuevo servicio.</value>
+  </data>
+  <data name="Sync_FolderTitle" xml:space="preserve">
+    <value>Sincronización de Carpetas</value>
+  </data>
+  <data name="Sync_FolderMessage" xml:space="preserve">
+    <value>Detectados {0} clientes sin carpetas sincronizadas.\n¿Desea crear la estructura de carpetas para ellos ahora?</value>
+  </data>
+  <data name="Sync_Yes" xml:space="preserve">
+    <value>Sí, Sincronizar</value>
+  </data>
+  <data name="Sync_NotNow" xml:space="preserve">
+    <value>Ahora no</value>
+  </data>
+  <data name="Sync_ReportTitle" xml:space="preserve">
+    <value>Informe</value>
+  </data>
+  <data name="Sync_ReportMessage" xml:space="preserve">
+    <value>Sincronización completada.\nÉxito: {0}\nErrores/Ignorados: {1}</value>
+  </data>
+  <data name="Sync_Starting" xml:space="preserve">
+    <value>Iniciando sincronización...</value>
+  </data>
 </root>

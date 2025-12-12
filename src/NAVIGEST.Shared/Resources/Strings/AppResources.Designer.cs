@@ -2799,5 +2799,18 @@ namespace NAVIGEST.Shared.Resources.Strings {
         public static string Print_StartError { get { return ResourceManager.GetString("Print_StartError", resourceCulture); } }
         public static string Products_LoadError { get { return ResourceManager.GetString("Products_LoadError", resourceCulture); } }
 
+        public static string ServicePage_Title { get { return ResourceManager.GetString("ServicePage_Title", resourceCulture); } }
+        public static string ServicePage_NewService { get { return ResourceManager.GetString("ServicePage_NewService", resourceCulture); } }
+        public static string ServicePage_CreatedLabel { get { return ResourceManager.GetString("ServicePage_CreatedLabel", resourceCulture); } }
+        public static string ServicePage_DeliveryLabel { get { return ResourceManager.GetString("ServicePage_DeliveryLabel", resourceCulture); } }
+        public static string ServicePage_ReceivedLabel { get { return ResourceManager.GetString("ServicePage_ReceivedLabel", resourceCulture); } }
+        public static string ServicePage_OwedLabel { get { return ResourceManager.GetString("ServicePage_OwedLabel", resourceCulture); } }
+        public static string ServicePage_EmptyTitle { get { return ResourceManager.GetString("ServicePage_EmptyTitle", resourceCulture); } }
+        public static string ServicePage_EmptyMessage { get { return ResourceManager.GetString("ServicePage_EmptyMessage", resourceCulture); } }
+
+        public static string ClientsPage_VendorPrefix { get { return ResourceManager.GetString("ClientsPage_VendorPrefix", resourceCulture); } }
+        public static string ClientsPage_PreviousYear { get { return ResourceManager.GetString("ClientsPage_PreviousYear", resourceCulture); } }
+        public static string ClientsPage_CurrentYear { get { return ResourceManager.GetString("ClientsPage_CurrentYear", resourceCulture); } }
+
     }
 }
