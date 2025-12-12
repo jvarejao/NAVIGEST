@@ -36,6 +36,8 @@ Os popups tem de ter sempre a mesma largura e altura, com entry pesquisa e botao
 - Todo o codigo criado e editado tem de ter em atençao que vai ser preciso adaptar ou adicionar a todas as plataformas. 
 - procurar nos DOC onde deve ser adicionado essa informação para quando for para tratar da adaptação dessas plataformas, ser mais facil
 
+## 8. PREVILEGIOS ADMIN, FINANCEIRA, RESTANTES
+- Ssempre que houver campos de valor ( moeda currency ) só os utilizadores ADMIN e FINANCEIRA podem ver. Os restantes utilizadores não podem ter acesso a esses dados, por isso nao podem aparecer. O utilizador VENDEDOR pode ver os valores mas só dos serviços dos clientes onde ele é o vendedor.
 
 ---
 *Este ficheiro deve ser atualizado pelo utilizador conforme necessário para ajustar o comportamento do assistente.*

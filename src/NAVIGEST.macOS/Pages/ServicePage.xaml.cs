@@ -58,6 +58,14 @@ namespace NAVIGEST.macOS.Pages
             }
         }
 
+        private void OnPaymentClicked(object sender, EventArgs e)
+        {
+            if (sender is Button btn && btn.CommandParameter is Models.OrderInfoModel order && BindingContext is ServicePageModel vm)
+            {
+                vm.PaymentCommand.Execute(order);
+            }
+        }
+
         private void OnDeleteClicked(object sender, EventArgs e)
         {
             if (sender is Button btn && btn.CommandParameter is Models.OrderInfoModel order && BindingContext is ServicePageModel vm)

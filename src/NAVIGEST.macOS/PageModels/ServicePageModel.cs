@@ -46,6 +46,7 @@ public class ServicePageModel : INotifyPropertyChanged
     public ICommand RefreshCommand { get; }
     public ICommand ViewCommand { get; }
     public ICommand EditCommand { get; }
+    public ICommand PaymentCommand { get; }
     public ICommand DeleteCommand { get; }
     public ICommand ClearSearchCommand { get; }
 
@@ -62,6 +63,7 @@ public class ServicePageModel : INotifyPropertyChanged
         RefreshCommand = new Command(async () => await LoadAsync(force: true));
         ViewCommand = new Command<OrderInfoModel>(OnViewService);
         EditCommand = new Command<OrderInfoModel>(OnEditService);
+        PaymentCommand = new Command<OrderInfoModel>(OnPaymentService);
         DeleteCommand = new Command<OrderInfoModel>(OnDeleteService);
         ClearSearchCommand = new Command(() => SearchText = string.Empty);
     }
@@ -89,6 +91,12 @@ public class ServicePageModel : INotifyPropertyChanged
     {
         if (service == null) return;
         await AppShell.DisplayToastAsync($"Editar serviço {service.OrderNo} (Em desenvolvimento)");
+    }
+
+    private async void OnPaymentService(OrderInfoModel? service)
+    {
+        if (service == null) return;
+        await AppShell.DisplayToastAsync($"Registar pagamento para o serviço {service.OrderNo} (Em desenvolvimento)");
     }
 
     private async void OnDeleteService(OrderInfoModel? service)

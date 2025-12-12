@@ -39,9 +39,11 @@ namespace NAVIGEST.macOS.Services
             var list = new List<Cliente>();
             const string sql = @"
                 SELECT 
-                    CLICODIGO, CLINOME, TELEFONE, EMAIL, EXTERNO, ANULADO, VENDEDOR, VALORCREDITO, PastasSincronizadas
-                FROM CLIENTES
-                ORDER BY CLICODIGO;";
+                    c.CLICODIGO, c.CLINOME, c.TELEFONE, c.EMAIL, c.EXTERNO, c.ANULADO, c.VENDEDOR, c.VALORCREDITO, c.PastasSincronizadas,
+                    (SELECT COALESCE(SUM(TotalAmount), 0) FROM OrderInfo o WHERE o.CustomerNo = c.CLICODIGO AND YEAR(o.OrderDate) = YEAR(CURDATE())) as VendasAnoAtual,
+                    (SELECT COALESCE(SUM(TotalAmount), 0) FROM OrderInfo o WHERE o.CustomerNo = c.CLICODIGO AND YEAR(o.OrderDate) = YEAR(CURDATE()) - 1) as VendasAnoAnterior
+                FROM CLIENTES c
+                ORDER BY c.CLICODIGO;";
 
             try
             {
@@ -61,7 +63,9 @@ namespace NAVIGEST.macOS.Services
                         ANULADO = !rd.IsDBNull("ANULADO") && rd.GetBoolean("ANULADO"),
                         VENDEDOR = rd.IsDBNull("VENDEDOR") ? null : rd.GetString("VENDEDOR"),
                         VALORCREDITO = rd.IsDBNull("VALORCREDITO") ? null : rd.GetString("VALORCREDITO").TrimEnd(),
-                        PastasSincronizadas = !rd.IsDBNull("PastasSincronizadas") && rd.GetBoolean("PastasSincronizadas")
+                        PastasSincronizadas = !rd.IsDBNull("PastasSincronizadas") && rd.GetBoolean("PastasSincronizadas"),
+                        VendasAnoAtual = rd.GetDecimal("VendasAnoAtual"),
+                        VendasAnoAnterior = rd.GetDecimal("VendasAnoAnterior")
                     });
                 }
                 return list;

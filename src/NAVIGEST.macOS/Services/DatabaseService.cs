@@ -499,8 +499,10 @@ namespace NAVIGEST.macOS.Services
 
             string sql = @"
                 SELECT CLINOME, CLICODIGO, TELEFONE, INDICATIVO, EMAIL, EXTERNO, ANULADO,
-                       VENDEDOR, VALORCREDITO, PastasSincronizadas
-                FROM CLIENTES";
+                       VENDEDOR, VALORCREDITO, PastasSincronizadas,
+                       (SELECT COALESCE(SUM(TotalAmount), 0) FROM OrderInfo o WHERE o.CustomerNo COLLATE utf8mb4_unicode_ci = c.CLICODIGO COLLATE utf8mb4_unicode_ci AND YEAR(o.OrderDate) = YEAR(CURDATE())) as VendasAnoAtual,
+                       (SELECT COALESCE(SUM(TotalAmount), 0) FROM OrderInfo o WHERE o.CustomerNo COLLATE utf8mb4_unicode_ci = c.CLICODIGO COLLATE utf8mb4_unicode_ci AND YEAR(o.OrderDate) = YEAR(CURDATE()) - 1) as VendasAnoAnterior
+                FROM CLIENTES c";
             if (!string.IsNullOrWhiteSpace(filtro))
                 sql += " WHERE (LOWER(CLINOME) LIKE @f OR LOWER(CLICODIGO) LIKE @f OR LOWER(EMAIL) LIKE @f)";
             sql += " ORDER BY CLINOME;";
@@ -544,7 +546,9 @@ namespace NAVIGEST.macOS.Services
                         ANULADO = GetBool("ANULADO"),
                         VENDEDOR = rd.IsDBNull(rd.GetOrdinal("VENDEDOR")) ? null : rd.GetString("VENDEDOR"),
                         VALORCREDITO = rd.IsDBNull(rd.GetOrdinal("VALORCREDITO")) ? null : rd.GetString("VALORCREDITO"),
-                        PastasSincronizadas = GetBool("PastasSincronizadas")
+                        PastasSincronizadas = GetBool("PastasSincronizadas"),
+                        VendasAnoAtual = rd.IsDBNull(rd.GetOrdinal("VendasAnoAtual")) ? 0 : rd.GetDecimal("VendasAnoAtual"),
+                        VendasAnoAnterior = rd.IsDBNull(rd.GetOrdinal("VendasAnoAnterior")) ? 0 : rd.GetDecimal("VendasAnoAnterior")
                     });
                 }
             }

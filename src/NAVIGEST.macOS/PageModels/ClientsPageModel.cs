@@ -774,7 +774,8 @@ public class ClientsPageModel : INotifyPropertyChanged
         var filtered = _all.Where(c =>
             (c.CLINOME ?? string.Empty).ToLowerInvariant().Contains(q) ||
             (c.CLICODIGO ?? string.Empty).ToLowerInvariant().Contains(q) ||
-            (c.EMAIL ?? string.Empty).ToLowerInvariant().Contains(q));
+            (c.EMAIL ?? string.Empty).ToLowerInvariant().Contains(q) ||
+            (c.VENDEDOR ?? string.Empty).ToLowerInvariant().Contains(q));
 
         Repopulate(filtered);
     }

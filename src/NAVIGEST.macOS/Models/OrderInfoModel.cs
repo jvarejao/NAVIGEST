@@ -42,6 +42,26 @@ namespace NAVIGEST.macOS.Models
         public string? PEQDESCSERVICO { get; set; }
         public string? DESCPROD { get; set; }
         public string? TEMPO { get; set; }
+
+        public bool CanSeeFinancials
+        {
+            get
+            {
+                var user = UserSession.Current.User;
+                if (user.IsAdmin || user.IsFinancial) return true;
+
+                if (string.Equals(user.Role, "VENDEDOR", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!string.IsNullOrWhiteSpace(CONTROLVEND) && 
+                        string.Equals(CONTROLVEND.Trim(), user.Name.Trim(), StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        }
     }
 }
 

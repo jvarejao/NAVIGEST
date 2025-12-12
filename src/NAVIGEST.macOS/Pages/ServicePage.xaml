@@ -6,12 +6,14 @@
              xmlns:models="clr-namespace:NAVIGEST.macOS.Models"
              xmlns:behaviors="clr-namespace:NAVIGEST.macOS.Behaviors"
              xmlns:pages="clr-namespace:NAVIGEST.macOS.Pages"
+             xmlns:converters="clr-namespace:NAVIGEST.macOS.Converters"
              BackgroundColor="{DynamicResource PageBackgroundColor}"
              Title="Serviços"
              Loaded="OnPageLoaded">
 
     <ContentPage.Resources>
         <ResourceDictionary>
+            <converters:DoubleComparisonConverter x:Key="DoubleComparisonConverter" />
             <Style TargetType="Entry" x:Key="FormEntry">
                 <Setter Property="HeightRequest" Value="44"/>
                 <Setter Property="FontSize" Value="15"/>
@@ -104,21 +106,46 @@
                                         <Label Text="{Binding OrderNo}" 
                                                FontSize="14" 
                                                TextColor="{DynamicResource EntryPlaceholderColor}"/>
+                                        
                                         <Label Text="•" 
                                                FontSize="14" 
                                                TextColor="{DynamicResource EntryPlaceholderColor}"/>
+
                                         <Label Text="{Binding OrderStatus}" 
                                                FontSize="14" 
                                                TextColor="{DynamicResource BodyTextColor}"/>
                                     </HorizontalStackLayout>
+
+                                    <Label Text="{Binding OrderDate, StringFormat='Criado: {0:dd/MM/yyyy}'}" 
+                                           FontSize="14" 
+                                           TextColor="{DynamicResource EntryPlaceholderColor}"/>
+
+                                    <Label Text="{Binding OrderDateEnt, StringFormat='Entrega: {0:dd/MM/yyyy}', TargetNullValue='-'}" 
+                                           FontSize="14" 
+                                           TextColor="{DynamicResource EntryPlaceholderColor}"/>
                                 </VerticalStackLayout>
 
                                 <!-- AMOUNT (Middle) -->
-                                <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" HorizontalOptions="End" Spacing="4" MinimumWidthRequest="100">
+                                <VerticalStackLayout Grid.Column="1" 
+                                                     VerticalOptions="Center" 
+                                                     HorizontalOptions="End" 
+                                                     Spacing="2" 
+                                                     MinimumWidthRequest="100"
+                                                     IsVisible="{Binding CanSeeFinancials}">
                                     <Label Text="{Binding TotalAmount, StringFormat='{}{0:N2} €'}" 
                                            FontSize="16" 
                                            FontAttributes="Bold" 
                                            TextColor="{DynamicResource BodyTextColor}"
+                                           HorizontalTextAlignment="End"/>
+                                    
+                                    <Label Text="{Binding VALORPAGO, StringFormat='Recebido: {0:N2} €'}" 
+                                           FontSize="12" 
+                                           TextColor="#28CD41"
+                                           HorizontalTextAlignment="End"/>
+
+                                    <Label Text="{Binding VALORPENDENTE, StringFormat='Deve: {0:N2} €'}" 
+                                           FontSize="12" 
+                                           TextColor="#FF3B30"
                                            HorizontalTextAlignment="End"/>
                                 </VerticalStackLayout>
 
@@ -153,6 +180,25 @@
                                             HeightRequest="40"
                                             Padding="0"
                                             Clicked="OnEditClicked"
+                                            CommandParameter="{Binding .}">
+                                        <Button.Behaviors>
+                                            <behaviors:ButtonMicroAnimationsBehavior />
+                                        </Button.Behaviors>
+                                    </Button>
+
+                                    <!-- Payment -->
+                                    <Button Text="&#xF0d6;" 
+                                            FontFamily="FA7Solid" 
+                                            FontSize="16"
+                                            BackgroundColor="#1928CD41" 
+                                            TextColor="#28CD41"
+                                            CornerRadius="8"
+                                            WidthRequest="40"
+                                            HeightRequest="40"
+                                            Padding="0"
+                                            IsVisible="{Binding CanSeeFinancials}"
+                                            IsEnabled="{Binding VALORPENDENTE, Converter={StaticResource DoubleComparisonConverter}, ConverterParameter='gt:0'}"
+                                            Clicked="OnPaymentClicked"
                                             CommandParameter="{Binding .}">
                                         <Button.Behaviors>
                                             <behaviors:ButtonMicroAnimationsBehavior />

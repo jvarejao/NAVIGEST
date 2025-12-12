@@ -89,6 +89,40 @@ namespace NAVIGEST.macOS.Models
             set { _servicesCount = value; OnPropertyChanged(); } 
         }
 
+        private decimal _vendasAnoAtual;
+        public decimal VendasAnoAtual
+        {
+            get => _vendasAnoAtual;
+            set { _vendasAnoAtual = value; OnPropertyChanged(); }
+        }
+
+        private decimal _vendasAnoAnterior;
+        public decimal VendasAnoAnterior
+        {
+            get => _vendasAnoAnterior;
+            set { _vendasAnoAnterior = value; OnPropertyChanged(); }
+        }
+
+        public bool CanSeeFinancials
+        {
+            get
+            {
+                var user = UserSession.Current.User;
+                if (user.IsAdmin || user.IsFinancial) return true;
+
+                if (string.Equals(user.Role, "VENDEDOR", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!string.IsNullOrWhiteSpace(VENDEDOR) && 
+                        string.Equals(VENDEDOR.Trim(), user.Name.Trim(), StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        }
+
         public Cliente Clone() => new()
         {
             CLINOME = CLINOME,
@@ -101,7 +135,9 @@ namespace NAVIGEST.macOS.Models
             VENDEDOR = VENDEDOR,
             VALORCREDITO = VALORCREDITO,
             PastasSincronizadas = PastasSincronizadas,
-            ServicesCount = ServicesCount
+            ServicesCount = ServicesCount,
+            VendasAnoAtual = VendasAnoAtual,
+            VendasAnoAnterior = VendasAnoAnterior
         };
     }
 }
