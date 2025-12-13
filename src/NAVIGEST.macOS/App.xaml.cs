@@ -1,6 +1,7 @@
 ﻿using NAVIGEST.macOS.Resources.Styles;
 using Microsoft.Maui.Storage;
 using System.Globalization;
+using NAVIGEST.macOS.Services;
 
 namespace NAVIGEST.macOS
 {
@@ -59,6 +60,20 @@ namespace NAVIGEST.macOS
             // window.MaximumWidth = 1600; 
 
             return window;
+        }
+
+        protected override async void OnStart()
+        {
+            base.OnStart();
+            try
+            {
+                await DatabaseService.CreateServiceStatusTableAsync();
+                System.Diagnostics.Debug.WriteLine("Tabela ESTADO_SERVICO verificada/criada com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao criar tabela ESTADO_SERVICO no arranque: {ex.Message}");
+            }
         }
 
         public void EnableAutoTheme(bool persist = true)

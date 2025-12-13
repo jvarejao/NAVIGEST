@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:NAVIGEST.macOS.Models"
+             xmlns:behaviors="clr-namespace:NAVIGEST.macOS.Behaviors"
+             x:Class="NAVIGEST.macOS.Pages.ServiceStatusPage"
+             Title="Estados de Serviço"
+             BackgroundColor="{DynamicResource PageBackgroundColor}">
+
+    <Grid>
+        <!-- MAIN CONTENT -->
+        <Grid RowDefinitions="Auto, *" 
+              Padding="24,24,24,0" 
+              RowSpacing="16"
+              MaximumWidthRequest="1200"
+              HorizontalOptions="Center">
+            
+            <!-- HEADER: Title & Add -->
+            <Grid ColumnDefinitions="*, Auto" ColumnSpacing="16">
+                <!-- Title (No Back Button needed, Shell handles it) -->
+                <Label Text="Gestão de Estados de Serviço" 
+                       FontSize="28" 
+                       FontAttributes="Bold" 
+                       VerticalOptions="Center" 
+                       TextColor="{DynamicResource BodyTextColor}"/>
+
+                <!-- Add Button -->
+                <Button Grid.Column="1" 
+                        Text="Novo Estado" 
+                        Command="{Binding AddStatusCommand}"
+                        BackgroundColor="#0A84FF" 
+                        TextColor="White" 
+                        FontAttributes="Bold" 
+                        CornerRadius="12" 
+                        HeightRequest="44"
+                        VerticalOptions="Center"
+                        Padding="20,0">
+                    <Button.Behaviors>
+                        <behaviors:ButtonMicroAnimationsBehavior />
+                    </Button.Behaviors>
+                </Button>
+            </Grid>
+
+            <!-- LIST -->
+            <CollectionView Grid.Row="1" ItemsSource="{Binding StatusList}" SelectionMode="None" Margin="0,0,0,20">
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="12"/>
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Border StrokeThickness="0"
+                                BackgroundColor="{DynamicResource CardBackgroundColor}"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="16">
+                            <Grid ColumnDefinitions="*, Auto, Auto" ColumnSpacing="16">
+                                <!-- INFO (Left) -->
+                                <HorizontalStackLayout Grid.Column="0" Spacing="10" VerticalOptions="Center">
+                                    <BoxView Color="{Binding Cor}" 
+                                             WidthRequest="12" HeightRequest="12" CornerRadius="6" 
+                                             VerticalOptions="Center"/>
+                                    <Label Text="{Binding Descricao}" 
+                                           FontSize="16" 
+                                           FontAttributes="Bold"
+                                           VerticalOptions="Center" 
+                                           TextColor="{DynamicResource BodyTextColor}"/>
+                                </HorizontalStackLayout>
+
+                                <!-- ACTIONS (Right) -->
+                                <HorizontalStackLayout Grid.Column="2" Spacing="8" VerticalOptions="Center">
+                                    <!-- Edit Button -->
+                                    <Button Text="&#xF044;" FontFamily="FA7Solid"
+                                            BackgroundColor="#190A84FF" TextColor="#0A84FF"
+                                            FontSize="16"
+                                            CornerRadius="8"
+                                            Padding="0"
+                                            WidthRequest="40" HeightRequest="40"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.EditStatusCommand}"
+                                            CommandParameter="{Binding .}">
+                                        <Button.Behaviors>
+                                            <behaviors:ButtonMicroAnimationsBehavior />
+                                        </Button.Behaviors>
+                                    </Button>
+
+                                    <!-- Delete Button -->
+                                    <Button Text="&#xF1F8;" FontFamily="FA7Solid"
+                                            BackgroundColor="#19FF3B30" TextColor="#FF3B30"
+                                            FontSize="16"
+                                            CornerRadius="8"
+                                            Padding="0"
+                                            WidthRequest="40" HeightRequest="40"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteStatusCommand}"
+                                            CommandParameter="{Binding .}">
+                                        <Button.Behaviors>
+                                            <behaviors:ButtonMicroAnimationsBehavior />
+                                        </Button.Behaviors>
+                                    </Button>
+                                </HorizontalStackLayout>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="10">
+                        <Label Text="&#xF05A;" FontFamily="FA7Solid" FontSize="40" TextColor="Gray" HorizontalOptions="Center"/>
+                        <Label Text="Nenhum estado encontrado." TextColor="Gray" HorizontalOptions="Center"/>
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+            </CollectionView>
+        </Grid>
+    </Grid>
+</ContentPage>

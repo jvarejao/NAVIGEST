@@ -9,6 +9,7 @@ namespace NAVIGEST.macOS.PageModels
         public ICommand OpenDBConfigCommand { get; }
         public ICommand OpenFileServerConfigCommand { get; }
         public ICommand OpenLanguageCommand { get; }
+        public ICommand OpenServiceStatusCommand { get; }
         public ICommand BackCommand { get; }
 
         public SettingsPageModel()
@@ -27,6 +28,7 @@ namespace NAVIGEST.macOS.PageModels
                     await NAVIGEST.macOS.Helpers.LanguageHelper.ChangeLanguageAndRestart(cultureCode);
                 }
             });
+            OpenServiceStatusCommand = new Command(async () => await Shell.Current.GoToAsync("config.servicestatus"));
             BackCommand = new Command(async () => await Shell.Current.GoToAsync(".."));
         }
     }

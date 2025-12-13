@@ -23,6 +23,7 @@ public partial class AppShell : Shell
         Routing.RegisterRoute("config.utilizadores", typeof(Pages.RegisterPage));
         Routing.RegisterRoute("config.db", typeof(Pages.DbConfigPage));
         Routing.RegisterRoute("config.fileserver", typeof(Pages.FileServerSetupPage));
+        Routing.RegisterRoute("config.servicestatus", typeof(Pages.ServiceStatusPage));
     }
 
     private void SfSegmentedControl_SelectionChanged(object sender, Syncfusion.Maui.Toolkit.SegmentedControl.SelectionChangedEventArgs e)

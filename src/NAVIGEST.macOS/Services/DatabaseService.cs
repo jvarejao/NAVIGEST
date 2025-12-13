@@ -2228,5 +2228,134 @@ ORDER BY OrderDate DESC";
             }
             return list;
         }
+
+        // ================= ESTADO SERVIÇO =================
+
+        public static async Task CreateServiceStatusTableAsync()
+        {
+            try
+            {
+                using var conn = new MySqlConnection(GetConnectionString());
+                await conn.OpenAsync();
+                var sql = @"
+                    CREATE TABLE IF NOT EXISTS ESTADO_SERVICO (
+                        ID INT PRIMARY KEY AUTO_INCREMENT,
+                        Descricao VARCHAR(50) NOT NULL,
+                        Cor VARCHAR(20) DEFAULT '#808080'
+                    );";
+                using var cmd = new MySqlCommand(sql, conn);
+                await cmd.ExecuteNonQueryAsync();
+
+                // Seed se vazio
+                var countSql = "SELECT COUNT(*) FROM ESTADO_SERVICO";
+                using var cmdCount = new MySqlCommand(countSql, conn);
+                long count = Convert.ToInt64(await cmdCount.ExecuteScalarAsync());
+                
+                if (count == 0)
+                {
+                    var insertSql = @"
+                        INSERT INTO ESTADO_SERVICO (Descricao, Cor) VALUES 
+                        ('Pendente', '#FFA500'),
+                        ('Em Curso', '#0000FF'),
+                        ('Concluído', '#008000'),
+                        ('Cancelado', '#FF0000');";
+                    using var cmdInsert = new MySqlCommand(insertSql, conn);
+                    await cmdInsert.ExecuteNonQueryAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao criar tabela ESTADO_SERVICO: {ex.Message}");
+            }
+        }
+
+        public static async Task<List<ServiceStatus>> GetServiceStatusAsync()
+        {
+            var list = new List<ServiceStatus>();
+            try
+            {
+                await CreateServiceStatusTableAsync();
+
+                using var conn = new MySqlConnection(GetConnectionString());
+                await conn.OpenAsync();
+                var sql = "SELECT ID, Descricao, Cor FROM ESTADO_SERVICO ORDER BY ID";
+                using var cmd = new MySqlCommand(sql, conn);
+                using var rd = await cmd.ExecuteReaderAsync();
+                while (await rd.ReadAsync())
+                {
+                    list.Add(new ServiceStatus
+                    {
+                        ID = rd.GetInt32(0),
+                        Descricao = rd.GetString(1),
+                        Cor = rd.IsDBNull(2) ? "#808080" : rd.GetString(2)
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao obter estados de serviço: {ex.Message}");
+            }
+            return list;
+        }
+
+        public static async Task<bool> AddServiceStatusAsync(ServiceStatus status)
+        {
+            try
+            {
+                using var conn = new MySqlConnection(GetConnectionString());
+                await conn.OpenAsync();
+                var sql = "INSERT INTO ESTADO_SERVICO (Descricao, Cor) VALUES (@Descricao, @Cor)";
+                using var cmd = new MySqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@Descricao", status.Descricao);
+                cmd.Parameters.AddWithValue("@Cor", status.Cor);
+                await cmd.ExecuteNonQueryAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao adicionar estado: {ex.Message}");
+                return false;
+            }
+        }
+
+        public static async Task<bool> UpdateServiceStatusAsync(ServiceStatus status)
+        {
+            try
+            {
+                using var conn = new MySqlConnection(GetConnectionString());
+                await conn.OpenAsync();
+                var sql = "UPDATE ESTADO_SERVICO SET Descricao=@Descricao, Cor=@Cor WHERE ID=@ID";
+                using var cmd = new MySqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@Descricao", status.Descricao);
+                cmd.Parameters.AddWithValue("@Cor", status.Cor);
+                cmd.Parameters.AddWithValue("@ID", status.ID);
+                await cmd.ExecuteNonQueryAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao atualizar estado: {ex.Message}");
+                return false;
+            }
+        }
+
+        public static async Task<bool> DeleteServiceStatusAsync(int id)
+        {
+            try
+            {
+                using var conn = new MySqlConnection(GetConnectionString());
+                await conn.OpenAsync();
+                var sql = "DELETE FROM ESTADO_SERVICO WHERE ID=@ID";
+                using var cmd = new MySqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@ID", id);
+                await cmd.ExecuteNonQueryAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao eliminar estado: {ex.Message}");
+                return false;
+            }
+        }
     }
 }

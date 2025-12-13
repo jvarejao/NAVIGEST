@@ -1,14 +1,81 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <toolkit:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-             x:Class="NAVIGEST.macOS.Popups.SimpleTestPopup">
-    <VerticalStackLayout Padding="20" Spacing="10" BackgroundColor="White" WidthRequest="300" HeightRequest="200">
-        <Label Text="Hello from Simple Popup!" 
-               VerticalOptions="Center" 
-               HorizontalOptions="Center" 
-               TextColor="Black"/>
-        <Button Text="Close" 
-                Clicked="OnCloseClicked"/>
-    </VerticalStackLayout>
+               xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+               xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+               xmlns:behaviors="clr-namespace:NAVIGEST.macOS.Behaviors"
+               x:Class="NAVIGEST.macOS.Popups.SimpleTestPopup"
+               Color="Transparent"
+               CanBeDismissedByTappingOutsideOfPopup="True">
+
+    <toolkit:Popup.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Resources/Styles/MacInputStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </toolkit:Popup.Resources>
+
+    <Border BackgroundColor="{DynamicResource CardBackgroundColor}"
+            StrokeThickness="0"
+            Padding="24"
+            StrokeShape="RoundRectangle 18"
+            WidthRequest="420"
+            HeightRequest="320">
+        <Border.Shadow>
+            <Shadow Brush="Black" Opacity="0.25" Radius="12" Offset="0,4"/>
+        </Border.Shadow>
+
+        <Grid RowDefinitions="Auto, Auto, Auto" RowSpacing="16">
+            <!-- Título -->
+            <Label x:Name="TitleLabel"
+                   Grid.Row="0"
+                   FontSize="22"
+                   FontAttributes="Bold"
+                   TextColor="{DynamicResource BodyTextColor}"/>
+
+            <!-- Campo de texto -->
+            <VerticalStackLayout Grid.Row="1" Spacing="8">
+                <Label x:Name="FieldLabel"
+                       Style="{StaticResource MacHeaderLabelStyle}"/>
+                <Border Style="{StaticResource MacInputBorderStyle}">
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border"
+                                     Binding="{Binding Source={x:Reference InputEntry}, Path=IsFocused}"
+                                     Value="True">
+                            <Setter Property="Stroke" Value="{StaticResource MacFocusBlue}"/>
+                            <Setter Property="StrokeThickness" Value="2"/>
+                        </DataTrigger>
+                    </Border.Triggers>
+                    <Entry x:Name="InputEntry"
+                           Style="{StaticResource MacEntryStyle}">
+                        <Entry.Behaviors>
+                            <behaviors:MacInputBehavior />
+                        </Entry.Behaviors>
+                    </Entry>
+                </Border>
+            </VerticalStackLayout>
+
+            <!-- Ações -->
+                <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="12">
+                <Button Text="Cancelar"
+                    Grid.Column="0"
+                    BackgroundColor="{AppThemeBinding Light=#3A3A3C, Dark=#2C2C2E}"
+                    TextColor="White"
+                    CornerRadius="12"
+                    HeightRequest="44"
+                    HorizontalOptions="Fill"
+                    Clicked="OnCancelClicked"/>
+
+                <Button Text="OK"
+                    Grid.Column="1"
+                    BackgroundColor="#0A84FF"
+                    TextColor="White"
+                    FontAttributes="Bold"
+                    CornerRadius="12"
+                    HeightRequest="44"
+                    HorizontalOptions="Fill"
+                    Clicked="OnOkClicked"/>
+                </Grid>
+        </Grid>
+    </Border>
 </toolkit:Popup>

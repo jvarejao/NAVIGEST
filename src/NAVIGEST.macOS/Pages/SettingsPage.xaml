@@ -78,6 +78,18 @@
                 </Border.GestureRecognizers>
             </Border>
 
+            <!-- Estados de Serviço -->
+            <Border Grid.Row="1" Grid.Column="0" StrokeShape="RoundRectangle 12" BackgroundColor="{DynamicResource CardBackgroundColor}" Padding="20">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="&#xF0AE;" FontFamily="FA7Solid" FontSize="32" HorizontalOptions="Center" TextColor="#FF2D55"/>
+                    <Label Text="Estados Serviço" FontSize="18" FontAttributes="Bold" HorizontalOptions="Center" TextColor="{DynamicResource BodyTextColor}"/>
+                    <Label Text="Gerir estados" FontSize="12" HorizontalOptions="Center" TextColor="Gray"/>
+                </VerticalStackLayout>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding OpenServiceStatusCommand}"/>
+                </Border.GestureRecognizers>
+            </Border>
+
         </Grid>
     </Grid>
 </ContentPage>
