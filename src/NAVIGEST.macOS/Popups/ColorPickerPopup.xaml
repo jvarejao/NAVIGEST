@@ -3,9 +3,18 @@
                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
                xmlns:models="clr-namespace:NAVIGEST.macOS.Models"
+               xmlns:behaviors="clr-namespace:NAVIGEST.macOS.Behaviors"
                x:Class="NAVIGEST.macOS.Popups.ColorPickerPopup"
                Color="Transparent"
                CanBeDismissedByTappingOutsideOfPopup="True">
+    
+    <toolkit:Popup.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Resources/Styles/MacInputStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </toolkit:Popup.Resources>
     
     <Border StrokeShape="RoundRectangle 18" 
             BackgroundColor="{DynamicResource PageBackgroundColor}"
@@ -19,10 +28,25 @@
         <Grid RowDefinitions="Auto, Auto, *">
             <Label Text="Selecionar Cor" FontSize="18" FontAttributes="Bold" Margin="0,0,0,10"/>
             
-            <SearchBar Grid.Row="1" 
+            <Border Grid.Row="1"
+                    Style="{StaticResource MacInputBorderStyle}"
+                    Padding="8,0"
+                    Margin="0,0,0,10">
+                <Border.Triggers>
+                    <DataTrigger TargetType="Border" Binding="{Binding Source={x:Reference SearchEntry}, Path=IsFocused}" Value="True">
+                        <Setter Property="Stroke" Value="{StaticResource MacFocusBlue}"/>
+                        <Setter Property="StrokeThickness" Value="2"/>
+                    </DataTrigger>
+                </Border.Triggers>
+                <Entry x:Name="SearchEntry"
                        Placeholder="Pesquisar cor..." 
                        TextChanged="OnSearchTextChanged"
-                       Margin="0,0,0,10"/>
+                       Style="{StaticResource MacEntryStyle}">
+                    <Entry.Behaviors>
+                        <behaviors:MacInputBehavior />
+                    </Entry.Behaviors>
+                </Entry>
+            </Border>
             
             <CollectionView Grid.Row="2" 
                             x:Name="ColorsList" 
@@ -31,7 +55,10 @@
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="models:Cor">
                         <Border StrokeThickness="0" Padding="10" Margin="0,2" BackgroundColor="{DynamicResource CardBackgroundColor}">
-                            <Label Text="{Binding NomeCor}" FontAttributes="Bold" TextColor="{DynamicResource BodyTextColor}"/>
+                            <VerticalStackLayout>
+                                <Label Text="{Binding NomeCor}" FontAttributes="Bold" TextColor="{DynamicResource BodyTextColor}"/>
+                                <Label Text="{Binding IdCor}" FontSize="12" TextColor="Gray"/>
+                            </VerticalStackLayout>
                         </Border>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>

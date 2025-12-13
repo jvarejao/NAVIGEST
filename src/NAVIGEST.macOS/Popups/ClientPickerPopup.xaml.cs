@@ -14,11 +14,6 @@ public partial class ClientPickerPopup : Popup
         LoadClients();
     }
 
-    private void OnCloseClicked(object sender, EventArgs e)
-    {
-        Close(null);
-    }
-
     private async void LoadClients()
     {
         LoadingIndicator.IsRunning = true;
@@ -37,18 +32,33 @@ public partial class ClientPickerPopup : Popup
         }
     }
 
+    private void OnCancelClicked(object sender, EventArgs e)
+    {
+        Close(null);
+    }
+
+    private void OnClearSearchClicked(object sender, EventArgs e)
+    {
+        SearchEntry.Text = string.Empty;
+    }
+
     private void OnSearchTextChanged(object sender, TextChangedEventArgs e)
     {
-        if (string.IsNullOrWhiteSpace(e.NewTextValue))
+        var searchText = e.NewTextValue;
+        if (ClearButton != null)
+            ClearButton.IsVisible = !string.IsNullOrEmpty(searchText);
+
+        if (string.IsNullOrWhiteSpace(searchText))
         {
             ClientsList.ItemsSource = _allClients;
         }
         else
         {
-            var lower = e.NewTextValue.ToLower();
+            var lower = searchText.ToLower();
             ClientsList.ItemsSource = _allClients.Where(c => 
                 (c.CLINOME?.ToLower().Contains(lower) ?? false) || 
-                (c.CLICODIGO?.ToLower().Contains(lower) ?? false)).ToList();
+                (c.CLICODIGO?.ToLower().Contains(lower) ?? false)
+            ).ToList();
         }
     }
 

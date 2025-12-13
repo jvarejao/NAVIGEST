@@ -257,6 +257,26 @@
 
 
 
+        <!-- NOVA HORA OVERLAY (Replaces Popup) -->
+        <Grid x:Name="NovaHoraOverlay"
+              Grid.RowSpan="2"
+              IsVisible="False"
+              BackgroundColor="#80000000"
+              IgnoreSafeArea="True"
+              ZIndex="2000">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnCloseNovaHoraOverlayClicked"/>
+            </Grid.GestureRecognizers>
+            
+            <ContentView x:Name="NovaHoraContent"
+                         VerticalOptions="Center"
+                         HorizontalOptions="Center">
+                 <ContentView.GestureRecognizers>
+                    <TapGestureRecognizer /> <!-- Block taps -->
+                 </ContentView.GestureRecognizers>
+            </ContentView>
+        </Grid>
+
         <!-- LIST PICKER OVERLAY -->
         <Grid x:Name="ListPickerOverlay"
               Grid.RowSpan="2"

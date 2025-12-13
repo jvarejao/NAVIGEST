@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!-- Colors -->
+    <Color x:Key="MacBorderLight">#C6C6C8</Color>
+    <Color x:Key="MacBorderDark">#38383A</Color>
+    <Color x:Key="MacBackgroundLight">#FFFFFF</Color>
+    <Color x:Key="MacBackgroundDark">#1C1C1E</Color>
+    <Color x:Key="MacFocusBlue">#0A84FF</Color>
+    <Color x:Key="MacTextLight">#000000</Color>
+    <Color x:Key="MacTextDark">#FFFFFF</Color>
+    <Color x:Key="MacPlaceholderLight">#8E8E93</Color>
+    <Color x:Key="MacPlaceholderDark">#8E8E93</Color>
+
+    <!-- Style for Section Headers -->
+    <Style x:Key="MacHeaderLabelStyle" TargetType="Label">
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontAttributes" Value="Bold"/>
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource MacTextLight}, Dark={StaticResource MacTextDark}}"/>
+        <Setter Property="Margin" Value="0,0,0,6"/>
+    </Style>
+
+    <!-- Style for Labels inside Pickers/Inputs -->
+    <Style x:Key="MacInputLabelStyle" TargetType="Label">
+        <Setter Property="VerticalOptions" Value="Center"/>
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource MacTextLight}, Dark={StaticResource MacTextDark}}"/>
+        <Setter Property="FontSize" Value="14"/>
+    </Style>
+
+    <!-- Style for Input Containers (Borders) -->
+    <Style x:Key="MacInputBorderStyle" TargetType="Border">
+        <Setter Property="StrokeShape" Value="RoundRectangle 8"/>
+        <Setter Property="StrokeThickness" Value="1"/>
+        <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource MacBorderLight}, Dark={StaticResource MacBorderDark}}"/>
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource MacBackgroundLight}, Dark={StaticResource MacBackgroundDark}}"/>
+        <Setter Property="HeightRequest" Value="50"/>
+        <Setter Property="Padding" Value="12,0"/>
+    </Style>
+
+    <!-- Style for the Entry itself (Transparent) -->
+    <Style x:Key="MacEntryStyle" TargetType="Entry">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource MacTextLight}, Dark={StaticResource MacTextDark}}"/>
+        <Setter Property="BackgroundColor" Value="Transparent"/>
+        <Setter Property="VerticalOptions" Value="Center"/>
+        <Setter Property="HeightRequest" Value="40"/>
+        <Setter Property="PlaceholderColor" Value="{AppThemeBinding Light={StaticResource MacPlaceholderLight}, Dark={StaticResource MacPlaceholderDark}}"/>
+    </Style>
+
+    <!-- Style for the Editor itself (Transparent) -->
+    <Style x:Key="MacEditorStyle" TargetType="Editor">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource MacTextLight}, Dark={StaticResource MacTextDark}}"/>
+        <Setter Property="BackgroundColor" Value="Transparent"/>
+        <Setter Property="AutoSize" Value="TextChanges"/>
+        <Setter Property="PlaceholderColor" Value="{AppThemeBinding Light={StaticResource MacPlaceholderLight}, Dark={StaticResource MacPlaceholderDark}}"/>
+    </Style>
+
+</ResourceDictionary>

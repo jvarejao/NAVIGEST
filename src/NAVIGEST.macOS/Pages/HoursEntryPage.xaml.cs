@@ -242,16 +242,26 @@ public partial class HoursEntryPage : ContentPage
             ColumnSpacing = 8
         };
 
-        var btnAdicionar = new Button
+        var btnAdicionar = new Border
         {
-            Text = $"➕ {AppResources.Hours_NewTitle}",
+            StrokeShape = new RoundRectangle { CornerRadius = 12 },
             BackgroundColor = Color.FromArgb("#0A84FF"),
-            TextColor = Colors.White,
-            FontAttributes = FontAttributes.Bold,
-            CornerRadius = 12,
-            Padding = 12
+            Padding = 12,
+            StrokeThickness = 0
         };
-        btnAdicionar.Clicked += async (s, e) => await AbrirNovaHoraPopupAsync(null);
+        var lblAdd = new Label 
+        { 
+            Text = $"➕ {AppResources.Hours_NewTitle}", 
+            TextColor = Colors.White, 
+            FontAttributes = FontAttributes.Bold,
+            HorizontalTextAlignment = TextAlignment.Center,
+            VerticalTextAlignment = TextAlignment.Center
+        };
+        btnAdicionar.Content = lblAdd;
+        
+        var tapAdd = new TapGestureRecognizer();
+        tapAdd.Tapped += async (s, e) => await AbrirNovaHoraPopupAsync(null);
+        btnAdicionar.GestureRecognizers.Add(tapAdd);
         
         var btnTipos = new Button
         {
@@ -471,40 +481,62 @@ public partial class HoursEntryPage : ContentPage
         // Col 2: Actions
         var actionsStack = new HorizontalStackLayout { Spacing = 12, VerticalOptions = LayoutOptions.Center };
         
-        var btnEdit = new Button 
+        var btnEdit = new Border 
         { 
+            StrokeShape = new RoundRectangle { CornerRadius = 8 },
+            BackgroundColor = Color.FromArgb("#0A84FF").WithAlpha(0.1f), 
+            WidthRequest = 44,
+            HeightRequest = 44,
+            StrokeThickness = 0,
+            Padding = 0
+        };
+        var lblEdit = new Label
+        {
             Text = "\uf044", // fa-pencil-alt
             FontFamily = "FA7Solid",
-            BackgroundColor = Color.FromArgb("#0A84FF").WithAlpha(0.1f), 
             TextColor = Color.FromArgb("#0A84FF"),
-            CornerRadius = 8,
-            WidthRequest = 44,
-            HeightRequest = 44,
-            FontSize = 18
+            FontSize = 18,
+            HorizontalTextAlignment = TextAlignment.Center,
+            VerticalTextAlignment = TextAlignment.Center
         };
-        btnEdit.Clicked += async (s, e) => 
+        btnEdit.Content = lblEdit;
+
+        var tapEdit = new TapGestureRecognizer();
+        tapEdit.Tapped += async (s, e) => 
         {
-             if ((s as Button)?.BindingContext is HoraColaborador hora)
+             if ((s as Element)?.BindingContext is HoraColaborador hora)
                 await AbrirNovaHoraPopupAsync(hora);
         };
+        btnEdit.GestureRecognizers.Add(tapEdit);
         actionsStack.Add(btnEdit);
 
-        var btnDelete = new Button 
+        var btnDelete = new Border 
         { 
-            Text = "\uf2ed", // fa-trash-alt
-            FontFamily = "FA7Solid",
+            StrokeShape = new RoundRectangle { CornerRadius = 8 },
             BackgroundColor = Color.FromArgb("#FF3B30").WithAlpha(0.1f), 
-            TextColor = Color.FromArgb("#FF3B30"),
-            CornerRadius = 8,
             WidthRequest = 44,
             HeightRequest = 44,
-            FontSize = 18
+            StrokeThickness = 0,
+            Padding = 0
         };
-        btnDelete.Clicked += async (s, e) => 
+        var lblDelete = new Label
         {
-             if ((s as Button)?.BindingContext is HoraColaborador hora)
+            Text = "\uf2ed", // fa-trash-alt
+            FontFamily = "FA7Solid",
+            TextColor = Color.FromArgb("#FF3B30"),
+            FontSize = 18,
+            HorizontalTextAlignment = TextAlignment.Center,
+            VerticalTextAlignment = TextAlignment.Center
+        };
+        btnDelete.Content = lblDelete;
+
+        var tapDelete = new TapGestureRecognizer();
+        tapDelete.Tapped += async (s, e) => 
+        {
+             if ((s as Element)?.BindingContext is HoraColaborador hora)
                 await _vm.EliminarHoraCommand.ExecuteAsync(hora);
         };
+        btnDelete.GestureRecognizers.Add(tapDelete);
         actionsStack.Add(btnDelete);
 
         itemGrid.Add(actionsStack, 2, 0);
@@ -528,6 +560,12 @@ public partial class HoursEntryPage : ContentPage
         }
     }
 
+    private void OnCloseNovaHoraOverlayClicked(object sender, EventArgs e)
+    {
+        NovaHoraOverlay.IsVisible = false;
+        NovaHoraContent.Content = null;
+    }
+
     private async Task AbrirNovaHoraPopupAsync(HoraColaborador? hora)
     {
         try
@@ -546,33 +584,39 @@ public partial class HoursEntryPage : ContentPage
                 await _vm.CarregarColaboradoresAsync();
             }
 
-            var popup = new NovaHoraPopup(horaParaEditar, _vm.Colaboradores.ToList());
-            var result = await this.ShowPopupAsync(popup);
-
-            if (result is HoraColaborador horaSalva)
+            // Use Overlay View instead of Popup
+            var view = new NAVIGEST.macOS.Views.NovaHoraView(horaParaEditar, _vm.Colaboradores.ToList(), async (horaSalva) => 
             {
-                if (horaSalva.Id == -1)
+                NovaHoraOverlay.IsVisible = false;
+                NovaHoraContent.Content = null;
+
+                if (horaSalva != null)
                 {
-                    // Deleted
-                    if (hora != null)
+                    if (horaSalva.Id == -1)
                     {
-                        _vm.HorasList.Remove(hora);
+                        // Deleted
+                        if (hora != null)
+                        {
+                            _vm.HorasList.Remove(hora);
+                        }
+                        await AtualizarFiltroListaAsync(); // Refresh totals
                     }
-                    await AtualizarFiltroListaAsync(); // Refresh totals
+                    else
+                    {
+                        // Saved/Updated
+                        await AtualizarFiltroListaAsync();
+                    }
+                    
+                    // Force Calendar Refresh
+                    if (_vm.TabAtiva == 3) 
+                    {
+                        MainThread.BeginInvokeOnMainThread(() => CarregarTab3Calendario());
+                    }
                 }
-                else
-                {
-                    // Saved/Updated
-                    // The popup already saves to DB, we just need to refresh the list
-                    await AtualizarFiltroListaAsync();
-                }
-                
-                // Force Calendar Refresh
-                if (_vm.TabAtiva == 3) 
-                {
-                    MainThread.BeginInvokeOnMainThread(() => CarregarTab3Calendario());
-                }
-            }
+            });
+
+            NovaHoraContent.Content = view;
+            NovaHoraOverlay.IsVisible = true;
         }
         catch (Exception ex)
         {
@@ -585,21 +629,11 @@ public partial class HoursEntryPage : ContentPage
 
     // --- Generic List Picker ---
 
-    private Task<object?> ShowListPickerAsync(string title, List<string> items)
+    private async Task<object?> ShowListPickerAsync(string title, List<string> items)
     {
-        _pickerTcs = new TaskCompletionSource<object?>();
-        _allItems = items; // Store original list
-        
-        ListPickerTitleLabel.Text = title;
-        ListPickerCollectionView.ItemsSource = items;
-        
-        // Reset Search
-        ListPickerSearchEntry.Text = string.Empty;
-        ListPickerClearButton.IsVisible = false;
-        
-        ListPickerOverlay.IsVisible = true;
-        
-        return _pickerTcs.Task;
+        var popup = new GenericPickerPopup(title, items);
+        var result = await this.ShowPopupAsync(popup);
+        return result;
     }
 
     private void OnListPickerSearchTextChanged(object sender, TextChangedEventArgs e)

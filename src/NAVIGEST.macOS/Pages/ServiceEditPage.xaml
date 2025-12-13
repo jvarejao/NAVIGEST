@@ -11,6 +11,14 @@
         <models:ServiceEditPageModel />
     </ContentPage.BindingContext>
 
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Resources/Styles/MacInputStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
     <Grid RowDefinitions="Auto, *">
         <!-- Toolbar -->
         <Grid ColumnDefinitions="*, Auto" Padding="20,10" BackgroundColor="{DynamicResource PageBackgroundColor}">
@@ -54,18 +62,15 @@
 
                         <!-- Status -->
                         <VerticalStackLayout Grid.Column="1">
-                            <Label Text="Estado" TextColor="Gray" FontSize="12"/>
-                            <Border StrokeShape="RoundRectangle 8" 
-                                    StrokeThickness="1" 
-                                    Stroke="{DynamicResource EntryBorderColor}"
-                                    BackgroundColor="{DynamicResource EntryBackgroundColor}"
+                            <Label Text="Estado" Style="{StaticResource MacHeaderLabelStyle}"/>
+                            <Border Style="{StaticResource MacInputBorderStyle}"
                                     HeightRequest="34"
                                     Padding="10,0">
                                 <Border.GestureRecognizers>
                                     <TapGestureRecognizer Command="{Binding OpenStatusPickerCommand}"/>
                                 </Border.GestureRecognizers>
                                 <Grid ColumnDefinitions="*, Auto">
-                                    <Label Text="{Binding Status}" VerticalOptions="Center" TextColor="{DynamicResource BodyTextColor}" LineBreakMode="TailTruncation"/>
+                                    <Label Text="{Binding Status}" Style="{StaticResource MacInputLabelStyle}" LineBreakMode="TailTruncation"/>
                                     <Label Grid.Column="1" Text="▼" FontSize="10" VerticalOptions="Center" TextColor="Gray" Margin="5,0,0,0"/>
                                 </Grid>
                             </Border>
@@ -73,37 +78,69 @@
 
                         <!-- Creation Date -->
                         <VerticalStackLayout Grid.Column="2">
-                            <Label Text="Data Criação" TextColor="Gray" FontSize="12"/>
+                            <Label Text="Data Criação" Style="{StaticResource MacHeaderLabelStyle}"/>
                             <Label Text="{Binding CreationDate, StringFormat='{0:dd/MM/yyyy HH:mm}'}" FontAttributes="Bold" FontSize="16" VerticalOptions="Center" HeightRequest="34" VerticalTextAlignment="Center"/>
                         </VerticalStackLayout>
 
                         <!-- Delivery Date -->
                         <VerticalStackLayout Grid.Column="3">
-                            <Label Text="Data Entrega" TextColor="Gray" FontSize="12"/>
-                            <DatePicker Date="{Binding DeliveryDate}" 
-                                        Format="dd/MM/yyyy" 
-                                        HeightRequest="34" 
-                                        TextColor="{DynamicResource EntryTextColor}"
-                                        BackgroundColor="{DynamicResource EntryBackgroundColor}"/>
+                            <Label Text="Data Entrega" Style="{StaticResource MacHeaderLabelStyle}"/>
+                            <Border Style="{StaticResource MacInputBorderStyle}" HeightRequest="34" Padding="0">
+                                <DatePicker Date="{Binding DeliveryDate}" 
+                                            Format="dd/MM/yyyy" 
+                                            HeightRequest="34" 
+                                            TextColor="{DynamicResource EntryTextColor}"
+                                            BackgroundColor="Transparent">
+                                    <DatePicker.Behaviors>
+                                        <behaviors:MacInputBehavior />
+                                    </DatePicker.Behaviors>
+                                </DatePicker>
+                            </Border>
                         </VerticalStackLayout>
                     </Grid>
                 </Border>
 
                 <!-- PUBLIC OBS -->
-                <Border StrokeShape="RoundRectangle 10" BackgroundColor="{DynamicResource CardBackgroundColor}" StrokeThickness="0" Padding="20">
-                    <VerticalStackLayout>
-                        <Label Text="Observações (Público)" TextColor="Gray" FontSize="12"/>
-                        <Editor Text="{Binding Observations}" HeightRequest="80" BackgroundColor="{DynamicResource CardBackgroundColor}" TextColor="{DynamicResource BodyTextColor}" AutoSize="TextChanges"/>
-                    </VerticalStackLayout>
-                </Border>
+                <VerticalStackLayout>
+                    <Label Text="Observações (Público)" Style="{StaticResource MacHeaderLabelStyle}"/>
+                    <Border Style="{StaticResource MacInputBorderStyle}" HeightRequest="100" Padding="12,8">
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border" Binding="{Binding Source={x:Reference ObsEditor}, Path=IsFocused}" Value="True">
+                                <Setter Property="Stroke" Value="{StaticResource MacFocusBlue}"/>
+                                <Setter Property="StrokeThickness" Value="2"/>
+                            </DataTrigger>
+                        </Border.Triggers>
+                        <Editor x:Name="ObsEditor"
+                                Text="{Binding Observations}" 
+                                Style="{StaticResource MacEditorStyle}"
+                                AutoSize="TextChanges">
+                            <Editor.Behaviors>
+                                <behaviors:MacInputBehavior />
+                            </Editor.Behaviors>
+                        </Editor>
+                    </Border>
+                </VerticalStackLayout>
 
                 <!-- INTERNAL OBS (Admin Only) -->
-                <Border StrokeShape="RoundRectangle 10" BackgroundColor="{DynamicResource CardBackgroundColor}" Stroke="Red" StrokeThickness="1" Padding="20" IsVisible="{Binding IsAdminOrFinance}">
-                    <VerticalStackLayout>
-                        <Label Text="Observações Internas (Admin/Financeiro)" TextColor="Red" FontSize="12" FontAttributes="Bold"/>
-                        <Editor Text="{Binding InternalObservations}" HeightRequest="80" BackgroundColor="{DynamicResource CardBackgroundColor}" TextColor="{DynamicResource BodyTextColor}" AutoSize="TextChanges"/>
-                    </VerticalStackLayout>
-                </Border>
+                <VerticalStackLayout IsVisible="{Binding IsAdminOrFinance}">
+                    <Label Text="Observações Internas (Admin/Financeiro)" TextColor="Red" FontSize="12" FontAttributes="Bold" Margin="0,0,0,6"/>
+                    <Border Style="{StaticResource MacInputBorderStyle}" Stroke="Red" HeightRequest="100" Padding="12,8">
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border" Binding="{Binding Source={x:Reference InternalObsEditor}, Path=IsFocused}" Value="True">
+                                <Setter Property="Stroke" Value="Red"/>
+                                <Setter Property="StrokeThickness" Value="2"/>
+                            </DataTrigger>
+                        </Border.Triggers>
+                        <Editor x:Name="InternalObsEditor"
+                                Text="{Binding InternalObservations}" 
+                                Style="{StaticResource MacEditorStyle}"
+                                AutoSize="TextChanges">
+                            <Editor.Behaviors>
+                                <behaviors:MacInputBehavior />
+                            </Editor.Behaviors>
+                        </Editor>
+                    </Border>
+                </VerticalStackLayout>
 
                 <!-- PRODUCTS TABLE -->
                 <Border StrokeShape="RoundRectangle 10" BackgroundColor="{DynamicResource CardBackgroundColor}" StrokeThickness="0" Padding="0">
@@ -170,28 +207,32 @@
                                             <Label Text="{Binding Size}" VerticalOptions="Center" HorizontalOptions="Start" FontSize="12" TextColor="{DynamicResource BodyTextColor}" LineBreakMode="TailTruncation" Margin="5,0"/>
                                         </Border>
 
-                                        <Entry Grid.Column="3" Text="{Binding Quantity}" Keyboard="Numeric" HorizontalTextAlignment="Center" FontSize="12" TextColor="{DynamicResource BodyTextColor}" BackgroundColor="Transparent" HeightRequest="30">
+                                        <Entry Grid.Column="3" Text="{Binding Quantity}" Keyboard="Numeric" HorizontalTextAlignment="Center" Style="{StaticResource MacEntryStyle}" HeightRequest="30">
                                             <Entry.Behaviors>
                                                 <behaviors:SelectAllOnFocusBehavior />
+                                                <behaviors:MacInputBehavior />
                                             </Entry.Behaviors>
                                         </Entry>
-                                        <Entry Grid.Column="4" Text="{Binding Height}" Keyboard="Numeric" HorizontalTextAlignment="Center" FontSize="12" TextColor="{DynamicResource BodyTextColor}" BackgroundColor="Transparent" HeightRequest="30">
+                                        <Entry Grid.Column="4" Text="{Binding Height}" Keyboard="Numeric" HorizontalTextAlignment="Center" Style="{StaticResource MacEntryStyle}" HeightRequest="30">
                                             <Entry.Behaviors>
                                                 <behaviors:SelectAllOnFocusBehavior />
+                                                <behaviors:MacInputBehavior />
                                             </Entry.Behaviors>
                                         </Entry>
-                                        <Entry Grid.Column="5" Text="{Binding Width}" Keyboard="Numeric" HorizontalTextAlignment="Center" FontSize="12" TextColor="{DynamicResource BodyTextColor}" BackgroundColor="Transparent" HeightRequest="30">
+                                        <Entry Grid.Column="5" Text="{Binding Width}" Keyboard="Numeric" HorizontalTextAlignment="Center" Style="{StaticResource MacEntryStyle}" HeightRequest="30">
                                             <Entry.Behaviors>
                                                 <behaviors:SelectAllOnFocusBehavior />
+                                                <behaviors:MacInputBehavior />
                                             </Entry.Behaviors>
                                         </Entry>
-                                        <Entry Grid.Column="6" Text="{Binding M2, StringFormat='{0:N2}'}" IsReadOnly="True" HorizontalTextAlignment="Center" FontSize="12" TextColor="{DynamicResource BodyTextColor}" BackgroundColor="Transparent" HeightRequest="30"/>
+                                        <Entry Grid.Column="6" Text="{Binding M2, StringFormat='{0:N2}'}" IsReadOnly="True" HorizontalTextAlignment="Center" Style="{StaticResource MacEntryStyle}" HeightRequest="30"/>
                                         
                                         <!-- Price with Euro Symbol -->
                                         <Grid Grid.Column="7" ColumnDefinitions="*, Auto" IsVisible="{Binding ShowFinancials}">
-                                            <Entry Text="{Binding UnitPriceDisplay}" Keyboard="Numeric" HorizontalTextAlignment="End" FontSize="12" TextColor="{DynamicResource BodyTextColor}" BackgroundColor="Transparent" HeightRequest="30" Unfocused="UnitPrice_Unfocused">
+                                            <Entry Text="{Binding UnitPriceDisplay}" Keyboard="Numeric" HorizontalTextAlignment="End" Style="{StaticResource MacEntryStyle}" HeightRequest="30" Unfocused="UnitPrice_Unfocused">
                                                 <Entry.Behaviors>
                                                     <behaviors:SelectAllOnFocusBehavior />
+                                                    <behaviors:MacInputBehavior />
                                                 </Entry.Behaviors>
                                             </Entry>
                                         </Grid>

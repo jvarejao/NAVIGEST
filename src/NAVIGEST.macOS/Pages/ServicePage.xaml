@@ -14,6 +14,9 @@
 
     <ContentPage.Resources>
         <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Resources/Styles/MacInputStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
             <converters:DoubleComparisonConverter x:Key="DoubleComparisonConverter" />
             <converters:StringFormatConverter x:Key="StringFormatConverter" />
             <Style TargetType="Entry" x:Key="FormEntry">
@@ -35,21 +38,27 @@
             <!-- HEADER: Search & Add -->
             <Grid ColumnDefinitions="*, Auto" ColumnSpacing="16">
                 <!-- Search -->
-                <Border StrokeShape="RoundRectangle 10" 
-                        BackgroundColor="{DynamicResource CardBackgroundColor}"
-                        StrokeThickness="0"
-                        Padding="8,0"
+                <Border Style="{StaticResource MacInputBorderStyle}"
                         HeightRequest="44"
+                        Padding="8,0"
                         VerticalOptions="Center">
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border" Binding="{Binding Source={x:Reference SearchEntry}, Path=IsFocused}" Value="True">
+                            <Setter Property="Stroke" Value="{StaticResource MacFocusBlue}"/>
+                            <Setter Property="StrokeThickness" Value="2"/>
+                        </DataTrigger>
+                    </Border.Triggers>
                     <Grid ColumnDefinitions="*,Auto">
-                        <Entry Placeholder="{x:Static strings:AppResources.ServicePage_SearchPlaceholder}" 
+                        <Entry x:Name="SearchEntry"
+                               Placeholder="{x:Static strings:AppResources.ServicePage_SearchPlaceholder}" 
                                Text="{Binding Filter}" 
-                               BackgroundColor="Transparent"
-                               TextColor="{DynamicResource BodyTextColor}"
+                               Style="{StaticResource MacEntryStyle}"
                                HeightRequest="44"
-                               VerticalOptions="Center"
-                               Style="{StaticResource AppleEntry}"
-                               Margin="0"/>
+                               Margin="0">
+                            <Entry.Behaviors>
+                                <behaviors:MacInputBehavior />
+                            </Entry.Behaviors>
+                        </Entry>
                         
                         <Button Grid.Column="1"
                                 Text="✕"

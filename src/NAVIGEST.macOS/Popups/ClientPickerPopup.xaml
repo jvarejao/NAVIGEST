@@ -3,54 +3,108 @@
                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
                xmlns:models="clr-namespace:NAVIGEST.macOS.Models"
+               xmlns:behaviors="clr-namespace:NAVIGEST.macOS.Behaviors"
                x:Class="NAVIGEST.macOS.Popups.ClientPickerPopup"
                Color="Transparent"
                CanBeDismissedByTappingOutsideOfPopup="True">
+
+    <toolkit:Popup.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Resources/Styles/MacInputStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </toolkit:Popup.Resources>
     
     <Border StrokeShape="RoundRectangle 18" 
             BackgroundColor="{DynamicResource PageBackgroundColor}"
-            WidthRequest="500"
+            WidthRequest="400"
             HeightRequest="600"
             Padding="20">
         <Border.Shadow>
-            <Shadow Brush="Black" Offset="0,5" Radius="15" Opacity="0.2"/>
+            <Shadow Brush="Black" Offset="0,4" Radius="12" Opacity="0.25"/>
         </Border.Shadow>
         
-        <Grid RowDefinitions="Auto, Auto, *">
-            <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,10">
-                <Label Text="Selecionar Cliente" FontSize="18" FontAttributes="Bold" VerticalOptions="Center"/>
-                <Button Grid.Column="1" 
-                        Text="✕" 
-                        Clicked="OnCloseClicked"
-                        BackgroundColor="Transparent"
-                        TextColor="#0A84FF"
-                        FontSize="18"
-                        WidthRequest="40"
-                        HeightRequest="40"/>
-            </Grid>
+        <Grid RowDefinitions="Auto, Auto, *, Auto" RowSpacing="15">
+            <!-- Header -->
+            <Label Grid.Row="0" 
+                   Text="Selecionar Cliente" 
+                   FontSize="18" 
+                   FontAttributes="Bold" 
+                   HorizontalOptions="Center"
+                   TextColor="{DynamicResource BodyTextColor}"/>
             
-            <SearchBar Grid.Row="1" 
-                       Placeholder="Pesquisar cliente..." 
-                       TextChanged="OnSearchTextChanged"
-                       Margin="0,0,0,10"/>
+            <!-- Search Bar -->
+            <Border Grid.Row="1" Style="{StaticResource MacInputBorderStyle}" HeightRequest="36" Padding="8,0">
+                <Border.Triggers>
+                    <DataTrigger TargetType="Border" Binding="{Binding Source={x:Reference SearchEntry}, Path=IsFocused}" Value="True">
+                        <Setter Property="Stroke" Value="{StaticResource MacFocusBlue}"/>
+                        <Setter Property="StrokeThickness" Value="2"/>
+                    </DataTrigger>
+                </Border.Triggers>
+                <Grid ColumnDefinitions="*, Auto">
+                    <Entry x:Name="SearchEntry"
+                           Placeholder="Pesquisar cliente..." 
+                           TextChanged="OnSearchTextChanged"
+                           Style="{StaticResource MacEntryStyle}"
+                           HeightRequest="36">
+                        <Entry.Behaviors>
+                            <behaviors:MacInputBehavior />
+                        </Entry.Behaviors>
+                    </Entry>
+                    <ImageButton Grid.Column="1"
+                                 Source="close_icon.png"
+                                 Aspect="AspectFit"
+                                 HeightRequest="16"
+                                 WidthRequest="16"
+                                 HorizontalOptions="End"
+                                 VerticalOptions="Center"
+                                 Margin="0,0,8,0"
+                                 IsVisible="False"
+                                 x:Name="ClearButton"
+                                 Clicked="OnClearSearchClicked"/>
+                </Grid>
+            </Border>
             
+            <!-- List -->
             <CollectionView Grid.Row="2" 
                             x:Name="ClientsList" 
                             SelectionMode="Single"
                             SelectionChanged="OnSelectionChanged">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="models:Cliente">
-                        <Border StrokeThickness="0" Padding="10" Margin="0,2" BackgroundColor="{DynamicResource CardBackgroundColor}">
+                        <Border StrokeThickness="0" Padding="12" BackgroundColor="Transparent">
                             <VerticalStackLayout>
                                 <Label Text="{Binding CLINOME}" FontAttributes="Bold" TextColor="{DynamicResource BodyTextColor}"/>
                                 <Label Text="{Binding CLICODIGO}" FontSize="12" TextColor="Gray"/>
                             </VerticalStackLayout>
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroupList>
+                                    <VisualStateGroup x:Name="CommonStates">
+                                        <VisualState x:Name="Normal" />
+                                        <VisualState x:Name="PointerOver">
+                                            <VisualState.Setters>
+                                                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#F2F2F7, Dark=#2C2C2E}" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                    </VisualStateGroup>
+                                </VisualStateGroupList>
+                            </VisualStateManager.VisualStateGroups>
                         </Border>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
             
             <ActivityIndicator Grid.Row="2" x:Name="LoadingIndicator" IsRunning="False" HorizontalOptions="Center" VerticalOptions="Center"/>
+
+            <!-- Cancel Button -->
+            <Button Grid.Row="3" 
+                    Text="Cancelar" 
+                    Clicked="OnCancelClicked"
+                    BackgroundColor="Transparent"
+                    TextColor="Red"
+                    HeightRequest="50"
+                    FontSize="16"/>
         </Grid>
     </Border>
 </toolkit:Popup>

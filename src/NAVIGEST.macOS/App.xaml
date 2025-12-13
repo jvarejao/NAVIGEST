@@ -25,6 +25,9 @@
 
                 <!-- Inputs centralizados com DynamicResource para cores -->
                 <ResourceDictionary Source="Resources/Styles/Inputs.xaml" />
+                
+                <!-- Novos Estilos macOS (Inputs, Labels) -->
+                <ResourceDictionary Source="Resources/Styles/MacInputStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <!-- NOTA: Colors_Light é carregado por padrão acima. Colors_Dark pode ser injetado dinamicamente via App.xaml.cs -->
