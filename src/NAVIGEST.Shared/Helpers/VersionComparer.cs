@@ -1,26 +1,26 @@
 namespace NAVIGEST.Shared.Helpers;
 
 /// <summary>
-/// Helper para comparação de versões semânticas.
-/// 
-/// Exemplo:
-/// VersionComparer.IsLessThan("1.0.9", "1.0.10") → true
-/// VersionComparer.IsLessThan("1.0.10", "1.0.9") → false
-/// VersionComparer.IsLessThan("1.0.10", "1.0.10") → false
-/// VersionComparer.IsLessThan("2.0.0", "1.9.9") → false
+/// Helper para comparação de versões semânticas (major.minor.patch).
 /// </summary>
+/// <example>
+/// <code>
+/// VersionComparer.IsLessThan("1.0.9", "1.0.10"); // true
+/// VersionComparer.IsLessThan("1.0.10", "1.0.9");  // false
+/// VersionComparer.IsLessThan("1.0.10", "1.0.10"); // false
+/// VersionComparer.IsLessThan("2.0.0", "1.9.9");   // false
+/// </code>
+/// </example>
 public static class VersionComparer
 {
     /// <summary>
     /// Compara duas versões no formato "major.minor.patch".
-    /// 
-    /// Returns:
-    /// - true se versionA < versionB
-    /// - false se versionA >= versionB
-    /// 
     /// Usa System.Version internamente para comparação semântica.
-    /// Se parsing falhar, assume versão inválida e retorna false.
+    /// Se o parsing falhar, assume versão inválida e retorna false.
     /// </summary>
+    /// <param name="versionA">Versão a validar.</param>
+    /// <param name="versionB">Versão de referência.</param>
+    /// <returns>True se versionA &lt; versionB; caso contrário, false.</returns>
     public static bool IsLessThan(string versionA, string versionB)
     {
         try
@@ -47,11 +47,10 @@ public static class VersionComparer
 
     /// <summary>
     /// Compara duas versões.
-    /// 
-    /// Returns:
-    /// - true se versionA <= versionB
-    /// - false caso contrário
     /// </summary>
+    /// <param name="versionA">Versão a validar.</param>
+    /// <param name="versionB">Versão de referência.</param>
+    /// <returns>True se versionA &lt;= versionB; caso contrário, false.</returns>
     public static bool IsLessThanOrEqual(string versionA, string versionB)
     {
         try
@@ -75,13 +74,9 @@ public static class VersionComparer
 
     /// <summary>
     /// Extrai apenas a parte numérica da versão.
-    /// 
-    /// Exemplos:
-    /// "1.0.5" → "1.0.5"
-    /// "1.0.5-beta" → "1.0.5"
-    /// "1.0.5+build.123" → "1.0.5"
-    /// "v1.0.5" → "1.0.5"
     /// </summary>
+    /// <param name="version">Texto original da versão.</param>
+    /// <returns>Apenas major.minor.patch, completando com zeros quando necessário.</returns>
     private static string ExtractVersionNumber(string version)
     {
         if (string.IsNullOrWhiteSpace(version))

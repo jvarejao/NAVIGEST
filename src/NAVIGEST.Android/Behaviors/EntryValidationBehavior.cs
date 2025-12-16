@@ -165,7 +165,8 @@ public class EntryValidationBehavior : Behavior<Entry>
             {
                 var aColor = color.ToPlatform();
                 native.BackgroundTintList = global::Android.Content.Res.ColorStateList.ValueOf(aColor);
-                native.TextCursorDrawable?.SetTint(aColor);
+                if (OperatingSystem.IsAndroidVersionAtLeast(29))
+                    native.TextCursorDrawable?.SetTint(aColor);
             }
         }
         catch { }

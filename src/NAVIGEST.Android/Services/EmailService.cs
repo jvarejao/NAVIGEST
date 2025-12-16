@@ -20,7 +20,7 @@ namespace NAVIGEST.Android.Services
         // Se o servidor suportar STARTTLS fiável, preferir Porta=587 + UseSsl=false (mais compatível).
         private const string SmtpHost = "mail.yahpublicidade.com";
         private const int SmtpPort = 465;          // 465 (SSL direto) ou 587 (STARTTLS)
-        private const bool UseSsl = true;          // true = SslOnConnect (465); false = StartTls (587)
+        private static readonly bool UseSsl = true;          // true = SslOnConnect (465); false = StartTls (587)
 
         private const string SmtpUser = "comercial@yahpublicidade.com";
         private const string SmtpPass = "#JONy22442208"; // <-- mover para armazenamento seguro / não versionar

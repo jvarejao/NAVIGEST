@@ -145,6 +145,24 @@ namespace NAVIGEST.iOS.ViewModels
             catch (System.Exception ex) { TratarErro(ex); }
         });
 
+        public ICommand ExportMonthCommand => new RelayCommand(() =>
+        {
+            try
+            {
+                InlineMessage = $"Exportação do mês {SelectedMonth} / {YearText} (layout).";
+            }
+            catch (System.Exception ex) { TratarErro(ex); }
+        });
+
+        public ICommand ExportYearCommand => new RelayCommand(() =>
+        {
+            try
+            {
+                InlineMessage = $"Exportação do ano {YearText} (layout).";
+            }
+            catch (System.Exception ex) { TratarErro(ex); }
+        });
+
         public IRelayCommand<TimeEntry> AddDelCommand => new RelayCommand<TimeEntry>(item =>
         {
             try

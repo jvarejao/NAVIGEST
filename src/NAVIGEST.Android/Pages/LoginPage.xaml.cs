@@ -274,8 +274,8 @@ namespace NAVIGEST.Android.Pages
 
                 UserSession.Current.User = new UserSession.UserData
                 {
-                    Name = nome,
-                    Role = tipo,
+                    Name = nome ?? string.Empty,
+                    Role = tipo ?? string.Empty,
                     Photo = userInfo?.ProfilePicture,
                     CompanyName = companyName,
                     CompanyLogo = !string.IsNullOrEmpty(companyLogoBase64) ? Convert.FromBase64String(companyLogoBase64) : null

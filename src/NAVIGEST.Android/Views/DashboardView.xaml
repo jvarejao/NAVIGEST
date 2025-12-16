@@ -95,13 +95,13 @@
                     <LinearItemsLayout Orientation="Horizontal" ItemSpacing="10"/>
                 </CollectionView.ItemsLayout>
                 <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="models:AbsenceSummary">
+                    <DataTemplate x:DataType="{x:Null}">
                         <Border StrokeShape="RoundRectangle 8"
                                 BackgroundColor="{Binding Cor}"
                                 Padding="12"
                                 WidthRequest="100">
                             <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:DashboardViewModel}}, Path=ShowAbsenceDetailsCommand}"
+                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentView}}, Path=BindingContext.ShowAbsenceDetailsCommand}"
                                                       CommandParameter="{Binding .}"/>
                             </Border.GestureRecognizers>
                             <VerticalStackLayout VerticalOptions="Center" Spacing="4">

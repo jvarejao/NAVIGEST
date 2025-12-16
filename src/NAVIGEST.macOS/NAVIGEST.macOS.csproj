@@ -18,9 +18,9 @@
     <!-- App -->
     <ApplicationTitle>NAVIGEST</ApplicationTitle>
     <ApplicationId>com.navigatorcode.navigest</ApplicationId>
-    <ApplicationDisplayVersion>1.0.0</ApplicationDisplayVersion>
+    <ApplicationDisplayVersion>$(ApplicationDisplayVersion)</ApplicationDisplayVersion>
     <!-- IMPORTANT for Android: integer version -->
-    <ApplicationVersion>3</ApplicationVersion>
+    <ApplicationVersion>$(ApplicationVersion)</ApplicationVersion>
 
     <!-- Windows packaging -->
     <WindowsPackageType>MSIX</WindowsPackageType>
@@ -55,7 +55,7 @@
 
   <!-- Windows: garantir versão 1.0.0 e BaseOutputPath apenas para builds Windows locais -->
   <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
-    <ApplicationVersion>1.0.0</ApplicationVersion>
+    <ApplicationVersion>$(ApplicationDisplayVersion)</ApplicationVersion>
     <BaseOutputPath>C:\Users\joao7\Desktop\TESTE DADOS</BaseOutputPath>
   </PropertyGroup>
 
@@ -64,8 +64,8 @@
     <ApplicationTitle>NAVIGEST</ApplicationTitle>
     <ApplicationDisplayName>NAVIGEST</ApplicationDisplayName>
     <ApplicationId>com.tuaempresa.apploginmaui</ApplicationId>
-    <ApplicationVersion>1.0.0</ApplicationVersion>
-    <ApplicationBuild>1</ApplicationBuild>
+    <ApplicationVersion>$(ApplicationVersion)</ApplicationVersion>
+    <ApplicationBuild>$(ApplicationVersion)</ApplicationBuild>
     <CodesignKey>Apple Development: Created via API (HRXXM344JN)</CodesignKey>
     <CodesignTeamId>HRXXM344JN</CodesignTeamId>
     <ProvisioningType>automatic</ProvisioningType>
@@ -79,7 +79,7 @@
     <ApplicationTitle>NAVIGEST</ApplicationTitle>
     <ApplicationDisplayName>NAVIGEST</ApplicationDisplayName>
     <ApplicationId>com.tuaempresa.navigest.macos</ApplicationId>
-    <ApplicationVersion>1.0.0</ApplicationVersion>
+    <ApplicationVersion>$(ApplicationVersion)</ApplicationVersion>
     <CodesignKey>Apple Development: Created via API (HRXXM344JN)</CodesignKey>
     <CodesignTeamId>HRXXM344JN</CodesignTeamId>
     <ProvisioningType>automatic</ProvisioningType>

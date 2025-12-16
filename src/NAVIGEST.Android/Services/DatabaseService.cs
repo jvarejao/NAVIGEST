@@ -1347,7 +1347,7 @@ FROM OrderInfo";
                     return hora.Id;
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // System.Diagnostics.Debug.WriteLine($"Erro ao gravar hora: {ex.Message}");
                 throw;

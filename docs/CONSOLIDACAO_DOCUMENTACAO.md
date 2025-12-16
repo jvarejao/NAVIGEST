@@ -37,8 +37,8 @@ Estes ficheiros são pontos de entrada para novos desenvolvedores ou pessoas ent
 | `GITHUB_QUICK_START.txt` | GitHub quickstart | ✅ Importante | MANTER |
 | `GITHUB_SETUP_CHECKLIST.md` | Checklist setup GitHub | ✅ Importante | MANTER |
 | `GITHUB_BEGINNERS_GUIDE.md` | Guia GitHub para principiantes | ⚠️ Redundante | CONSOLIDAR com QUICK_START |
-| `GITHUB_RELEASES_SETUP.md` | Setup de releases | ✅ Importante | MANTER |
-| `RELEASE_PROCESS.md` | Processo de release | ✅ Essencial | MANTER - Verificar v1.0.30 |
+| `archive/GITHUB_RELEASES_SETUP.md` | Setup de releases | ✅ Importante | ARQUIVADO (v1.0.2) |
+| `archive/RELEASE_PROCESS.md` | Processo de release | ✅ Essencial | ARQUIVADO (substituído por docs/RELEASE.md) |
 
 **Ação:** Consolidar GITHUB_BEGINNERS_GUIDE em GITHUB_QUICK_START, manter os outros
 
@@ -120,7 +120,7 @@ Estes ficheiros contêm análise de trabalho passado. Úteis para referência, n
 
 | Ficheiro | Propósito | Status | Ação |
 |----------|----------|--------|------|
-| `Atualizacao_App_GitHub.md` | Atualização via GitHub | 🔄 Deployment | REVISAR e consolidar em RELEASE_PROCESS |
+| `Atualizacao_App_GitHub.md` | Atualização via GitHub | 🔄 Deployment | REVISAR e consolidar em docs/RELEASE.md |
 | `PRODUTO_FAMILIA_ANDROID_UPDATE.md` | Update produto familia | 🔧 Feature | REVISAR - ainda relevante? |
 
 ---
@@ -149,7 +149,7 @@ docs/
 │
 ├── GUIDES/                                  # 🆕 Temático
 │   ├── GITHUB_WORKFLOW.md                  # Consolidado (QUICK_START + BEGINNERS)
-│   ├── GITHUB_RELEASES.md                  # Consolidado (RELEASES_SETUP + RELEASE_PROCESS)
+│   ├── GITHUB_RELEASES.md                  # Consolidado (setup/processo antigos)
 │   ├── GITHUB_CHECKLIST.md                 # MANTER (setup checklist)
 │   ├── UPDATE_SERVICE.md                   # Consolidado (GUIDE + EXAMPLE + FIX)
 │   ├── TROUBLESHOOTING.md                  # 🆕 Consolidated fixes
@@ -189,7 +189,7 @@ docs/
 
 - [ ] `GUIA_INICIO.md` - Consolidar 00_LEIA_PRIMEIRO + README_COMECE + QUICK_SETUP + MAPA
 - [ ] `GUIDES/GITHUB_WORKFLOW.md` - Consolidar QUICK_START + BEGINNERS
-- [ ] `GUIDES/GITHUB_RELEASES.md` - Consolidar RELEASES_SETUP + RELEASE_PROCESS
+- [ ] `GUIDES/GITHUB_RELEASES.md` - Consolidar release process (substituir docs arquivados)
 - [ ] `GUIDES/UPDATE_SERVICE.md` - Consolidar GUIDE + EXAMPLE + FIX
 - [ ] `PLATFORMS/iOS_SPECIFICS.md` - Consolidar APPLE_STYLES_BEHAVIORS
 - [ ] `PLATFORMS/macOS_Specifics.md` - Consolidar BUTTON_CURSOR + ENTRY_BORDER

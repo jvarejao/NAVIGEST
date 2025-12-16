@@ -22,9 +22,7 @@
     <ApplicationTitle>NAVIGEST</ApplicationTitle>
     <ApplicationDisplayName>NAVIGEST</ApplicationDisplayName>
     <ApplicationId>com.tuaempresa.apploginmaui</ApplicationId>
-    <ApplicationDisplayVersion>1.0.2</ApplicationDisplayVersion>
-    <ApplicationVersion>1</ApplicationVersion>
-    <ApplicationBuild>1</ApplicationBuild>
+    <ApplicationBuild>$(ApplicationVersion)</ApplicationBuild>
 
     <!-- iOS Platform -->
     <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>

@@ -1,31 +1,39 @@
+import argparse
 import re
-import os
+import sys
+from pathlib import Path
 
-resx_path = '/Users/joaovarejao/Dev/NAVIGEST/src/NAVIGEST.Shared/Resources/Strings/AppResources.resx'
-designer_path = '/Users/joaovarejao/Dev/NAVIGEST/src/NAVIGEST.Shared/Resources/Strings/AppResources.Designer.cs'
 
-def get_resx_keys(path):
-    with open(path, 'r', encoding='utf-8') as f:
-        content = f.read()
-    return re.findall(r'<data name="([^"]+)"', content)
+def get_resx_keys(path: Path) -> set[str]:
+    content = path.read_text(encoding="utf-8")
+    return set(re.findall(r'<data name="([^"]+)"', content))
 
-def get_designer_keys(path):
-    with open(path, 'r', encoding='utf-8') as f:
-        content = f.read()
-    return re.findall(r'public static string ([^\s]+) {', content)
 
-def update_designer():
-    resx_keys = set(get_resx_keys(resx_path))
-    designer_keys = set(get_designer_keys(designer_path))
-    
+def get_designer_keys(path: Path) -> set[str]:
+    content = path.read_text(encoding="utf-8")
+    return set(re.findall(r"public static string ([^\s]+) {", content))
+
+
+def update_designer(repo_root: Path) -> None:
+    resx_path = repo_root / "src" / "NAVIGEST.Shared" / "Resources" / "Strings" / "AppResources.resx"
+    designer_path = repo_root / "src" / "NAVIGEST.Shared" / "Resources" / "Strings" / "AppResources.Designer.cs"
+
+    for path in (resx_path, designer_path):
+        if not path.exists():
+            print(f"Erro: ficheiro não encontrado: {path}", file=sys.stderr)
+            sys.exit(1)
+
+    resx_keys = get_resx_keys(resx_path)
+    designer_keys = get_designer_keys(designer_path)
+
     missing_keys = resx_keys - designer_keys
-    
+
     if not missing_keys:
         print("No missing keys found.")
         return
 
     print(f"Found {len(missing_keys)} missing keys.")
-    
+
     new_properties = []
     for key in sorted(missing_keys):
         prop = f"""
@@ -35,36 +43,36 @@ def update_designer():
             }}
         }}"""
         new_properties.append(prop)
-    
-    with open(designer_path, 'r', encoding='utf-8') as f:
-        content = f.read()
-    
-    # Find the last closing brace of the class
-    # The file ends with two closing braces (one for class, one for namespace)
-    # We want to insert before the class closing brace.
-    
-    # A simple heuristic: find the last "}" and insert before the one before it?
-    # Or just find the last "}" and assume it's the namespace, and the one before is the class.
-    
-    # Let's look at the end of the file.
-    # It usually looks like:
-    #     }
-    # }
-    
+
+    content = designer_path.read_text(encoding="utf-8")
+
     last_brace_index = content.rfind('}')
     second_last_brace_index = content.rfind('}', 0, last_brace_index)
-    
-    if second_last_brace_index == -1:
-        print("Could not find insertion point.")
-        return
 
-    # Insert before the second to last brace
-    new_content = content[:second_last_brace_index] + "\n" + "\n".join(new_properties) + "\n    " + content[second_last_brace_index:]
-    
-    with open(designer_path, 'w', encoding='utf-8') as f:
-        f.write(new_content)
-    
+    if second_last_brace_index == -1:
+        print("Could not find insertion point.", file=sys.stderr)
+        sys.exit(1)
+
+    new_content = (
+        content[:second_last_brace_index]
+        + "\n"
+        + "\n".join(new_properties)
+        + "\n    "
+        + content[second_last_brace_index:]
+    )
+
+    designer_path.write_text(new_content, encoding="utf-8")
     print("Updated AppResources.Designer.cs")
 
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Update AppResources.Designer.cs with missing RESX keys")
+    parser.add_argument("--repo-root", type=Path, help="Caminho para a raiz do repositório (opcional)")
+    args = parser.parse_args()
+
+    repo_root = args.repo_root.expanduser().resolve() if args.repo_root else Path(__file__).resolve().parent
+    update_designer(repo_root)
+
+
 if __name__ == "__main__":
-    update_designer()
+    main()

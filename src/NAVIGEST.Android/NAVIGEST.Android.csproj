@@ -16,13 +16,11 @@
 	<!-- App Info -->
 	<ApplicationTitle>NAVIGEST</ApplicationTitle>
 	<ApplicationId>com.navigatorcode.navigest</ApplicationId>
-	<ApplicationDisplayVersion>1.0.31</ApplicationDisplayVersion>
-	<ApplicationVersion>31</ApplicationVersion>		<!-- Supported platforms -->
-		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+	<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
 
 		<!-- Android specific -->
 		<AndroidStoreUncompressedDex>False</AndroidStoreUncompressedDex>
-		<AndroidCreatePackagePerAbi>True</AndroidCreatePackagePerAbi>
+		<AndroidCreatePackagePerAbi>False</AndroidCreatePackagePerAbi>
 		<AndroidKeyStore>False</AndroidKeyStore>
 		<AndroidPackageFormat>apk</AndroidPackageFormat>
 
@@ -37,13 +35,13 @@
 
 	<!-- Android Debug Configuration -->
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-android|AnyCPU'">
-		<AndroidCreatePackagePerAbi>True</AndroidCreatePackagePerAbi>
+		<AndroidCreatePackagePerAbi>False</AndroidCreatePackagePerAbi>
 		<AndroidKeyStore>False</AndroidKeyStore>
 	</PropertyGroup>
 
 	<!-- Android Release Configuration -->
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-android|AnyCPU'">
-		<AndroidCreatePackagePerAbi>True</AndroidCreatePackagePerAbi>
+		<AndroidCreatePackagePerAbi>False</AndroidCreatePackagePerAbi>
 		<AndroidLinkTool>r8</AndroidLinkTool>
 		<AndroidKeyStore>False</AndroidKeyStore>
 		<PublishTrimmed>true</PublishTrimmed>

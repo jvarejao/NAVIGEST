@@ -19,7 +19,13 @@ namespace NAVIGEST.Android.Services.Icons
             }
             catch
             {
-                return null;
+                return new FontImageSource
+                {
+                    FontFamily = "FA7Solid",
+                    Glyph = "?",
+                    Size = size,
+                    Color = Colors.Black
+                };
             }
         }
     }

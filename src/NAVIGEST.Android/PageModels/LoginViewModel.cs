@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Maui.Controls;
@@ -119,7 +120,9 @@ namespace NAVIGEST.Android.PageModels
             // ✅ Validação de campos
             if (!CanLogin())
             {
-                await Application.Current!.MainPage!.DisplayAlert(AppResources.Login_Title, AppResources.Login_Msg_EnterUserAndPass, AppResources.Common_OK);
+                var page = GetCurrentPage();
+                if (page != null)
+                    await page.DisplayAlert(AppResources.Login_Title, AppResources.Login_Msg_EnterUserAndPass, AppResources.Common_OK);
                 return;
             }
 
@@ -130,7 +133,9 @@ namespace NAVIGEST.Android.PageModels
                 
                 if (!ok)
                 {
-                    await Application.Current!.MainPage!.DisplayAlert(AppResources.Login_Title, AppResources.Login_Msg_InvalidCredentials, AppResources.Common_OK);
+                    var page = GetCurrentPage();
+                    if (page != null)
+                        await page.DisplayAlert(AppResources.Login_Title, AppResources.Login_Msg_InvalidCredentials, AppResources.Common_OK);
                     return;
                 }
 
@@ -141,8 +146,8 @@ namespace NAVIGEST.Android.PageModels
 
                 UserSession.Current.User = new UserSession.UserData
                 {
-                    Name = nome,
-                    Role = tipo,
+                    Name = nome ?? string.Empty,
+                    Role = tipo ?? string.Empty,
                     Photo = userInfo?.ProfilePicture,
                     CompanyName = companyName,
                     CompanyLogo = !string.IsNullOrEmpty(companyLogoBase64) ? Convert.FromBase64String(companyLogoBase64) : null
@@ -152,19 +157,21 @@ namespace NAVIGEST.Android.PageModels
                 // Agora, se Face ID nunca foi ativado, perguntar
                 if (BiometricAvailable && !BiometricEnabled)
                 {
-                    var response = await Application.Current!.MainPage!.DisplayAlert(
-                        AppResources.Login_Biometric,
-                        AppResources.Login_UseBiometric + "?",
-                        AppResources.Common_Yes,
-                        AppResources.Common_No
-                    );
+                    var page = GetCurrentPage();
+                    var response = page != null
+                        ? await page.DisplayAlert(
+                            AppResources.Login_Biometric,
+                            AppResources.Login_UseBiometric + "?",
+                            AppResources.Common_Yes,
+                            AppResources.Common_No)
+                        : false;
 
                     if (response)
                     {
                         // ✅ Guardar credenciais e ativar Face ID
                         await SecureStorage.SetAsync(KeyBioEnabled, "1");
-                        await SecureStorage.SetAsync(KeyBioUsername, Username);
-                        await SecureStorage.SetAsync(KeyBioPassword, Password);
+                        await SecureStorage.SetAsync(KeyBioUsername, Username ?? string.Empty);
+                        await SecureStorage.SetAsync(KeyBioPassword, Password ?? string.Empty);
                         BiometricEnabled = true;
                     }
                     // Se responde NÃO, próxima vez volta a perguntar
@@ -176,7 +183,9 @@ namespace NAVIGEST.Android.PageModels
             }
             catch (Exception ex)
             {
-                await Application.Current!.MainPage!.DisplayAlert(AppResources.Login_Title, string.Format(AppResources.Login_Msg_LoginError, ex.Message), AppResources.Common_OK);
+                var page = GetCurrentPage();
+                if (page != null)
+                    await page.DisplayAlert(AppResources.Login_Title, string.Format(AppResources.Login_Msg_LoginError, ex.Message), AppResources.Common_OK);
             }
         }
 
@@ -216,11 +225,13 @@ namespace NAVIGEST.Android.PageModels
                 if (!ok)
                 {
                     // ⚠️ Credenciais já não são válidas (password mudada)
-                    await Application.Current!.MainPage!.DisplayAlert(
-                        AppResources.Common_Info,
-                        AppResources.Login_Msg_InvalidCredentials,
-                        AppResources.Common_OK
-                    );
+                    var page = GetCurrentPage();
+                    if (page != null)
+                        await page.DisplayAlert(
+                            AppResources.Common_Info,
+                            AppResources.Login_Msg_InvalidCredentials,
+                            AppResources.Common_OK
+                        );
                     // ✅ NÃO desativa Face ID, apenas volta ao login manual
                     return;
                 }
@@ -232,16 +243,16 @@ namespace NAVIGEST.Android.PageModels
 
                 UserSession.Current.User = new UserSession.UserData
                 {
-                    Name = nome,
-                    Role = tipo,
+                    Name = nome ?? string.Empty,
+                    Role = tipo ?? string.Empty,
                     Photo = userInfo?.ProfilePicture,
                     CompanyName = companyName,
                     CompanyLogo = !string.IsNullOrEmpty(companyLogoBase64) ? Convert.FromBase64String(companyLogoBase64) : null
                 };
 
                 // ✅ Atualizar campos (para referência, se necessário)
-                Username = savedUsername;
-                Password = savedPassword;
+                Username = savedUsername ?? string.Empty;
+                Password = savedPassword ?? string.Empty;
 
                 // ✅ Navega para a página principal (SEM alert, silencioso)
                 if (Shell.Current is not null)
@@ -273,11 +284,13 @@ namespace NAVIGEST.Android.PageModels
                 // ✅ Face ID OK - usar credenciais dos campos de texto
                 if (!CanLogin())
                 {
-                    await Application.Current!.MainPage!.DisplayAlert(
-                        AppResources.Common_Error,
-                        AppResources.Login_Msg_EnterUserAndPass,
-                        AppResources.Common_OK
-                    );
+                    var page = GetCurrentPage();
+                    if (page != null)
+                        await page.DisplayAlert(
+                            AppResources.Common_Error,
+                            AppResources.Login_Msg_EnterUserAndPass,
+                            AppResources.Common_OK
+                        );
                     return;
                 }
 
@@ -286,11 +299,13 @@ namespace NAVIGEST.Android.PageModels
                 
                 if (!ok)
                 {
-                    await Application.Current!.MainPage!.DisplayAlert(
-                        AppResources.Common_Error,
-                        AppResources.Login_Msg_InvalidCredentials,
-                        AppResources.Common_OK
-                    );
+                    var page = GetCurrentPage();
+                    if (page != null)
+                        await page.DisplayAlert(
+                            AppResources.Common_Error,
+                            AppResources.Login_Msg_InvalidCredentials,
+                            AppResources.Common_OK
+                        );
                     return;
                 }
 
@@ -301,8 +316,8 @@ namespace NAVIGEST.Android.PageModels
 
                 UserSession.Current.User = new UserSession.UserData
                 {
-                    Name = nome,
-                    Role = tipo,
+                    Name = nome ?? string.Empty,
+                    Role = tipo ?? string.Empty,
                     Photo = userInfo?.ProfilePicture,
                     CompanyName = companyName,
                     CompanyLogo = !string.IsNullOrEmpty(companyLogoBase64) ? Convert.FromBase64String(companyLogoBase64) : null
@@ -312,8 +327,8 @@ namespace NAVIGEST.Android.PageModels
                 if (!BiometricEnabled)
                 {
                     await SecureStorage.SetAsync(KeyBioEnabled, "1");
-                    await SecureStorage.SetAsync(KeyBioUsername, Username);
-                    await SecureStorage.SetAsync(KeyBioPassword, Password);
+                    await SecureStorage.SetAsync(KeyBioUsername, Username ?? string.Empty);
+                    await SecureStorage.SetAsync(KeyBioPassword, Password ?? string.Empty);
                     BiometricEnabled = true;
                 }
 
@@ -324,9 +339,13 @@ namespace NAVIGEST.Android.PageModels
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"BiometricLoginAsync error: {ex}");
-                await Application.Current!.MainPage!.DisplayAlert(AppResources.Common_Error, string.Format(AppResources.Login_Msg_LoginError, ex.Message), AppResources.Common_OK);
+                var page = GetCurrentPage();
+                if (page != null)
+                    await page.DisplayAlert(AppResources.Common_Error, string.Format(AppResources.Login_Msg_LoginError, ex.Message), AppResources.Common_OK);
             }
         }
+
+        private static Page? GetCurrentPage() => Application.Current?.Windows.FirstOrDefault()?.Page;
 
         private async Task ToggleBiometricAsync()
         {

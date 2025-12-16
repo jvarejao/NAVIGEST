@@ -8,7 +8,7 @@ namespace NAVIGEST.Android.Converters
     public class BytesToImageSourceConverter : IValueConverter
     {
         // Converte byte[] -> ImageSource (para mostrar foto)
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             try
             {
@@ -27,7 +27,7 @@ namespace NAVIGEST.Android.Converters
         }
 
         // Não precisamos do caminho inverso (ImageSource -> byte[])
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
             => throw new NotImplementedException();
     }
 }

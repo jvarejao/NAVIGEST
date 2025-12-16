@@ -231,7 +231,9 @@ public partial class ProductsPage : ContentPage
                     try
                     {
                         var popup = new AddProductFamilyPopup();
-                        var result = await Application.Current.MainPage.ShowPopupAsync(popup);
+                        var page = Application.Current?.Windows.FirstOrDefault()?.Page ?? Shell.Current?.CurrentPage;
+                        if (page is null) return;
+                        var result = await page.ShowPopupAsync(popup);
                         
                         if (result is ProductFamilyInput familia && !string.IsNullOrWhiteSpace(familia.Codigo))
                         {

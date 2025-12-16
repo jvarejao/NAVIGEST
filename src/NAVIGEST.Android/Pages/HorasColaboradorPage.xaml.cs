@@ -476,14 +476,14 @@ public partial class HorasColaboradorPage : ContentPage
                     if (horaResultado.Id == -1)
                     {
                         // Foi eliminado no popup
-                        GlobalToast.ShowAsync("Registo eliminado com sucesso", ToastTipo.Sucesso);
+                        _ = GlobalToast.ShowAsync("Registo eliminado com sucesso", ToastTipo.Sucesso);
                     }
                     // Recarregar lista
                     else
                     {
                         // Foi guardado/atualizado
                         string mensagem = hora?.Id > 0 ? "Registo atualizado com sucesso" : "Registo adicionado com sucesso";
-                        GlobalToast.ShowAsync(mensagem, ToastTipo.Sucesso);
+                        _ = GlobalToast.ShowAsync(mensagem, ToastTipo.Sucesso);
                     }
                     await _vm.CarregarHorasCommand.ExecuteAsync(null);
                 }

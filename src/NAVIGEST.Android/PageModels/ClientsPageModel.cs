@@ -544,9 +544,7 @@ public class ClientsPageModel : INotifyPropertyChanged
 
 #if ANDROID || IOS
         await AppShell.DisplayToastAsync("Criação de pastas só disponível em Desktop.");
-        return;
-#endif
-
+#else
         if (EditModel.PastasSincronizadas)
         {
             await AppShell.DisplayToastAsync("Pastas já criadas.");
@@ -570,6 +568,7 @@ public class ClientsPageModel : INotifyPropertyChanged
             GlobalErro.TratarErro(ex);
             await AppShell.DisplayToastAsync("Erro ao criar pastas.");
         }
+#endif
         OnPropertyChanged(nameof(Editing));
     }
 
@@ -647,7 +646,7 @@ public class ClientsPageModel : INotifyPropertyChanged
 
         // Formatar telefone se tiver apenas 9 dígitos
         var digits = new string((c.TELEFONE ?? string.Empty).Where(char.IsDigit).ToArray());
-        if (digits.Length == 9 && !c.TELEFONE.Contains(" "))
+        if (digits.Length == 9 && !string.IsNullOrWhiteSpace(c.TELEFONE) && !c.TELEFONE.Contains(" "))
             c.TELEFONE = $"{digits.Substring(0, 3)} {digits.Substring(3, 3)} {digits.Substring(6, 3)}";
 
         c.VALORCREDITO = FormatValorCredito(c.VALORCREDITO);
