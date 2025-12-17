@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:res="clr-namespace:NAVIGEST.Shared.Resources.Strings;assembly=NAVIGEST.Shared"
              x:Class="NAVIGEST.macOS.Pages.SettingsPage"
+             x:DataType="{x:Null}"
              Title="{x:Static res:AppResources.Settings_Title}"
              BackgroundColor="{DynamicResource PageBackgroundColor}">
 

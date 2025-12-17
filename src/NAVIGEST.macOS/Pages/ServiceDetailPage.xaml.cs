@@ -20,6 +20,12 @@ public partial class ServiceDetailPage : ContentPage
     public ObservableCollection<OrderedProduct> Products { get; } = new();
     public UserSession.UserData CurrentUser => UserSession.Current.User;
     public ImageSource? CompanyLogoSource { get; private set; }
+    public decimal DiscountAmount => CalculateDiscount();
+    public decimal SubTotalAfterDiscount => Math.Max(0, (Order?.SubTotal ?? 0m) - DiscountAmount);
+    public decimal CalculatedTaxAmount => CalculateTax();
+    public decimal CalculatedTotalAmount => SubTotalAfterDiscount + CalculatedTaxAmount;
+    public decimal PaidAmount => Order?.VALORPAGO ?? 0m;
+    public decimal PendingAmount => CalculatePending();
     
     private bool _autoOpenPdf;
 
@@ -31,6 +37,49 @@ public partial class ServiceDetailPage : ContentPage
         
         BindingContext = this;
         InitializePageAsync();
+    }
+
+    private decimal CalculateDiscount()
+    {
+        if (Order == null) return 0m;
+
+        if (Order.Desconto.HasValue)
+        {
+            return Order.Desconto.Value;
+        }
+
+        if (Order.SubTotal.HasValue && Order.DescPercentage.HasValue)
+        {
+            return Order.SubTotal.Value * Order.DescPercentage.Value / 100m;
+        }
+
+        return 0m;
+    }
+
+    private decimal CalculateTax()
+    {
+        if (Order == null) return 0m;
+
+        if (Order.TaxPercentage.HasValue)
+        {
+            return SubTotalAfterDiscount * Order.TaxPercentage.Value;
+        }
+
+        return Order.TaxAmount ?? 0m;
+    }
+
+    private decimal CalculatePending()
+    {
+        if (Order == null) return 0m;
+
+        var paid = Order.VALORPAGO ?? 0m;
+        var pending = Order.VALORPENDENTE ?? 0m;
+
+        if (pending > 0) return pending;
+
+        var total = CalculatedTotalAmount;
+        var computedPending = total - paid;
+        return computedPending < 0 ? 0 : computedPending;
     }
 
     private async void InitializePageAsync()

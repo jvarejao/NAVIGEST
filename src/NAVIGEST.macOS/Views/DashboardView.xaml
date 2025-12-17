@@ -7,7 +7,7 @@
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:strings="clr-namespace:NAVIGEST.Shared.Resources.Strings;assembly=NAVIGEST.Shared"
              x:Class="NAVIGEST.macOS.Views.DashboardView"
-             x:DataType="vm:DashboardViewModel"
+             x:DataType="{x:Null}"
              x:Name="dashboardView">
 
     <ContentView.Resources>

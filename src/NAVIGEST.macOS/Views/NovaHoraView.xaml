@@ -5,6 +5,7 @@
              xmlns:models="clr-namespace:NAVIGEST.macOS.Models"
              xmlns:res="clr-namespace:NAVIGEST.Shared.Resources.Strings;assembly=NAVIGEST.Shared"
              xmlns:behaviors="clr-namespace:NAVIGEST.macOS.Behaviors"
+             x:DataType="{x:Null}"
              BackgroundColor="Transparent">
   
     <Border BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1C1C1E}"

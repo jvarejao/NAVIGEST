@@ -4,6 +4,7 @@
              xmlns:models="clr-namespace:NAVIGEST.macOS.Models"
              xmlns:behaviors="clr-namespace:NAVIGEST.macOS.Behaviors"
              x:Class="NAVIGEST.macOS.Pages.ServiceStatusPage"
+             x:DataType="{x:Null}"
              Title="Estados de Serviço"
              BackgroundColor="{DynamicResource PageBackgroundColor}">
 

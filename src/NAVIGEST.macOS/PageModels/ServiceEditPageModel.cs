@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Views;
@@ -39,7 +41,7 @@ public class ServiceEditPageModel : INotifyPropertyChanged
     public string ClientCode => SelectedClient?.CLICODIGO ?? "N/A";
     public string ClientName => SelectedClient?.CLINOME ?? "Selecione um Cliente";
 
-    public DateTime CreationDate { get; } = DateTime.Now;
+    public DateTime CreationDate { get; private set; } = DateTime.Now;
 
     private DateTime _deliveryDate = DateTime.Now.AddDays(7);
     public DateTime DeliveryDate
@@ -96,12 +98,53 @@ public class ServiceEditPageModel : INotifyPropertyChanged
 
     // Lines
     public ObservableCollection<OrderedProductViewModel> Items { get; } = new();
+    public int ItemsCount => Items.Count;
 
     // Totals
     public decimal SubTotal => Items.Sum(i => i.Subtotal);
-    public decimal TaxRate { get; set; } = 0.23m; // Default IVA
-    public decimal TaxAmount => SubTotal * TaxRate;
-    public decimal TotalAmount => SubTotal + TaxAmount;
+
+    private string _discountInput = "0";
+    private decimal _discountPercentage;
+    public string DiscountInput
+    {
+        get => _discountInput;
+        set
+        {
+            if (_discountInput == value) return;
+            _discountInput = value ?? "0";
+
+            if (decimal.TryParse(_discountInput.Replace(".", ","), NumberStyles.Any, new CultureInfo("pt-PT"), out var parsed))
+            {
+                _discountPercentage = parsed;
+                OnPropertyChanged(nameof(DiscountPercentage));
+                RecalculateTotals();
+            }
+
+            OnPropertyChanged();
+        }
+    }
+
+    public decimal DiscountPercentage => _discountPercentage;
+
+    public decimal DiscountAmount => Math.Max(0, SubTotal * DiscountPercentage / 100m);
+
+    public decimal SubTotalAfterDiscount => Math.Max(0, SubTotal - DiscountAmount);
+
+    private decimal _taxRate = 0.23m; // Default IVA
+    public decimal TaxRate
+    {
+        get => _taxRate;
+        set
+        {
+            if (_taxRate == value) return;
+            _taxRate = value;
+            OnPropertyChanged();
+            RecalculateTotals();
+        }
+    }
+
+    public decimal TaxAmount => SubTotalAfterDiscount * TaxRate;
+    public decimal TotalAmount => SubTotalAfterDiscount + TaxAmount;
 
     // Commands
     public ICommand SelectClientCommand { get; }
@@ -113,12 +156,84 @@ public class ServiceEditPageModel : INotifyPropertyChanged
 
     public ServiceEditPageModel()
     {
+        Items.CollectionChanged += OnItemsCollectionChanged;
         SelectClientCommand = new Command(OnSelectClient);
         OpenStatusPickerCommand = new Command(OnOpenStatusPicker);
         AddLineCommand = new Command(OnAddLine);
         RemoveLineCommand = new Command<OrderedProductViewModel>(OnRemoveLine);
         SaveCommand = new Command(OnSave);
         CancelCommand = new Command(OnCancel);
+    }
+
+    public ServiceEditPageModel(OrderInfoModel existingOrder) : this()
+    {
+        if (existingOrder == null) return;
+
+        // Prefill basic fields when navigating from the list
+        SelectedClient = new Cliente
+        {
+            CLICODIGO = existingOrder.CustomerNo,
+            CLINOME = existingOrder.CustomerName,
+            VENDEDOR = existingOrder.CONTROLVEND
+        };
+
+        CreationDate = existingOrder.OrderDate ?? CreationDate;
+        DeliveryDate = existingOrder.OrderDateEnt ?? DeliveryDate;
+        Status = string.IsNullOrWhiteSpace(existingOrder.OrderStatus) ? Status : existingOrder.OrderStatus;
+        Observations = existingOrder.Observacoes ?? string.Empty;
+        InternalObservations = existingOrder.DESCPROD ?? string.Empty;
+
+        // Financials
+        if (existingOrder.TaxPercentage.HasValue)
+        {
+            var tax = existingOrder.TaxPercentage.Value;
+            // DB guarda percentagem (ex: 23). Converter para fração (0.23) se vier > 1.
+            TaxRate = tax > 1 ? tax / 100m : tax;
+        }
+
+        if (existingOrder.DescPercentage.HasValue)
+        {
+            _discountPercentage = existingOrder.DescPercentage.Value;
+            _discountInput = _discountPercentage.ToString("N2", new CultureInfo("pt-PT"));
+            OnPropertyChanged(nameof(DiscountInput));
+            OnPropertyChanged(nameof(DiscountPercentage));
+        }
+
+        LoadExistingOrderAsync(existingOrder);
+    }
+
+    private async void LoadExistingOrderAsync(OrderInfoModel existingOrder)
+    {
+        try
+        {
+            var products = await DatabaseService.GetOrderedProductsExtendedAsync(existingOrder);
+
+            if (products.Count == 0)
+            {
+                await AppShell.DisplayToastAsync("Sem produtos associados a este serviço.", NAVIGEST.macOS.ToastTipo.Aviso, 2500);
+            }
+            else
+            {
+                foreach (var ordered in products)
+                {
+                    var item = new OrderedProductViewModel(ordered)
+                    {
+                        ShowFinancials = ShowFinancials,
+                        FinancialColumnWidth = FinancialColumnWidth
+                    };
+                    item.PropertyChanged += OnItemPropertyChanged;
+                    Items.Add(item);
+                }
+
+                RecalculateTotals();
+                OnPropertyChanged(nameof(ItemsCount));
+            }
+        }
+        catch (Exception ex)
+        {
+            NAVIGEST.macOS.GlobalErro.TratarErro(ex);
+            await AppShell.DisplayToastAsync("Erro ao carregar produtos do serviço.", NAVIGEST.macOS.ToastTipo.Erro, 2500);
+        }
     }
 
     private async void OnOpenStatusPicker()
@@ -153,6 +268,7 @@ public class ServiceEditPageModel : INotifyPropertyChanged
             newItem.PropertyChanged += OnItemPropertyChanged;
             Items.Add(newItem);
             RecalculateTotals();
+            OnPropertyChanged(nameof(ItemsCount));
         }
     }
 
@@ -163,6 +279,7 @@ public class ServiceEditPageModel : INotifyPropertyChanged
             item.PropertyChanged -= OnItemPropertyChanged;
             Items.Remove(item);
             RecalculateTotals();
+            OnPropertyChanged(nameof(ItemsCount));
         }
     }
 
@@ -174,9 +291,16 @@ public class ServiceEditPageModel : INotifyPropertyChanged
         }
     }
 
+    private void OnItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        OnPropertyChanged(nameof(ItemsCount));
+    }
+
     private void RecalculateTotals()
     {
         OnPropertyChanged(nameof(SubTotal));
+        OnPropertyChanged(nameof(DiscountAmount));
+        OnPropertyChanged(nameof(SubTotalAfterDiscount));
         OnPropertyChanged(nameof(TaxAmount));
         OnPropertyChanged(nameof(TotalAmount));
     }
@@ -377,6 +501,54 @@ public class OrderedProductViewModel : INotifyPropertyChanged
         SelectSizeCommand = new Command(OnSelectSize);
         
         CalculateTotal();
+    }
+
+    public OrderedProductViewModel(OrderedProduct ordered)
+    {
+        Product = new Product
+        {
+            PRODCODIGO = ordered.ProductCode,
+            PRODNOME = ordered.ProductName,
+            PRECOCUSTO = ordered.PrecoCusto,
+            PRECOVENDA = ordered.PrecoUnit
+        };
+
+        SelectColorCommand = new Command(OnSelectColor);
+        SelectSizeCommand = new Command(OnSelectSize);
+
+        // Use property setters to refresh bindings and calculations
+        Color = ordered.Cor;
+        Size = ordered.Tam;
+        Quantity = ordered.Quantidade <= 0 ? 1 : ordered.Quantidade;
+        Height = ordered.Altura;
+        Width = ordered.Largura;
+        _suppressRawReset = true;
+        // Use selling price when present; fallback to cost if selling price is zero
+        UnitPrice = ordered.PrecoUnit > 0 ? ordered.PrecoUnit : ordered.PrecoCusto;
+        _suppressRawReset = false;
+        _unitPriceDisplayRaw = UnitPrice.ToString("C2", new System.Globalization.CultureInfo("pt-PT"));
+        OnPropertyChanged(nameof(UnitPriceDisplay));
+
+        // If M2 came from DB, honor it and recalc totals; otherwise recalc from dimensions
+        if (ordered.M2 > 0)
+        {
+            M2 = ordered.M2;
+        }
+        else
+        {
+            RecalculateM2();
+        }
+
+        // If subtotal came from DB, set it directly (prefer cost subtotal when selling subtotal is zero)
+        var dbSubtotal = ordered.SUBTOTAIS > 0 ? ordered.SUBTOTAIS : ordered.SubtotalCusto;
+        if (dbSubtotal > 0)
+        {
+            Subtotal = dbSubtotal;
+        }
+        else
+        {
+            CalculateTotal();
+        }
     }
 
     private async void OnSelectColor()

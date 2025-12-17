@@ -4,6 +4,7 @@
              xmlns:conv="clr-namespace:NAVIGEST.macOS.Converters"
              xmlns:beh="clr-namespace:NAVIGEST.macOS.Behaviors"
              x:Class="NAVIGEST.macOS.Pages.RegisterPage"
+             x:DataType="{x:Null}"
              BackgroundColor="{DynamicResource PageBackgroundColor}"
              Title="Utilizadores"
              Shell.NavBarIsVisible="False"

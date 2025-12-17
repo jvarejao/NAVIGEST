@@ -90,7 +90,15 @@ public class ServicePageModel : INotifyPropertyChanged
     private async void OnEditService(OrderInfoModel? service)
     {
         if (service == null) return;
-        await AppShell.DisplayToastAsync($"Editar serviço {service.OrderNo} (Em desenvolvimento)");
+        try
+        {
+            await AppShell.Current.Navigation.PushAsync(new Pages.ServiceEditPage(service));
+        }
+        catch (Exception ex)
+        {
+            NAVIGEST.macOS.GlobalErro.TratarErro(ex);
+            await AppShell.DisplayToastAsync("Erro ao abrir a edição do serviço.", NAVIGEST.macOS.ToastTipo.Erro, 2000);
+        }
     }
 
     private async void OnPaymentService(OrderInfoModel? service)

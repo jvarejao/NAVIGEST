@@ -8,6 +8,7 @@
              xmlns:pages="clr-namespace:NAVIGEST.macOS.Pages"
              xmlns:converters="clr-namespace:NAVIGEST.macOS.Converters"
              xmlns:strings="clr-namespace:NAVIGEST.Shared.Resources.Strings;assembly=NAVIGEST.Shared"
+             x:DataType="{x:Null}"
              BackgroundColor="{DynamicResource PageBackgroundColor}"
              Title="{x:Static strings:AppResources.ServicePage_Title}"
              Loaded="OnPageLoaded">

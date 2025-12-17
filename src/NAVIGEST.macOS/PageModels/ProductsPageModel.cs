@@ -67,12 +67,11 @@ public class ProductsPageModel : INotifyPropertyChanged
         {
             if (Editing == null) return;
             
-            var normalized = value?.Replace(".", ",") ?? "0";
+            var normalized = value?.Replace(".", ",") ?? string.Empty;
             if (decimal.TryParse(normalized, NumberStyles.Any, CultureInfo.GetCultureInfo("pt-PT"), out var result))
             {
                 Editing.PRECOCUSTO = result;
             }
-            OnPropertyChanged();
         }
     }
 
@@ -83,12 +82,11 @@ public class ProductsPageModel : INotifyPropertyChanged
         {
             if (Editing == null) return;
             
-            var normalized = value?.Replace(".", ",") ?? "0";
+            var normalized = value?.Replace(".", ",") ?? string.Empty;
             if (decimal.TryParse(normalized, NumberStyles.Any, CultureInfo.GetCultureInfo("pt-PT"), out var result))
             {
                 Editing.PRECOVENDA = result;
             }
-            OnPropertyChanged();
         }
     }
 

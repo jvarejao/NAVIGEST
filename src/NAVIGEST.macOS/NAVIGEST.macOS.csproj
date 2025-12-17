@@ -11,8 +11,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
-    <!-- CommunityToolkit warning conhecido -->
-    <NoWarn>XC0103</NoWarn>
+    <!-- CommunityToolkit warning conhecido + XamlC compiled-binding noise -->
+    <NoWarn>XC0103;XC0022;XC0023;XC0024</NoWarn>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
 
     <!-- App -->

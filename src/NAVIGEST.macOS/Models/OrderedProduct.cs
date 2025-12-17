@@ -6,6 +6,7 @@ namespace NAVIGEST.macOS.Models
     {
         public long Id { get; set; }
         public string OrderNo { get; set; } = string.Empty;
+        public string? Numserv { get; set; }
         public string ProductCode { get; set; } = string.Empty;
         public string ProductName { get; set; } = string.Empty;
         public string Cor { get; set; } = string.Empty;

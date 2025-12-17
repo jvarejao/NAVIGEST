@@ -4,6 +4,7 @@
              xmlns:beh="clr-namespace:NAVIGEST.macOS.Behaviors"
              xmlns:res="clr-namespace:NAVIGEST.Shared.Resources.Strings;assembly=NAVIGEST.Shared"
              x:Class="NAVIGEST.macOS.Pages.WelcomePage"
+             x:DataType="{x:Null}"
              Title="{x:Static res:AppResources.Welcome_Title}"
              BackgroundColor="{DynamicResource PageBackgroundColor}">
 

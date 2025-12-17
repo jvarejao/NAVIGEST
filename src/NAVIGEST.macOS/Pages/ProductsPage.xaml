@@ -7,6 +7,7 @@
              xmlns:viewmodels="clr-namespace:NAVIGEST.macOS.PageModels"
              xmlns:behaviors="clr-namespace:NAVIGEST.macOS.Behaviors"
              xmlns:strings="clr-namespace:NAVIGEST.Shared.Resources.Strings;assembly=NAVIGEST.Shared"
+             x:DataType="{x:Null}"
              BackgroundColor="{DynamicResource PageBackgroundColor}"
              Title="{x:Static strings:AppResources.ProductsPage_Title}">
 
@@ -175,7 +176,8 @@
                                     </Button>
 
                                     <!-- Delete -->
-                                    <Button Text="&#xF1F8;" 
+                                        <Button Text="&#xF1F8;" 
+                                            x:DataType="{x:Null}"
                                             FontFamily="FA7Solid" 
                                             FontSize="16"
                                             BackgroundColor="#19FF3B30" 

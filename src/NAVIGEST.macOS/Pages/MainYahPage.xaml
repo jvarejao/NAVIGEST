@@ -7,6 +7,7 @@
     xmlns:res="clr-namespace:NAVIGEST.Shared.Resources.Strings;assembly=NAVIGEST.Shared"
     xmlns:beh="clr-namespace:NAVIGEST.macOS.Behaviors"
     x:Name="Root"
+    x:DataType="{x:Null}"
     BackgroundColor="{DynamicResource BodyBg}">
 
     <ContentPage.Resources>

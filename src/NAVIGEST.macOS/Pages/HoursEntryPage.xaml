@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ContentPage x:Class="NAVIGEST.macOS.Pages.HoursEntryPage"
+             x:Name="HoursEntryPageRoot"
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:NAVIGEST.macOS.ViewModels"
@@ -175,12 +176,13 @@
                                         Margin="0,0,0,8">
                                     <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
                                         <!-- Row 0: Collaborator Name (Visible if showing all) -->
-                                        <Label Grid.Row="0" Grid.Column="0"
+                                                 <Label Grid.Row="0" Grid.Column="0"
+                                                     x:DataType="{x:Null}"
                                                Text="{Binding NomeColaborador}"
                                                FontAttributes="Bold"
                                                FontSize="13"
                                                TextColor="{DynamicResource AppAccent}"
-                                               IsVisible="{Binding Source={RelativeSource AncestorType={x:Type pages:HoursEntryPage}}, Path=ShowCollaboratorName}" 
+                                                 IsVisible="{Binding Source={x:Reference HoursEntryPageRoot}, Path=ShowCollaboratorName}" 
                                                Margin="0,0,0,4"/>
 
                                         <!-- Row 0: Hours (Green/Orange) -->

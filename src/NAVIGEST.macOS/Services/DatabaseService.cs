@@ -1404,6 +1404,17 @@ ORDER BY OrderDate DESC";
             
             // Helpers locais
             static string S(MySqlConnector.MySqlDataReader r, string col) => r.IsDBNull(r.GetOrdinal(col)) ? "" : r.GetString(col);
+            static string SSafe(MySqlConnector.MySqlDataReader r, string col)
+            {
+                try
+                {
+                    return r.IsDBNull(r.GetOrdinal(col)) ? "" : r.GetString(col);
+                }
+                catch (IndexOutOfRangeException)
+                {
+                    return "";
+                }
+            }
             static decimal D(MySqlConnector.MySqlDataReader r, string col) => r.IsDBNull(r.GetOrdinal(col)) ? 0m : r.GetDecimal(col);
             static long L(MySqlConnector.MySqlDataReader r, string col) => r.IsDBNull(r.GetOrdinal(col)) ? 0L : r.GetInt64(col);
             static DateTime? DT(MySqlConnector.MySqlDataReader r, string col) => r.IsDBNull(r.GetOrdinal(col)) ? null : r.GetDateTime(col);
@@ -1414,6 +1425,7 @@ ORDER BY OrderDate DESC";
                 {
                     Id = L(rd, "Id"),
                     OrderNo = S(rd, "OrderNo"),
+                    Numserv = SSafe(rd, "Numserv"),
                     ProductCode = S(rd, "ProductCode"),
                     ProductName = S(rd, "ProductName"),
                     Cor = S(rd, "Cor"),

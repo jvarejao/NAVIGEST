@@ -4,6 +4,7 @@
              xmlns:models="clr-namespace:NAVIGEST.macOS.PageModels"
              xmlns:behaviors="clr-namespace:NAVIGEST.macOS.Behaviors"
              x:Class="NAVIGEST.macOS.Pages.ServiceEditPage"
+             x:DataType="{x:Null}"
              Title="Novo Serviço"
              BackgroundColor="{DynamicResource PageBackgroundColor}">
 
@@ -172,7 +173,7 @@
                         </Grid>
 
                         <!-- Items -->
-                        <CollectionView ItemsSource="{Binding Items}" HeightRequest="300">
+                        <CollectionView ItemsSource="{Binding Items}" HeightRequest="420">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate>
                                     <Grid Padding="5" RowSpacing="0">
@@ -248,24 +249,45 @@
                             </CollectionView.ItemTemplate>
                         </CollectionView>
 
-                        <!-- Add Button -->
-                        <Button Text="+ Adicionar Produto" Command="{Binding AddLineCommand}" Margin="10" BackgroundColor="{DynamicResource CardBackgroundColor}" TextColor="#0A84FF" BorderColor="#0A84FF" BorderWidth="1"/>
+                        <!-- Count & Add Button -->
+                        <Grid ColumnDefinitions="*, Auto" Padding="10">
+                            <Label Text="{Binding ItemsCount, StringFormat='Produtos adicionados: {0}'}" TextColor="{DynamicResource BodyTextColor}" VerticalOptions="Center"/>
+                            <Button Grid.Column="1" Text="+ Adicionar Produto" Command="{Binding AddLineCommand}" BackgroundColor="{DynamicResource CardBackgroundColor}" TextColor="#0A84FF" BorderColor="#0A84FF" BorderWidth="1" Padding="16,10"/>
+                        </Grid>
                     </VerticalStackLayout>
                 </Border>
 
-                <!-- TOTALS -->
-                <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,40" IsVisible="{Binding ShowFinancials}">
-                    <Grid Grid.Column="1" RowDefinitions="Auto, Auto, Auto" ColumnDefinitions="120, 120" RowSpacing="10">
-                        <Label Text="Subtotal:" TextColor="Gray" HorizontalTextAlignment="End"/>
-                        <Label Grid.Column="1" Text="{Binding SubTotal, StringFormat='{0:N2} €'}" HorizontalTextAlignment="End" FontAttributes="Bold" TextColor="{DynamicResource BodyTextColor}"/>
-
-                        <Label Grid.Row="1" Text="IVA (23%):" TextColor="Gray" HorizontalTextAlignment="End"/>
-                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding TaxAmount, StringFormat='{0:N2} €'}" HorizontalTextAlignment="End" FontAttributes="Bold" TextColor="{DynamicResource BodyTextColor}"/>
-
-                        <Label Grid.Row="2" Text="TOTAL:" TextColor="{DynamicResource BodyTextColor}" FontAttributes="Bold" FontSize="18" HorizontalTextAlignment="End" VerticalOptions="Center"/>
-                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding TotalAmount, StringFormat='{0:N2} €'}" TextColor="{DynamicResource BodyTextColor}" FontAttributes="Bold" FontSize="18" HorizontalTextAlignment="End" VerticalOptions="Center"/>
+                <!-- DISCOUNT & TOTALS -->
+                <VerticalStackLayout Spacing="10" IsVisible="{Binding ShowFinancials}" Margin="0,0,0,40">
+                    <Grid ColumnDefinitions="120, 120" VerticalOptions="End" HorizontalOptions="End">
+                        <Label Text="Desconto (%)" TextColor="Gray" HorizontalTextAlignment="End"/>
+                        <Entry Grid.Column="1"
+                               Text="{Binding DiscountInput}"
+                               Keyboard="Numeric"
+                               HorizontalTextAlignment="End"
+                               Style="{StaticResource MacEntryStyle}"
+                               HeightRequest="30">
+                            <Entry.Behaviors>
+                                <behaviors:SelectAllOnFocusBehavior />
+                                <behaviors:MacInputBehavior />
+                            </Entry.Behaviors>
+                        </Entry>
                     </Grid>
-                </Grid>
+
+                    <Grid ColumnDefinitions="120, 120, Auto" RowDefinitions="Auto, Auto, Auto, Auto" RowSpacing="10" VerticalOptions="End" HorizontalOptions="End">
+                        <Label Text="Subtotal:" TextColor="Gray" HorizontalTextAlignment="End"/>
+                        <Label Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding SubTotal, StringFormat='{0:N2} €'}" HorizontalTextAlignment="End" FontAttributes="Bold" TextColor="{DynamicResource BodyTextColor}"/>
+
+                        <Label Grid.Row="1" Text="Desconto:" TextColor="Gray" HorizontalTextAlignment="End"/>
+                        <Label Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding DiscountAmount, StringFormat='- {0:N2} €'}" HorizontalTextAlignment="End" FontAttributes="Bold" TextColor="Red"/>
+
+                        <Label Grid.Row="2" Text="{Binding TaxRate, StringFormat='IVA ({0:P0}):'}" TextColor="Gray" HorizontalTextAlignment="End"/>
+                        <Label Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding TaxAmount, StringFormat='{0:N2} €'}" HorizontalTextAlignment="End" FontAttributes="Bold" TextColor="{DynamicResource BodyTextColor}"/>
+
+                        <Label Grid.Row="3" Text="TOTAL:" TextColor="{DynamicResource BodyTextColor}" FontAttributes="Bold" FontSize="18" HorizontalTextAlignment="End" VerticalOptions="Center"/>
+                        <Label Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding TotalAmount, StringFormat='{0:N2} €'}" TextColor="#28CD41" FontAttributes="Bold" FontSize="18" HorizontalTextAlignment="End" VerticalOptions="Center"/>
+                    </Grid>
+                </VerticalStackLayout>
 
             </VerticalStackLayout>
         </ScrollView>

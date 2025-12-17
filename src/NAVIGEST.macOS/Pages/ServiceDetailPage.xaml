@@ -4,6 +4,7 @@
              xmlns:models="clr-namespace:NAVIGEST.macOS.Models"
              xmlns:behaviors="clr-namespace:NAVIGEST.macOS.Behaviors"
              x:Class="NAVIGEST.macOS.Pages.ServiceDetailPage"
+             x:DataType="{x:Null}"
              Title="Detalhe do Serviço"
              BackgroundColor="{DynamicResource PageBackgroundColor}"
              Shell.NavBarIsVisible="False">
@@ -211,20 +212,29 @@
                         </VerticalStackLayout>
 
                         <!-- Right: Totals (Totals Values) -->
-                        <Grid x:Name="TotalsValuesView" Grid.Column="1" RowDefinitions="Auto, Auto, Auto" ColumnDefinitions="100, 120" RowSpacing="8" BackgroundColor="White">
+                        <Grid x:Name="TotalsValuesView" Grid.Column="1" RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto" ColumnDefinitions="100, 120" RowSpacing="8" BackgroundColor="White">
                             <Label Text="Sub Total:" TextColor="#555" HorizontalTextAlignment="End"/>
                             <Label Grid.Column="1" Text="{Binding Order.SubTotal, StringFormat='{0:N2} €'}" TextColor="#333" HorizontalTextAlignment="End" FontAttributes="Bold"/>
 
-                            <Label Grid.Row="1" Text="IVA:" TextColor="#555" HorizontalTextAlignment="End"/>
-                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding Order.TaxAmount, StringFormat='{0:N2} €'}" TextColor="#333" HorizontalTextAlignment="End" FontAttributes="Bold"/>
+                            <Label Grid.Row="1" Text="Desconto:" TextColor="#555" HorizontalTextAlignment="End"/>
+                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding DiscountAmount, StringFormat='- {0:N2} €'}" TextColor="Red" HorizontalTextAlignment="End" FontAttributes="Bold"/>
+
+                            <Label Grid.Row="2" Text="IVA:" TextColor="#555" HorizontalTextAlignment="End"/>
+                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding CalculatedTaxAmount, StringFormat='{0:N2} €'}" TextColor="#333" HorizontalTextAlignment="End" FontAttributes="Bold"/>
 
                             <!-- Total Row (Yellow removed) -->
-                            <Border Grid.Row="2" Grid.ColumnSpan="2" BackgroundColor="#F5F5F5" StrokeThickness="0" Padding="10" Margin="0,10,0,0" StrokeShape="RoundRectangle 5">
+                            <Border Grid.Row="3" Grid.ColumnSpan="2" BackgroundColor="#F5F5F5" StrokeThickness="0" Padding="10" Margin="0,10,0,0" StrokeShape="RoundRectangle 5">
                                 <Grid ColumnDefinitions="*, Auto">
                                     <Label Text="Total:" TextColor="#1B264F" FontAttributes="Bold" FontSize="16" VerticalOptions="Center"/>
-                                    <Label Grid.Column="1" Text="{Binding Order.TotalAmount, StringFormat='{0:N2} €'}" TextColor="#1B264F" FontAttributes="Bold" HorizontalTextAlignment="End" FontSize="18" VerticalOptions="Center"/>
+                                    <Label Grid.Column="1" Text="{Binding CalculatedTotalAmount, StringFormat='{0:N2} €'}" TextColor="#28CD41" FontAttributes="Bold" HorizontalTextAlignment="End" FontSize="18" VerticalOptions="Center"/>
                                 </Grid>
                             </Border>
+
+                            <Label Grid.Row="4" Text="Valor Pago:" TextColor="#555" HorizontalTextAlignment="End"/>
+                            <Label Grid.Row="4" Grid.Column="1" Text="{Binding PaidAmount, StringFormat='{0:N2} €'}" TextColor="#28CD41" HorizontalTextAlignment="End" FontAttributes="Bold"/>
+
+                            <Label Grid.Row="5" Text="Em Falta:" TextColor="#555" HorizontalTextAlignment="End"/>
+                            <Label Grid.Row="5" Grid.Column="1" Text="{Binding PendingAmount, StringFormat='{0:N2} €'}" TextColor="#FF3B30" HorizontalTextAlignment="End" FontAttributes="Bold"/>
                         </Grid>
                     </Grid>
 
