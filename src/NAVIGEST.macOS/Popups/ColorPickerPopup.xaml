@@ -55,10 +55,13 @@
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="models:Cor">
                         <Border StrokeThickness="0" Padding="10" Margin="0,2" BackgroundColor="{DynamicResource CardBackgroundColor}">
-                            <VerticalStackLayout>
-                                <Label Text="{Binding NomeCor}" FontAttributes="Bold" TextColor="{DynamicResource BodyTextColor}"/>
-                                <Label Text="{Binding IdCor}" FontSize="12" TextColor="Gray"/>
-                            </VerticalStackLayout>
+                            <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                                <BoxView WidthRequest="18" HeightRequest="18" CornerRadius="9" Color="{Binding MauiColor}" VerticalOptions="Center"/>
+                                <VerticalStackLayout Spacing="2">
+                                    <Label Text="{Binding NomeCor}" TextTransform="Uppercase" FontAttributes="Bold" TextColor="{Binding MauiColor}"/>
+                                    <Label Text="{Binding IdCor}" FontSize="12" TextColor="Gray"/>
+                                </VerticalStackLayout>
+                            </HorizontalStackLayout>
                         </Border>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>

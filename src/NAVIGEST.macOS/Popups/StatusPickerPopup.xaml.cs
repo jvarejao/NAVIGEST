@@ -1,15 +1,16 @@
 using CommunityToolkit.Maui.Views;
+using NAVIGEST.macOS.Models;
 
 namespace NAVIGEST.macOS.Popups;
 
 public partial class StatusPickerPopup : Popup
 {
-    private List<string> _allOptions;
+    private List<ServiceStatus> _allOptions;
 
-    public StatusPickerPopup(List<string> options)
+    public StatusPickerPopup(IEnumerable<ServiceStatus> options)
     {
         InitializeComponent();
-        _allOptions = options;
+        _allOptions = options?.ToList() ?? new List<ServiceStatus>();
         StatusList.ItemsSource = _allOptions;
     }
 
@@ -19,16 +20,11 @@ public partial class StatusPickerPopup : Popup
         if (ClearButton != null)
             ClearButton.IsVisible = !string.IsNullOrEmpty(searchText);
 
-        if (string.IsNullOrWhiteSpace(searchText))
-        {
-            StatusList.ItemsSource = _allOptions;
-        }
-        else
-        {
-            StatusList.ItemsSource = _allOptions
-                .Where(s => s.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+        StatusList.ItemsSource = string.IsNullOrWhiteSpace(searchText)
+            ? _allOptions
+            : _allOptions
+                .Where(s => s.Descricao?.Contains(searchText, StringComparison.OrdinalIgnoreCase) == true)
                 .ToList();
-        }
     }
 
     private void OnCancelClicked(object sender, EventArgs e)
@@ -43,9 +39,9 @@ public partial class StatusPickerPopup : Popup
 
     private void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (e.CurrentSelection.FirstOrDefault() is string selectedStatus)
+        if (e.CurrentSelection.FirstOrDefault() is ServiceStatus selectedStatus)
         {
-            Close(selectedStatus);
+            Close(selectedStatus.Descricao);
         }
     }
 }

@@ -56,8 +56,8 @@
                             <Grid ColumnDefinitions="*, Auto, Auto" ColumnSpacing="16">
                                 <!-- INFO (Left) -->
                                 <HorizontalStackLayout Grid.Column="0" Spacing="10" VerticalOptions="Center">
-                                    <BoxView Color="{Binding Cor}" 
-                                             WidthRequest="12" HeightRequest="12" CornerRadius="6" 
+                                    <BoxView Color="{Binding ColorBrush.Color}"
+                                             WidthRequest="12" HeightRequest="12" CornerRadius="6"
                                              VerticalOptions="Center"/>
                                     <Label Text="{Binding Descricao}" 
                                            FontSize="16" 

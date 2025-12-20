@@ -56,7 +56,16 @@ public class ServiceEditPageModel : INotifyPropertyChanged
         get => _status;
         set { _status = value; OnPropertyChanged(); }
     }
-    public List<string> StatusOptions { get; } = new() { "Orçamento", "Adjudicado", "Em Produção", "Terminado", "Entregue" };
+    private static readonly List<ServiceStatus> DefaultStatusOptions = new()
+    {
+        new() { Descricao = "Orçamento", Cor = "#6B7280" },
+        new() { Descricao = "Adjudicado", Cor = "#2563EB" },
+        new() { Descricao = "Em Produção", Cor = "#0EA5E9" },
+        new() { Descricao = "Terminado", Cor = "#22C55E" },
+        new() { Descricao = "Entregue", Cor = "#F59E0B" }
+    };
+    public List<ServiceStatus> StatusOptions { get; private set; } = new(DefaultStatusOptions);
+    private bool _statusOptionsLoaded;
 
     private string _observations = "";
     public string Observations
@@ -163,6 +172,8 @@ public class ServiceEditPageModel : INotifyPropertyChanged
         RemoveLineCommand = new Command<OrderedProductViewModel>(OnRemoveLine);
         SaveCommand = new Command(OnSave);
         CancelCommand = new Command(OnCancel);
+
+        _ = LoadStatusOptionsAsync();
     }
 
     public ServiceEditPageModel(OrderInfoModel existingOrder) : this()
@@ -238,11 +249,55 @@ public class ServiceEditPageModel : INotifyPropertyChanged
 
     private async void OnOpenStatusPicker()
     {
+        await LoadStatusOptionsAsync();
+        if (StatusOptions.Count == 0) return;
+
         var popup = new StatusPickerPopup(StatusOptions);
         var result = await AppShell.Current.ShowPopupAsync(popup);
         if (result is string status)
         {
             Status = status;
+        }
+    }
+
+    private async Task LoadStatusOptionsAsync()
+    {
+        if (_statusOptionsLoaded && StatusOptions.Count > 0) return;
+
+        try
+        {
+            var statuses = await DatabaseService.GetServiceStatusAsync();
+
+            var options = statuses
+                .Where(s => s != null && !string.IsNullOrWhiteSpace(s.Descricao))
+                .GroupBy(s => s.Descricao.Trim(), StringComparer.OrdinalIgnoreCase)
+                .Select(g => g.First())
+                .ToList();
+
+            if (options.Count == 0)
+            {
+                options = new(DefaultStatusOptions);
+            }
+
+            StatusOptions = options;
+            _statusOptionsLoaded = true;
+            OnPropertyChanged(nameof(StatusOptions));
+
+            // Ajustar o estado pré-selecionado se não existir na lista carregada
+            if (string.IsNullOrWhiteSpace(Status) || !StatusOptions.Any(o => string.Equals(o.Descricao, Status, StringComparison.OrdinalIgnoreCase)))
+            {
+                Status = StatusOptions.FirstOrDefault()?.Descricao ?? Status;
+            }
+        }
+        catch (Exception ex)
+        {
+            NAVIGEST.macOS.GlobalErro.TratarErro(ex);
+
+            if (StatusOptions.Count == 0)
+            {
+                StatusOptions = new(DefaultStatusOptions);
+                OnPropertyChanged(nameof(StatusOptions));
+            }
         }
     }
 
