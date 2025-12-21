@@ -198,14 +198,20 @@
                                             <Border.GestureRecognizers>
                                                 <TapGestureRecognizer Command="{Binding SelectColorCommand}"/>
                                             </Border.GestureRecognizers>
-                                            <Label Text="{Binding Color}" VerticalOptions="Center" HorizontalOptions="Start" FontSize="12" TextColor="{DynamicResource BodyTextColor}" LineBreakMode="TailTruncation" Margin="5,0"/>
+                                            <HorizontalStackLayout Spacing="8" Padding="5,0" VerticalOptions="Center">
+                                                <BoxView WidthRequest="14" HeightRequest="14" CornerRadius="7" Color="{Binding ColorBrush}" VerticalOptions="Center"/>
+                                                <Label Text="{Binding Color}" VerticalOptions="Center" HorizontalOptions="Start" FontSize="12" TextColor="{Binding ColorBrush}" LineBreakMode="TailTruncation"/>
+                                            </HorizontalStackLayout>
                                         </Border>
 
                                         <Border Grid.Column="2" StrokeShape="RoundRectangle 5" StrokeThickness="1" Stroke="{AppThemeBinding Light={StaticResource BorderLight}, Dark={StaticResource BorderDark}}" BackgroundColor="Transparent" HeightRequest="30" VerticalOptions="Center">
                                             <Border.GestureRecognizers>
                                                 <TapGestureRecognizer Command="{Binding SelectSizeCommand}"/>
                                             </Border.GestureRecognizers>
-                                            <Label Text="{Binding Size}" VerticalOptions="Center" HorizontalOptions="Start" FontSize="12" TextColor="{DynamicResource BodyTextColor}" LineBreakMode="TailTruncation" Margin="5,0"/>
+                                            <HorizontalStackLayout Spacing="6" Padding="5,0" VerticalOptions="Center">
+                                                <Label Text="&#xF553;" FontFamily="FA7Solid" FontSize="12" TextColor="{DynamicResource BodyTextColor}" VerticalOptions="Center"/>
+                                                <Label Text="{Binding Size}" VerticalOptions="Center" HorizontalOptions="Start" FontSize="12" TextColor="{DynamicResource BodyTextColor}" LineBreakMode="TailTruncation"/>
+                                            </HorizontalStackLayout>
                                         </Border>
 
                                         <Entry Grid.Column="3" Text="{Binding Quantity}" Keyboard="Numeric" HorizontalTextAlignment="Center" Style="{StaticResource MacEntryStyle}" HeightRequest="30">

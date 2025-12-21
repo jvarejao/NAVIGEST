@@ -1,50 +1,29 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:models="clr-namespace:NAVIGEST.macOS.Models"
              xmlns:behaviors="clr-namespace:NAVIGEST.macOS.Behaviors"
-             x:Class="NAVIGEST.macOS.Pages.ServiceStatusPage"
+             x:Class="NAVIGEST.macOS.Pages.ColorsPage"
              x:DataType="{x:Null}"
-             Title="Estados de Serviço"
+             Title="Cores"
              BackgroundColor="{DynamicResource PageBackgroundColor}">
 
     <Grid>
-        <!-- MAIN CONTENT -->
-        <Grid RowDefinitions="Auto, *" 
-              Padding="24,24,24,0" 
+        <Grid RowDefinitions="Auto, *"
+              Padding="24,24,24,0"
               RowSpacing="16"
               MaximumWidthRequest="1200"
               HorizontalOptions="Center">
-            
-            <!-- HEADER: Title & Add -->
-            <Grid ColumnDefinitions="*, Auto, Auto" ColumnSpacing="16">
-                <!-- Title (No Back Button needed, Shell handles it) -->
-                <Label Text="Gestão de Estados de Serviço" 
-                       FontSize="28" 
-                       FontAttributes="Bold" 
-                       VerticalOptions="Center" 
-                       TextColor="{DynamicResource BodyTextColor}"/>
 
-                <!-- Add Button -->
-                <Button Grid.Column="1" 
-                        Text="Novo Estado" 
-                        Command="{Binding AddStatusCommand}"
-                        BackgroundColor="#0A84FF" 
-                        TextColor="White" 
-                        FontAttributes="Bold" 
-                        CornerRadius="12" 
-                        HeightRequest="44"
-                        VerticalOptions="Center"
-                        Padding="20,0">
-                    <Button.Behaviors>
-                        <behaviors:ButtonMicroAnimationsBehavior />
-                    </Button.Behaviors>
-                </Button>
+            <Grid ColumnDefinitions="*, Auto" ColumnSpacing="16">
+                <Label Text="Gestão de Cores"
+                       FontSize="28"
+                       FontAttributes="Bold"
+                       VerticalOptions="Center"
+                       TextColor="{DynamicResource BodyTextColor}" />
 
-                <!-- Manage Colors Button -->
-                <Button Grid.Column="2"
-                        Text="Cores"
-                        Command="{Binding ManageColorsCommand}"
+                <Button Grid.Column="1"
+                        Text="Nova Cor"
+                        Command="{Binding AddColorCommand}"
                         BackgroundColor="#0A84FF"
                         TextColor="White"
                         FontAttributes="Bold"
@@ -58,10 +37,12 @@
                 </Button>
             </Grid>
 
-            <!-- LIST -->
-            <CollectionView Grid.Row="1" ItemsSource="{Binding StatusList}" SelectionMode="None" Margin="0,0,0,20">
+            <CollectionView Grid.Row="1"
+                            ItemsSource="{Binding Colors}"
+                            SelectionMode="None"
+                            Margin="0,0,0,20">
                 <CollectionView.ItemsLayout>
-                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="12"/>
+                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="12" />
                 </CollectionView.ItemsLayout>
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
@@ -70,42 +51,51 @@
                                 StrokeShape="RoundRectangle 12"
                                 Padding="16">
                             <Grid ColumnDefinitions="*, Auto, Auto" ColumnSpacing="16">
-                                <!-- INFO (Left) -->
                                 <HorizontalStackLayout Grid.Column="0" Spacing="10" VerticalOptions="Center">
-                                    <BoxView Color="{Binding ColorBrush.Color}"
-                                             WidthRequest="12" HeightRequest="12" CornerRadius="6"
-                                             VerticalOptions="Center"/>
-                                    <Label Text="{Binding Descricao}" 
-                                           FontSize="16" 
-                                           FontAttributes="Bold"
-                                           VerticalOptions="Center" 
-                                           TextColor="{DynamicResource BodyTextColor}"/>
+                                    <BoxView Color="{Binding MauiColor}"
+                                             WidthRequest="14" HeightRequest="14" CornerRadius="7"
+                                             VerticalOptions="Center" />
+                                    <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                                        <Label Text="{Binding NomeCor}"
+                                               FontSize="16"
+                                               FontAttributes="Bold"
+                                                 TextTransform="Uppercase"
+                                               TextColor="{DynamicResource BodyTextColor}" />
+                                        <Label Text="{Binding IdCor}"
+                                               FontSize="12"
+                                               TextColor="Gray" />
+                                        <Label Text="{Binding CodigoHex}"
+                                               FontSize="12"
+                                               TextColor="Gray"
+                                                 IsVisible="{Binding CodigoHex, Converter={StaticResource IsNotNullOrEmptyConverter}}" />
+                                             <Label Text="{Binding Referencia}"
+                                                 FontSize="12"
+                                                 TextColor="Gray"
+                                                 IsVisible="{Binding Referencia, Converter={StaticResource IsNotNullOrEmptyConverter}}" />
+                                    </VerticalStackLayout>
                                 </HorizontalStackLayout>
 
-                                <!-- ACTIONS (Right) -->
                                 <HorizontalStackLayout Grid.Column="2" Spacing="8" VerticalOptions="Center">
-                                    <!-- Edit Button -->
                                     <Button Text="&#xF044;" FontFamily="FA7Solid"
                                             BackgroundColor="#190A84FF" TextColor="#0A84FF"
                                             FontSize="16"
                                             CornerRadius="8"
                                             Padding="0"
                                             WidthRequest="40" HeightRequest="40"
-                                            Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.EditStatusCommand}"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.EditColorCommand}"
                                             CommandParameter="{Binding .}">
                                         <Button.Behaviors>
                                             <behaviors:ButtonMicroAnimationsBehavior />
                                         </Button.Behaviors>
                                     </Button>
 
-                                    <!-- Delete Button -->
                                     <Button Text="&#xF1F8;" FontFamily="FA7Solid"
                                             BackgroundColor="#19FF3B30" TextColor="#FF3B30"
                                             FontSize="16"
                                             CornerRadius="8"
                                             Padding="0"
                                             WidthRequest="40" HeightRequest="40"
-                                            Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteStatusCommand}"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteColorCommand}"
                                             CommandParameter="{Binding .}">
                                         <Button.Behaviors>
                                             <behaviors:ButtonMicroAnimationsBehavior />
@@ -118,8 +108,8 @@
                 </CollectionView.ItemTemplate>
                 <CollectionView.EmptyView>
                     <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="10">
-                        <Label Text="&#xF05A;" FontFamily="FA7Solid" FontSize="40" TextColor="Gray" HorizontalOptions="Center"/>
-                        <Label Text="Nenhum estado encontrado." TextColor="Gray" HorizontalOptions="Center"/>
+                        <Label Text="&#xF05A;" FontFamily="FA7Solid" FontSize="40" TextColor="Gray" HorizontalOptions="Center" />
+                        <Label Text="Nenhuma cor encontrada." TextColor="Gray" HorizontalOptions="Center" />
                     </VerticalStackLayout>
                 </CollectionView.EmptyView>
             </CollectionView>

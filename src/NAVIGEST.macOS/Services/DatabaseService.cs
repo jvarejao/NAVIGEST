@@ -2194,9 +2194,13 @@ ORDER BY OrderDate DESC";
             var list = new List<Cor>();
             try
             {
+                await EnsureCorTableColumnsAsync();
+                await SeedDefaultColorsAsync();
+                await NormalizeColorNamesAsync();
+
                 using var conn = new MySqlConnection(GetConnectionString());
                 await conn.OpenAsync();
-                const string sql = "SELECT idcor, nomecor FROM Cor ORDER BY nomecor";
+                const string sql = "SELECT idcor, nomecor, codigohex, referencia FROM Cor ORDER BY nomecor";
                 using var cmd = new MySqlCommand(sql, conn);
                 using var rd = await cmd.ExecuteReaderAsync();
                 while (await rd.ReadAsync())
@@ -2204,7 +2208,9 @@ ORDER BY OrderDate DESC";
                     list.Add(new Cor
                     {
                         IdCor = rd.IsDBNull(0) ? "" : rd.GetString(0),
-                        NomeCor = rd.IsDBNull(1) ? "" : rd.GetString(1)
+                        NomeCor = rd.IsDBNull(1) ? "" : rd.GetString(1),
+                        CodigoHex = rd.IsDBNull(2) ? null : rd.GetString(2),
+                        Referencia = rd.IsDBNull(3) ? null : rd.GetString(3)
                     });
                 }
             }
@@ -2213,6 +2219,222 @@ ORDER BY OrderDate DESC";
                 System.Diagnostics.Debug.WriteLine($"Erro ao obter cores: {ex.Message}");
             }
             return list;
+        }
+
+        public static async Task<string> GetNextCorIdAsync()
+        {
+            try
+            {
+                await EnsureCorTableColumnsAsync();
+
+                using var conn = new MySqlConnection(GetConnectionString());
+                await conn.OpenAsync();
+
+                const string sql = @"SELECT MAX(CAST(SUBSTRING(idcor, 4) AS UNSIGNED))
+FROM Cor
+WHERE idcor REGEXP '^COR[0-9]+$'";
+
+                using var cmd = new MySqlCommand(sql, conn);
+                var result = await cmd.ExecuteScalarAsync();
+                var currentMax = (result == null || result == DBNull.Value) ? 0 : Convert.ToInt32(result);
+                var next = currentMax + 1;
+                return $"COR{next:D3}";
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao gerar próximo IdCor: {ex.Message}");
+                // fallback determinístico em caso de erro
+                var fallback = Math.Abs(DateTime.UtcNow.Ticks % 999999);
+                return $"COR{fallback:D6}";
+            }
+        }
+
+        public static async Task<bool> AddCorAsync(Cor cor)
+        {
+            try
+            {
+                await EnsureCorTableColumnsAsync();
+
+                using var conn = new MySqlConnection(GetConnectionString());
+                await conn.OpenAsync();
+                const string sql = "INSERT INTO Cor (idcor, nomecor, codigohex, referencia) VALUES (@id, @nome, @codigo, @ref)";
+                using var cmd = new MySqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@id", cor.IdCor);
+                cmd.Parameters.AddWithValue("@nome", NormalizeColorName(cor.NomeCor));
+                cmd.Parameters.AddWithValue("@codigo", (object?)cor.CodigoHex ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@ref", (object?)cor.Referencia ?? DBNull.Value);
+                await cmd.ExecuteNonQueryAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao adicionar cor: {ex.Message}");
+                return false;
+            }
+        }
+
+        public static async Task<bool> UpdateCorAsync(Cor cor)
+        {
+            try
+            {
+                await EnsureCorTableColumnsAsync();
+
+                using var conn = new MySqlConnection(GetConnectionString());
+                await conn.OpenAsync();
+                const string sql = "UPDATE Cor SET nomecor=@nome, codigohex=@codigo, referencia=@ref WHERE idcor=@id";
+                using var cmd = new MySqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@id", cor.IdCor);
+                cmd.Parameters.AddWithValue("@nome", NormalizeColorName(cor.NomeCor));
+                cmd.Parameters.AddWithValue("@codigo", (object?)cor.CodigoHex ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@ref", (object?)cor.Referencia ?? DBNull.Value);
+                await cmd.ExecuteNonQueryAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao atualizar cor: {ex.Message}");
+                return false;
+            }
+        }
+
+        public static async Task<bool> DeleteCorAsync(string idCor)
+        {
+            try
+            {
+                using var conn = new MySqlConnection(GetConnectionString());
+                await conn.OpenAsync();
+                const string sql = "DELETE FROM Cor WHERE idcor=@id";
+                using var cmd = new MySqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@id", idCor);
+                await cmd.ExecuteNonQueryAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao eliminar cor: {ex.Message}");
+                return false;
+            }
+        }
+
+        public static async Task EnsureCorTableAndNamesAsync()
+        {
+            await EnsureCorTableColumnsAsync();
+        }
+
+        private static async Task EnsureCorTableColumnsAsync()
+        {
+            try
+            {
+                using var conn = new MySqlConnection(GetConnectionString());
+                await conn.OpenAsync();
+
+                const string checkSql = @"SELECT COLUMN_NAME
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'Cor' AND COLUMN_NAME IN ('codigohex', 'referencia')";
+                using var checkCmd = new MySqlCommand(checkSql, conn);
+                var found = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                using (var reader = await checkCmd.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        found.Add(reader.GetString(0));
+                    }
+                }
+
+                if (!found.Contains("codigohex"))
+                {
+                    const string alterSql = "ALTER TABLE Cor ADD COLUMN codigohex VARCHAR(20) NULL AFTER nomecor";
+                    using var alterCmd = new MySqlCommand(alterSql, conn);
+                    await alterCmd.ExecuteNonQueryAsync();
+                }
+
+                if (!found.Contains("referencia"))
+                {
+                    const string alterSqlRef = "ALTER TABLE Cor ADD COLUMN referencia VARCHAR(80) NULL AFTER codigohex";
+                    using var alterCmdRef = new MySqlCommand(alterSqlRef, conn);
+                    await alterCmdRef.ExecuteNonQueryAsync();
+                }
+
+                // Garantir nomes em maiúsculas para registos existentes
+                await NormalizeColorNamesAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao garantir coluna codigohex em Cor: {ex.Message}");
+            }
+        }
+
+        private static async Task SeedDefaultColorsAsync()
+        {
+            // Inserir um set de cores neon/claras se não existirem
+            var defaults = new (string Id, string Nome, string Hex, string Referencia)[]
+            {
+                ("COR001", "BRANCO", "#FFFFFF", "REF-BRANCO"),
+                ("COR002", "AMARELO", "#FFD60A", "REF-AMARELO"),
+                ("COR003", "VERMELHO", "#FF375F", "REF-VERMELHO"),
+                ("COR004", "LARANJA", "#FF9F0A", "REF-LARANJA"),
+                ("COR005", "VERDE", "#30D158", "REF-VERDE"),
+                ("COR006", "AZUL", "#0A84FF", "REF-AZUL"),
+                ("COR007", "ROXO", "#BF5AF2", "REF-ROXO"),
+                ("COR008", "ROSA", "#FF2D55", "REF-ROSA"),
+                ("COR009", "CINZA", "#8E8E93", "REF-CINZA"),
+                ("COR010", "CASTANHO", "#A86B3C", "REF-CASTANHO"),
+                ("COR011", "MARROM", "#A86B3C", "REF-MARROM")
+            };
+
+            try
+            {
+                using var conn = new MySqlConnection(GetConnectionString());
+                await conn.OpenAsync();
+
+                const string existsSql = "SELECT COUNT(1) FROM Cor WHERE idcor=@id";
+                const string insertSql = "INSERT INTO Cor (idcor, nomecor, codigohex, referencia) VALUES (@id, @nome, @hex, @ref)";
+
+                foreach (var item in defaults)
+                {
+                    using var check = new MySqlCommand(existsSql, conn);
+                    check.Parameters.AddWithValue("@id", item.Id);
+                    var exists = Convert.ToInt32(await check.ExecuteScalarAsync()) > 0;
+                    if (exists) continue;
+
+                    using var insert = new MySqlCommand(insertSql, conn);
+                    insert.Parameters.AddWithValue("@id", item.Id);
+                    insert.Parameters.AddWithValue("@nome", item.Nome);
+                    insert.Parameters.AddWithValue("@hex", item.Hex);
+                    insert.Parameters.AddWithValue("@ref", item.Referencia);
+                    await insert.ExecuteNonQueryAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao semear cores: {ex.Message}");
+            }
+        }
+
+        private static async Task NormalizeColorNamesAsync()
+        {
+            try
+            {
+                using var conn = new MySqlConnection(GetConnectionString());
+                await conn.OpenAsync();
+
+                const string sql = @"UPDATE Cor
+SET nomecor = UPPER(TRIM(nomecor))
+WHERE nomecor IS NOT NULL AND nomecor <> UPPER(TRIM(nomecor));";
+
+                using var cmd = new MySqlCommand(sql, conn);
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao normalizar nomes de cor: {ex.Message}");
+            }
+        }
+
+        private static string NormalizeColorName(string? value)
+        {
+            var trimmed = value?.Trim();
+            return string.IsNullOrEmpty(trimmed) ? "" : trimmed.ToUpperInvariant();
         }
 
         public static async Task<List<Tamanho>> GetTamanhosAsync()

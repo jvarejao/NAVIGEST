@@ -10,6 +10,7 @@ namespace NAVIGEST.macOS.PageModels
         public ICommand OpenFileServerConfigCommand { get; }
         public ICommand OpenLanguageCommand { get; }
         public ICommand OpenServiceStatusCommand { get; }
+        public ICommand OpenColorsCommand { get; }
         public ICommand BackCommand { get; }
 
         public SettingsPageModel()
@@ -29,6 +30,7 @@ namespace NAVIGEST.macOS.PageModels
                 }
             });
             OpenServiceStatusCommand = new Command(async () => await Shell.Current.GoToAsync("config.servicestatus"));
+            OpenColorsCommand = new Command(async () => await Shell.Current.GoToAsync("config.cores"));
             BackCommand = new Command(async () => await Shell.Current.GoToAsync(".."));
         }
     }

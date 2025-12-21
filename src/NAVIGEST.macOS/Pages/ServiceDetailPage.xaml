@@ -177,9 +177,15 @@
                                              <VerticalStackLayout Spacing="2">
                                                 <Label Text="{Binding ProductName}" TextColor="#333" FontSize="13" FontAttributes="Bold"/>
                                                 <Label Text="{Binding ProductCode}" TextColor="#777" FontSize="11"/>
-                                                <HorizontalStackLayout Spacing="5">
-                                                    <Label Text="{Binding Cor}" TextColor="#777" FontSize="11" IsVisible="{Binding Cor, Converter={StaticResource IsNotNullOrEmptyConverter}}"/>
-                                                    <Label Text="{Binding Tam}" TextColor="#777" FontSize="11" IsVisible="{Binding Tam, Converter={StaticResource IsNotNullOrEmptyConverter}}"/>
+                                                <HorizontalStackLayout Spacing="10">
+                                                    <HorizontalStackLayout Spacing="6" IsVisible="{Binding Cor, Converter={StaticResource IsNotNullOrEmptyConverter}}" VerticalOptions="Center">
+                                                        <BoxView WidthRequest="12" HeightRequest="12" CornerRadius="6" Color="{Binding MauiColor}" VerticalOptions="Center"/>
+                                                        <Label Text="{Binding Cor}" TextColor="{Binding MauiColor}" FontSize="11"/>
+                                                    </HorizontalStackLayout>
+                                                    <HorizontalStackLayout Spacing="6" IsVisible="{Binding Tam, Converter={StaticResource IsNotNullOrEmptyConverter}}" VerticalOptions="Center">
+                                                        <Label Text="&#xF553;" FontFamily="FA7Solid" FontSize="11" TextColor="#777" VerticalOptions="Center"/>
+                                                        <Label Text="{Binding Tam}" TextColor="#777" FontSize="11"/>
+                                                    </HorizontalStackLayout>
                                                 </HorizontalStackLayout>
                                              </VerticalStackLayout>
                                              

@@ -4,25 +4,31 @@ namespace NAVIGEST.macOS.Models
     {
         public string IdCor { get; set; }
         public string NomeCor { get; set; }
+        public string? CodigoHex { get; set; }
+        public string? Referencia { get; set; }
 
         public Microsoft.Maui.Graphics.Color MauiColor
         {
             get
             {
-                // 1) hex (com ou sem #)
+                // 1) código hex explícito (novo campo)
+                if (TryParseHex(CodigoHex, out var parsedFromCode))
+                    return parsedFromCode;
+
+                // 2) hex no Id (mantém compatibilidade)
                 if (TryParseHex(IdCor, out var parsed))
                     return parsed;
 
-                // 2) nome da cor (prioritário para alinhar círculo com o nome mostrado)
+                // 3) nome da cor (prioritário para alinhar círculo com o nome mostrado)
                 var byName = NameToColor(NomeCor) ?? NameToColor(IdCor);
                 if (byName != null)
                     return byName;
 
-                // 3) padrão COR###
+                // 4) padrão COR###
                 if (TryParseCorNumber(IdCor, out var corNumber))
                     return corNumber;
 
-                // 4) fallback determinístico por hash
+                // 5) fallback determinístico por hash
                 return HashToColor(IdCor ?? string.Empty);
             }
         }

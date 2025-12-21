@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<toolkit:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+               xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+               xmlns:behaviors="clr-namespace:NAVIGEST.macOS.Behaviors"
+               x:Class="NAVIGEST.macOS.Popups.ColorEditPopup"
+               Color="Transparent"
+               CanBeDismissedByTappingOutsideOfPopup="True">
+    <toolkit:Popup.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Resources/Styles/MacInputStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </toolkit:Popup.Resources>
+
+    <ScrollView VerticalOptions="Center">
+        <Border StrokeShape="RoundRectangle 18"
+            BackgroundColor="{DynamicResource PageBackgroundColor}"
+            WidthRequest="440"
+            Padding="20">
+            <Border.Shadow>
+                <Shadow Brush="Black" Offset="0,4" Radius="12" Opacity="0.25" />
+            </Border.Shadow>
+
+            <Grid RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto" RowSpacing="14">
+                <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,6">
+                    <Label Text="Cor"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           TextColor="{DynamicResource BodyTextColor}" />
+                    <Button Grid.Column="1"
+                            Text="✕"
+                            Clicked="OnCancel"
+                            BackgroundColor="Transparent"
+                            TextColor="{DynamicResource BodyTextColor}"
+                            FontAttributes="Bold"
+                            WidthRequest="36"
+                            HeightRequest="36"
+                            Padding="0"
+                            CornerRadius="18" />
+                </Grid>
+
+                <!-- Id -->
+                <VerticalStackLayout Grid.Row="1" Spacing="6">
+                    <Label Text="ID"
+                           TextColor="{DynamicResource BodyTextColor}"
+                           FontAttributes="Bold"
+                           FontSize="14" />
+                    <Border Style="{StaticResource MacInputBorderStyle}" Padding="8,0">
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border" Binding="{Binding Source={x:Reference IdEntry}, Path=IsFocused}" Value="True">
+                                <Setter Property="Stroke" Value="{StaticResource MacFocusBlue}" />
+                                <Setter Property="StrokeThickness" Value="2" />
+                            </DataTrigger>
+                        </Border.Triggers>
+                        <Entry x:Name="IdEntry"
+                               Placeholder="Ex.: COR001"
+                               Style="{StaticResource MacEntryStyle}">
+                            <Entry.Behaviors>
+                                <behaviors:MacInputBehavior />
+                            </Entry.Behaviors>
+                        </Entry>
+                    </Border>
+                </VerticalStackLayout>
+
+                <!-- Nome -->
+                <VerticalStackLayout Grid.Row="2" Spacing="6">
+                    <Label Text="Nome"
+                           TextColor="{DynamicResource BodyTextColor}"
+                           FontAttributes="Bold"
+                           FontSize="14" />
+                    <Border Style="{StaticResource MacInputBorderStyle}" Padding="8,0">
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border" Binding="{Binding Source={x:Reference NameEntry}, Path=IsFocused}" Value="True">
+                                <Setter Property="Stroke" Value="{StaticResource MacFocusBlue}" />
+                                <Setter Property="StrokeThickness" Value="2" />
+                            </DataTrigger>
+                        </Border.Triggers>
+                        <Entry x:Name="NameEntry"
+                               Placeholder="Ex.: Vermelho"
+                               TextChanged="OnNameChanged"
+                               Style="{StaticResource MacEntryStyle}">
+                            <Entry.Behaviors>
+                                <behaviors:MacInputBehavior />
+                            </Entry.Behaviors>
+                        </Entry>
+                    </Border>
+                </VerticalStackLayout>
+
+                <!-- Color Picker / Preview -->
+                <VerticalStackLayout Grid.Row="3" Spacing="8">
+                    <Label Text="Selecionar cor"
+                           TextColor="{DynamicResource BodyTextColor}"
+                           FontAttributes="Bold"
+                           FontSize="14" />
+                    <Grid ColumnDefinitions="*, Auto" ColumnSpacing="12">
+                        <VerticalStackLayout Spacing="12">
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="R" TextColor="{DynamicResource BodyTextColor}" />
+                                <Slider x:Name="SliderR" Minimum="0" Maximum="255" ValueChanged="OnRgbChanged" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="G" TextColor="{DynamicResource BodyTextColor}" />
+                                <Slider x:Name="SliderG" Minimum="0" Maximum="255" ValueChanged="OnRgbChanged" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="B" TextColor="{DynamicResource BodyTextColor}" />
+                                <Slider x:Name="SliderB" Minimum="0" Maximum="255" ValueChanged="OnRgbChanged" />
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="1" Spacing="10" WidthRequest="120" VerticalOptions="Start">
+                            <Border StrokeThickness="1" Stroke="{DynamicResource MacFocusBlue}" StrokeShape="RoundRectangle 10" Padding="8">
+                                <VerticalStackLayout Spacing="6" HorizontalOptions="Fill" VerticalOptions="Center">
+                                    <BoxView x:Name="SelectedColorBox"
+                                             WidthRequest="60" HeightRequest="60" CornerRadius="12"
+                                             HorizontalOptions="Center" />
+                                    <Label x:Name="HexPreviewLabel"
+                                           Text="#------"
+                                           FontAttributes="Bold"
+                                           HorizontalOptions="Center"
+                                           TextColor="{DynamicResource BodyTextColor}" />
+                                </VerticalStackLayout>
+                            </Border>
+                            <Label Text="A cor escolhida preenche o código hex e, se vazio, a referência."
+                                   FontSize="12"
+                                   TextColor="Gray" />
+                        </VerticalStackLayout>
+                    </Grid>
+                </VerticalStackLayout>
+
+                <!-- Referência -->
+                <VerticalStackLayout Grid.Row="4" Spacing="6">
+                    <Label Text="Referência"
+                           TextColor="{DynamicResource BodyTextColor}"
+                           FontAttributes="Bold"
+                           FontSize="14" />
+                    <Border Style="{StaticResource MacInputBorderStyle}" Padding="8,0">
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border" Binding="{Binding Source={x:Reference RefEntry}, Path=IsFocused}" Value="True">
+                                <Setter Property="Stroke" Value="{StaticResource MacFocusBlue}" />
+                                <Setter Property="StrokeThickness" Value="2" />
+                            </DataTrigger>
+                        </Border.Triggers>
+                        <Entry x:Name="RefEntry"
+                               Placeholder="Referência da cor"
+                               Style="{StaticResource MacEntryStyle}">
+                            <Entry.Behaviors>
+                                <behaviors:MacInputBehavior />
+                            </Entry.Behaviors>
+                        </Entry>
+                    </Border>
+                </VerticalStackLayout>
+
+                <!-- Código Hex -->
+                <VerticalStackLayout Grid.Row="5" Spacing="6">
+                    <Label Text="Código (Hex)"
+                           TextColor="{DynamicResource BodyTextColor}"
+                           FontAttributes="Bold"
+                           FontSize="14" />
+                    <Border Style="{StaticResource MacInputBorderStyle}" Padding="8,0">
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border" Binding="{Binding Source={x:Reference CodeEntry}, Path=IsFocused}" Value="True">
+                                <Setter Property="Stroke" Value="{StaticResource MacFocusBlue}" />
+                                <Setter Property="StrokeThickness" Value="2" />
+                            </DataTrigger>
+                        </Border.Triggers>
+                        <Entry x:Name="CodeEntry"
+                               Placeholder="#RRGGBB ou vazio"
+                               TextChanged="OnCodeChanged"
+                               Style="{StaticResource MacEntryStyle}">
+                            <Entry.Behaviors>
+                                <behaviors:MacInputBehavior />
+                            </Entry.Behaviors>
+                        </Entry>
+                    </Border>
+                </VerticalStackLayout>
+
+                <!-- Actions -->
+                <Grid Grid.Row="7" ColumnDefinitions="*, Auto" ColumnSpacing="12" VerticalOptions="End">
+                    <Button Text="Cancelar"
+                            Clicked="OnCancel"
+                            BackgroundColor="Transparent"
+                            TextColor="Red"
+                            HeightRequest="44"
+                            FontAttributes="Bold" />
+                    <Button Grid.Column="1"
+                            Text="Guardar"
+                            Clicked="OnSave"
+                            BackgroundColor="#0A84FF"
+                            TextColor="White"
+                            FontAttributes="Bold"
+                            HeightRequest="44"
+                            CornerRadius="12"
+                            Padding="18,0" />
+                </Grid>
+            </Grid>
+        </Border>
+    </ScrollView>
+</toolkit:Popup>

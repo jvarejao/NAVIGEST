@@ -22,5 +22,21 @@ namespace NAVIGEST.macOS.Models
         public DateTime? DATACOMPRA { get; set; }
         public string? SubTotal { get; set; }
         public decimal? SUBTOTALNUM { get; set; }
+
+        // Cor renderizada para UI/PDF
+        public Microsoft.Maui.Graphics.Color MauiColor
+        {
+            get
+            {
+                // Reutiliza a lógica de Cor para resolver hex, nome ou fallback determinístico
+                var cor = new Cor
+                {
+                    NomeCor = Cor,
+                    IdCor = Cor,
+                    CodigoHex = Cor
+                };
+                return cor.MauiColor;
+            }
+        }
     }
 }

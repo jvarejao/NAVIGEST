@@ -22,6 +22,7 @@ namespace NAVIGEST.macOS.PageModels
         public ICommand AddStatusCommand { get; }
         public ICommand EditStatusCommand { get; }
         public ICommand DeleteStatusCommand { get; }
+        public ICommand ManageColorsCommand { get; }
 
         public ServiceStatusPageModel()
         {
@@ -29,6 +30,7 @@ namespace NAVIGEST.macOS.PageModels
             AddStatusCommand = new Command(async () => await OnAddStatusAsync());
             EditStatusCommand = new Command<ServiceStatus>(async s => await OnEditStatusAsync(s));
             DeleteStatusCommand = new Command<ServiceStatus>(OnDeleteStatus);
+            ManageColorsCommand = new Command(async () => await Shell.Current.GoToAsync("config.cores"));
             
             LoadData();
         }

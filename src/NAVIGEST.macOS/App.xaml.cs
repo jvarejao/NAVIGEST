@@ -68,6 +68,7 @@ namespace NAVIGEST.macOS
             try
             {
                 await DatabaseService.CreateServiceStatusTableAsync();
+                await DatabaseService.EnsureCorTableAndNamesAsync();
                 System.Diagnostics.Debug.WriteLine("Tabela ESTADO_SERVICO verificada/criada com sucesso.");
             }
             catch (Exception ex)

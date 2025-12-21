@@ -91,6 +91,18 @@
                 </Border.GestureRecognizers>
             </Border>
 
+            <!-- Cores -->
+            <Border Grid.Row="1" Grid.Column="1" StrokeShape="RoundRectangle 12" BackgroundColor="{DynamicResource CardBackgroundColor}" Padding="20">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="&#xF53F;" FontFamily="FA7Solid" FontSize="32" HorizontalOptions="Center" TextColor="#0A84FF"/>
+                    <Label Text="Cores" FontSize="18" FontAttributes="Bold" HorizontalOptions="Center" TextColor="{DynamicResource BodyTextColor}"/>
+                    <Label Text="Gerir referências e hex" FontSize="12" HorizontalOptions="Center" TextColor="Gray"/>
+                </VerticalStackLayout>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding OpenColorsCommand}"/>
+                </Border.GestureRecognizers>
+            </Border>
+
         </Grid>
     </Grid>
 </ContentPage>

@@ -410,7 +410,24 @@ public class OrderedProductViewModel : INotifyPropertyChanged
     public string ProductName => Product.PRODNOME ?? "";
 
     private string _color = "";
-    public string Color { get => _color; set { _color = value; OnPropertyChanged(); } }
+    public string Color
+    {
+        get => _color;
+        set
+        {
+            if (_color == value) return;
+            _color = value;
+            OnPropertyChanged();
+            UpdateColorBrushFromString(value);
+        }
+    }
+
+    private Microsoft.Maui.Graphics.Color _colorBrush = Microsoft.Maui.Graphics.Colors.Gray;
+    public Microsoft.Maui.Graphics.Color ColorBrush
+    {
+        get => _colorBrush;
+        private set { _colorBrush = value; OnPropertyChanged(); }
+    }
 
     private string _size = "";
     public string Size { get => _size; set { _size = value; OnPropertyChanged(); } }
@@ -555,6 +572,7 @@ public class OrderedProductViewModel : INotifyPropertyChanged
         SelectColorCommand = new Command(OnSelectColor);
         SelectSizeCommand = new Command(OnSelectSize);
         
+        UpdateColorBrushFromString(Color);
         CalculateTotal();
     }
 
@@ -613,6 +631,7 @@ public class OrderedProductViewModel : INotifyPropertyChanged
         if (result is Cor cor)
         {
             Color = cor.NomeCor;
+            ColorBrush = cor.MauiColor;
         }
     }
 
@@ -660,5 +679,17 @@ public class OrderedProductViewModel : INotifyPropertyChanged
             // Unit based calculation
             Subtotal = Quantity * UnitPrice;
         }
+    }
+
+    private void UpdateColorBrushFromString(string value)
+    {
+        // Resolve Maui color from hex/nome/id using Cor helper logic
+        var cor = new Cor
+        {
+            NomeCor = value,
+            IdCor = value,
+            CodigoHex = value
+        };
+        ColorBrush = cor.MauiColor;
     }
 }
