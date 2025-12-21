@@ -48,8 +48,8 @@ namespace NAVIGEST.macOS.PageModels
             if (string.IsNullOrWhiteSpace(nomeEstado)) return;
 
             var colorResult = await Shell.Current.ShowPopupAsync(new ColorPickerPopup()) as Cor;
-            if (colorResult == null || string.IsNullOrWhiteSpace(colorResult.IdCor)) return;
-            var color = colorResult.IdCor;
+            if (colorResult == null) return;
+            var color = ResolveColorReference(colorResult);
 
             await DatabaseService.AddServiceStatusAsync(new ServiceStatus { Descricao = nomeEstado, Cor = color });
             LoadData();
@@ -66,9 +66,9 @@ namespace NAVIGEST.macOS.PageModels
             var colorResult = await Shell.Current.ShowPopupAsync(new ColorPickerPopup()) as Cor;
 
             var corFinal = status.Cor;
-            if (colorResult != null && !string.IsNullOrWhiteSpace(colorResult.IdCor))
+            if (colorResult != null)
             {
-                corFinal = colorResult.IdCor;
+                corFinal = ResolveColorReference(colorResult);
             }
 
             status.Descricao = string.IsNullOrWhiteSpace(novoNome) ? status.Descricao : novoNome;
@@ -87,6 +87,21 @@ namespace NAVIGEST.macOS.PageModels
                 await DatabaseService.DeleteServiceStatusAsync(status.ID);
                 LoadData();
             }
+        }
+
+        private static string ResolveColorReference(Cor cor)
+        {
+            // Usa o código hex da cor, senão a referência, e por fim o Id como último recurso.
+            if (!string.IsNullOrWhiteSpace(cor?.CodigoHex))
+                return cor.CodigoHex.Trim();
+
+            if (!string.IsNullOrWhiteSpace(cor?.Referencia))
+                return cor.Referencia.Trim();
+
+            if (!string.IsNullOrWhiteSpace(cor?.IdCor))
+                return cor.IdCor.Trim();
+
+            return "#808080";
         }
 
     }

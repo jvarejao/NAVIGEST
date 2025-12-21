@@ -422,7 +422,7 @@ public class OrderedProductViewModel : INotifyPropertyChanged
         }
     }
 
-    private Microsoft.Maui.Graphics.Color _colorBrush = Microsoft.Maui.Graphics.Colors.Gray;
+    private Microsoft.Maui.Graphics.Color _colorBrush = Microsoft.Maui.Graphics.Colors.Transparent;
     public Microsoft.Maui.Graphics.Color ColorBrush
     {
         get => _colorBrush;
@@ -683,13 +683,15 @@ public class OrderedProductViewModel : INotifyPropertyChanged
 
     private void UpdateColorBrushFromString(string value)
     {
-        // Resolve Maui color from hex/nome/id using Cor helper logic
+        // Resolve Maui color a partir do valor; se vazio, fica transparente
         var cor = new Cor
         {
             NomeCor = value,
             IdCor = value,
             CodigoHex = value
         };
-        ColorBrush = cor.MauiColor;
+        ColorBrush = string.IsNullOrWhiteSpace(value)
+            ? Microsoft.Maui.Graphics.Colors.Transparent
+            : cor.MauiColor;
     }
 }
