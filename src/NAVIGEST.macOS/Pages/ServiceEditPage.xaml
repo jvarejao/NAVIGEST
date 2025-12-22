@@ -265,19 +265,42 @@
 
                 <!-- DISCOUNT & TOTALS -->
                 <VerticalStackLayout Spacing="10" IsVisible="{Binding ShowFinancials}" Margin="0,0,0,40">
-                    <Grid ColumnDefinitions="120, 120" VerticalOptions="End" HorizontalOptions="End">
-                        <Label Text="Desconto (%)" TextColor="Gray" HorizontalTextAlignment="End"/>
-                        <Entry Grid.Column="1"
-                               Text="{Binding DiscountInput}"
-                               Keyboard="Numeric"
-                               HorizontalTextAlignment="End"
-                               Style="{StaticResource MacEntryStyle}"
-                               HeightRequest="30">
-                            <Entry.Behaviors>
-                                <behaviors:SelectAllOnFocusBehavior />
-                                <behaviors:MacInputBehavior />
-                            </Entry.Behaviors>
-                        </Entry>
+                    <Grid ColumnDefinitions="Auto, Auto, Auto" VerticalOptions="End" HorizontalOptions="End" ColumnSpacing="6">
+                        <Label Text="Desconto" TextColor="Gray" HorizontalTextAlignment="End"/>
+
+                        <Border Grid.Column="1"
+                                Style="{StaticResource MacInputBorderStyle}"
+                                HeightRequest="34"
+                                Padding="0"
+                                HorizontalOptions="Center">
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding Source={x:Reference DiscountEntry}, Path=IsFocused}" Value="True">
+                                    <Setter Property="Stroke" Value="{StaticResource MacFocusBlue}" />
+                                    <Setter Property="StrokeThickness" Value="2" />
+                                </DataTrigger>
+                            </Border.Triggers>
+                            <Entry x:Name="DiscountEntry"
+                                   Text="{Binding DiscountInput}"
+                                   Keyboard="Numeric"
+                                   HorizontalTextAlignment="End"
+                                   BackgroundColor="Transparent"
+                                   Style="{StaticResource MacEntryStyle}"
+                                   HeightRequest="34"
+                                   WidthRequest="90"
+                                   HorizontalOptions="Center">
+                                <Entry.Behaviors>
+                                    <behaviors:SelectAllOnFocusBehavior />
+                                    <behaviors:MacInputBehavior />
+                                </Entry.Behaviors>
+                            </Entry>
+                        </Border>
+
+                        <Label Grid.Column="2"
+                               Text="%"
+                               VerticalTextAlignment="Center"
+                               HorizontalTextAlignment="Start"
+                               TextColor="Gray"
+                               FontAttributes="Bold" />
                     </Grid>
 
                     <Grid ColumnDefinitions="120, 120, Auto" RowDefinitions="Auto, Auto, Auto, Auto" RowSpacing="10" VerticalOptions="End" HorizontalOptions="End">

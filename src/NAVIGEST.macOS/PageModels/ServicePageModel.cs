@@ -20,6 +20,8 @@ public class ServicePageModel : INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
     void OnPropertyChanged([CallerMemberName] string? n = null) => PropertyChanged?.Invoke(this, new(n));
 
+    public static ServicePageModel? LastInstance { get; private set; }
+
     private readonly List<OrderInfoModel> _all = new();
     public ObservableCollection<OrderInfoModel> Orders { get; } = new();
 
@@ -58,6 +60,7 @@ public class ServicePageModel : INotifyPropertyChanged
 
     public ServicePageModel()
     {
+        LastInstance = this;
         NewCommand = new Command(OnNewService);
         SearchCommand = new Command(ApplyFilterImmediate);
         RefreshCommand = new Command(async () => await LoadAsync(force: true));

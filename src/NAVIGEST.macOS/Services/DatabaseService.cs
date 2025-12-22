@@ -1484,6 +1484,167 @@ ORDER BY OrderDate DESC";
             return list;
         }
 
+                private static bool? _orderedProductHasNumserv;
+
+                private static async Task<bool> OrderedProductHasNumservAsync(MySqlConnection conn, MySqlTransaction tx, CancellationToken ct)
+                {
+                        if (_orderedProductHasNumserv.HasValue) return _orderedProductHasNumserv.Value;
+
+                        const string sql = @"
+SELECT 1
+FROM information_schema.COLUMNS
+WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'ORDEREDPRODUCT'
+    AND COLUMN_NAME = 'Numserv'
+LIMIT 1;";
+
+                        using var cmd = new MySqlCommand(sql, conn, tx);
+                        var result = await cmd.ExecuteScalarAsync(ct);
+                        _orderedProductHasNumserv = result != null;
+                        return _orderedProductHasNumserv.Value;
+                }
+
+                public static async Task<string> SaveOrderWithProductsAsync(OrderInfoModel order, CancellationToken ct = default)
+        {
+            if (order == null) throw new ArgumentNullException(nameof(order));
+            if (string.IsNullOrWhiteSpace(order.CustomerNo)) throw new ArgumentException("CustomerNo obrigatório", nameof(order));
+
+            order.OrderDate ??= DateTime.Now;
+            order.OrderStatus ??= "Orçamento";
+            order.OrderNo = string.IsNullOrWhiteSpace(order.OrderNo) ? GenerateOrderNumber() : order.OrderNo.Trim();
+            order.Numserv = string.IsNullOrWhiteSpace(order.Numserv) ? order.OrderNo : order.Numserv?.Trim();
+            order.Servencomenda = string.IsNullOrWhiteSpace(order.Servencomenda) ? order.OrderNo : order.Servencomenda?.Trim();
+            order.ANO ??= order.OrderDate?.Year.ToString();
+            order.Utilizador ??= UserSession.Current.User?.Name;
+
+            var products = order.Products ?? new List<OrderedProduct>();
+            foreach (var p in products)
+            {
+                p.OrderNo = order.OrderNo;
+                p.Numserv ??= order.Numserv;
+            }
+
+            using var conn = new MySqlConnection(GetConnectionString());
+            await conn.OpenAsync(ct);
+            using var tx = await conn.BeginTransactionAsync(ct);
+
+            const string orderSql = @"
+INSERT INTO OrderInfo
+    (OrderNo, OrderDate, OrderStatus, CustomerNo, CustomerName, SubTotal, TaxPercentage, TaxAmount, TotalAmount,
+     OrderDateEnt, DescPercentage, Desconto, observacoes, utilizador, ANO, CONTROLVEND, Numserv, Servencomenda, DESCPROD)
+VALUES
+    (@OrderNo, @OrderDate, @OrderStatus, @CustomerNo, @CustomerName, @SubTotal, @TaxPercentage, @TaxAmount, @TotalAmount,
+     @OrderDateEnt, @DescPercentage, @Desconto, @Observacoes, @Utilizador, @ANO, @CONTROLVEND, @Numserv, @Servencomenda, @DESCPROD)
+ON DUPLICATE KEY UPDATE
+    OrderDate = VALUES(OrderDate),
+    OrderStatus = VALUES(OrderStatus),
+    CustomerNo = VALUES(CustomerNo),
+    CustomerName = VALUES(CustomerName),
+    SubTotal = VALUES(SubTotal),
+    TaxPercentage = VALUES(TaxPercentage),
+    TaxAmount = VALUES(TaxAmount),
+    TotalAmount = VALUES(TotalAmount),
+    OrderDateEnt = VALUES(OrderDateEnt),
+    DescPercentage = VALUES(DescPercentage),
+    Desconto = VALUES(Desconto),
+    observacoes = VALUES(observacoes),
+    utilizador = VALUES(utilizador),
+    ANO = VALUES(ANO),
+    CONTROLVEND = VALUES(CONTROLVEND),
+    Numserv = VALUES(Numserv),
+    Servencomenda = VALUES(Servencomenda),
+    DESCPROD = VALUES(DESCPROD);";
+
+            using (var cmd = new MySqlCommand(orderSql, conn, tx))
+            {
+                cmd.Parameters.Add("@OrderNo", MySqlDbType.VarChar, 50).Value = order.OrderNo;
+                cmd.Parameters.Add("@OrderDate", MySqlDbType.DateTime).Value = order.OrderDate;
+                cmd.Parameters.Add("@OrderStatus", MySqlDbType.VarChar, 50).Value = order.OrderStatus ?? "";
+                cmd.Parameters.Add("@CustomerNo", MySqlDbType.VarChar, 30).Value = order.CustomerNo ?? "";
+                cmd.Parameters.Add("@CustomerName", MySqlDbType.VarChar, 150).Value = order.CustomerName ?? "";
+                cmd.Parameters.Add("@SubTotal", MySqlDbType.Decimal).Value = order.SubTotal ?? 0m;
+                cmd.Parameters.Add("@TaxPercentage", MySqlDbType.Decimal).Value = order.TaxPercentage ?? 0m;
+                cmd.Parameters.Add("@TaxAmount", MySqlDbType.Decimal).Value = order.TaxAmount ?? 0m;
+                cmd.Parameters.Add("@TotalAmount", MySqlDbType.Decimal).Value = order.TotalAmount ?? 0m;
+                cmd.Parameters.Add("@OrderDateEnt", MySqlDbType.DateTime).Value = order.OrderDateEnt ?? (object)DBNull.Value;
+                cmd.Parameters.Add("@DescPercentage", MySqlDbType.Decimal).Value = order.DescPercentage ?? 0m;
+                cmd.Parameters.Add("@Desconto", MySqlDbType.Decimal).Value = order.Desconto ?? 0m;
+                cmd.Parameters.Add("@Observacoes", MySqlDbType.VarChar, 4000).Value = order.Observacoes ?? "";
+                cmd.Parameters.Add("@Utilizador", MySqlDbType.VarChar, 80).Value = order.Utilizador ?? "";
+                cmd.Parameters.Add("@ANO", MySqlDbType.VarChar, 10).Value = order.ANO ?? "";
+                cmd.Parameters.Add("@CONTROLVEND", MySqlDbType.VarChar, 80).Value = order.CONTROLVEND ?? "";
+                cmd.Parameters.Add("@Numserv", MySqlDbType.VarChar, 40).Value = order.Numserv ?? "";
+                cmd.Parameters.Add("@Servencomenda", MySqlDbType.VarChar, 40).Value = order.Servencomenda ?? "";
+                cmd.Parameters.Add("@DESCPROD", MySqlDbType.VarChar, 4000).Value = order.DESCPROD ?? "";
+
+                await cmd.ExecuteNonQueryAsync(ct);
+            }
+
+            var hasNumservColumn = await OrderedProductHasNumservAsync(conn, tx, ct);
+
+            // Reescreve linhas associadas
+            var deleteSql = hasNumservColumn
+                ? "DELETE FROM ORDEREDPRODUCT WHERE OrderNo = @ord OR (Numserv IS NOT NULL AND Numserv = @num)"
+                : "DELETE FROM ORDEREDPRODUCT WHERE OrderNo = @ord";
+
+            using (var del = new MySqlCommand(deleteSql, conn, tx))
+            {
+                del.Parameters.AddWithValue("@ord", order.OrderNo);
+                if (hasNumservColumn)
+                {
+                    del.Parameters.AddWithValue("@num", order.Numserv ?? order.OrderNo);
+                }
+                await del.ExecuteNonQueryAsync(ct);
+            }
+
+            var lineSql = hasNumservColumn
+                ? @"
+INSERT INTO ORDEREDPRODUCT
+    (OrderNo, Numserv, ProductCode, ProductName, Cor, Tam, Quantidade, Altura, Largura, M2, PrecoUnit, SUBTOTAIS, PrecoCusto, SubtotalCusto, DATACOMPRA, SubTotal, SUBTOTALNUM)
+VALUES
+    (@OrderNo, @Numserv, @ProductCode, @ProductName, @Cor, @Tam, @Quantidade, @Altura, @Largura, @M2, @PrecoUnit, @SUBTOTAIS, @PrecoCusto, @SubtotalCusto, @DATACOMPRA, @SubTotal, @SUBTOTALNUM);"
+                : @"
+INSERT INTO ORDEREDPRODUCT
+    (OrderNo, ProductCode, ProductName, Cor, Tam, Quantidade, Altura, Largura, M2, PrecoUnit, SUBTOTAIS, PrecoCusto, SubtotalCusto, DATACOMPRA, SubTotal, SUBTOTALNUM)
+VALUES
+    (@OrderNo, @ProductCode, @ProductName, @Cor, @Tam, @Quantidade, @Altura, @Largura, @M2, @PrecoUnit, @SUBTOTAIS, @PrecoCusto, @SubtotalCusto, @DATACOMPRA, @SubTotal, @SUBTOTALNUM);";
+
+            foreach (var p in products)
+            {
+                using var lineCmd = new MySqlCommand(lineSql, conn, tx);
+                lineCmd.Parameters.Add("@OrderNo", MySqlDbType.VarChar, 50).Value = order.OrderNo;
+                if (hasNumservColumn)
+                {
+                    lineCmd.Parameters.Add("@Numserv", MySqlDbType.VarChar, 40).Value = order.Numserv ?? order.OrderNo;
+                }
+                lineCmd.Parameters.Add("@ProductCode", MySqlDbType.VarChar, 60).Value = p.ProductCode ?? "";
+                lineCmd.Parameters.Add("@ProductName", MySqlDbType.VarChar, 255).Value = p.ProductName ?? "";
+                lineCmd.Parameters.Add("@Cor", MySqlDbType.VarChar, 80).Value = p.Cor ?? "";
+                lineCmd.Parameters.Add("@Tam", MySqlDbType.VarChar, 40).Value = p.Tam ?? "";
+                lineCmd.Parameters.Add("@Quantidade", MySqlDbType.Decimal).Value = p.Quantidade;
+                lineCmd.Parameters.Add("@Altura", MySqlDbType.Decimal).Value = p.Altura;
+                lineCmd.Parameters.Add("@Largura", MySqlDbType.Decimal).Value = p.Largura;
+                lineCmd.Parameters.Add("@M2", MySqlDbType.Decimal).Value = p.M2;
+                lineCmd.Parameters.Add("@PrecoUnit", MySqlDbType.Decimal).Value = p.PrecoUnit;
+                lineCmd.Parameters.Add("@SUBTOTAIS", MySqlDbType.Decimal).Value = p.SUBTOTAIS;
+                lineCmd.Parameters.Add("@PrecoCusto", MySqlDbType.Decimal).Value = p.PrecoCusto;
+                lineCmd.Parameters.Add("@SubtotalCusto", MySqlDbType.Decimal).Value = p.SubtotalCusto;
+                lineCmd.Parameters.Add("@DATACOMPRA", MySqlDbType.DateTime).Value = p.DATACOMPRA ?? (object)DBNull.Value;
+                lineCmd.Parameters.Add("@SubTotal", MySqlDbType.VarChar, 100).Value = p.SubTotal ?? "";
+                lineCmd.Parameters.Add("@SUBTOTALNUM", MySqlDbType.Decimal).Value = p.SUBTOTALNUM ?? p.SUBTOTAIS;
+
+                await lineCmd.ExecuteNonQueryAsync(ct);
+            }
+
+            await tx.CommitAsync(ct);
+            return order.OrderNo;
+        }
+
+        private static string GenerateOrderNumber()
+        {
+            return DateTime.Now.ToString("yyyyMMddHHmmssfff");
+        }
+
 
 
 

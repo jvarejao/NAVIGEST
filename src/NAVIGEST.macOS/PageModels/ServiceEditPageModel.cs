@@ -10,6 +10,7 @@ using CommunityToolkit.Maui.Views;
 using NAVIGEST.macOS.Models;
 using NAVIGEST.macOS.Popups;
 using NAVIGEST.macOS.Services;
+using NAVIGEST.macOS.Pages;
 using System.Collections.Generic;
 
 namespace NAVIGEST.macOS.PageModels;
@@ -395,19 +396,20 @@ public class ServiceEditPageModel : INotifyPropertyChanged
 
         try
         {
-            // Mapear para OrderInfoModel (simplificado; ajustar quando existir persistência)
             var order = BuildOrderModel();
 
-            if (_isEdit)
+            var savedOrderNo = await DatabaseService.SaveOrderWithProductsAsync(order);
+
+            if (_existingOrder != null)
             {
-                // TODO: implementar persistência de atualização
-                await AppShell.DisplayToastAsync("Serviço atualizado com sucesso.", NAVIGEST.macOS.ToastTipo.Sucesso, 2000);
+                _existingOrder.OrderNo = savedOrderNo;
+                _existingOrder.Numserv = order.Numserv;
             }
-            else
-            {
-                // TODO: implementar persistência de criação
-                await AppShell.DisplayToastAsync("Serviço guardado com sucesso.", NAVIGEST.macOS.ToastTipo.Sucesso, 2000);
-            }
+
+            var toast = _isEdit ? "Serviço atualizado com sucesso." : "Serviço guardado com sucesso.";
+            await AppShell.DisplayToastAsync(toast, NAVIGEST.macOS.ToastTipo.Sucesso, 2000);
+
+            await RefreshServiceListAsync();
 
             await AppShell.Current.Navigation.PopAsync();
         }
@@ -427,13 +429,27 @@ public class ServiceEditPageModel : INotifyPropertyChanged
         order.OrderStatus = Status;
         order.OrderDate = CreationDate;
         order.OrderDateEnt = DeliveryDate;
+        order.ANO = order.OrderDate?.Year.ToString();
         order.Observacoes = Observations;
         order.DESCPROD = InternalObservations;
         order.TaxPercentage = TaxRate > 1 ? TaxRate * 100 : TaxRate;
         order.DescPercentage = _discountPercentage;
+        order.Desconto = DiscountAmount;
         order.SubTotal = SubTotal;
         order.TaxAmount = TaxAmount;
         order.TotalAmount = TotalAmount;
+        order.Utilizador = UserSession.Current.User?.Name;
+        order.CONTROLVEND = SelectedClient?.VENDEDOR ?? order.CONTROLVEND;
+
+        if (string.IsNullOrWhiteSpace(order.Numserv))
+        {
+            order.Numserv = order.OrderNo;
+        }
+
+        if (string.IsNullOrWhiteSpace(order.Servencomenda))
+        {
+            order.Servencomenda = order.Numserv;
+        }
 
         // Mapear linhas para OrderedProduct (modelo parcial)
         order.Products = Items.Select(i => new OrderedProduct
@@ -447,7 +463,9 @@ public class ServiceEditPageModel : INotifyPropertyChanged
             Largura = i.Width,
             M2 = i.M2,
             PrecoUnit = i.UnitPrice,
-            SUBTOTAIS = i.Subtotal
+            SUBTOTAIS = i.Subtotal,
+            Numserv = order.Numserv,
+            OrderNo = order.OrderNo
         }).ToList();
 
         return order;
@@ -456,6 +474,32 @@ public class ServiceEditPageModel : INotifyPropertyChanged
     private async void OnCancel()
     {
         await AppShell.Current.Navigation.PopAsync();
+    }
+
+    private static async Task RefreshServiceListAsync()
+    {
+        try
+        {
+            // Prioriza o último VM conhecido
+            if (ServicePageModel.LastInstance != null)
+            {
+                await ServicePageModel.LastInstance.LoadAsync(force: true);
+                return;
+            }
+
+            var nav = AppShell.Current?.Navigation;
+            if (nav == null) return;
+
+            var servicePage = nav.NavigationStack.OfType<ServicePage>().LastOrDefault();
+            if (servicePage?.BindingContext is ServicePageModel vm)
+            {
+                await vm.LoadAsync(force: true);
+            }
+        }
+        catch
+        {
+            // Ignorar falhas de refresh para não bloquear o fluxo de gravação
+        }
     }
 }
 
