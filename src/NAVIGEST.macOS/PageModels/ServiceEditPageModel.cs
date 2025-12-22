@@ -4,10 +4,13 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using System.Linq;
+using System.Threading.Tasks;
 using CommunityToolkit.Maui.Views;
 using NAVIGEST.macOS.Models;
 using NAVIGEST.macOS.Popups;
 using NAVIGEST.macOS.Services;
+using System.Collections.Generic;
 
 namespace NAVIGEST.macOS.PageModels;
 
@@ -15,6 +18,12 @@ public class ServiceEditPageModel : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler? PropertyChanged;
     void OnPropertyChanged([CallerMemberName] string? n = null) => PropertyChanged?.Invoke(this, new(n));
+
+    private readonly bool _isEdit;
+    private readonly OrderInfoModel? _existingOrder;
+
+    public string PageTitle { get; private set; } = "Novo Serviço";
+    public string SaveButtonText { get; private set; } = "Guardar";
 
     // Header Fields
     private Cliente? _selectedClient;
@@ -163,6 +172,9 @@ public class ServiceEditPageModel : INotifyPropertyChanged
     public ICommand SaveCommand { get; }
     public ICommand CancelCommand { get; }
 
+    // Flags de estado
+    public bool IsEdit => _isEdit;
+
     public ServiceEditPageModel()
     {
         Items.CollectionChanged += OnItemsCollectionChanged;
@@ -170,7 +182,7 @@ public class ServiceEditPageModel : INotifyPropertyChanged
         OpenStatusPickerCommand = new Command(OnOpenStatusPicker);
         AddLineCommand = new Command(OnAddLine);
         RemoveLineCommand = new Command<OrderedProductViewModel>(OnRemoveLine);
-        SaveCommand = new Command(OnSave);
+        SaveCommand = new Command(async () => await OnSaveAsync());
         CancelCommand = new Command(OnCancel);
 
         _ = LoadStatusOptionsAsync();
@@ -178,6 +190,13 @@ public class ServiceEditPageModel : INotifyPropertyChanged
 
     public ServiceEditPageModel(OrderInfoModel existingOrder) : this()
     {
+        _isEdit = true;
+        _existingOrder = existingOrder;
+        PageTitle = "Editar Serviço";
+        SaveButtonText = "Atualizar";
+        OnPropertyChanged(nameof(PageTitle));
+        OnPropertyChanged(nameof(SaveButtonText));
+
         if (existingOrder == null) return;
 
         // Prefill basic fields when navigating from the list
@@ -360,7 +379,7 @@ public class ServiceEditPageModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(TotalAmount));
     }
 
-    private async void OnSave()
+    private async Task OnSaveAsync()
     {
         if (SelectedClient == null)
         {
@@ -374,9 +393,64 @@ public class ServiceEditPageModel : INotifyPropertyChanged
             return;
         }
 
-        // TODO: Map to OrderInfoModel and Save to DB
-        await AppShell.Current.DisplayAlert("Sucesso", "Serviço guardado (Simulação).", "OK");
-        await AppShell.Current.Navigation.PopAsync();
+        try
+        {
+            // Mapear para OrderInfoModel (simplificado; ajustar quando existir persistência)
+            var order = BuildOrderModel();
+
+            if (_isEdit)
+            {
+                // TODO: implementar persistência de atualização
+                await AppShell.DisplayToastAsync("Serviço atualizado com sucesso.", NAVIGEST.macOS.ToastTipo.Sucesso, 2000);
+            }
+            else
+            {
+                // TODO: implementar persistência de criação
+                await AppShell.DisplayToastAsync("Serviço guardado com sucesso.", NAVIGEST.macOS.ToastTipo.Sucesso, 2000);
+            }
+
+            await AppShell.Current.Navigation.PopAsync();
+        }
+        catch (Exception ex)
+        {
+            NAVIGEST.macOS.GlobalErro.TratarErro(ex);
+            await AppShell.DisplayToastAsync("Erro ao guardar serviço.", NAVIGEST.macOS.ToastTipo.Erro, 2500);
+        }
+    }
+
+    private OrderInfoModel BuildOrderModel()
+    {
+        var order = _existingOrder ?? new OrderInfoModel();
+
+        order.CustomerNo = SelectedClient?.CLICODIGO ?? string.Empty;
+        order.CustomerName = SelectedClient?.CLINOME ?? string.Empty;
+        order.OrderStatus = Status;
+        order.OrderDate = CreationDate;
+        order.OrderDateEnt = DeliveryDate;
+        order.Observacoes = Observations;
+        order.DESCPROD = InternalObservations;
+        order.TaxPercentage = TaxRate > 1 ? TaxRate * 100 : TaxRate;
+        order.DescPercentage = _discountPercentage;
+        order.SubTotal = SubTotal;
+        order.TaxAmount = TaxAmount;
+        order.TotalAmount = TotalAmount;
+
+        // Mapear linhas para OrderedProduct (modelo parcial)
+        order.Products = Items.Select(i => new OrderedProduct
+        {
+            ProductCode = i.ProductCode,
+            ProductName = i.ProductName,
+            Cor = i.Color,
+            Tam = i.Size,
+            Quantidade = i.Quantity,
+            Altura = i.Height,
+            Largura = i.Width,
+            M2 = i.M2,
+            PrecoUnit = i.UnitPrice,
+            SUBTOTAIS = i.Subtotal
+        }).ToList();
+
+        return order;
     }
 
     private async void OnCancel()

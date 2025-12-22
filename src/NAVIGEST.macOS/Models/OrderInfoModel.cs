@@ -43,6 +43,9 @@ namespace NAVIGEST.macOS.Models
         public string? DESCPROD { get; set; }
         public string? TEMPO { get; set; }
 
+        // Linhas associadas (usado na edição/criação de serviço)
+        public List<OrderedProduct>? Products { get; set; }
+
         public bool CanSeeFinancials
         {
             get

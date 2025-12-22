@@ -23,10 +23,10 @@
     <Grid RowDefinitions="Auto, *">
         <!-- Toolbar -->
         <Grid ColumnDefinitions="*, Auto" Padding="20,10" BackgroundColor="{DynamicResource PageBackgroundColor}">
-            <Label Text="Novo Serviço" FontSize="24" FontAttributes="Bold" VerticalOptions="Center"/>
+            <Label Text="{Binding PageTitle}" FontSize="24" FontAttributes="Bold" VerticalOptions="Center"/>
             <HorizontalStackLayout Grid.Column="1" Spacing="10">
                 <Button Text="Cancelar" Command="{Binding CancelCommand}" BackgroundColor="Transparent" TextColor="Red"/>
-                <Button Text="Guardar" Command="{Binding SaveCommand}" BackgroundColor="#0A84FF" TextColor="White" FontAttributes="Bold"/>
+                <Button Text="{Binding SaveButtonText}" Command="{Binding SaveCommand}" BackgroundColor="#0A84FF" TextColor="White" FontAttributes="Bold"/>
             </HorizontalStackLayout>
         </Grid>
 
