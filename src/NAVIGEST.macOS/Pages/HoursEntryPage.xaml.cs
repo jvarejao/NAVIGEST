@@ -31,8 +31,7 @@ public partial class HoursEntryPage : ContentPage
     // Removed as we now use NovaHoraPopup
 
     // List Picker State
-    private TaskCompletionSource<object?>? _pickerTcs;
-    private bool _isPickerActive;
+    private TaskCompletionSource<object?>? _pickerTcs = new();
     private List<string> _allItems = new();
 
     public static readonly BindableProperty ShowCollaboratorNameProperty =

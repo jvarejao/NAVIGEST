@@ -29,7 +29,15 @@ public partial class AppShell : Shell
 
     private void SfSegmentedControl_SelectionChanged(object sender, Syncfusion.Maui.Toolkit.SegmentedControl.SelectionChangedEventArgs e)
     {
-        try { Application.Current.UserAppTheme = e.NewIndex == 0 ? AppTheme.Light : AppTheme.Dark; } catch { }
+        try
+        {
+            var app = Application.Current;
+            if (app != null)
+            {
+                app.UserAppTheme = e.NewIndex == 0 ? AppTheme.Light : AppTheme.Dark;
+            }
+        }
+        catch { }
     }
 
     // Toasts delegados para GlobalToast (mantendo assinaturas usadas no código)

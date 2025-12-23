@@ -8,7 +8,7 @@ namespace NAVIGEST.macOS.Converters
         public Color SelectedColor { get; set; } = Color.FromArgb("#6EC0FF"); // AppAccent
         public Color UnselectedColor { get; set; } = Colors.Transparent;
 
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is string selectedTab && parameter is string tabName)
             {
@@ -17,7 +17,7 @@ namespace NAVIGEST.macOS.Converters
             return UnselectedColor;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }
@@ -28,7 +28,7 @@ namespace NAVIGEST.macOS.Converters
         public Color SelectedColor { get; set; } = Colors.White;
         public Color UnselectedColor { get; set; } = Colors.Gray;
 
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is string selectedTab && parameter is string tabName)
             {
@@ -37,7 +37,7 @@ namespace NAVIGEST.macOS.Converters
             return UnselectedColor;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }

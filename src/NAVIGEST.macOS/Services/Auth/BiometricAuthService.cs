@@ -119,7 +119,7 @@ namespace NAVIGEST.macOS.Services.Auth
                 return null;
             }
 
-            var token = Preferences.Default.Get<string>(KeyBioToken, null);
+            var token = Preferences.Default.Get<string>(KeyBioToken, string.Empty);
             System.Diagnostics.Debug.WriteLine($"[MACOS] Auto-login successful, returning token");
             return token;
         }

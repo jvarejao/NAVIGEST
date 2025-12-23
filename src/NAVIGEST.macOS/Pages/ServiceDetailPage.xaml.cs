@@ -202,7 +202,6 @@ public partial class ServiceDetailPage : ContentPage
                 
                 // Use the generated PDF data which we know works (has white background, correct scaling)
                 printer.PrintingItem = pdfData;
-                printer.ShowsPageRange = true;
 
                 printer.Present(true, (handler, completed, error) => {
                     if (error != null)
@@ -250,7 +249,7 @@ public partial class ServiceDetailPage : ContentPage
             var originalMasksToBounds = platformView.Layer.MasksToBounds;
             
             // 3. Prepare for PDF Rendering
-            InvoiceSheet.Shadow = null;
+            InvoiceSheet.Shadow = null!;
             
             void ClearShadows(CALayer layer)
             {
@@ -283,11 +282,8 @@ public partial class ServiceDetailPage : ContentPage
                 if (view == null) return null;
                 if (view.Handler?.PlatformView is UIView nativeView)
                 {
-                    UIGraphics.BeginImageContextWithOptions(nativeView.Bounds.Size, true, 0);
-                    nativeView.DrawViewHierarchy(nativeView.Bounds, true);
-                    var img = UIGraphics.GetImageFromCurrentImageContext();
-                    UIGraphics.EndImageContext();
-                    return img;
+                    var renderer = new UIGraphicsImageRenderer(nativeView.Bounds.Size);
+                    return renderer.CreateImage(_ => nativeView.DrawViewHierarchy(nativeView.Bounds, true));
                 }
                 return null;
             }
@@ -549,7 +545,7 @@ public partial class ServiceDetailPage : ContentPage
             {
                 var fileName = $"Encomenda_{Order.OrderNo}.pdf";
                 var fn = System.IO.Path.Combine(FileSystem.CacheDirectory, fileName);
-                data.Save(fn, true);
+                System.IO.File.WriteAllBytes(fn, data.ToArray());
                 
                 await Share.RequestAsync(new ShareFileRequest
                 {

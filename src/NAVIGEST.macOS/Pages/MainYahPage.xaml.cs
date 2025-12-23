@@ -13,10 +13,10 @@ namespace NAVIGEST.macOS.Pages
 {
     public partial class MainYahPage : ContentPage
     {
+        #if WINDOWS
         private bool _isMaximized = false;
         private bool _dragging = false;
-        private View? _homeContent;
-        private bool _initThemePicker;
+        #endif
         private TaskCompletionSource<bool>? _adminTcs;
         private bool _adminPwdShown;
 
@@ -55,9 +55,11 @@ namespace NAVIGEST.macOS.Pages
         {
             try
             {
+                #if WINDOWS
+                _ = _isMaximized;
+                #endif
                 InitializeComponent();
                 SyncThemeVisual();
-                _homeContent = ContentHost?.Content;
                 NavigationPage.SetHasBackButton(this, false);
                 var vm = new MainYahPageViewModel();
                 vm.IsSidebarVisible = false; // Sidebar oculto por padrão
@@ -212,8 +214,13 @@ namespace NAVIGEST.macOS.Pages
         {
             try
             {
-                var app = (App?)Application.Current;
-                var theme = Application.Current?.UserAppTheme;
+                if (Application.Current is not App app) return;
+
+                var resources = app.Resources;
+                if (resources == null) return;
+
+                var theme = app.UserAppTheme;
+                var isAutoTheme = app.IsAutoTheme;
 
                 // --- DESKTOP BUTTONS ---
                 var btnAuto = this.FindByName("ThemeBtnAuto") as Border;
@@ -227,7 +234,7 @@ namespace NAVIGEST.macOS.Pages
                     var inactiveColor = Colors.Transparent; // Ou SidebarItem se acessível via código, mas Transparent funciona bem no sidebar
                     
                     // Estados
-                    bool isAuto = app?.IsAutoTheme == true;
+                    bool isAuto = isAutoTheme;
                     bool isLight = !isAuto && theme == AppTheme.Light;
                     bool isDark = !isAuto && theme == AppTheme.Dark;
 
@@ -236,16 +243,19 @@ namespace NAVIGEST.macOS.Pages
                     btnDark.BackgroundColor = isDark ? activeColor : inactiveColor;
                     
                     // Ajustar cor do ícone para contraste se ativo
-                    if (btnAuto.Content is Label lA) lA.TextColor = isAuto ? Colors.White : (Color)Application.Current.Resources["SidebarAccent"];
-                    if (btnLight.Content is Label lL) lL.TextColor = isLight ? Colors.White : (Color)Application.Current.Resources["SidebarAccent"];
-                    if (btnDark.Content is Label lD) lD.TextColor = isDark ? Colors.White : (Color)Application.Current.Resources["SidebarAccent"];
+                    if (resources != null && resources.TryGetValue("SidebarAccent", out var accentObj) && accentObj is Color accent)
+                    {
+                        if (btnAuto.Content is Label lA) lA.TextColor = isAuto ? Colors.White : accent;
+                        if (btnLight.Content is Label lL) lL.TextColor = isLight ? Colors.White : accent;
+                        if (btnDark.Content is Label lD) lD.TextColor = isDark ? Colors.White : accent;
+                    }
                 }
 
                 // Ícone Geral
                 var iconObj = this.FindByName("ThemeModeIcon");
                 if (iconObj is Label icon)
                 {
-                    string glyph = app?.IsAutoTheme == true ? "\uf042" : (theme == AppTheme.Dark ? "\uf185" : "\uf186");
+                    string glyph = isAutoTheme ? "\uf042" : (theme == AppTheme.Dark ? "\uf185" : "\uf186");
                     icon.Text = glyph;
                 }
 
@@ -253,14 +263,14 @@ namespace NAVIGEST.macOS.Pages
                 var pickerMobile = this.FindByName("ThemeModePickerMobile") as Picker;
                 if (pickerMobile != null)
                 {
-                    if (app.IsAutoTheme) pickerMobile.SelectedIndex = 0;
+                    if (isAutoTheme) pickerMobile.SelectedIndex = 0;
                     else if (theme == AppTheme.Light) pickerMobile.SelectedIndex = 1;
                     else pickerMobile.SelectedIndex = 2;
                 }
                 var iconMobile = this.FindByName("ThemeModeIconMobile") as Label;
                 if (iconMobile != null)
                 {
-                    string glyph = app.IsAutoTheme ? "\uf042" : (theme == AppTheme.Dark ? "\uf185" : "\uf186");
+                    string glyph = isAutoTheme ? "\uf042" : (theme == AppTheme.Dark ? "\uf185" : "\uf186");
                     iconMobile.Text = glyph;
                 }
             }
@@ -293,7 +303,7 @@ namespace NAVIGEST.macOS.Pages
 
                 if (mode != null)
                 {
-                    var app = (App)Application.Current;
+                    var app = Application.Current as App;
                     if (app != null)
                     {
                         switch (mode)
@@ -321,7 +331,8 @@ namespace NAVIGEST.macOS.Pages
             if (pickerObj is not Picker picker) return;
             try
             {
-                var app = (App)Application.Current;
+                var app = Application.Current as App;
+                if (app == null) return;
                 switch (picker.SelectedIndex)
                 {
                     case 0: app.EnableAutoTheme(); break;
@@ -745,7 +756,7 @@ namespace NAVIGEST.macOS.Pages
                     AdminErrorLabel.IsVisible = true; 
                     return; 
                 }
-                (bool ok, string _nome, string tipo) = await DatabaseService.CheckLoginAsync(user, pass);
+                (bool ok, string? _nome, string? tipo) = await DatabaseService.CheckLoginAsync(user, pass);
                 if (!ok) 
                 { 
                     AdminErrorLabel.Text = NAVIGEST.Shared.Resources.Strings.AppResources.Login_InvalidCredentials; 

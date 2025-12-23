@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-    using System.Threading.Tasks;
+using System.Threading.Tasks;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using MailKit.Net.Smtp;
@@ -20,7 +20,7 @@ namespace NAVIGEST.macOS.Services
         // Se o servidor suportar STARTTLS fiável, preferir Porta=587 + UseSsl=false (mais compatível).
         private const string SmtpHost = "mail.yahpublicidade.com";
         private const int SmtpPort = 465;          // 465 (SSL direto) ou 587 (STARTTLS)
-        private const bool UseSsl = true;          // true = SslOnConnect (465); false = StartTls (587)
+        private static bool UseSsl = true;          // true = SslOnConnect (465); false = StartTls (587)
 
         private const string SmtpUser = "comercial@yahpublicidade.com";
         private const string SmtpPass = "#JONy22442208"; // <-- mover para armazenamento seguro / não versionar
@@ -66,16 +66,8 @@ Se não foste tu, ignora este e-mail.
             client.CheckCertificateRevocation = false;
 #endif
 
-            if (UseSsl)
-            {
-                await client.ConnectAsync(SmtpHost, SmtpPort, SecureSocketOptions.SslOnConnect)
-                            .ConfigureAwait(false);
-            }
-            else
-            {
-                await client.ConnectAsync(SmtpHost, SmtpPort, SecureSocketOptions.StartTls)
-                            .ConfigureAwait(false);
-            }
+            var secureOption = UseSsl ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTls;
+            await client.ConnectAsync(SmtpHost, SmtpPort, secureOption).ConfigureAwait(false);
 
             await client.AuthenticateAsync(SmtpUser, SmtpPass).ConfigureAwait(false);
             await client.SendAsync(message).ConfigureAwait(false);

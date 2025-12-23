@@ -526,7 +526,7 @@ public class ClientsPageModel : INotifyPropertyChanged
 
         // Validação de duplicados (Nome)
         var duplicate = _all.FirstOrDefault(c => 
-            c.CLINOME.Equals(EditModel.CLINOME, StringComparison.OrdinalIgnoreCase) && 
+            (c.CLINOME ?? string.Empty).Equals(EditModel.CLINOME ?? string.Empty, StringComparison.OrdinalIgnoreCase) && 
             c.CLICODIGO != EditModel.CLICODIGO);
 
         if (duplicate != null)

@@ -263,13 +263,13 @@ namespace NAVIGEST.macOS.Pages
                 }
 
                 var userInfo = await DatabaseService.TryGetUserPhotoAndEmailAsync(user);
-                var companyName = Preferences.Default.Get<string>("company.name", "");
-                var companyLogoBase64 = Preferences.Default.Get<string>("company.logo", string.Empty);
+                var companyName = Preferences.Default.Get<string>("company.name", string.Empty) ?? string.Empty;
+                var companyLogoBase64 = Preferences.Default.Get<string>("company.logo", string.Empty) ?? string.Empty;
 
                 UserSession.Current.User = new UserSession.UserData
                 {
-                    Name = nome,
-                    Role = tipo,
+                    Name = nome ?? string.Empty,
+                    Role = tipo ?? string.Empty,
                     Photo = userInfo?.ProfilePicture,
                     CompanyName = companyName,
                     CompanyLogo = !string.IsNullOrEmpty(companyLogoBase64) ? Convert.FromBase64String(companyLogoBase64) : null

@@ -20,7 +20,11 @@ public static class LanguageHelper
     {
         Preferences.Set("SelectedLanguage", cultureCode);
         
-        bool restart = await Application.Current.MainPage.DisplayAlert(
+        var page = Application.Current?.Windows.FirstOrDefault()?.Page;
+        if (page == null)
+            return;
+
+        bool restart = await page.DisplayAlert(
             "Reiniciar / Restart", 
             "A aplicação precisa de reiniciar para aplicar o novo idioma.\n\nThe application needs to restart to apply the new language.", 
             "Sim / Yes", 
@@ -39,7 +43,11 @@ public static class LanguageHelper
             CultureInfo.CurrentCulture = culture;
             CultureInfo.CurrentUICulture = culture;
 
-            Application.Current.Windows[0].Page = new AppShell();
+            var win = Application.Current?.Windows.FirstOrDefault();
+            if (win != null)
+            {
+                win.Page = new AppShell();
+            }
         }
     }
 }

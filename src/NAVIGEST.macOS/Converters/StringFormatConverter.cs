@@ -6,16 +6,16 @@ namespace NAVIGEST.macOS.Converters
 {
     public class StringFormatConverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (parameter is string format)
             {
                 return string.Format(culture, format, value);
             }
-            return value;
+            return value ?? string.Empty;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }

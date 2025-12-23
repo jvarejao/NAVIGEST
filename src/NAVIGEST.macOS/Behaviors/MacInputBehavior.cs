@@ -28,7 +28,7 @@ public class MacInputBehavior : Behavior<View>
         }
     }
 
-    private async void OnInputLoaded(object sender, EventArgs e)
+    private async void OnInputLoaded(object? sender, EventArgs e)
     {
 #if MACCATALYST
         // Pequeno delay para garantir que executamos DEPOIS do sistema desenhar a borda nativa

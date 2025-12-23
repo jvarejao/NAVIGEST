@@ -214,7 +214,7 @@ public partial class NovaHoraPopup : Popup
         // Let's assume the user will type in a search box if we had one.
         // For now, I'll just list them.
         
-        var clientNames = _clientes.Select(c => c.CLINOME).ToArray();
+        var clientNames = _clientes.Select(c => c.CLINOME ?? string.Empty).ToArray();
         // If too many, maybe just show a subset?
         // Let's just show them.
         

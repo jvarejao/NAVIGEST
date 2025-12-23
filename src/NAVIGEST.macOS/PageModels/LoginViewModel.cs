@@ -123,7 +123,9 @@ namespace NAVIGEST.macOS.PageModels
             // ✅ Validação de campos
             if (!CanLogin())
             {
-                await Application.Current!.MainPage!.DisplayAlert("Login", "Introduza utilizador e palavra-passe.", "OK");
+                var page = GetCurrentPage();
+                if (page != null)
+                    await page.DisplayAlert("Login", "Introduza utilizador e palavra-passe.", "OK");
                 return;
             }
 
@@ -134,7 +136,9 @@ namespace NAVIGEST.macOS.PageModels
                 
                 if (!ok)
                 {
-                    await Application.Current!.MainPage!.DisplayAlert("Login", "Credenciais inválidas. Tente novamente.", "OK");
+                    var page = GetCurrentPage();
+                    if (page != null)
+                        await page.DisplayAlert("Login", "Credenciais inválidas. Tente novamente.", "OK");
                     return;
                 }
 
@@ -145,8 +149,8 @@ namespace NAVIGEST.macOS.PageModels
 
                 UserSession.Current.User = new UserSession.UserData
                 {
-                    Name = nome,
-                    Role = tipo,
+                    Name = nome ?? string.Empty,
+                    Role = tipo ?? string.Empty,
                     Photo = userInfo?.ProfilePicture,
                     CompanyName = companyName,
                     CompanyLogo = !string.IsNullOrEmpty(companyLogoBase64) ? Convert.FromBase64String(companyLogoBase64) : null
@@ -169,7 +173,9 @@ namespace NAVIGEST.macOS.PageModels
             }
             catch (Exception ex)
             {
-                await Application.Current!.MainPage!.DisplayAlert("Login", $"Erro: {ex.Message}", "OK");
+                var page = GetCurrentPage();
+                if (page != null)
+                    await page.DisplayAlert("Login", $"Erro: {ex.Message}", "OK");
             }
         }
 
@@ -194,8 +200,8 @@ namespace NAVIGEST.macOS.PageModels
                 }
 
                 // ✅ Face ID OK - recuperar credenciais guardadas (usando Preferences em vez de SecureStorage)
-                var savedUsername = Preferences.Default.Get<string>(KeyBioUsername, null);
-                var savedPassword = Preferences.Default.Get<string>(KeyBioPassword, null);
+                var savedUsername = Preferences.Default.Get<string>(KeyBioUsername, string.Empty);
+                var savedPassword = Preferences.Default.Get<string>(KeyBioPassword, string.Empty);
 
                 if (string.IsNullOrWhiteSpace(savedUsername) || string.IsNullOrWhiteSpace(savedPassword))
                 {
@@ -221,8 +227,8 @@ namespace NAVIGEST.macOS.PageModels
 
                 UserSession.Current.User = new UserSession.UserData
                 {
-                    Name = nome,
-                    Role = tipo,
+                    Name = nome ?? string.Empty,
+                    Role = tipo ?? string.Empty,
                     Photo = userInfo?.ProfilePicture,
                     CompanyName = companyName,
                     CompanyLogo = !string.IsNullOrEmpty(companyLogoBase64) ? Convert.FromBase64String(companyLogoBase64) : null
@@ -284,8 +290,8 @@ namespace NAVIGEST.macOS.PageModels
 
                 UserSession.Current.User = new UserSession.UserData
                 {
-                    Name = nome,
-                    Role = tipo,
+                    Name = nome ?? string.Empty,
+                    Role = tipo ?? string.Empty,
                     Photo = userInfo?.ProfilePicture,
                     CompanyName = companyName,
                     CompanyLogo = !string.IsNullOrEmpty(companyLogoBase64) ? Convert.FromBase64String(companyLogoBase64) : null
@@ -328,5 +334,7 @@ namespace NAVIGEST.macOS.PageModels
             if (Shell.Current is not null)
                 await Shell.Current.GoToAsync("//WelcomePage");
         }
+
+        private static Page? GetCurrentPage() => Application.Current?.Windows.FirstOrDefault()?.Page;
     }
 }

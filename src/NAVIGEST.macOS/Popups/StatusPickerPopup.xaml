@@ -75,7 +75,7 @@
                     <DataTemplate x:DataType="models:ServiceStatus">
                         <Border StrokeThickness="0" Padding="12" BackgroundColor="Transparent">
                             <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
-                                <BoxView WidthRequest="14" HeightRequest="14" CornerRadius="7" Color="{Binding ColorBrush.Color}" VerticalOptions="Center"/>
+                                <BoxView WidthRequest="14" HeightRequest="14" CornerRadius="7" Color="{Binding Color}" VerticalOptions="Center"/>
                                 <Label Text="{Binding Descricao}" FontAttributes="Bold" TextColor="{DynamicResource BodyTextColor}" VerticalOptions="Center"/>
                             </HorizontalStackLayout>
                             <VisualStateManager.VisualStateGroups>

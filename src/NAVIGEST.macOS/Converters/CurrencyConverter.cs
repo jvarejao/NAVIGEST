@@ -4,17 +4,17 @@ namespace NAVIGEST.macOS.Converters;
 
 public class CurrencyConverter : IValueConverter
 {
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         if (value is decimal d)
         {
             // Format as Currency (pt-PT) -> "1 234,56 €"
             return d.ToString("C2", new CultureInfo("pt-PT"));
         }
-        return value;
+        return value ?? string.Empty;
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         if (value is string s)
         {

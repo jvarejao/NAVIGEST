@@ -43,8 +43,8 @@ public partial class NovaHoraView : ContentView
 
         try
         {
-            var clientesDb = await DatabaseService.GetClientesAsync(null);
-            _clientes = clientesDb.OrderBy(c => c.CLINOME).ToList();
+                var clientesDb = await DatabaseService.GetClientesAsync(null);
+                _clientes = clientesDb.OrderBy(c => c.CLINOME).ToList();
             _clientes.Insert(0, new Cliente { CLICODIGO = "0", CLINOME = AppResources.Hours_NoClient });
         }
         catch (Exception ex)
@@ -209,7 +209,7 @@ public partial class NovaHoraView : ContentView
         var page = Application.Current?.Windows[0]?.Page;
         if (page == null) return;
 
-        var clientNames = _clientes.Select(c => c.CLINOME).ToList();
+        var clientNames = _clientes.Select(c => c.CLINOME ?? string.Empty).ToList();
         
         var popup = new GenericPickerPopup(AppResources.Hours_SelectClient, clientNames);
         var result = await page.ShowPopupAsync(popup);

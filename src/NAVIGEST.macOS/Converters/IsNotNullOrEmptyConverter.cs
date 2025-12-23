@@ -6,7 +6,7 @@ namespace NAVIGEST.macOS.Converters
 {
     public class IsNotNullOrEmptyConverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is string str)
             {
@@ -15,7 +15,7 @@ namespace NAVIGEST.macOS.Converters
             return value != null;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }

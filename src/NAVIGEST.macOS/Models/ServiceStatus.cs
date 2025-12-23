@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Microsoft.Maui.Graphics;
 
 namespace NAVIGEST.macOS.Models
 {
@@ -9,12 +10,14 @@ namespace NAVIGEST.macOS.Models
         public string Cor { get; set; } = "#808080"; // Default gray
 
         [JsonIgnore]
+        public Color Color => ResolveColor(Cor);
+
+        [JsonIgnore]
         public Brush ColorBrush
         {
             get
             {
-                var color = ResolveColor(Cor);
-                return new SolidColorBrush(color);
+                return new SolidColorBrush(Color);
             }
         }
 

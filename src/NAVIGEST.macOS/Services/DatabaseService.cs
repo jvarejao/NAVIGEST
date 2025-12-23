@@ -1449,20 +1449,23 @@ ORDER BY OrderDate DESC";
         public static async Task<List<OrderedProduct>> GetOrderedProductsExtendedAsync(OrderInfoModel order)
         {
             // 1. Tenta pelo OrderNo (Trimmed)
-            var list = await GetOrderedProductsAsync(order.OrderNo?.Trim());
+            var primaryOrder = order.OrderNo?.Trim();
+            var list = string.IsNullOrWhiteSpace(primaryOrder) ? new List<OrderedProduct>() : await GetOrderedProductsAsync(primaryOrder);
             if (list.Count > 0) return list;
 
             // 2. Tenta pelo Numserv (se existir)
-            if (!string.IsNullOrWhiteSpace(order.Numserv) && order.Numserv?.Trim() != order.OrderNo?.Trim())
+            var numserv = order.Numserv?.Trim();
+            if (!string.IsNullOrWhiteSpace(numserv) && numserv != order.OrderNo?.Trim())
             {
-                list = await GetOrderedProductsAsync(order.Numserv?.Trim());
+                list = await GetOrderedProductsAsync(numserv);
                 if (list.Count > 0) return list;
             }
 
             // 3. Tenta pelo Servencomenda (se existir)
-            if (!string.IsNullOrWhiteSpace(order.Servencomenda) && order.Servencomenda?.Trim() != order.OrderNo?.Trim())
+            var servencomenda = order.Servencomenda?.Trim();
+            if (!string.IsNullOrWhiteSpace(servencomenda) && servencomenda != order.OrderNo?.Trim())
             {
-                list = await GetOrderedProductsAsync(order.Servencomenda?.Trim());
+                list = await GetOrderedProductsAsync(servencomenda);
                 if (list.Count > 0) return list;
             }
 
@@ -1531,10 +1534,10 @@ LIMIT 1;";
             const string orderSql = @"
 INSERT INTO OrderInfo
     (OrderNo, OrderDate, OrderStatus, CustomerNo, CustomerName, SubTotal, TaxPercentage, TaxAmount, TotalAmount,
-     OrderDateEnt, DescPercentage, Desconto, observacoes, utilizador, ANO, CONTROLVEND, Numserv, Servencomenda, DESCPROD)
+    VALORPENDENTE, OrderDateEnt, DescPercentage, Desconto, observacoes, utilizador, ANO, CONTROLVEND, Numserv, Servencomenda, DESCPROD)
 VALUES
     (@OrderNo, @OrderDate, @OrderStatus, @CustomerNo, @CustomerName, @SubTotal, @TaxPercentage, @TaxAmount, @TotalAmount,
-     @OrderDateEnt, @DescPercentage, @Desconto, @Observacoes, @Utilizador, @ANO, @CONTROLVEND, @Numserv, @Servencomenda, @DESCPROD)
+    @VALORPENDENTE, @OrderDateEnt, @DescPercentage, @Desconto, @Observacoes, @Utilizador, @ANO, @CONTROLVEND, @Numserv, @Servencomenda, @DESCPROD)
 ON DUPLICATE KEY UPDATE
     OrderDate = VALUES(OrderDate),
     OrderStatus = VALUES(OrderStatus),
@@ -1566,6 +1569,7 @@ ON DUPLICATE KEY UPDATE
                 cmd.Parameters.Add("@TaxPercentage", MySqlDbType.Decimal).Value = order.TaxPercentage ?? 0m;
                 cmd.Parameters.Add("@TaxAmount", MySqlDbType.Decimal).Value = order.TaxAmount ?? 0m;
                 cmd.Parameters.Add("@TotalAmount", MySqlDbType.Decimal).Value = order.TotalAmount ?? 0m;
+                cmd.Parameters.Add("@VALORPENDENTE", MySqlDbType.Decimal).Value = order.TotalAmount ?? 0m;
                 cmd.Parameters.Add("@OrderDateEnt", MySqlDbType.DateTime).Value = order.OrderDateEnt ?? (object)DBNull.Value;
                 cmd.Parameters.Add("@DescPercentage", MySqlDbType.Decimal).Value = order.DescPercentage ?? 0m;
                 cmd.Parameters.Add("@Desconto", MySqlDbType.Decimal).Value = order.Desconto ?? 0m;

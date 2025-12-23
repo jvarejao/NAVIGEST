@@ -2,8 +2,8 @@ namespace NAVIGEST.macOS.Models
 {
     public class Cor
     {
-        public string IdCor { get; set; }
-        public string NomeCor { get; set; }
+        public string IdCor { get; set; } = string.Empty;
+        public string NomeCor { get; set; } = string.Empty;
         public string? CodigoHex { get; set; }
         public string? Referencia { get; set; }
 
