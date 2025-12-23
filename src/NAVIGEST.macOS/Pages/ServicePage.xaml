@@ -208,8 +208,7 @@
                                             WidthRequest="40"
                                             HeightRequest="40"
                                             Padding="0"
-                                            IsVisible="{Binding CanSeeFinancials}"
-                                            IsEnabled="{Binding VALORPENDENTE, Converter={StaticResource DoubleComparisonConverter}, ConverterParameter='gt:0'}"
+                                            IsVisible="{Binding CanReceivePayments}"
                                             Clicked="OnPaymentClicked"
                                             CommandParameter="{Binding .}">
                                         <Button.Behaviors>

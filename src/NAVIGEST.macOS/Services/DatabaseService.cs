@@ -1649,6 +1649,183 @@ VALUES
             return DateTime.Now.ToString("yyyyMMddHHmmssfff");
         }
 
+        private static async Task<int> GetNextBillIdAsync(MySqlConnection conn, MySqlTransaction tx, CancellationToken ct)
+        {
+            const string sql = "SELECT COALESCE(MAX(ID), 0) + 1 FROM BillInfo";
+            using var cmd = new MySqlCommand(sql, conn, tx);
+            var scalar = await cmd.ExecuteScalarAsync(ct);
+            return scalar is int i ? i : Convert.ToInt32(scalar ?? 1);
+        }
+
+        public static async Task<List<BillInfoModel>> GetBillInfoByOrderAsync(string orderNo, CancellationToken ct = default)
+        {
+            var list = new List<BillInfoModel>();
+            if (string.IsNullOrWhiteSpace(orderNo)) return list;
+
+            using var conn = new MySqlConnection(GetConnectionString());
+            await conn.OpenAsync(ct);
+
+            const string sql = @"
+SELECT InvoiceNo, BillingDate, CustomerName, SubTotal, TaxPercentage, TaxAmount, GrandTotal,
+       TotalPayment, PaymentDue, CostumerNO, OrderNo, ESTADO, FATURA, RECIBO, PERCIVA, CENTROCUSTO, ID
+FROM BillInfo
+WHERE OrderNo = @ord
+ORDER BY BillingDate DESC, InvoiceNo DESC;";
+
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.Add("@ord", MySqlDbType.VarChar, 50).Value = orderNo;
+
+            using var rd = await cmd.ExecuteReaderAsync(ct);
+            while (await rd.ReadAsync(ct))
+            {
+                list.Add(new BillInfoModel
+                {
+                    InvoiceNo = rd.IsDBNull(0) ? string.Empty : rd.GetString(0),
+                    BillingDate = rd.IsDBNull(1) ? DateTime.MinValue : rd.GetDateTime(1),
+                    CustomerName = rd.IsDBNull(2) ? string.Empty : rd.GetString(2),
+                    SubTotal = rd.IsDBNull(3) ? 0m : rd.GetDecimal(3),
+                    TaxPercentage = rd.IsDBNull(4) ? 0m : rd.GetDecimal(4),
+                    TaxAmount = rd.IsDBNull(5) ? 0m : rd.GetDecimal(5),
+                    GrandTotal = rd.IsDBNull(6) ? 0m : rd.GetDecimal(6),
+                    TotalPayment = rd.IsDBNull(7) ? 0m : rd.GetDecimal(7),
+                    PaymentDue = rd.IsDBNull(8) ? 0m : rd.GetDecimal(8),
+                    CostumerNO = rd.IsDBNull(9) ? null : rd.GetString(9),
+                    OrderNo = rd.IsDBNull(10) ? string.Empty : rd.GetString(10),
+                    ESTADO = rd.IsDBNull(11) ? null : rd.GetString(11),
+                    FATURA = rd.IsDBNull(12) ? null : rd.GetString(12),
+                    RECIBO = rd.IsDBNull(13) ? null : rd.GetString(13),
+                    PERCIVA = rd.IsDBNull(14) ? null : rd.GetFloat(14),
+                    CENTROCUSTO = rd.IsDBNull(15) ? null : rd.GetString(15),
+                    ID = rd.IsDBNull(16) ? 0 : rd.GetInt32(16)
+                });
+            }
+
+            return list;
+        }
+
+        public static async Task<(decimal Paid, decimal Pending)> AddReceiptAsync(OrderInfoModel order, string? receiptNumber, string? invoiceDoc, string? receiptDoc, decimal amount, CancellationToken ct = default)
+        {
+            if (order == null) throw new ArgumentNullException(nameof(order));
+            if (string.IsNullOrWhiteSpace(order.OrderNo)) throw new ArgumentException("OrderNo obrigatório", nameof(order));
+            if (amount <= 0) throw new ArgumentException("Valor do recebimento deve ser > 0", nameof(amount));
+
+            var trimmedReceiptNumber = string.IsNullOrWhiteSpace(receiptNumber) ? null : receiptNumber.Trim();
+            var trimmedInvoiceDoc = string.IsNullOrWhiteSpace(invoiceDoc) ? null : invoiceDoc.Trim();
+            var trimmedReceiptDoc = string.IsNullOrWhiteSpace(receiptDoc) ? null : receiptDoc.Trim();
+            var currentYear = DateTime.Now.Year;
+
+            using var conn = new MySqlConnection(GetConnectionString());
+            await conn.OpenAsync(ct);
+            using var tx = await conn.BeginTransactionAsync(ct);
+
+            const string orderTotalsSql = "SELECT COALESCE(TotalAmount,0), COALESCE(VALORPAGO,0) FROM OrderInfo WHERE OrderNo=@o";
+            decimal totalAmount;
+            using (var cmdTotals = new MySqlCommand(orderTotalsSql, conn, tx))
+            {
+                cmdTotals.Parameters.Add("@o", MySqlDbType.VarChar, 50).Value = order.OrderNo;
+                using var rd = await cmdTotals.ExecuteReaderAsync(ct);
+                if (!await rd.ReadAsync(ct)) throw new InvalidOperationException("Serviço não encontrado.");
+                totalAmount = rd.IsDBNull(0) ? 0m : rd.GetDecimal(0);
+            }
+
+            const string sumSql = "SELECT COALESCE(SUM(TotalPayment),0) FROM BillInfo WHERE OrderNo=@o";
+            decimal paidSoFar;
+            using (var cmdSum = new MySqlCommand(sumSql, conn, tx))
+            {
+                cmdSum.Parameters.Add("@o", MySqlDbType.VarChar, 50).Value = order.OrderNo;
+                var scalar = await cmdSum.ExecuteScalarAsync(ct);
+                paidSoFar = scalar == null || scalar == DBNull.Value ? 0m : Convert.ToDecimal(scalar);
+            }
+
+            var newPaidTotal = paidSoFar + amount;
+            var pending = Math.Max(0, totalAmount - newPaidTotal);
+
+            var billId = await GetNextBillIdAsync(conn, tx, ct);
+            var receiptNumberFormatted = NormalizeReceiptNumber(trimmedReceiptNumber, currentYear, billId);
+            var invoiceDocFormatted = NormalizeDocumentNumber(trimmedInvoiceDoc, currentYear);
+            var receiptDocFormatted = NormalizeDocumentNumber(trimmedReceiptDoc, currentYear);
+            var estado = pending <= 0 ? "Liquidado" : "Parcial";
+
+            const string insertSql = @"
+INSERT INTO BillInfo
+    (InvoiceNo, BillingDate, CustomerName, SubTotal, TaxPercentage, TaxAmount, GrandTotal, TotalPayment, PaymentDue,
+     CostumerNO, OrderNo, ESTADO, FATURA, RECIBO, PERCIVA, CENTROCUSTO, ID)
+VALUES
+    (@InvoiceNo, @BillingDate, @CustomerName, @SubTotal, @TaxPercentage, @TaxAmount, @GrandTotal, @TotalPayment, @PaymentDue,
+     @CostumerNO, @OrderNo, @ESTADO, @FATURA, @RECIBO, @PERCIVA, @CENTROCUSTO, @ID);";
+
+            using (var insert = new MySqlCommand(insertSql, conn, tx))
+            {
+                insert.Parameters.Add("@InvoiceNo", MySqlDbType.VarChar, 30).Value = receiptNumberFormatted;
+                insert.Parameters.Add("@BillingDate", MySqlDbType.DateTime).Value = DateTime.Now;
+                insert.Parameters.Add("@CustomerName", MySqlDbType.VarChar, 150).Value = order.CustomerName ?? string.Empty;
+                insert.Parameters.Add("@SubTotal", MySqlDbType.Decimal).Value = amount;
+                insert.Parameters.Add("@TaxPercentage", MySqlDbType.Decimal).Value = order.TaxPercentage ?? 0m;
+                insert.Parameters.Add("@TaxAmount", MySqlDbType.Decimal).Value = order.TaxAmount ?? 0m;
+                insert.Parameters.Add("@GrandTotal", MySqlDbType.Decimal).Value = totalAmount;
+                insert.Parameters.Add("@TotalPayment", MySqlDbType.Decimal).Value = amount;
+                insert.Parameters.Add("@PaymentDue", MySqlDbType.Decimal).Value = pending;
+                insert.Parameters.Add("@CostumerNO", MySqlDbType.VarChar, 30).Value = order.CustomerNo ?? string.Empty;
+                insert.Parameters.Add("@OrderNo", MySqlDbType.VarChar, 50).Value = order.OrderNo;
+                insert.Parameters.Add("@ESTADO", MySqlDbType.VarChar, 30).Value = estado;
+                insert.Parameters.Add("@FATURA", MySqlDbType.VarChar, 30).Value = (object?)invoiceDocFormatted ?? DBNull.Value;
+                insert.Parameters.Add("@RECIBO", MySqlDbType.VarChar, 30).Value = (object?)receiptDocFormatted ?? DBNull.Value;
+                insert.Parameters.Add("@PERCIVA", MySqlDbType.Float).Value = order.TaxPercentage.HasValue ? (float)order.TaxPercentage.Value : 0f;
+                insert.Parameters.Add("@CENTROCUSTO", MySqlDbType.VarChar, 20).Value = DBNull.Value;
+                insert.Parameters.Add("@ID", MySqlDbType.Int32).Value = billId;
+                await insert.ExecuteNonQueryAsync(ct);
+            }
+
+            const string updateSql = @"
+UPDATE OrderInfo
+SET VALORPAGO = @paid,
+    VALORPENDENTE = @pending,
+    numfatura = IF(@f IS NULL OR @f = '', numfatura, @f),
+    numrecibo = IF(@r IS NULL OR @r = '', numrecibo, @r)
+WHERE OrderNo = @o;";
+
+            using (var up = new MySqlCommand(updateSql, conn, tx))
+            {
+                up.Parameters.Add("@paid", MySqlDbType.Decimal).Value = newPaidTotal;
+                up.Parameters.Add("@pending", MySqlDbType.Decimal).Value = pending;
+                up.Parameters.Add("@f", MySqlDbType.VarChar, 30).Value = (object?)invoiceDocFormatted ?? DBNull.Value;
+                up.Parameters.Add("@r", MySqlDbType.VarChar, 30).Value = (object?)receiptDocFormatted ?? DBNull.Value;
+                up.Parameters.Add("@o", MySqlDbType.VarChar, 50).Value = order.OrderNo;
+                await up.ExecuteNonQueryAsync(ct);
+            }
+
+            await tx.CommitAsync(ct);
+            return (newPaidTotal, pending);
+        }
+
+        private static string NormalizeDocumentNumber(string? raw, int currentYear)
+        {
+            if (string.IsNullOrWhiteSpace(raw)) return string.Empty;
+
+            var sanitized = raw.Replace(" ", string.Empty);
+            var numberPart = sanitized.Split('/', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? sanitized;
+            var digits = new string(numberPart.Where(char.IsDigit).ToArray());
+            if (string.IsNullOrWhiteSpace(digits)) return string.Empty;
+
+            return $"{digits}/{currentYear}";
+        }
+
+        private static string NormalizeReceiptNumber(string? raw, int currentYear, int fallbackSequence)
+        {
+            var sanitized = (raw ?? string.Empty).Replace(" ", string.Empty);
+            var numberPart = sanitized.Split('/', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? sanitized;
+            numberPart = numberPart.Replace("RE", string.Empty, StringComparison.OrdinalIgnoreCase);
+            var digits = new string(numberPart.Where(char.IsDigit).ToArray());
+
+            int seq = fallbackSequence;
+            if (!string.IsNullOrWhiteSpace(digits) && int.TryParse(digits, out var parsed))
+            {
+                seq = parsed;
+            }
+
+            return $"RE{seq.ToString("000")}/{currentYear}";
+        }
+
 
 
 

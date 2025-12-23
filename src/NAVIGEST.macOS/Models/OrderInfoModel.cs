@@ -1,5 +1,7 @@
 // File: NAVIGEST.macOS/Models/OrderInfoModel.cs
 #nullable enable
+using NAVIGEST.macOS;
+
 namespace NAVIGEST.macOS.Models
 {
     public class OrderInfoModel
@@ -65,6 +67,8 @@ namespace NAVIGEST.macOS.Models
                 return false;
             }
         }
+
+        public bool CanReceivePayments => UserSession.Current.User.IsFinancial;
     }
 }
 

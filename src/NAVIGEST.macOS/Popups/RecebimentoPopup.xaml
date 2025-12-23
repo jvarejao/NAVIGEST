@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<toolkit:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+               xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+               xmlns:behaviors="clr-namespace:NAVIGEST.macOS.Behaviors"
+               xmlns:models="clr-namespace:NAVIGEST.macOS.Models"
+               xmlns:converters="clr-namespace:NAVIGEST.macOS.Converters"
+               x:Class="NAVIGEST.macOS.Popups.RecebimentoPopup"
+               CanBeDismissedByTappingOutsideOfPopup="True"
+               Color="Transparent">
+    <toolkit:Popup.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Resources/Styles/MacInputStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <converters:CurrencyConverter x:Key="CurrencyConverter" />
+            <converters:StringFormatConverter x:Key="StringFormatConverter" />
+        </ResourceDictionary>
+    </toolkit:Popup.Resources>
+
+    <Border StrokeShape="RoundRectangle 18"
+            BackgroundColor="{DynamicResource PageBackgroundColor}"
+            WidthRequest="520"
+            HeightRequest="680"
+            Padding="20">
+        <Border.Shadow>
+            <Shadow Brush="Black" Offset="0,4" Radius="12" Opacity="0.25" />
+        </Border.Shadow>
+
+        <Grid RowDefinitions="Auto, Auto, Auto, *, Auto" RowSpacing="16">
+            <Label Text="Registar Recebimento"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"
+                   TextColor="{DynamicResource BodyTextColor}" />
+
+            <VerticalStackLayout Grid.Row="1" Spacing="10">
+                <Border Style="{StaticResource MacInputBorderStyle}" Padding="10,0">
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border" Binding="{Binding Source={x:Reference InvoiceEntry}, Path=IsFocused}" Value="True">
+                            <Setter Property="Stroke" Value="{StaticResource MacFocusBlue}" />
+                            <Setter Property="StrokeThickness" Value="2" />
+                        </DataTrigger>
+                    </Border.Triggers>
+                    <Entry x:Name="InvoiceEntry"
+                           Placeholder="Nº fatura"
+                              Unfocused="OnInvoiceUnfocused"
+                           Style="{StaticResource MacEntryStyle}">
+                        <Entry.Behaviors>
+                            <behaviors:MacInputBehavior />
+                        </Entry.Behaviors>
+                    </Entry>
+                </Border>
+
+                <Border Style="{StaticResource MacInputBorderStyle}" Padding="10,0">
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border" Binding="{Binding Source={x:Reference ReceiptEntry}, Path=IsFocused}" Value="True">
+                            <Setter Property="Stroke" Value="{StaticResource MacFocusBlue}" />
+                            <Setter Property="StrokeThickness" Value="2" />
+                        </DataTrigger>
+                    </Border.Triggers>
+                    <Entry x:Name="ReceiptEntry"
+                           Placeholder="Nº recibo"
+                              Unfocused="OnReceiptUnfocused"
+                           Style="{StaticResource MacEntryStyle}">
+                        <Entry.Behaviors>
+                            <behaviors:MacInputBehavior />
+                        </Entry.Behaviors>
+                    </Entry>
+                </Border>
+
+                <Border Style="{StaticResource MacInputBorderStyle}" Padding="10,0">
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border" Binding="{Binding Source={x:Reference AmountEntry}, Path=IsFocused}" Value="True">
+                            <Setter Property="Stroke" Value="{StaticResource MacFocusBlue}" />
+                            <Setter Property="StrokeThickness" Value="2" />
+                        </DataTrigger>
+                    </Border.Triggers>
+                    <Entry x:Name="AmountEntry"
+                           Placeholder="Valor recebido"
+                           Keyboard="Numeric"
+                           Focused="OnAmountFocused"
+                           Unfocused="OnAmountUnfocused"
+                           TextChanged="OnAmountChanged"
+                           Style="{StaticResource MacEntryStyle}">
+                        <Entry.Behaviors>
+                            <behaviors:MacInputBehavior />
+                        </Entry.Behaviors>
+                    </Entry>
+                </Border>
+
+                <HorizontalStackLayout Spacing="10" HorizontalOptions="End">
+                    <Button Text="Cancelar"
+                            Clicked="OnCancelClicked"
+                            BackgroundColor="Transparent"
+                            TextColor="{DynamicResource BodyTextColor}" />
+                    <Button Text="Guardar"
+                            Clicked="OnSaveClicked"
+                            BackgroundColor="#0A84FF"
+                            TextColor="White"
+                            CornerRadius="12"
+                            HeightRequest="44"
+                            Padding="20,0" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+
+            <Label Grid.Row="2"
+                   Text="Recibos"
+                   FontSize="16"
+                   FontAttributes="Bold"
+                   TextColor="{DynamicResource BodyTextColor}" />
+
+            <CollectionView Grid.Row="3"
+                            x:Name="ReceiptsCollection"
+                            ItemsSource="{Binding Receipts}"
+                            SelectionMode="None">
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="10" />
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:BillInfoModel">
+                        <Border StrokeShape="RoundRectangle 12" Padding="12" BackgroundColor="{DynamicResource CardBackgroundColor}" StrokeThickness="0">
+                            <Grid ColumnDefinitions="*, Auto" ColumnSpacing="12">
+                                <VerticalStackLayout Spacing="4" VerticalOptions="Center">
+                                    <Label Text="{Binding InvoiceNo}" FontAttributes="Bold" TextColor="{DynamicResource BodyTextColor}" />
+                                    <Label Text="{Binding BillingDate, StringFormat='Data: {0:dd/MM/yyyy}'}" FontSize="12" TextColor="{DynamicResource EntryPlaceholderColor}" />
+                                    <Label Text="{Binding TotalPayment, Converter={StaticResource CurrencyConverter}}" FontSize="14" TextColor="#28CD41" />
+                                    <Label Text="{Binding PaymentDue, Converter={StaticResource CurrencyConverter}, StringFormat='Pendente: {0}'}" FontSize="12" TextColor="#FF3B30" />
+                                    <HorizontalStackLayout Spacing="8">
+                                        <Label Text="Fatura:" FontSize="12" TextColor="{DynamicResource EntryPlaceholderColor}" />
+                                        <Label Text="{Binding FATURA}" FontSize="12" TextColor="{DynamicResource BodyTextColor}" />
+                                        <Label Text="Recibo:" FontSize="12" TextColor="{DynamicResource EntryPlaceholderColor}" />
+                                        <Label Text="{Binding RECIBO}" FontSize="12" TextColor="{DynamicResource BodyTextColor}" />
+                                    </HorizontalStackLayout>
+                                </VerticalStackLayout>
+
+                                <Button Grid.Column="1"
+                                        Text="Imprimir"
+                                        Padding="12,6"
+                                        BackgroundColor="#190A84FF"
+                                        TextColor="#0A84FF"
+                                        CornerRadius="10"
+                                        VerticalOptions="Center"
+                                        CommandParameter="{Binding .}"
+                                        Clicked="OnPrintClicked" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <Button Grid.Row="4"
+                    Text="Fechar"
+                    Clicked="OnCloseClicked"
+                    BackgroundColor="Transparent"
+                    TextColor="{DynamicResource BodyTextColor}" />
+        </Grid>
+    </Border>
+</toolkit:Popup>

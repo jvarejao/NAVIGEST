@@ -6,12 +6,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.Maui.Controls;
+using CommunityToolkit.Maui.Views;
 using NAVIGEST.macOS.Models;
 using NAVIGEST.macOS.Services;
 using System;
 using System.Diagnostics;
 using System.Windows.Input;
 using System.Collections.Generic;
+using NAVIGEST.macOS.Popups;
+using NAVIGEST.macOS;
 
 namespace NAVIGEST.macOS.PageModels;
 
@@ -21,6 +24,8 @@ public class ServicePageModel : INotifyPropertyChanged
     void OnPropertyChanged([CallerMemberName] string? n = null) => PropertyChanged?.Invoke(this, new(n));
 
     public static ServicePageModel? LastInstance { get; private set; }
+
+    public bool IsFinancialUser { get; } = UserSession.Current.User.IsFinancial;
 
     private readonly List<OrderInfoModel> _all = new();
     public ObservableCollection<OrderInfoModel> Orders { get; } = new();
@@ -107,7 +112,20 @@ public class ServicePageModel : INotifyPropertyChanged
     private async void OnPaymentService(OrderInfoModel? service)
     {
         if (service == null) return;
-        await AppShell.DisplayToastAsync($"Registar pagamento para o serviço {service.OrderNo} (Em desenvolvimento)");
+        if (!IsFinancialUser)
+        {
+            await AppShell.DisplayToastAsync("Acesso restrito a ADMIN/FINANCEIRA.", NAVIGEST.macOS.ToastTipo.Aviso, 2000);
+            return;
+        }
+        try
+        {
+            await AppShell.Current.ShowPopupAsync(new RecebimentoPopup(service));
+        }
+        catch (Exception ex)
+        {
+            NAVIGEST.macOS.GlobalErro.TratarErro(ex);
+            await AppShell.DisplayToastAsync("Erro ao abrir os recebimentos.", NAVIGEST.macOS.ToastTipo.Erro, 2000);
+        }
     }
 
     private async void OnDeleteService(OrderInfoModel? service)
