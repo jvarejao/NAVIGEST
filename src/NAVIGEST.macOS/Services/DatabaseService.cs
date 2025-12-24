@@ -845,6 +845,322 @@ namespace NAVIGEST.macOS.Services
             return list;
         }
 
+        // ================= DASHBOARD / FINANCEIRO =================
+        public sealed class DashboardSummary
+        {
+            public decimal Revenue { get; set; }
+            public decimal Expenses { get; set; }
+            public decimal Cash { get; set; }
+            public decimal PrevRevenue { get; set; }
+            public decimal PrevExpenses { get; set; }
+        }
+
+        public sealed class DashboardMonthlyStat
+        {
+            public int Month { get; init; }
+            public decimal Revenue { get; init; }
+            public decimal Cost { get; init; }
+            public decimal Cash { get; init; }
+        }
+
+        public sealed class DashboardTopAmount
+        {
+            public string Name { get; init; } = string.Empty;
+            public decimal Total { get; init; }
+        }
+
+        public sealed class DashboardFinancialData
+        {
+            public DashboardSummary Summary { get; set; } = new();
+            public List<DashboardMonthlyStat> Monthly { get; set; } = new();
+            public List<DashboardMonthlyStat> PrevMonthly { get; set; } = new();
+            public List<DashboardTopAmount> TopClients { get; set; } = new();
+            public List<DashboardTopAmount> TopProducts { get; set; } = new();
+            public List<DashboardTopAmount> TopSellers { get; set; } = new();
+        }
+
+        public static async Task<DashboardFinancialData> GetDashboardFinancialDataAsync(int month, int year, CancellationToken ct = default)
+        {
+            var data = new DashboardFinancialData();
+
+            using var conn = new MySqlConnection(GetConnectionString());
+            await conn.OpenAsync(ct);
+
+            var hasOrders = await TableExistsAsync(conn, "OrderInfo", ct);
+            var hasBills = await TableExistsAsync(conn, "BillInfo", ct);
+
+            if (!hasOrders && !hasBills)
+                return data;
+
+            month = Math.Clamp(month, 1, 12);
+
+            data.Summary = await FetchDashboardSummaryAsync(conn, month, year, hasBills, hasOrders, ct);
+            data.Monthly = await FetchMonthlyStatsAsync(conn, year, hasBills, hasOrders, ct);
+            data.PrevMonthly = await FetchMonthlyStatsAsync(conn, year - 1, hasBills, hasOrders, ct);
+            data.TopClients = hasOrders ? await FetchTopClientsAsync(conn, month, year, ct) : new List<DashboardTopAmount>();
+            data.TopSellers = hasOrders ? await FetchTopSellersAsync(conn, month, year, ct) : new List<DashboardTopAmount>();
+
+            if (hasOrders && await TableExistsAsync(conn, "ORDEREDPRODUCT", ct))
+                data.TopProducts = await FetchTopProductsAsync(conn, month, year, ct);
+
+            return data;
+        }
+
+        private static async Task<DashboardSummary> FetchDashboardSummaryAsync(MySqlConnection conn, int month, int year, bool hasBills, bool hasOrders, CancellationToken ct)
+        {
+            var summary = new DashboardSummary();
+
+            if (hasBills)
+            {
+                const string sqlRevenue = @"
+                    SELECT COALESCE(SUM(GrandTotal), 0) AS Revenue
+                    FROM BillInfo
+                    WHERE YEAR(BillingDate) = @year AND MONTH(BillingDate) = @month;";
+
+                using (var cmd = new MySqlCommand(sqlRevenue, conn))
+                {
+                    cmd.Parameters.Add("@year", MySqlDbType.Int32).Value = year;
+                    cmd.Parameters.Add("@month", MySqlDbType.Int32).Value = month;
+
+                    using var rd = await cmd.ExecuteReaderAsync(ct);
+                    if (await rd.ReadAsync(ct))
+                        summary.Revenue = rd.IsDBNull(0) ? 0 : rd.GetDecimal(0);
+                }
+
+                const string prevRevenueSql = @"
+                    SELECT COALESCE(SUM(GrandTotal), 0) AS Revenue
+                    FROM BillInfo
+                    WHERE YEAR(BillingDate) = @year AND MONTH(BillingDate) = @month;";
+
+                using (var cmd = new MySqlCommand(prevRevenueSql, conn))
+                {
+                    cmd.Parameters.Add("@year", MySqlDbType.Int32).Value = year - 1;
+                    cmd.Parameters.Add("@month", MySqlDbType.Int32).Value = month;
+
+                    using var rd = await cmd.ExecuteReaderAsync(ct);
+                    if (await rd.ReadAsync(ct))
+                        summary.PrevRevenue = rd.IsDBNull(0) ? 0 : rd.GetDecimal(0);
+                }
+            }
+
+            if (hasOrders)
+            {
+                const string sqlCosts = @"
+                    SELECT 
+                        COALESCE(SUM(TotalAmountCusto), 0) AS Expenses,
+                        COALESCE(SUM(VALORPAGO), 0) AS Cash
+                    FROM OrderInfo
+                    WHERE YEAR(OrderDate) = @year AND MONTH(OrderDate) = @month;";
+
+                using (var cmd = new MySqlCommand(sqlCosts, conn))
+                {
+                    cmd.Parameters.Add("@year", MySqlDbType.Int32).Value = year;
+                    cmd.Parameters.Add("@month", MySqlDbType.Int32).Value = month;
+
+                    using var rd = await cmd.ExecuteReaderAsync(ct);
+                    if (await rd.ReadAsync(ct))
+                    {
+                        summary.Expenses = rd.IsDBNull(0) ? 0 : rd.GetDecimal(0);
+                        summary.Cash = rd.IsDBNull(1) ? 0 : rd.GetDecimal(1);
+                    }
+                }
+
+                const string prevCostSql = @"
+                    SELECT COALESCE(SUM(TotalAmountCusto), 0) AS Expenses
+                    FROM OrderInfo
+                    WHERE YEAR(OrderDate) = @year AND MONTH(OrderDate) = @month;";
+
+                using (var cmd = new MySqlCommand(prevCostSql, conn))
+                {
+                    cmd.Parameters.Add("@year", MySqlDbType.Int32).Value = year - 1;
+                    cmd.Parameters.Add("@month", MySqlDbType.Int32).Value = month;
+
+                    using var rd = await cmd.ExecuteReaderAsync(ct);
+                    if (await rd.ReadAsync(ct))
+                        summary.PrevExpenses = rd.IsDBNull(0) ? 0 : rd.GetDecimal(0);
+                }
+            }
+
+            return summary;
+        }
+
+        private static async Task<List<DashboardMonthlyStat>> FetchMonthlyStatsAsync(MySqlConnection conn, int year, bool hasBills, bool hasOrders, CancellationToken ct)
+        {
+            var list = new List<DashboardMonthlyStat>();
+
+            var revenueByMonth = new Dictionary<int, decimal>();
+            var costCashByMonth = new Dictionary<int, (decimal Cost, decimal Cash)>();
+
+            if (hasBills)
+            {
+                const string sqlRevenue = @"
+                    SELECT MONTH(BillingDate) AS Mes,
+                           COALESCE(SUM(GrandTotal), 0) AS Revenue
+                    FROM BillInfo
+                    WHERE YEAR(BillingDate) = @year
+                    GROUP BY MONTH(BillingDate)
+                    ORDER BY Mes;";
+
+                using (var cmd = new MySqlCommand(sqlRevenue, conn))
+                {
+                    cmd.Parameters.Add("@year", MySqlDbType.Int32).Value = year;
+                    using var rd = await cmd.ExecuteReaderAsync(ct);
+                    while (await rd.ReadAsync(ct))
+                    {
+                        var month = rd.IsDBNull(0) ? 0 : rd.GetInt32(0);
+                        var revenue = rd.IsDBNull(1) ? 0 : rd.GetDecimal(1);
+                        revenueByMonth[month] = revenue;
+                    }
+                }
+            }
+
+            if (hasOrders)
+            {
+                const string sqlCosts = @"
+                    SELECT MONTH(OrderDate) AS Mes,
+                           COALESCE(SUM(TotalAmountCusto), 0) AS Expenses,
+                           COALESCE(SUM(VALORPAGO), 0) AS Cash
+                    FROM OrderInfo
+                    WHERE YEAR(OrderDate) = @year
+                    GROUP BY MONTH(OrderDate)
+                    ORDER BY Mes;";
+
+                using (var cmd = new MySqlCommand(sqlCosts, conn))
+                {
+                    cmd.Parameters.Add("@year", MySqlDbType.Int32).Value = year;
+                    using var rd = await cmd.ExecuteReaderAsync(ct);
+                    while (await rd.ReadAsync(ct))
+                    {
+                        var month = rd.IsDBNull(0) ? 0 : rd.GetInt32(0);
+                        var cost = rd.IsDBNull(1) ? 0 : rd.GetDecimal(1);
+                        var cash = rd.IsDBNull(2) ? 0 : rd.GetDecimal(2);
+                        costCashByMonth[month] = (cost, cash);
+                    }
+                }
+            }
+
+            for (int m = 1; m <= 12; m++)
+            {
+                revenueByMonth.TryGetValue(m, out var rev);
+                costCashByMonth.TryGetValue(m, out var tuple);
+
+                list.Add(new DashboardMonthlyStat
+                {
+                    Month = m,
+                    Revenue = rev,
+                    Cost = tuple.Cost,
+                    Cash = tuple.Cash
+                });
+            }
+
+            return list;
+        }
+
+        private static async Task<List<DashboardTopAmount>> FetchTopClientsAsync(MySqlConnection conn, int month, int year, CancellationToken ct)
+        {
+            var list = new List<DashboardTopAmount>();
+
+            const string sql = @"
+                SELECT 
+                    CASE 
+                        WHEN COALESCE(TRIM(CustomerName), '') <> '' THEN CustomerName
+                        WHEN COALESCE(TRIM(CustomerNo), '') <> '' THEN CustomerNo
+                        ELSE 'Sem Cliente'
+                    END AS Nome,
+                    COALESCE(SUM(TotalAmount), 0) AS Total
+                FROM OrderInfo
+                WHERE YEAR(OrderDate) = @year AND MONTH(OrderDate) = @month
+                GROUP BY Nome
+                ORDER BY Total DESC
+                LIMIT 5;";
+
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.Add("@year", MySqlDbType.Int32).Value = year;
+            cmd.Parameters.Add("@month", MySqlDbType.Int32).Value = month;
+
+            using var rd = await cmd.ExecuteReaderAsync(ct);
+            while (await rd.ReadAsync(ct))
+            {
+                list.Add(new DashboardTopAmount
+                {
+                    Name = rd.IsDBNull(0) ? "Sem Cliente" : rd.GetString(0),
+                    Total = rd.IsDBNull(1) ? 0 : rd.GetDecimal(1)
+                });
+            }
+
+            return list;
+        }
+
+        private static async Task<List<DashboardTopAmount>> FetchTopSellersAsync(MySqlConnection conn, int month, int year, CancellationToken ct)
+        {
+            var list = new List<DashboardTopAmount>();
+
+            const string sql = @"
+                SELECT 
+                    CASE 
+                        WHEN COALESCE(TRIM(CONTROLVEND), '') <> '' THEN TRIM(CONTROLVEND)
+                        ELSE 'Sem Vendedor'
+                    END AS Nome,
+                    COALESCE(SUM(TotalAmount), 0) AS Total
+                FROM OrderInfo
+                WHERE YEAR(OrderDate) = @year AND MONTH(OrderDate) = @month
+                GROUP BY Nome
+                ORDER BY Total DESC
+                LIMIT 5;";
+
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.Add("@year", MySqlDbType.Int32).Value = year;
+            cmd.Parameters.Add("@month", MySqlDbType.Int32).Value = month;
+
+            using var rd = await cmd.ExecuteReaderAsync(ct);
+            while (await rd.ReadAsync(ct))
+            {
+                list.Add(new DashboardTopAmount
+                {
+                    Name = rd.IsDBNull(0) ? "Sem Vendedor" : rd.GetString(0),
+                    Total = rd.IsDBNull(1) ? 0 : rd.GetDecimal(1)
+                });
+            }
+
+            return list;
+        }
+
+        private static async Task<List<DashboardTopAmount>> FetchTopProductsAsync(MySqlConnection conn, int month, int year, CancellationToken ct)
+        {
+            var list = new List<DashboardTopAmount>();
+
+            const string sql = @"
+                SELECT 
+                    CASE 
+                        WHEN COALESCE(TRIM(op.ProductName), '') <> '' THEN op.ProductName
+                        WHEN COALESCE(TRIM(op.ProductCode), '') <> '' THEN op.ProductCode
+                        ELSE 'Sem Produto'
+                    END AS Nome,
+                    COALESCE(SUM(op.SUBTOTAIS), 0) AS Total
+                FROM ORDEREDPRODUCT op
+                INNER JOIN OrderInfo o ON o.OrderNo = op.OrderNo
+                WHERE YEAR(o.OrderDate) = @year AND MONTH(o.OrderDate) = @month
+                GROUP BY Nome
+                ORDER BY Total DESC
+                LIMIT 5;";
+
+            using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.Add("@year", MySqlDbType.Int32).Value = year;
+            cmd.Parameters.Add("@month", MySqlDbType.Int32).Value = month;
+
+            using var rd = await cmd.ExecuteReaderAsync(ct);
+            while (await rd.ReadAsync(ct))
+            {
+                list.Add(new DashboardTopAmount
+                {
+                    Name = rd.IsDBNull(0) ? "Sem Produto" : rd.GetString(0),
+                    Total = rd.IsDBNull(1) ? 0 : rd.GetDecimal(1)
+                });
+            }
+
+            return list;
+        }
+
         // ================= PRODUTOS =================
         private const string ProdutosTable = "PRODUTOS"; // Ajuste se o nome real for diferente.
 

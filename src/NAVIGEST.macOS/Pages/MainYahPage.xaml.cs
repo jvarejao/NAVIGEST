@@ -485,6 +485,24 @@ namespace NAVIGEST.macOS.Pages
                                 CloseSidebarMobileIfNeeded();
                                 break;
                             }
+                        case "dashboard":
+                            {
+                                try
+                                {
+                                    var page = new DashboardPage();
+                                    var pageContent = page.Content;
+                                    if (BindingContext is MainYahPageViewModel vmDash) vmDash.IsConfigExpanded = false;
+                                    if (pageContent is not null)
+                                    {
+                                        pageContent.BindingContext = page.BindingContext ?? pageContent.BindingContext;
+                                        ShowContent(pageContent);
+                                    }
+                                    else await DisplayToastAsync(string.Format(NAVIGEST.Shared.Resources.Strings.AppResources.Main_NoContent, "DashboardPage"));
+                                }
+                                catch (Exception ex) { TratarErro(ex); }
+                                CloseSidebarMobileIfNeeded();
+                                break;
+                            }
                         case "clientes":
                             {
                                 try

@@ -173,7 +173,7 @@
                         <!-- DASHBOARD -->
                         <Border Style="{StaticResource MenuItemBorder}">
                             <Grid ColumnDefinitions="40,*">
-                                <Label Text="&#xF015;" Style="{StaticResource SidebarIconLabel}" />
+                                <Label Text="&#xF201;" Style="{StaticResource SidebarIconLabel}" />
                                 <Label Grid.Column="1" Text="{x:Static res:AppResources.Main_Dashboard}" Style="{StaticResource SidebarTextLabel}" />
                             </Grid>
                             <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="dashboard" /></Border.GestureRecognizers>
@@ -324,7 +324,7 @@
                     <!-- DASHBOARD -->
                     <Border Style="{StaticResource MenuItemBorder}">
                         <Grid ColumnDefinitions="40,*">
-                            <Label Text="&#xF015;" Style="{StaticResource SidebarIconLabel}" />
+                            <Label Text="&#xF201;" Style="{StaticResource SidebarIconLabel}" />
                             <Label Grid.Column="1" Text="Dashboard" Style="{StaticResource SidebarTextLabel}" />
                         </Grid>
                         <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnMenuTapped" CommandParameter="dashboard" /></Border.GestureRecognizers>
