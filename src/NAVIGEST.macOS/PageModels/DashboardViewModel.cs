@@ -286,9 +286,16 @@ namespace NAVIGEST.macOS.PageModels
 
         private static double NormalizeHeight(decimal value, decimal maxAbs)
         {
-            if (maxAbs == 0) return 12;
+            if (maxAbs <= 0) return 0;
+            if (value == 0) return 0;
+
             var ratio = (double)(Math.Abs(value) / maxAbs);
-            return 32 + ratio * 88;
+            ratio = Math.Clamp(ratio, 0, 1);
+
+            const double minHeight = 16; // keep tiny bars visible when there is a non-zero value
+            const double maxHeight = 120;
+
+            return minHeight + ratio * (maxHeight - minHeight);
         }
 
         internal static string FormatCurrency(decimal value)
