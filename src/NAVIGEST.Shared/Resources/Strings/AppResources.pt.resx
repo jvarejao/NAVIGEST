@@ -638,4 +638,64 @@
   <data name="ClientsPage_CurrentYear" xml:space="preserve">
     <value>Ano Atual</value>
   </data>
+  <data name="Dashboard_Title" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="Dashboard_Subtitle" xml:space="preserve">
+    <value>Analítica financeira e vendas</value>
+  </data>
+  <data name="Dashboard_CompareYear" xml:space="preserve">
+    <value>Comparar ano {0}</value>
+  </data>
+  <data name="Dashboard_Revenue" xml:space="preserve">
+    <value>Receitas</value>
+  </data>
+  <data name="Dashboard_Expenses" xml:space="preserve">
+    <value>Despesas</value>
+  </data>
+  <data name="Dashboard_Margin" xml:space="preserve">
+    <value>Margem</value>
+  </data>
+  <data name="Dashboard_Cash" xml:space="preserve">
+    <value>Caixa</value>
+  </data>
+  <data name="Dashboard_CashDetail_Compare" xml:space="preserve">
+    <value>Compara ano-1</value>
+  </data>
+  <data name="Dashboard_CashDetail_Current" xml:space="preserve">
+    <value>Recebimentos</value>
+  </data>
+  <data name="Dashboard_Chart_RevenueVsExpenses_Title" xml:space="preserve">
+    <value>Receitas vs Despesas</value>
+  </data>
+  <data name="Dashboard_Chart_RevenueVsExpenses_Subtitle" xml:space="preserve">
+    <value>Por mês</value>
+  </data>
+  <data name="Dashboard_Chart_CashFlow_Title" xml:space="preserve">
+    <value>Fluxo de Caixa</value>
+  </data>
+  <data name="Dashboard_Chart_CashFlow_Subtitle" xml:space="preserve">
+    <value>Entradas - saídas mensais</value>
+  </data>
+  <data name="Dashboard_Legend_Revenue" xml:space="preserve">
+    <value>Receitas</value>
+  </data>
+  <data name="Dashboard_Legend_Expenses" xml:space="preserve">
+    <value>Despesas</value>
+  </data>
+  <data name="Dashboard_Legend_Positive" xml:space="preserve">
+    <value>Positivo</value>
+  </data>
+  <data name="Dashboard_Legend_Negative" xml:space="preserve">
+    <value>Negativo</value>
+  </data>
+  <data name="Dashboard_TopClients_Title" xml:space="preserve">
+    <value>Top Clientes</value>
+  </data>
+  <data name="Dashboard_TopProducts_Title" xml:space="preserve">
+    <value>Produtos mais vendidos</value>
+  </data>
+  <data name="Dashboard_SellerSales_Title" xml:space="preserve">
+    <value>Vendas por Vendedor</value>
+  </data>
 </root>

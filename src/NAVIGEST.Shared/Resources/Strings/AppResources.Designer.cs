@@ -2812,5 +2812,26 @@ namespace NAVIGEST.Shared.Resources.Strings {
         public static string ClientsPage_PreviousYear { get { return ResourceManager.GetString("ClientsPage_PreviousYear", resourceCulture); } }
         public static string ClientsPage_CurrentYear { get { return ResourceManager.GetString("ClientsPage_CurrentYear", resourceCulture); } }
 
+        public static string Dashboard_Title { get { return ResourceManager.GetString("Dashboard_Title", resourceCulture); } }
+        public static string Dashboard_Subtitle { get { return ResourceManager.GetString("Dashboard_Subtitle", resourceCulture); } }
+        public static string Dashboard_CompareYear { get { return ResourceManager.GetString("Dashboard_CompareYear", resourceCulture); } }
+        public static string Dashboard_Revenue { get { return ResourceManager.GetString("Dashboard_Revenue", resourceCulture); } }
+        public static string Dashboard_Expenses { get { return ResourceManager.GetString("Dashboard_Expenses", resourceCulture); } }
+        public static string Dashboard_Margin { get { return ResourceManager.GetString("Dashboard_Margin", resourceCulture); } }
+        public static string Dashboard_Cash { get { return ResourceManager.GetString("Dashboard_Cash", resourceCulture); } }
+        public static string Dashboard_CashDetail_Compare { get { return ResourceManager.GetString("Dashboard_CashDetail_Compare", resourceCulture); } }
+        public static string Dashboard_CashDetail_Current { get { return ResourceManager.GetString("Dashboard_CashDetail_Current", resourceCulture); } }
+        public static string Dashboard_Chart_RevenueVsExpenses_Title { get { return ResourceManager.GetString("Dashboard_Chart_RevenueVsExpenses_Title", resourceCulture); } }
+        public static string Dashboard_Chart_RevenueVsExpenses_Subtitle { get { return ResourceManager.GetString("Dashboard_Chart_RevenueVsExpenses_Subtitle", resourceCulture); } }
+        public static string Dashboard_Chart_CashFlow_Title { get { return ResourceManager.GetString("Dashboard_Chart_CashFlow_Title", resourceCulture); } }
+        public static string Dashboard_Chart_CashFlow_Subtitle { get { return ResourceManager.GetString("Dashboard_Chart_CashFlow_Subtitle", resourceCulture); } }
+        public static string Dashboard_Legend_Revenue { get { return ResourceManager.GetString("Dashboard_Legend_Revenue", resourceCulture); } }
+        public static string Dashboard_Legend_Expenses { get { return ResourceManager.GetString("Dashboard_Legend_Expenses", resourceCulture); } }
+        public static string Dashboard_Legend_Positive { get { return ResourceManager.GetString("Dashboard_Legend_Positive", resourceCulture); } }
+        public static string Dashboard_Legend_Negative { get { return ResourceManager.GetString("Dashboard_Legend_Negative", resourceCulture); } }
+        public static string Dashboard_TopClients_Title { get { return ResourceManager.GetString("Dashboard_TopClients_Title", resourceCulture); } }
+        public static string Dashboard_TopProducts_Title { get { return ResourceManager.GetString("Dashboard_TopProducts_Title", resourceCulture); } }
+        public static string Dashboard_SellerSales_Title { get { return ResourceManager.GetString("Dashboard_SellerSales_Title", resourceCulture); } }
+
     }
 }

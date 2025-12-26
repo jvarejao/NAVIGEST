@@ -44,6 +44,7 @@ public partial class HorasColaboradorViewModel : ObservableObject
     private bool _isInitializing = true;
 
     public bool IsFinancial => UserSession.Current.User.IsFinancial;
+    public bool CanSelectCollaborator => UserSession.Current.User.IsFinancial || UserSession.Current.User.IsGeneralSupervisor;
 
     partial void OnColaboradorSelecionadoChanged(Colaborador? value)
     {

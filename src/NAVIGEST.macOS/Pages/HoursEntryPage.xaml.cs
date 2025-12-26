@@ -303,7 +303,7 @@ public partial class HoursEntryPage : ContentPage
             StrokeShape = new RoundRectangle { CornerRadius = 8 },
             Padding = new Thickness(12, 8),
             HeightRequest = 44,
-            IsEnabled = _vm.IsFinancial // Only Financial/Admin can change collaborator
+            IsEnabled = _vm.CanSelectCollaborator
         };
         pickerContainer.SetAppThemeColor(Border.BackgroundColorProperty, Color.FromArgb("#F5F5F7"), Color.FromArgb("#2C2C2E"));
         
@@ -333,9 +333,16 @@ public partial class HoursEntryPage : ContentPage
         pickerGrid.Add(iconPicker, 1, 0);
         pickerContainer.Content = pickerGrid;
 
-        var tapPicker = new TapGestureRecognizer();
-        tapPicker.Tapped += async (s, e) => 
+        async Task HandleCollaboratorPickerTapAsync()
         {
+            if (!_vm.CanSelectCollaborator)
+                return;
+
+            if (!_vm.Colaboradores.Any())
+            {
+                await _vm.CarregarColaboradoresAsync();
+            }
+
             var names = _vm.Colaboradores.Select(c => c.Nome).ToList();
             var result = await ShowListPickerAsync(AppResources.Hours_SelectCollaborator, names);
             
@@ -348,8 +355,19 @@ public partial class HoursEntryPage : ContentPage
                     _ = _vm.CarregarHorasCommand.ExecuteAsync(null);
                 }
             }
-        };
-        pickerContainer.GestureRecognizers.Add(tapPicker);
+        }
+
+        void AttachPickerTap(View view)
+        {
+            var tap = new TapGestureRecognizer();
+            tap.Tapped += async (s, e) => await HandleCollaboratorPickerTapAsync();
+            view.GestureRecognizers.Add(tap);
+        }
+
+        AttachPickerTap(pickerContainer);
+        AttachPickerTap(pickerGrid);
+        AttachPickerTap(lblPicker);
+        AttachPickerTap(iconPicker);
         
         mainGrid.Add(pickerContainer, 0, 1);
 
@@ -630,9 +648,19 @@ public partial class HoursEntryPage : ContentPage
 
     private async Task<object?> ShowListPickerAsync(string title, List<string> items)
     {
-        var popup = new GenericPickerPopup(title, items);
-        var result = await this.ShowPopupAsync(popup);
-        return result;
+        // Use the in-page overlay to avoid popup issues on MacCatalyst and capture all taps reliably.
+        _pickerTcs = new TaskCompletionSource<object?>();
+        _allItems = items ?? new List<string>();
+
+        ListPickerTitleLabel.Text = title;
+        ListPickerSearchEntry.Text = string.Empty;
+        ListPickerClearButton.IsVisible = false;
+        ListPickerCollectionView.ItemsSource = _allItems;
+
+        ListPickerOverlay.IsVisible = true;
+
+        await Task.Yield();
+        return await _pickerTcs.Task;
     }
 
     private void OnListPickerSearchTextChanged(object sender, TextChangedEventArgs e)
@@ -719,7 +747,7 @@ public partial class HoursEntryPage : ContentPage
             Padding = new Thickness(12, 8),
             Margin = new Thickness(0, 0, 0, 16),
             HeightRequest = 44,
-            IsEnabled = _vm.IsFinancial // Only Financial/Admin
+            IsEnabled = _vm.CanSelectCollaborator
         };
         
         pickerContainer.SetAppThemeColor(Border.BackgroundColorProperty, Colors.White, Color.FromArgb("#111827"));
@@ -751,9 +779,16 @@ public partial class HoursEntryPage : ContentPage
         pickerGrid.Add(iconPicker, 1, 0);
         pickerContainer.Content = pickerGrid;
 
-        var tapPicker = new TapGestureRecognizer();
-        tapPicker.Tapped += async (s, e) => 
+        async Task HandleCalendarPickerTapAsync()
         {
+            if (!_vm.CanSelectCollaborator)
+                return;
+
+            if (!_vm.Colaboradores.Any())
+            {
+                await _vm.CarregarColaboradoresAsync();
+            }
+
             var result = await ShowListPickerAsync(AppResources.Hours_SelectCollaborator, _vm.Colaboradores.Select(c => c.Nome).ToList());
             
             if (result is string action)
@@ -766,8 +801,19 @@ public partial class HoursEntryPage : ContentPage
                     await AtualizarFiltroCalendarioAsync();
                 }
             }
-        };
-        pickerContainer.GestureRecognizers.Add(tapPicker);
+        }
+
+        void AttachCalendarPickerTap(View view)
+        {
+            var tap = new TapGestureRecognizer();
+            tap.Tapped += async (s, e) => await HandleCalendarPickerTapAsync();
+            view.GestureRecognizers.Add(tap);
+        }
+
+        AttachCalendarPickerTap(pickerContainer);
+        AttachCalendarPickerTap(pickerGrid);
+        AttachCalendarPickerTap(lblPicker);
+        AttachCalendarPickerTap(iconPicker);
         
         mainStack.Add(pickerContainer);
         

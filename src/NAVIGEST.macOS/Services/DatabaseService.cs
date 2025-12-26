@@ -1097,16 +1097,26 @@ namespace NAVIGEST.macOS.Services
 
             const string sql = @"
                 SELECT 
-                    CASE 
-                        WHEN COALESCE(TRIM(CONTROLVEND), '') <> '' THEN TRIM(CONTROLVEND)
-                        ELSE 'Sem Vendedor'
-                    END AS Nome,
-                    COALESCE(SUM(TotalAmount), 0) AS Total
-                FROM OrderInfo
-                WHERE YEAR(OrderDate) = @year AND MONTH(OrderDate) = @month
-                GROUP BY Nome
-                ORDER BY Total DESC
-                LIMIT 5;";
+                    CASE WHEN COALESCE(TRIM(s.Nome), '') <> '' THEN TRIM(s.Nome) ELSE 'Sem Vendedor' END AS Nome,
+                    COALESCE(o.Total, 0) AS Total
+                FROM (
+                    SELECT DISTINCT TRIM(Name) COLLATE utf8mb4_unicode_ci AS Nome
+                    FROM REGISTRATION
+                    WHERE RTRIM(TipoUtilizador) = 'VENDEDOR' AND TRIM(Name) <> ''
+                    UNION
+                    SELECT DISTINCT (CASE WHEN TRIM(CONTROLVEND) = '' THEN 'Sem Vendedor' ELSE TRIM(CONTROLVEND) END) COLLATE utf8mb4_unicode_ci AS Nome
+                    FROM OrderInfo
+                    WHERE YEAR(OrderDate) = @year AND MONTH(OrderDate) = @month
+                ) s
+                LEFT JOIN (
+                    SELECT 
+                        (CASE WHEN TRIM(CONTROLVEND) = '' THEN 'Sem Vendedor' ELSE TRIM(CONTROLVEND) END) COLLATE utf8mb4_unicode_ci AS Nome,
+                        COALESCE(SUM(TotalAmount), 0) AS Total
+                    FROM OrderInfo
+                    WHERE YEAR(OrderDate) = @year AND MONTH(OrderDate) = @month
+                    GROUP BY Nome
+                ) o ON o.Nome = s.Nome
+                ORDER BY Total DESC, Nome;";
 
             using var cmd = new MySqlCommand(sql, conn);
             cmd.Parameters.Add("@year", MySqlDbType.Int32).Value = year;

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using NAVIGEST.macOS;
 using NAVIGEST.macOS.Services;
+using NAVIGEST.Shared.Resources.Strings;
 
 namespace NAVIGEST.macOS.PageModels
 {
@@ -26,6 +27,7 @@ namespace NAVIGEST.macOS.PageModels
         private MonthOption? _selectedMonthOption;
         private readonly int _minYear;
         private readonly int _maxYear;
+        public ObservableCollection<AnnualTotalItem> AnnualTotals { get; } = new();
 
         public ObservableCollection<int> Years { get; } = new();
         public ObservableCollection<MonthOption> MonthOptions { get; } = new();
@@ -52,6 +54,7 @@ namespace NAVIGEST.macOS.PageModels
                     _selectedMonth = value.Index;
                     OnPropertyChanged(nameof(SelectedMonth));
                 }
+                UpdateMonthSelections();
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(HeaderSubtitle));
                 _ = LoadAsync();
@@ -68,6 +71,7 @@ namespace NAVIGEST.macOS.PageModels
                 if (_selectedMonth == value) return;
                 _selectedMonth = value;
                 SelectedMonthOption = MonthOptions.ElementAtOrDefault(_selectedMonth);
+                UpdateMonthSelections();
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(HeaderSubtitle));
             }
@@ -122,7 +126,7 @@ namespace NAVIGEST.macOS.PageModels
             }
         }
 
-        public string CompareYearLabel => $"Comparar ano {_selectedYear - 1}";
+        public string CompareYearLabel => string.Format(AppResources.Dashboard_CompareYear, _selectedYear - 1);
 
         public AnalyticsDashboardViewModel()
         {
@@ -142,8 +146,16 @@ namespace NAVIGEST.macOS.PageModels
             DecreaseYearCommand = new Command(() => SelectedYear = Math.Max(_selectedYear - 1, _minYear));
 
             SelectedMonthOption = MonthOptions.ElementAtOrDefault(_selectedMonth);
+            UpdateMonthSelections();
 
             _ = LoadAsync();
+        }
+
+        private void UpdateMonthSelections()
+        {
+            var selectedIndex = _selectedMonth;
+            foreach (var m in MonthOptions)
+                m.IsSelected = m.Index == selectedIndex;
         }
 
         public async Task LoadAsync()
@@ -158,6 +170,7 @@ namespace NAVIGEST.macOS.PageModels
                 BuildRevenueVsCost(data.Monthly, data.PrevMonthly);
                 BuildCashFlow(data.Monthly);
                 BuildTopLists(data.TopClients, data.TopProducts, data.TopSellers);
+                BuildAnnualTotals(data.Monthly);
                 OnPropertyChanged(nameof(HeaderSubtitle));
             }
             catch (Exception ex)
@@ -168,6 +181,19 @@ namespace NAVIGEST.macOS.PageModels
             {
                 IsLoading = false;
             }
+        }
+
+        private void BuildAnnualTotals(IEnumerable<DatabaseService.DashboardMonthlyStat> stats)
+        {
+            var totals = stats?.ToList() ?? new List<DatabaseService.DashboardMonthlyStat>();
+            var totalRevenue = totals.Sum(t => t.Revenue);
+            var totalExpenses = totals.Sum(t => t.Cost);
+            var totalCash = totals.Sum(t => t.Cash);
+
+            AnnualTotals.Clear();
+            AnnualTotals.Add(new AnnualTotalItem(AppResources.Dashboard_Revenue, FormatCurrency(totalRevenue), "#3B82F6"));
+            AnnualTotals.Add(new AnnualTotalItem(AppResources.Dashboard_Expenses, FormatCurrency(totalExpenses), "#EF4444"));
+            AnnualTotals.Add(new AnnualTotalItem(AppResources.Dashboard_Cash, FormatCurrency(totalCash), "#10B981"));
         }
 
         private void BuildSummaryCards(DatabaseService.DashboardSummary summary)
@@ -183,10 +209,10 @@ namespace NAVIGEST.macOS.PageModels
             var prevRevenue = ComparePreviousYear ? summary?.PrevRevenue ?? 0 : revenue;
             var prevExpenses = ComparePreviousYear ? summary?.PrevExpenses ?? 0 : expenses;
 
-            SummaryCards.Add(new AnalyticsMetricCard("Receitas", FormatCurrency(revenue), FormatDelta(revenue, prevRevenue), revenue >= prevRevenue));
-            SummaryCards.Add(new AnalyticsMetricCard("Despesas", FormatCurrency(expenses), FormatDelta(expenses, prevExpenses), expenses <= prevExpenses));
-            SummaryCards.Add(new AnalyticsMetricCard("Margem", FormatCurrency(margin), $"{marginPct:P1}", marginPct >= 0.2m));
-            SummaryCards.Add(new AnalyticsMetricCard("Caixa", FormatCurrency(cash), ComparePreviousYear ? "Compara ano-1" : "Recebimentos", true));
+            SummaryCards.Add(new AnalyticsMetricCard(AppResources.Dashboard_Revenue, FormatCurrency(revenue), FormatDelta(revenue, prevRevenue), revenue >= prevRevenue));
+            SummaryCards.Add(new AnalyticsMetricCard(AppResources.Dashboard_Expenses, FormatCurrency(expenses), FormatDelta(expenses, prevExpenses), expenses <= prevExpenses));
+            SummaryCards.Add(new AnalyticsMetricCard(AppResources.Dashboard_Margin, FormatCurrency(margin), $"{marginPct:P1}", marginPct >= 0.2m));
+            SummaryCards.Add(new AnalyticsMetricCard(AppResources.Dashboard_Cash, FormatCurrency(cash), ComparePreviousYear ? AppResources.Dashboard_CashDetail_Compare : AppResources.Dashboard_CashDetail_Current, true));
         }
 
         private void BuildRevenueVsCost(IEnumerable<DatabaseService.DashboardMonthlyStat> stats, IEnumerable<DatabaseService.DashboardMonthlyStat> prevStats)
@@ -364,7 +390,7 @@ namespace NAVIGEST.macOS.PageModels
         public decimal PrevValue { get; set; }
     }
 
-    public class MonthOption
+    public class MonthOption : INotifyPropertyChanged
     {
         public MonthOption(int index, string label)
         {
@@ -374,6 +400,25 @@ namespace NAVIGEST.macOS.PageModels
 
         public int Index { get; }
         public string Label { get; }
+
+        private bool _isSelected;
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set
+            {
+                if (_isSelected == value) return;
+                _isSelected = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 
     public class DashboardTopItem
@@ -388,5 +433,19 @@ namespace NAVIGEST.macOS.PageModels
         public string Name { get; }
         public string Value { get; }
         public int Percent { get; }
+    }
+
+    public class AnnualTotalItem
+    {
+        public AnnualTotalItem(string title, string value, string color)
+        {
+            Title = title;
+            Value = value;
+            Color = color;
+        }
+
+        public string Title { get; }
+        public string Value { get; }
+        public string Color { get; }
     }
 }

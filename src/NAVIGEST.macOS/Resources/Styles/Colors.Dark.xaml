@@ -17,6 +17,21 @@
     <Color x:Key="CardBackgroundColor">#111827</Color>
     <Color x:Key="DividerColor">#1F2937</Color>
 
+    <!-- Cards / Dashboard -->
+    <Color x:Key="CardBg">#10172B</Color>
+    <Color x:Key="CardBgMuted">#0D1424</Color>
+    <Color x:Key="CardBorder">#1E293B</Color>
+    <Color x:Key="TextMain">#E7ECF5</Color>
+    <Color x:Key="TextSub">#9BA7C1</Color>
+
+    <!-- Accents -->
+    <Color x:Key="AccentBlue">#3B82F6</Color>
+    <Color x:Key="AccentCyan">#22D3EE</Color>
+    <Color x:Key="AccentOrange">#F97316</Color>
+    <Color x:Key="AccentRed">#EF4444</Color>
+    <Color x:Key="AccentGreen">#10B981</Color>
+    <Color x:Key="AccentYellow">#F59E0B</Color>
+
     <!-- Sidebar -->
     <Color x:Key="SidebarBg">#0F172A</Color>
     <Color x:Key="SidebarItem">#111827</Color>
